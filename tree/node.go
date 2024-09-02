@@ -1,6 +1,10 @@
 package tree
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+	"math"
+)
 
 type Node[move Move] struct {
 	parent   *Node[move]
@@ -8,30 +12,53 @@ type Node[move Move] struct {
 	move     move
 }
 
-func NewNode[move Move](m move) *Node[move] {
-	return &Node[move]{move: m}
-}
-
-func (node *Node[Move]) AddChild(child *Node[Move]) {
+func (node *Node[move]) AddMove(m move) *Node[move] {
+	child := &Node[move]{parent: node, move: m}
 	if node.children == nil {
-		node.children = map[Move]*Node[Move]{child.move: child}
+		node.children = map[move]*Node[move]{m: child}
 	} else {
-		node.children[child.move] = child
+		node.children[m] = child
 	}
-	child.parent = node
-}
-
-func (node *Node[Move]) RemoveChild(move Move) {
-	delete(node.children, move)
-	if len(node.children) == 0 && node.parent != nil {
-		node.Remove()
-	}
+	return child
 }
 
 func (node *Node[Move]) Remove() {
 	delete(node.parent.children, node.move)
 	if len(node.parent.children) == 0 && node.parent.parent != nil {
-		node.parent.parent.RemoveChild(node.parent.move)
+		delete(node.parent.parent.children, node.parent.move)
+		if node.parent.parent.parent != nil {
+			node.parent.parent.Remove()
+		}
+	}
+}
+
+func (node *Node[move]) BestChild(player Player) (move, int) {
+	if len(node.children) == 0 {
+		return node.move, node.move.Score()
+	}
+
+	if player == firstPlayer {
+		var bestMove move
+		bestScore := math.MaxInt
+		for _, child := range node.children {
+			childMove, childScore := child.BestChild(secondPlayer)
+			if bestScore < childScore {
+				bestMove = childMove
+				bestScore = childScore
+			}
+		}
+		return bestMove, bestScore
+	} else {
+		var bestMove move
+		bestScore := math.MinInt
+		for _, child := range node.children {
+			childMove, childScore := child.BestChild(firstPlayer)
+			if bestScore > childScore {
+				bestMove = childMove
+				bestScore = childScore
+			}
+		}
+		return bestMove, bestScore
 	}
 }
 
@@ -49,8 +76,7 @@ func (node *Node[Move]) bytes(buf *bytes.Buffer, level int) {
 	for range level {
 		buf.Write([]byte("| "))
 	}
-	buf.WriteString(node.move.String())
-	buf.WriteByte('\n')
+	buf.WriteString(fmt.Sprintf("%s: %d\n", node.move.String(), node.move.Score()))
 	for _, child := range node.children {
 		child.bytes(buf, level+1)
 	}
