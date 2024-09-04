@@ -13,7 +13,7 @@ type Node[move Move] struct {
 }
 
 func (node *Node[move]) AddMove(m move) *Node[move] {
-	child := &Node[move]{parent: node, move: m}
+	child := &Node[move]{parent: node}
 	if node.children == nil {
 		node.children = map[move]*Node[move]{m: child}
 	} else {
@@ -33,9 +33,9 @@ func (node *Node[Move]) Remove() {
 }
 
 func (node *Node[move]) BestChild(player Player) (move, int) {
-	if len(node.children) == 0 {
-		return node.move, node.move.Score()
-	}
+	// if len(node.children) == 0 {
+	// 	return node.move, node.move.Score()
+	// }
 
 	if player == firstPlayer {
 		var bestMove move
@@ -76,7 +76,7 @@ func (node *Node[Move]) bytes(buf *bytes.Buffer, level int) {
 	for range level {
 		buf.Write([]byte("| "))
 	}
-	buf.WriteString(fmt.Sprintf("%s: %d\n", node.move.String(), node.move.Score()))
+	buf.WriteString(fmt.Sprintf("%s\n", node.move.String()))
 	for _, child := range node.children {
 		child.bytes(buf, level+1)
 	}

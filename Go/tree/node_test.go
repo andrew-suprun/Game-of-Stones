@@ -15,6 +15,16 @@ func (m move) Score() int {
 	return int(m)
 }
 
+type n struct {
+	id       int
+	score    int
+	children []n
+}
+
+func TestPv(t *testing.T) {
+
+}
+
 func TestNodeRemval(t *testing.T) {
 	root := &Node[move]{move: -1}
 	node0 := root.AddMove(0)
