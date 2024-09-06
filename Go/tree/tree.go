@@ -1,80 +1,134 @@
 package tree
 
 import (
-	"game_of_stones/heap"
+	"fmt"
+	"g_of_stones/heap"
 )
 
-type Game[move Move] interface {
-	PossibleMoves([]move) []move
+type iGame[move iMove] interface {
+	MakeMove(move)
+	UnmakeMove(move)
+	PossibleMoves() []move
 }
 
-type Move interface {
+type iMove interface {
 	comparable
-	// Score() int
+	Wins() bool
+	Draws() bool
+	Score() int
 	String() string
 }
 
-type Player int
-
-const (
-	firstPlayer Player = iota
-	secondPlayer
-)
-
-type Tree[game Game[move], move Move] struct {
-	game     Game[move]
-	capacity int
-	// root     *Node[move] // TODO `root` or `moves`
-	root       map[move]*Node[move] // TODO `root` or `moves`
-	leaves     heap.Heap[*Node[move]]
-	rootPlayer Player
-	leafPlayer Player
-	firstLess  heap.Less[*Node[move]]
-	secondLess heap.Less[*Node[move]]
-	depth      int
+type tree[pGame iGame[pMove], pMove iMove] struct {
+	gameInit  func() pGame
+	capacity  int
+	root      *node[pMove]
+	leaves    heap.Heap[*node[pMove]]
+	rootMaxer bool
+	less      func(a, b *node[pMove]) bool
+	depth     int
 }
 
-func NewTree[game Game[move], move Move](g game, capacity int, firstLess, secondLess heap.Less[*Node[move]]) *Tree[game, move] {
-	return &Tree[game, move]{
-		game:     g,
-		capacity: capacity,
-		// root:       g.PossibleMoves(nil),
-		rootPlayer: firstPlayer,
-		leafPlayer: firstPlayer,
-		firstLess:  firstLess,
-		secondLess: secondLess,
+func newTree[pGame iGame[pMove], pMove iMove](gameInit func() pGame, capacity int, less func(a, b *node[pMove]) bool) *tree[pGame, pMove] {
+	return &tree[pGame, pMove]{
+		gameInit:  gameInit,
+		capacity:  capacity,
+		less:      less,
+		root:      &node[pMove]{},
+		rootMaxer: true,
+		depth:     0,
 	}
 }
 
-func (t *Tree[game, move]) Expand() {
-	// var less heap.Less[*Node[move]]
-	// if t.leafPlayer == firstPlayer {
-	// 	less = t.firstLess
-	// } else {
-	// 	less = t.secondLess
-	// }
-	// t.newLeaves = heap.NewHeap(t.capacity, less)
-	// for i, node := range t.leaves {
-	// 	playedMoves := make([]move, t.depth)
-	// 	for node != nil {
-	// 		playedMoves[t.depth-i-1] = node.move
-	// 	}
-	// 	possibleMoves := t.game.PossibleMoves(playedMoves)
-	// 	for _, m := range possibleMoves {
-	// 		child := node.AddMove(m)
-	// 		oldNode, removed := t.newLeaves.Add(child)
-	// 		if removed {
-	// 			oldNode.Remove()
-	// 		}
-	// 		if len(t.root.children) == 1 {
-	// 			return
-	// 		}
-	// 	}
-	// }
-	// t.depth++
-	// t.leaves = t.newLeaves.Sorted()
+type expandResult int
+
+const (
+	winning expandResult = iota
+	losing
+	drawing
+	inconclusive
+)
+
+func (tree *tree[pGame, pMove]) expand(node *node[pMove], game pGame) expandResult {
+	if len(node.children) == 0 {
+		fmt.Println("expanding leaf move", node.move)
+		moves := game.PossibleMoves()
+		result := drawing
+		for _, move := range moves {
+			if move.Wins() {
+				fmt.Println("expand of leaf ", node.move, "is losing")
+				return losing
+			}
+
+			node.addMove(move)
+
+			if !move.Draws() {
+				// TODO add to leaves
+				result = inconclusive
+			}
+		}
+		fmt.Println("expand of leaf ", node.move, "is", result)
+		return result
+	}
+
+	fmt.Println("expanding inner move", node.move)
+	result := drawing
+	i := 0
+	for i < len(node.children) {
+		child := &node.children[i]
+		if !child.draw {
+			game.MakeMove(child.move)
+			expandResult := tree.expand(child, game)
+			game.UnmakeMove(child.move)
+			switch expandResult {
+			case winning:
+				// TODO remove from leaves
+				fmt.Println("expand of inner ", node.move, "is losing")
+				return losing
+			case losing:
+				// TODO remove from leaves
+				fmt.Println("removing", child.move)
+				node.children[child.selfIdx] = node.children[len(node.children)-1]
+				node.children = node.children[:len(node.children)-1]
+				continue
+			case inconclusive:
+				result = inconclusive
+			}
+		}
+		i++
+	}
+	if len(node.children) == 0 {
+		fmt.Println("expand of inner ", node.move, "is winning")
+		return winning
+	}
+	fmt.Println("expand of inner ", node.move, "is", result)
+	return result
 }
 
-// func (t *Tree[game, move]) BestChild() (move, int) {
-// 	return t.root.BestChild(t.rootPlayer)
-// }
+func (tree *tree[_, move]) RemoveChild(node *node[move]) {
+	parent := node.parent
+	if len(parent.children) == 1 {
+		tree.Remove(parent)
+	} else {
+		tree.removeLeaves(node)
+	}
+}
+
+func (tree *tree[_, move]) Remove(node *node[move]) {
+	parent := node.parent
+	if parent != nil && len(parent.children) == 1 {
+		tree.RemoveChild(node)
+	} else {
+		tree.removeLeaves(node)
+	}
+}
+
+func (tree *tree[_, move]) removeLeaves(node *node[move]) {
+	if len(node.children) == 0 {
+		tree.leaves.Remove(node)
+	} else {
+		for i := range node.children {
+			tree.removeLeaves(&node.children[i])
+		}
+	}
+}

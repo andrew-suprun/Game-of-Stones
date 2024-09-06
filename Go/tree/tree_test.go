@@ -2,62 +2,111 @@ package tree
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
-type testGame struct{}
-
-func (g *testGame) PossibleMoves([]testMove) []testMove {
-	return []testMove{}
+type testGame struct {
+	id    int
+	rng   *rand.Rand
+	maxer bool
 }
 
-type testMove int
+func newTestGame(seed int64) *testGame {
+	return &testGame{
+		rng:   rand.New(rand.NewSource(seed)),
+		maxer: true,
+	}
+}
+
+func (g *testGame) MakeMove(m testMove) {
+	g.maxer = !g.maxer
+}
+
+func (g *testGame) UnmakeMove(m testMove) {
+	g.maxer = !g.maxer
+}
+
+func (g *testGame) PossibleMoves() []testMove {
+	r := g.rng.Intn(5)
+	if r == 0 {
+		g.id++
+		move := testMove{
+			id: g.id,
+		}
+		if g.maxer {
+			move.score = 1000
+		} else {
+			move.score = -1000
+		}
+		fmt.Println("move", move)
+		return []testMove{move}
+	}
+
+	result := make([]testMove, g.rng.Intn(5)+1)
+	for i := range result {
+		g.id++
+		move := testMove{
+			id: g.id,
+		}
+		if g.rng.Intn(5) == 0 {
+			move.score = 0
+		} else {
+			move.score = g.rng.Intn(201) - 100
+		}
+		result[i] = move
+	}
+	fmt.Println("moves", result)
+	return result
+}
+
+type testMove struct {
+	id    int
+	score int
+}
 
 func (m testMove) String() string {
-	return fmt.Sprintf("move %d", m)
+	state := ""
+	if m.Wins() {
+		state = " win"
+	} else if m.Draws() {
+		state = " draw"
+	}
+	return fmt.Sprintf("<move %d score %d%s>", m.id, m.score, state)
 }
 
 func (m testMove) Score() int {
-	return int(m)
+	return m.score
 }
 
-type node struct {
-	children map[testMove]node
+func (m testMove) Draws() bool {
+	return m.score == 0
 }
 
-func genTree(source map[testMove]node) map[testMove]*Node[testMove] {
-	result := map[testMove]*Node[testMove]{}
-	for m, n := range source {
-		result[m] = genNode(n)
+func (m testMove) Wins() bool {
+	return m.score == 1000 || m.score == -1000
+}
+
+func gInit() *testGame {
+	return &testGame{}
+}
+
+func genTestTree(depth int, seed int64) *tree[*testGame, testMove] {
+	t := newTree(gInit, 20, (*node[testMove]).less)
+	testGame := newTestGame(seed)
+	for d := range depth {
+		fmt.Println("expand depth", d)
+		t.expand(t.root, testGame)
+		fmt.Println(t.root)
 	}
-	return result
-}
-
-func genNode(n node) *Node[testMove] {
-	result := &Node[testMove]{children: genTree(n.children)}
-	for _, n := range result.children {
-		n.parent = n
-	}
-	return result
+	return t
 }
 
 func TestTree(t *testing.T) {
-	source := map[testMove]node{
-		1: {
-			map[testMove]node{
-				3: {},
-				4: {},
-			},
-		},
-		2: {
-			map[testMove]node{
-				5: {},
-				6: {},
-			},
-		},
-	}
-	root := Tree[*testGame, testMove]{
-		root: genTree(source),
-	}
-	fmt.Printf("%v\n", root)
+	tree := genTestTree(4, 2)
+	fmt.Println("tree.root.children", len(tree.root.children))
+	move, score := tree.root.bestMove(true)
+	fmt.Println("best move", move, "score", score)
+
+	t.Fail()
 }

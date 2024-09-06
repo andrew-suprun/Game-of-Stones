@@ -6,55 +6,42 @@ import (
 	"math"
 )
 
-type Node[move Move] struct {
-	parent   *Node[move]
-	children map[move]*Node[move]
+type node[move iMove] struct {
+	parent   *node[move]
+	selfIdx  uint16
+	children []node[move]
 	move     move
+	draw     bool
 }
 
-func (node *Node[move]) AddMove(m move) *Node[move] {
-	child := &Node[move]{parent: node}
-	if node.children == nil {
-		node.children = map[move]*Node[move]{m: child}
-	} else {
-		node.children[m] = child
-	}
-	return child
+func (n *node[pMove]) addMove(move pMove) {
+	child := node[pMove]{parent: n, selfIdx: uint16(len(n.children)), move: move, draw: move.Draws()}
+	fmt.Println("addMove: move", move)
+	n.children = append(n.children, child)
 }
 
-func (node *Node[Move]) Remove() {
-	delete(node.parent.children, node.move)
-	if len(node.parent.children) == 0 && node.parent.parent != nil {
-		delete(node.parent.parent.children, node.parent.move)
-		if node.parent.parent.parent != nil {
-			node.parent.parent.Remove()
-		}
-	}
+func (n *node[move]) less(other *node[move]) bool {
+	return n.move.Score() < other.move.Score()
 }
 
-func (node *Node[move]) BestChild(player Player) (move, int) {
-	// if len(node.children) == 0 {
-	// 	return node.move, node.move.Score()
-	// }
-
-	if player == firstPlayer {
-		var bestMove move
+func (node *node[move]) bestMove(maxer bool) (move, int) {
+	var bestMove move
+	if maxer {
 		bestScore := math.MaxInt
 		for _, child := range node.children {
-			childMove, childScore := child.BestChild(secondPlayer)
-			if bestScore < childScore {
-				bestMove = childMove
+			childScore := child.bestScore(!maxer)
+			if bestScore > childScore {
+				bestMove = child.move
 				bestScore = childScore
 			}
 		}
 		return bestMove, bestScore
 	} else {
-		var bestMove move
 		bestScore := math.MinInt
 		for _, child := range node.children {
-			childMove, childScore := child.BestChild(firstPlayer)
-			if bestScore > childScore {
-				bestMove = childMove
+			childScore := child.bestScore(!maxer)
+			if bestScore < childScore {
+				bestMove = child.move
 				bestScore = childScore
 			}
 		}
@@ -62,17 +49,47 @@ func (node *Node[move]) BestChild(player Player) (move, int) {
 	}
 }
 
-func (node *Node[Move]) String() string {
+func (node *node[move]) bestScore(maxer bool) int {
+	fmt.Println(">>bestChild: move", node.move, "children", len(node.children))
+	if len(node.children) == 0 {
+		fmt.Println("<< bestChild: move.1", node.move, "best child", node.move, "score", node.move.Score())
+		return node.move.Score()
+	}
+
+	if maxer {
+		bestScore := math.MaxInt
+		for _, child := range node.children {
+			childScore := child.bestScore(!maxer)
+			if bestScore > childScore {
+				bestScore = childScore
+			}
+		}
+		fmt.Println("<< bestChild: move.2", node.move, "score", bestScore)
+		return bestScore
+	} else {
+		bestScore := math.MinInt
+		for _, child := range node.children {
+			childScore := child.bestScore(!maxer)
+			if bestScore < childScore {
+				bestScore = childScore
+			}
+		}
+		fmt.Println("<< bestChild: move.3", node.move, "score", bestScore)
+		return bestScore
+	}
+}
+
+func (node *node[Move]) String() string {
 	return string(node.Bytes())
 }
 
-func (node *Node[Move]) Bytes() []byte {
+func (node *node[Move]) Bytes() []byte {
 	buf := &bytes.Buffer{}
 	node.bytes(buf, 0)
 	return buf.Bytes()
 }
 
-func (node *Node[Move]) bytes(buf *bytes.Buffer, level int) {
+func (node *node[Move]) bytes(buf *bytes.Buffer, level int) {
 	for range level {
 		buf.Write([]byte("| "))
 	}
