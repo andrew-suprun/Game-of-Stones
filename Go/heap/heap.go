@@ -1,5 +1,10 @@
 package heap
 
+import (
+	"bytes"
+	"fmt"
+)
+
 type Less[E any] func(E, E) bool
 
 type Heap[E comparable] struct {
@@ -8,8 +13,8 @@ type Heap[E comparable] struct {
 	indices map[E]int
 }
 
-func NewHeap[E comparable](capacity int, less Less[E]) Heap[E] {
-	return Heap[E]{
+func NewHeap[E comparable](capacity int, less Less[E]) *Heap[E] {
+	return &Heap[E]{
 		items:   make([]E, 0, capacity),
 		less:    less,
 		indices: map[E]int{},
@@ -20,10 +25,12 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 	if len(h.items) == cap(h.items) {
 		if h.less(h.items[0], e) {
 			result := h.items[0]
+			fmt.Print("Heap pushed out ", result)
 			h.items[0] = e
 			h.indices[e] = 0
 			h.siftDown(0)
 			delete(h.indices, result)
+			fmt.Print("Heap added.2 size: ", len(h.indices), " | elem: ", e)
 			return result, true
 		}
 	} else {
@@ -31,12 +38,23 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 		h.indices[e] = len(h.items) - 1
 		h.siftUp()
 	}
+	fmt.Print("Heap added.1 size: ", len(h.indices), " | elem: ", e)
 	var nilE E
 	return nilE, false
 }
 
+func (h *Heap[E]) Peek() (result E, ok bool) {
+	if len(h.indices) > 0 {
+		return h.items[0], true
+	}
+	return
+}
+
 func (h *Heap[E]) Remove(e E) {
-	idx := h.indices[e]
+	idx, found := h.indices[e]
+	if !found {
+		return
+	}
 	h.items[idx] = h.items[len(h.items)-1]
 	h.siftDown(idx)
 	h.items = h.items[:len(h.items)-1]
@@ -65,6 +83,11 @@ func (h *Heap[E]) Sorted() []E {
 		result[size-i-1] = h.RemoveMin()
 	}
 	return result
+}
+
+func (h *Heap[E]) Clear() {
+	h.items = nil
+	clear(h.indices)
 }
 
 func (h *Heap[E]) siftUp() {
@@ -105,4 +128,13 @@ func (h *Heap[E]) siftDown(idx int) {
 	}
 	h.items[idx] = elem
 	h.indices[elem] = idx
+}
+
+func (h *Heap[E]) String() string {
+	buf := &bytes.Buffer{}
+	fmt.Fprintln(buf, "---- Heap")
+	for _, item := range h.items {
+		fmt.Fprintf(buf, "  - %v\n", item)
+	}
+	return buf.String()
 }

@@ -27,7 +27,8 @@ func (g *testGame) UnmakeMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
-func (g *testGame) PossibleMoves() []testMove {
+func (g *testGame) PossibleMoves(limit int) []testMove {
+	fmt.Println("PossibleMoves: limit =", limit)
 	r := g.rng.Intn(5)
 	if r == 0 {
 		g.id++
@@ -39,12 +40,12 @@ func (g *testGame) PossibleMoves() []testMove {
 		} else {
 			move.score = -1000
 		}
-		fmt.Println("move", move)
+		fmt.Println("PossibleMove: ", move)
 		return []testMove{move}
 	}
 
-	result := make([]testMove, g.rng.Intn(5)+1)
-	for i := range result {
+	result := make([]testMove, 0)
+	for range 5 {
 		g.id++
 		move := testMove{
 			id: g.id,
@@ -52,11 +53,21 @@ func (g *testGame) PossibleMoves() []testMove {
 		if g.rng.Intn(5) == 0 {
 			move.score = 0
 		} else {
-			move.score = g.rng.Intn(201) - 100
+			score := g.rng.Intn(201) - 100
+			if g.maxer {
+				if score > limit {
+					move.score = score
+					result = append(result, move)
+				}
+			} else {
+				if score < limit {
+					move.score = score
+					result = append(result, move)
+				}
+			}
 		}
-		result[i] = move
 	}
-	fmt.Println("moves", result)
+	fmt.Println("PossibleMoves: ", result)
 	return result
 }
 
@@ -92,18 +103,17 @@ func gInit() *testGame {
 }
 
 func genTestTree(depth int, seed int64) *tree[*testGame, testMove] {
-	t := newTree(gInit, 20, (*node[testMove]).less)
+	t := newTree(gInit, 8, maxLess[testMove], minLess[testMove])
 	testGame := newTestGame(seed)
-	for d := range depth {
-		fmt.Println("expand depth", d)
-		t.expand(t.root, testGame)
+	for range depth {
+		t.expand(testGame)
 		fmt.Println(t.root)
 	}
 	return t
 }
 
 func TestTree(t *testing.T) {
-	tree := genTestTree(4, 2)
+	tree := genTestTree(5, 0)
 	fmt.Println("tree.root.children", len(tree.root.children))
 	move, score := tree.root.bestMove(true)
 	fmt.Println("best move", move, "score", score)

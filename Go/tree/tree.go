@@ -3,12 +3,13 @@ package tree
 import (
 	"fmt"
 	"g_of_stones/heap"
+	"math"
 )
 
 type iGame[move iMove] interface {
 	MakeMove(move)
 	UnmakeMove(move)
-	PossibleMoves() []move
+	PossibleMoves(limit int) []move
 }
 
 type iMove interface {
@@ -20,23 +21,29 @@ type iMove interface {
 }
 
 type tree[pGame iGame[pMove], pMove iMove] struct {
-	gameInit  func() pGame
-	capacity  int
-	root      *node[pMove]
-	leaves    heap.Heap[*node[pMove]]
-	rootMaxer bool
-	less      func(a, b *node[pMove]) bool
-	depth     int
+	gameInit   func() pGame
+	capacity   int
+	root       *node[pMove]
+	maxerLess  func(a, b *node[pMove]) bool
+	minnerLess func(a, b *node[pMove]) bool
+	maxer      bool
+	depth      int
 }
 
-func newTree[pGame iGame[pMove], pMove iMove](gameInit func() pGame, capacity int, less func(a, b *node[pMove]) bool) *tree[pGame, pMove] {
+func newTree[pGame iGame[pMove], pMove iMove](
+	gameInit func() pGame,
+	capacity int,
+	maxerLess func(a, b *node[pMove]) bool,
+	minnerLess func(a, b *node[pMove]) bool,
+) *tree[pGame, pMove] {
 	return &tree[pGame, pMove]{
-		gameInit:  gameInit,
-		capacity:  capacity,
-		less:      less,
-		root:      &node[pMove]{},
-		rootMaxer: true,
-		depth:     0,
+		gameInit:   gameInit,
+		capacity:   capacity,
+		maxerLess:  maxerLess,
+		minnerLess: minnerLess,
+		root:       &node[pMove]{children: map[pMove]*node[pMove]{}},
+		maxer:      true,
+		depth:      0,
 	}
 }
 
@@ -49,47 +56,85 @@ const (
 	inconclusive
 )
 
-func (tree *tree[pGame, pMove]) expand(node *node[pMove], game pGame) expandResult {
+func (r expandResult) String() string {
+	switch r {
+	case winning:
+		return "winning"
+	case losing:
+		return "losing"
+	case drawing:
+		return "drawing"
+	case inconclusive:
+		return "inconclusive"
+	}
+	return ""
+}
+
+func (tree *tree[pGame, pMove]) expand(game pGame) expandResult {
+	fmt.Println("\n===================\n#### expand depth", tree.depth)
+
+	defer func() {
+		tree.depth++
+	}()
+
+	var leaves *heap.Heap[*node[pMove]]
+	if tree.maxer && tree.depth%2 == 0 || !tree.maxer && tree.depth%2 == 1 {
+		leaves = heap.NewHeap(tree.capacity, tree.maxerLess)
+	} else {
+		leaves = heap.NewHeap(tree.capacity, tree.minnerLess)
+	}
+	defer fmt.Println("leaves", leaves)
+	return tree.expandNode(tree.root, game, leaves)
+}
+
+func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves *heap.Heap[*node[pMove]]) expandResult {
 	if len(node.children) == 0 {
-		fmt.Println("expanding leaf move", node.move)
-		moves := game.PossibleMoves()
+
+		var limit int
+		if minElement, ok := leaves.Peek(); ok {
+			limit = minElement.move.Score()
+		} else if tree.maxer && tree.depth%2 == 0 || !tree.maxer && tree.depth%2 == 1 {
+			limit = math.MinInt
+		} else {
+			limit = math.MaxInt
+		}
+
+		moves := game.PossibleMoves(limit)
+		if len(moves) == 0 {
+			return winning
+		}
 		result := drawing
 		for _, move := range moves {
 			if move.Wins() {
-				fmt.Println("expand of leaf ", node.move, "is losing")
 				return losing
 			}
 
-			node.addMove(move)
-
+			child := node.addMove(move)
 			if !move.Draws() {
-				// TODO add to leaves
+				if minNode, pushedOut := leaves.Add(child); pushedOut {
+					tree.removeChild(minNode, leaves)
+				}
 				result = inconclusive
 			}
 		}
-		fmt.Println("expand of leaf ", node.move, "is", result)
 		return result
 	}
 
-	fmt.Println("expanding inner move", node.move)
 	result := drawing
 	i := 0
-	for i < len(node.children) {
-		child := &node.children[i]
+	for _, child := range node.children {
 		if !child.draw {
 			game.MakeMove(child.move)
-			expandResult := tree.expand(child, game)
+			expandResult := tree.expandNode(child, game, leaves)
 			game.UnmakeMove(child.move)
 			switch expandResult {
 			case winning:
-				// TODO remove from leaves
-				fmt.Println("expand of inner ", node.move, "is losing")
 				return losing
 			case losing:
-				// TODO remove from leaves
-				fmt.Println("removing", child.move)
-				node.children[child.selfIdx] = node.children[len(node.children)-1]
-				node.children = node.children[:len(node.children)-1]
+				if len(node.children) == 1 {
+					return winning
+				}
+				tree.removeLeaves(child, leaves)
 				continue
 			case inconclusive:
 				result = inconclusive
@@ -98,37 +143,39 @@ func (tree *tree[pGame, pMove]) expand(node *node[pMove], game pGame) expandResu
 		i++
 	}
 	if len(node.children) == 0 {
-		fmt.Println("expand of inner ", node.move, "is winning")
 		return winning
 	}
-	fmt.Println("expand of inner ", node.move, "is", result)
 	return result
 }
 
-func (tree *tree[_, move]) RemoveChild(node *node[move]) {
+func (tree *tree[_, move]) removeChild(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
 	if len(parent.children) == 1 {
-		tree.Remove(parent)
+		tree.removeNode(parent, leaves)
 	} else {
-		tree.removeLeaves(node)
+		tree.removeLeaves(node, leaves)
 	}
 }
 
-func (tree *tree[_, move]) Remove(node *node[move]) {
+func (tree *tree[_, move]) removeNode(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
 	if parent != nil && len(parent.children) == 1 {
-		tree.RemoveChild(node)
+		tree.removeChild(node, leaves)
 	} else {
-		tree.removeLeaves(node)
+		tree.removeLeaves(node, leaves)
 	}
 }
 
-func (tree *tree[_, move]) removeLeaves(node *node[move]) {
+func (tree *tree[_, move]) removeLeaves(node *node[move], leaves *heap.Heap[*node[move]]) {
 	if len(node.children) == 0 {
-		tree.leaves.Remove(node)
+		leaves.Remove(node)
 	} else {
-		for i := range node.children {
-			tree.removeLeaves(&node.children[i])
+		for _, child := range node.children {
+			tree.removeLeaves(child, leaves)
 		}
+	}
+	parent := node.parent
+	if parent != nil {
+		delete(parent.children, node.move)
 	}
 }
