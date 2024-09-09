@@ -83,7 +83,6 @@ func (tree *tree[pGame, pMove]) expand(game pGame) expandResult {
 	} else {
 		leaves = heap.NewHeap(tree.capacity, tree.minnerLess)
 	}
-	defer fmt.Println("leaves", leaves)
 	return tree.expandNode(tree.root, game, leaves)
 }
 
@@ -100,6 +99,7 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 		}
 
 		moves := game.PossibleMoves(limit)
+		fmt.Println("moves", moves, "parent", node.move, "limit", limit)
 		if len(moves) == 0 {
 			return winning
 		}
@@ -177,5 +177,6 @@ func (tree *tree[_, move]) removeLeaves(node *node[move], leaves *heap.Heap[*nod
 	parent := node.parent
 	if parent != nil {
 		delete(parent.children, node.move)
+		fmt.Println("deleted", node.move, "from", parent.move)
 	}
 }

@@ -16,6 +16,7 @@ type node[move iMove] struct {
 func (n *node[pMove]) addMove(move pMove) *node[pMove] {
 	child := &node[pMove]{parent: n, children: map[pMove]*node[pMove]{}, move: move, draw: move.Draws()}
 	n.children[move] = child
+	fmt.Println("added", move, "to", n.move)
 	return child
 }
 

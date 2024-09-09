@@ -28,7 +28,6 @@ func (g *testGame) UnmakeMove(m testMove) {
 }
 
 func (g *testGame) PossibleMoves(limit int) []testMove {
-	fmt.Println("PossibleMoves: limit =", limit)
 	r := g.rng.Intn(5)
 	if r == 0 {
 		g.id++
@@ -40,34 +39,33 @@ func (g *testGame) PossibleMoves(limit int) []testMove {
 		} else {
 			move.score = -1000
 		}
-		fmt.Println("PossibleMove: ", move)
 		return []testMove{move}
 	}
 
 	result := make([]testMove, 0)
 	for range 5 {
-		g.id++
-		move := testMove{
-			id: g.id,
+		score := 0
+		if g.rng.Intn(5) > 0 {
+			score = g.rng.Intn(201) - 100
 		}
-		if g.rng.Intn(5) == 0 {
-			move.score = 0
+		if g.maxer {
+			if score > limit {
+				g.id++
+				result = append(result, testMove{
+					id:    g.id,
+					score: score,
+				})
+			}
 		} else {
-			score := g.rng.Intn(201) - 100
-			if g.maxer {
-				if score > limit {
-					move.score = score
-					result = append(result, move)
-				}
-			} else {
-				if score < limit {
-					move.score = score
-					result = append(result, move)
-				}
+			if score < limit {
+				g.id++
+				result = append(result, testMove{
+					id:    g.id,
+					score: score,
+				})
 			}
 		}
 	}
-	fmt.Println("PossibleMoves: ", result)
 	return result
 }
 

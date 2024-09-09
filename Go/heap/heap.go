@@ -25,12 +25,10 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 	if len(h.items) == cap(h.items) {
 		if h.less(h.items[0], e) {
 			result := h.items[0]
-			fmt.Print("Heap pushed out ", result)
 			h.items[0] = e
 			h.indices[e] = 0
 			h.siftDown(0)
 			delete(h.indices, result)
-			fmt.Print("Heap added.2 size: ", len(h.indices), " | elem: ", e)
 			return result, true
 		}
 	} else {
@@ -38,7 +36,6 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 		h.indices[e] = len(h.items) - 1
 		h.siftUp()
 	}
-	fmt.Print("Heap added.1 size: ", len(h.indices), " | elem: ", e)
 	var nilE E
 	return nilE, false
 }
