@@ -40,6 +40,10 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 	return nilE, false
 }
 
+func (h *Heap[E]) Full() bool {
+	return len(h.items) == cap(h.items)
+}
+
 func (h *Heap[E]) Peek() (result E, ok bool) {
 	if len(h.indices) > 0 {
 		return h.items[0], true

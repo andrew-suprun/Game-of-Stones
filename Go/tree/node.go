@@ -8,16 +8,18 @@ import (
 
 type node[move iMove] struct {
 	parent   *node[move]
-	children map[move]*node[move]
+	children []node[move]
+	selfIdx  uint32
 	move     move
 	draw     bool
+	dead     bool
 }
 
-func (n *node[pMove]) addMove(move pMove) *node[pMove] {
-	child := &node[pMove]{parent: n, children: map[pMove]*node[pMove]{}, move: move, draw: move.Draws()}
-	n.children[move] = child
-	fmt.Println("added", move, "to", n.move)
-	return child
+func (n *node[pMove]) addMoves(moves []pMove) {
+	n.children = make([]node[pMove], len(moves))
+	for i, move := range moves {
+		n.children[i] = node[pMove]{parent: n, selfIdx: uint32(i), move: move, draw: move.Draws()}
+	}
 }
 
 func maxLess[move iMove](a, b *node[move]) bool {
@@ -28,23 +30,25 @@ func minLess[move iMove](a, b *node[move]) bool {
 	return a.move.Score() > b.move.Score()
 }
 
-func (node *node[move]) bestMove(maxer bool) (move, int) {
+func (node *node[move]) bestMove(maxer bool) (move, int32) {
 	var bestMove move
 	if maxer {
-		bestScore := math.MinInt
-		for _, child := range node.children {
+		var bestScore int32 = math.MinInt32
+		for i := range node.children {
+			child := &node.children[i]
 			childScore := child.bestScore(!maxer)
-			if bestScore < childScore {
+			if !child.dead && bestScore < childScore {
 				bestMove = child.move
 				bestScore = childScore
 			}
 		}
 		return bestMove, bestScore
 	} else {
-		bestScore := math.MaxInt
-		for _, child := range node.children {
+		var bestScore int32 = math.MaxInt32
+		for i := range node.children {
+			child := &node.children[i]
 			childScore := child.bestScore(!maxer)
-			if bestScore > childScore {
+			if !child.dead && bestScore > childScore {
 				bestMove = child.move
 				bestScore = childScore
 			}
@@ -53,30 +57,48 @@ func (node *node[move]) bestMove(maxer bool) (move, int) {
 	}
 }
 
-func (node *node[_]) bestScore(maxer bool) int {
+func (node *node[_]) bestScore(maxer bool) int32 {
 	if len(node.children) == 0 {
 		return node.move.Score()
 	}
 
 	if maxer {
-		bestScore := math.MinInt
-		for _, child := range node.children {
-			childScore := child.bestScore(!maxer)
-			if bestScore < childScore {
-				bestScore = childScore
+		var bestScore int32 = math.MinInt32
+		for i := range node.children {
+			child := &node.children[i]
+			if !child.dead {
+				childScore := child.bestScore(!maxer)
+				if bestScore < childScore {
+					bestScore = childScore
+				}
 			}
 		}
 		return bestScore
 	} else {
-		bestScore := math.MaxInt
-		for _, child := range node.children {
-			childScore := child.bestScore(!maxer)
-			if bestScore > childScore {
-				bestScore = childScore
+		var bestScore int32 = math.MaxInt32
+		for i := range node.children {
+			child := &node.children[i]
+			if !child.dead {
+				childScore := child.bestScore(!maxer)
+				if bestScore > childScore {
+					bestScore = childScore
+				}
 			}
 		}
 		return bestScore
 	}
+}
+
+func (node *node[move]) removeSelf() {
+	node.dead = true
+	node.removeChildren()
+}
+
+func (node *node[move]) removeChildren() {
+	for i := range node.children {
+		(&node.children[i]).removeChildren()
+	}
+	node.children = nil
 }
 
 func (node *node[_]) String() string {
@@ -94,7 +116,10 @@ func (node *node[_]) bytes(buf *bytes.Buffer, level int) {
 		buf.Write([]byte("| "))
 	}
 	buf.WriteString(fmt.Sprintf("%s\n", node.move.String()))
-	for _, child := range node.children {
-		child.bytes(buf, level+1)
+	for i := range node.children {
+		child := &node.children[i]
+		if !child.dead {
+			child.bytes(buf, level+1)
+		}
 	}
 }

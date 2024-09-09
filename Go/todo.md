@@ -1,5 +1,4 @@
 # Tree
-* change children into slice (sorted with marked dead moves)
 * change root into slice
 * move Wins() from move to PossibleMoves result
 * mark conclusive nodes as drawn

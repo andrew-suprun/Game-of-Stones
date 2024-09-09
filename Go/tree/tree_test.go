@@ -27,7 +27,7 @@ func (g *testGame) UnmakeMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
-func (g *testGame) PossibleMoves(limit int) []testMove {
+func (g *testGame) PossibleMoves(limit int32) []testMove {
 	r := g.rng.Intn(5)
 	if r == 0 {
 		g.id++
@@ -44,9 +44,9 @@ func (g *testGame) PossibleMoves(limit int) []testMove {
 
 	result := make([]testMove, 0)
 	for range 5 {
-		score := 0
+		var score int32 = 0
 		if g.rng.Intn(5) > 0 {
-			score = g.rng.Intn(201) - 100
+			score = int32(g.rng.Intn(201) - 100)
 		}
 		if g.maxer {
 			if score > limit {
@@ -71,7 +71,7 @@ func (g *testGame) PossibleMoves(limit int) []testMove {
 
 type testMove struct {
 	id    int
-	score int
+	score int32
 }
 
 func (m testMove) String() string {
@@ -84,7 +84,7 @@ func (m testMove) String() string {
 	return fmt.Sprintf("<move %d score %d%s>", m.id, m.score, state)
 }
 
-func (m testMove) Score() int {
+func (m testMove) Score() int32 {
 	return m.score
 }
 
@@ -105,7 +105,7 @@ func genTestTree(depth int, seed int64) *tree[*testGame, testMove] {
 	testGame := newTestGame(seed)
 	for range depth {
 		t.expand(testGame)
-		fmt.Println(t.root)
+		fmt.Println(&t.root)
 	}
 	return t
 }
