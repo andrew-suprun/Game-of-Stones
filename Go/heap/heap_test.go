@@ -1,6 +1,7 @@
 package heap
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -22,21 +23,13 @@ func TestHeap(t *testing.T) {
 		heap.Add(values[i])
 	}
 
-	heap.Remove(90)
-	heap.Remove(100)
-	heap.Remove(81)
-
-	if len(heap.items) != 17 || len(heap.indices) != 17 {
-		t.Fail()
-	}
-
+	fmt.Println("len", heap.Len())
 	oldElem := 0
-	for range 17 {
-		elem := heap.RemoveMin()
-		if elem == 81 || elem == 90 || elem == 100 || elem <= oldElem {
+	for range 20 {
+		elem := heap.Remove()
+		if elem <= oldElem {
 			t.Fail()
 		}
 		oldElem = elem
 	}
-	// t.Fail()
 }

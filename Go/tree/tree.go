@@ -90,8 +90,8 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 
 		var limit int32
 
-		if elem, ok := leaves.Peek(); ok && leaves.Full() {
-			limit = elem.move.Score()
+		if leaves.Len() == tree.capacity {
+			limit = leaves.Peek().move.Score()
 		} else if tree.maxer && tree.depth%2 == 0 || !tree.maxer && tree.depth%2 == 1 {
 			limit = math.MinInt32
 		} else {
@@ -100,15 +100,15 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 
 		moves := game.PossibleMoves(limit)
 		if len(moves) == 0 {
-			fmt.Println("node", node.move, "is winning")
+			fmt.Println("## node", node.move, "is winning")
 			return winning
 		}
 		if moves[0].Wins() {
-			fmt.Println("node", node.move, "is losing")
+			fmt.Println("## node", node.move, "is losing")
 			return losing
 		}
 		node.addMoves(moves)
-		fmt.Println("node", node.move, "added", moves, "limit", limit)
+		fmt.Println(">> node", node.move, "added", moves, "limit", limit)
 		result := drawing
 		for i := range node.children {
 			child := &node.children[i]
@@ -153,13 +153,14 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 
 func (tree *tree[_, move]) removeChild(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
+	fmt.Println("  removeChild", node, "siblings", len(parent.children))
 	if len(parent.children) == 1 {
 		tree.removeNode(parent, leaves)
 	} else {
-		tree.removeLeaves(node, leaves)
-		node.removeSelf()
+		node.dead = true
+		node.children = nil
+		fmt.Println("<< node", node.move, "removed-1 from ", node.parent.move)
 	}
-	fmt.Println("node", node.parent.move, "removed", node.move)
 }
 
 func (tree *tree[_, move]) removeNode(node *node[move], leaves *heap.Heap[*node[move]]) {
@@ -167,20 +168,8 @@ func (tree *tree[_, move]) removeNode(node *node[move], leaves *heap.Heap[*node[
 	if parent != nil && len(parent.children) == 1 {
 		tree.removeChild(node, leaves)
 	} else {
-		tree.removeLeaves(node, leaves)
-		node.removeSelf()
-	}
-}
-
-func (tree *tree[_, move]) removeLeaves(node *node[move], leaves *heap.Heap[*node[move]]) {
-	if len(node.children) == 0 {
-		leaves.Remove(node)
-	} else {
-		for i := range node.children {
-			child := &node.children[i]
-			if !child.dead {
-				tree.removeLeaves(child, leaves)
-			}
-		}
+		node.dead = true
+		node.children = nil
+		fmt.Println("<< node", node.move, "removed-2 from ", node.parent.move)
 	}
 }

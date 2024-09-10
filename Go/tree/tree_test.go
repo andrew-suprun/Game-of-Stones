@@ -105,14 +105,13 @@ func genTestTree(depth int, seed int64) *tree[*testGame, testMove] {
 	testGame := newTestGame(seed)
 	for range depth {
 		t.expand(testGame)
-		fmt.Println(&t.root)
+		t.root.Print()
 	}
 	return t
 }
 
 func TestTree(t *testing.T) {
 	tree := genTestTree(5, 0)
-	fmt.Println("tree.root.children", len(tree.root.children))
 	move, score := tree.root.bestMove(true)
 	fmt.Println("best move", move, "score", score)
 

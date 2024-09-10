@@ -89,20 +89,26 @@ func (node *node[_]) bestScore(maxer bool) int32 {
 	}
 }
 
-func (node *node[move]) removeSelf() {
-	node.dead = true
-	node.removeChildren()
+func (node *node[_]) Print() {
+	node.print(0)
 }
 
-func (node *node[move]) removeChildren() {
-	for i := range node.children {
-		(&node.children[i]).removeChildren()
+func (node *node[_]) print(level int) {
+	for range level {
+		fmt.Print(" |")
 	}
-	node.children = nil
+
+	fmt.Printf("%s\n", node.move.String())
+	for i := range node.children {
+		child := &node.children[i]
+		if !child.dead {
+			child.print(level + 1)
+		}
+	}
 }
 
 func (node *node[_]) String() string {
-	return string(node.Bytes())
+	return node.move.String()
 }
 
 func (node *node[_]) Bytes() []byte {
