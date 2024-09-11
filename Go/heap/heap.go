@@ -26,6 +26,8 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 			h.items[0] = e
 			h.siftDown(0)
 			return result, true
+		} else {
+			return e, true
 		}
 	} else {
 		h.items = append(h.items, e)
@@ -53,6 +55,7 @@ func (h *Heap[E]) Remove() E {
 	h.items[0] = h.items[len(h.items)-1]
 	h.items = h.items[:len(h.items)-1]
 	h.siftDown(0)
+	fmt.Println("heap.4: remove", result, "size", len(h.items))
 	return result
 }
 

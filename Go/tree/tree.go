@@ -8,8 +8,8 @@ import (
 
 type iMove interface {
 	comparable
-	Wins() bool
-	Draws() bool
+	IsDraw() bool
+	IsWin() bool
 	Score() int32
 	String() string
 }
@@ -86,7 +86,7 @@ func (tree *tree[pMove]) Expand() expandResult {
 }
 
 func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[pMove]]) expandResult {
-	if node.nChildren == 0 {
+	if len(node.children) == 0 {
 
 		var limit int32
 
@@ -103,16 +103,15 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 			fmt.Println("## node", node.move, "is winning")
 			return winning
 		}
-		if moves[0].Wins() {
+		if moves[0].IsWin() {
 			fmt.Println("## node", node.move, "is losing")
 			return losing
 		}
 		node.addMoves(moves)
-		fmt.Println(">> node", node.move, "added", moves, "limit", limit)
+		fmt.Println(">> node", node.move, "added", len(moves), moves, "limit", limit)
 		result := drawing
-		for i := range node.children {
-			child := &node.children[i]
-			if !child.move.Draws() {
+		for _, child := range node.children {
+			if !child.move.IsDraw() {
 				if minNode, pushedOut := leaves.Add(child); pushedOut {
 					tree.removeChild(minNode, leaves)
 				}
@@ -123,12 +122,8 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 	}
 
 	result := drawing
-	for i := range node.children {
-		child := &node.children[i]
-		if child.dead {
-			continue
-		}
-		if !child.draw {
+	for _, child := range node.children {
+		if !child.move.IsDraw() {
 			tree.game.MakeMove(child.move)
 			expandResult := tree.expandNode(child, leaves)
 			tree.game.UnmakeMove(child.move)
@@ -136,7 +131,7 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 			case winning:
 				return losing
 			case losing:
-				if node.nChildren == 1 {
+				if len(node.children) == 1 {
 					return winning
 				}
 				tree.removeNode(child, leaves)
@@ -145,7 +140,7 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 			}
 		}
 	}
-	if node.nChildren == 0 {
+	if len(node.children) == 0 {
 		return winning
 	}
 	return result
@@ -153,25 +148,26 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 
 func (tree *tree[move]) removeChild(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
-	fmt.Println("  removeChild", node, "siblings", parent.nChildren)
-	if parent.nChildren == 1 {
+	if len(parent.children) == 1 {
 		tree.removeNode(parent, leaves)
 	} else {
-		parent.nChildren--
-		node.dead = true
-		node.children = nil
-		fmt.Println("<< node", node.move, "removed-1 from ", node.parent.move)
+		lastNode := parent.children[len(parent.children)-1]
+		parent.children[node.selfIdx] = lastNode
+		lastNode.selfIdx = node.selfIdx
+		parent.children = parent.children[:len(parent.children)-1]
+		fmt.Println("<< node", node.move, "removed-1 from ", node.parent.move, "siblings", len(parent.children))
 	}
 }
 
 func (tree *tree[move]) removeNode(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
-	if parent != nil && parent.nChildren == 1 {
+	if parent != nil && len(parent.children) == 1 {
 		tree.removeChild(node, leaves)
 	} else {
-		parent.nChildren--
-		node.dead = true
-		node.children = nil
+		lastNode := parent.children[len(parent.children)-1]
+		parent.children[node.selfIdx] = lastNode
+		lastNode.selfIdx = node.selfIdx
+		parent.children = parent.children[:len(parent.children)-1]
 		fmt.Println("<< node", node.move, "removed-2 from ", node.parent.move)
 	}
 }

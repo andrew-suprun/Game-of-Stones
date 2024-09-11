@@ -76,9 +76,9 @@ type testMove struct {
 
 func (m testMove) String() string {
 	state := ""
-	if m.Wins() {
+	if m.IsWin() {
 		state = " win"
-	} else if m.Draws() {
+	} else if m.IsDraw() {
 		state = " draw"
 	}
 	return fmt.Sprintf("<move %d score %d%s>", m.id, m.score, state)
@@ -88,11 +88,11 @@ func (m testMove) Score() int32 {
 	return m.score
 }
 
-func (m testMove) Draws() bool {
+func (m testMove) IsDraw() bool {
 	return m.score == 0
 }
 
-func (m testMove) Wins() bool {
+func (m testMove) IsWin() bool {
 	return m.score == 1000 || m.score == -1000
 }
 
