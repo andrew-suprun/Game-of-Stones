@@ -96,15 +96,10 @@ func (m testMove) Wins() bool {
 	return m.score == 1000 || m.score == -1000
 }
 
-func gInit() *testGame {
-	return &testGame{}
-}
-
-func genTestTree(depth int, seed int64) *tree[*testGame, testMove] {
-	t := newTree(gInit, 8, maxLess[testMove], minLess[testMove])
-	testGame := newTestGame(seed)
+func genTestTree(depth int, seed int64) *tree[testMove] {
+	t := NewTree(newTestGame(seed), 8, maxLess[testMove], minLess[testMove])
 	for range depth {
-		t.expand(testGame)
+		t.Expand()
 		t.root.Print()
 	}
 	return t

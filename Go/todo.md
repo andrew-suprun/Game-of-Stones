@@ -1,9 +1,9 @@
 # Tree
-* remove `dead` and `nChildren` from node
-* change root to `roots map[move]node`
+* change root to `map[move]node`
 * move Wins() from move to PossibleMoves result
 * mark conclusive nodes as drawn
 * make sure there is no more than 1 conclusive child
+* create object pool for nodes
 
 # Game
 * draw: score == 1; all scores are even

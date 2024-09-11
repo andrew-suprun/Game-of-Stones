@@ -6,12 +6,6 @@ import (
 	"math"
 )
 
-type iGame[move iMove] interface {
-	MakeMove(move)
-	UnmakeMove(move)
-	PossibleMoves(limit int32) []move
-}
-
 type iMove interface {
 	comparable
 	Wins() bool
@@ -20,8 +14,14 @@ type iMove interface {
 	String() string
 }
 
-type tree[pGame iGame[pMove], pMove iMove] struct {
-	gameInit   func() pGame
+type iGame[move iMove] interface {
+	MakeMove(move)
+	UnmakeMove(move)
+	PossibleMoves(limit int32) []move
+}
+
+type tree[pMove iMove] struct {
+	game       iGame[pMove]
 	capacity   int
 	root       node[pMove]
 	maxerLess  func(a, b *node[pMove]) bool
@@ -30,14 +30,14 @@ type tree[pGame iGame[pMove], pMove iMove] struct {
 	depth      int
 }
 
-func newTree[pGame iGame[pMove], pMove iMove](
-	gameInit func() pGame,
+func NewTree[pMove iMove](
+	game iGame[pMove],
 	capacity int,
 	maxerLess func(a, b *node[pMove]) bool,
 	minnerLess func(a, b *node[pMove]) bool,
-) *tree[pGame, pMove] {
-	return &tree[pGame, pMove]{
-		gameInit:   gameInit,
+) *tree[pMove] {
+	return &tree[pMove]{
+		game:       game,
 		capacity:   capacity,
 		maxerLess:  maxerLess,
 		minnerLess: minnerLess,
@@ -69,7 +69,7 @@ func (r expandResult) String() string {
 	return ""
 }
 
-func (tree *tree[pGame, pMove]) expand(game pGame) expandResult {
+func (tree *tree[pMove]) Expand() expandResult {
 	fmt.Println("\n===================\n#### expand depth", tree.depth)
 
 	defer func() {
@@ -82,10 +82,10 @@ func (tree *tree[pGame, pMove]) expand(game pGame) expandResult {
 	} else {
 		leaves = heap.NewHeap(tree.capacity, tree.minnerLess)
 	}
-	return tree.expandNode(&tree.root, game, leaves)
+	return tree.expandNode(&tree.root, leaves)
 }
 
-func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves *heap.Heap[*node[pMove]]) expandResult {
+func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[pMove]]) expandResult {
 	if node.nChildren == 0 {
 
 		var limit int32
@@ -98,7 +98,7 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 			limit = math.MaxInt32
 		}
 
-		moves := game.PossibleMoves(limit)
+		moves := tree.game.PossibleMoves(limit)
 		if len(moves) == 0 {
 			fmt.Println("## node", node.move, "is winning")
 			return winning
@@ -129,9 +129,9 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 			continue
 		}
 		if !child.draw {
-			game.MakeMove(child.move)
-			expandResult := tree.expandNode(child, game, leaves)
-			game.UnmakeMove(child.move)
+			tree.game.MakeMove(child.move)
+			expandResult := tree.expandNode(child, leaves)
+			tree.game.UnmakeMove(child.move)
 			switch expandResult {
 			case winning:
 				return losing
@@ -151,7 +151,7 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 	return result
 }
 
-func (tree *tree[_, move]) removeChild(node *node[move], leaves *heap.Heap[*node[move]]) {
+func (tree *tree[move]) removeChild(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
 	fmt.Println("  removeChild", node, "siblings", parent.nChildren)
 	if parent.nChildren == 1 {
@@ -164,7 +164,7 @@ func (tree *tree[_, move]) removeChild(node *node[move], leaves *heap.Heap[*node
 	}
 }
 
-func (tree *tree[_, move]) removeNode(node *node[move], leaves *heap.Heap[*node[move]]) {
+func (tree *tree[move]) removeNode(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
 	if parent != nil && parent.nChildren == 1 {
 		tree.removeChild(node, leaves)
