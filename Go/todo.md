@@ -1,4 +1,5 @@
 # Tree
+* remove `dead` and `nChildren` from node
 * change root to `roots map[move]node`
 * move Wins() from move to PossibleMoves result
 * mark conclusive nodes as drawn

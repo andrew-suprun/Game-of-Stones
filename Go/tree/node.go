@@ -9,16 +9,19 @@ import (
 type node[move iMove] struct {
 	parent   *node[move]
 	children []node[move]
-	selfIdx  uint32
+	selfIdx  uint16
 	move     move
 	draw     bool
-	dead     bool
+
+	nChildren uint16
+	dead      bool
 }
 
 func (n *node[pMove]) addMoves(moves []pMove) {
 	n.children = make([]node[pMove], len(moves))
+	n.nChildren = uint16(len(moves))
 	for i, move := range moves {
-		n.children[i] = node[pMove]{parent: n, selfIdx: uint32(i), move: move, draw: move.Draws()}
+		n.children[i] = node[pMove]{parent: n, selfIdx: uint16(i), move: move, draw: move.Draws()}
 	}
 }
 
@@ -58,7 +61,7 @@ func (node *node[move]) bestMove(maxer bool) (move, int32) {
 }
 
 func (node *node[_]) bestScore(maxer bool) int32 {
-	if len(node.children) == 0 {
+	if node.nChildren == 0 {
 		return node.move.Score()
 	}
 

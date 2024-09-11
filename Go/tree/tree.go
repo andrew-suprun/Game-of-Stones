@@ -86,7 +86,7 @@ func (tree *tree[pGame, pMove]) expand(game pGame) expandResult {
 }
 
 func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves *heap.Heap[*node[pMove]]) expandResult {
-	if len(node.children) == 0 {
+	if node.nChildren == 0 {
 
 		var limit int32
 
@@ -136,7 +136,7 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 			case winning:
 				return losing
 			case losing:
-				if len(node.children) == 1 {
+				if node.nChildren == 1 {
 					return winning
 				}
 				tree.removeNode(child, leaves)
@@ -145,7 +145,7 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 			}
 		}
 	}
-	if len(node.children) == 0 {
+	if node.nChildren == 0 {
 		return winning
 	}
 	return result
@@ -153,10 +153,11 @@ func (tree *tree[pGame, pMove]) expandNode(node *node[pMove], game pGame, leaves
 
 func (tree *tree[_, move]) removeChild(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
-	fmt.Println("  removeChild", node, "siblings", len(parent.children))
-	if len(parent.children) == 1 {
+	fmt.Println("  removeChild", node, "siblings", parent.nChildren)
+	if parent.nChildren == 1 {
 		tree.removeNode(parent, leaves)
 	} else {
+		parent.nChildren--
 		node.dead = true
 		node.children = nil
 		fmt.Println("<< node", node.move, "removed-1 from ", node.parent.move)
@@ -165,9 +166,10 @@ func (tree *tree[_, move]) removeChild(node *node[move], leaves *heap.Heap[*node
 
 func (tree *tree[_, move]) removeNode(node *node[move], leaves *heap.Heap[*node[move]]) {
 	parent := node.parent
-	if parent != nil && len(parent.children) == 1 {
+	if parent != nil && parent.nChildren == 1 {
 		tree.removeChild(node, leaves)
 	} else {
+		parent.nChildren--
 		node.dead = true
 		node.children = nil
 		fmt.Println("<< node", node.move, "removed-2 from ", node.parent.move)
