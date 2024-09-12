@@ -18,11 +18,40 @@ func (m move) GoString() string {
 }
 
 type Connect6 struct {
+	turn stone
 	board
 }
 
-func MakeMove(move)   {}
-func UnmakeMove(move) {}
-func PossibleMoves(limit int32) []move {
+func (c *Connect6) MakeMove(m move) {
+	if debug {
+		if c.board[m.y1][m.x1] != none || c.board[m.y2][m.x2] != none {
+			panic("PANIC: Invalid MakeMove")
+		}
+	}
+	c.board[m.y1][m.x1] = c.turn
+	c.board[m.y2][m.x2] = c.turn
+	if c.turn == black {
+		c.turn = white
+	} else {
+		c.turn = black
+	}
+}
+
+func (c *Connect6) UnmakeMove(m move) {
+	if debug {
+		if c.board[m.y1][m.x1] == none || c.board[m.y2][m.x2] == none {
+			panic("PANIC: Invalid UnmakeMove")
+		}
+	}
+	c.board[m.y1][m.x1] = none
+	c.board[m.y2][m.x2] = none
+	if c.turn == black {
+		c.turn = white
+	} else {
+		c.turn = black
+	}
+}
+
+func (c *Connect6) PossibleMoves(limit int32) []move {
 	return []move{}
 }

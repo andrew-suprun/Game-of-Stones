@@ -18,6 +18,84 @@ const (
 type board [boardSize][boardSize]stone
 type scores [boardSize][boardSize]int32
 
+func (b *board) ratePlace(x, y byte, stone stone) int32 {
+	var score int32 = 0
+
+	{
+		startX := max(x, 5) - 5
+		endX := min(x+1, boardSize-5)
+		stones := b[y][startX]
+		for i := byte(1); i < 5; i++ {
+			stones += b[y][startX+i]
+		}
+		for dx := startX; dx < endX; dx++ {
+			stones += b[y][dx+5]
+			score += calcScore(stone, stones)
+			stones -= b[y][dx]
+		}
+	}
+
+	{
+		startY := max(y, 5) - 5
+		endY := min(y+1, boardSize-5)
+		stones := b[startY][x]
+		for i := byte(1); i < 5; i++ {
+			stones += b[startY+i][x]
+		}
+		for dy := startY; dy < endY; dy++ {
+			stones += b[dy+5][x]
+			score += calcScore(stone, stones)
+			stones -= b[dy][x]
+		}
+	}
+
+	{
+		mindiff := min(x, y, 5)
+		maxdiff := max(x, y)
+
+		if maxdiff-mindiff < boardSize-5 {
+			startX := x - mindiff
+			startY := y - mindiff
+			count := min(mindiff+1, boardSize-maxdiff, boardSize-5+mindiff-maxdiff)
+
+			stones := b[startY][startX]
+			for i := byte(1); i < 5; i++ {
+				stones += b[startY+i][startX+i]
+			}
+
+			for c := byte(0); c < count; c++ {
+				stones += b[startY+c+5][startX+c+5]
+				score += calcScore(stone, stones)
+				stones -= b[startY+c][startX+c]
+			}
+		}
+	}
+
+	{
+		revX := boardSize - 1 - x
+		mindiff := min(revX, y, 5)
+		maxdiff := max(revX, y)
+
+		if maxdiff-mindiff < boardSize-5 {
+			startX := x + mindiff
+			startY := y - mindiff
+			count := min(mindiff+1, boardSize-maxdiff, boardSize-5+mindiff-maxdiff)
+
+			stones := b[startY][startX]
+			for i := byte(1); i < 5; i++ {
+				stones += b[startY+i][startX-i]
+			}
+			for c := range count {
+				stones += b[startY+5+c][startX-5-c]
+				score += calcScore(stone, stones)
+				stones -= b[startY+c][startX-c]
+			}
+		}
+	}
+
+	return score
+}
+
 func (board *board) calcScores(stone stone) (scores scores) {
 	for a := range boardSize {
 		hStones := board[a][0]
@@ -40,58 +118,58 @@ func (board *board) calcScores(stone stone) (scores scores) {
 		}
 	}
 
-	// for (1..board_size - 5) |a| {
-	//     var swStones: i32 = @intFromEnum(self.board[a][0]);
-	//     var neStones: i32 = @intFromEnum(self.board[0][a]);
-	//     var nwStones: i32 = @intFromEnum(self.board[board_size - 1 - a][0]);
-	//     var seStones: i32 = @intFromEnum(self.board[a][board_size - 1]);
-	//     for (1..5) |b| {
-	//         swStones += @intFromEnum(self.board[a + b][b]);
-	//         neStones += @intFromEnum(self.board[b][a + b]);
-	//         nwStones += @intFromEnum(self.board[board_size - 1 - a - b][b]);
-	//         seStones += @intFromEnum(self.board[a + b][board_size - 1 - b]);
-	//     }
+	for a := 1; a < boardSize-5; a++ {
+		swStones := board[a][0]
+		neStones := board[0][a]
+		nwStones := board[boardSize-1-a][0]
+		seStones := board[a][boardSize-1]
+		for b := 1; b < 5; b++ {
+			swStones += board[a+b][b]
+			neStones += board[b][a+b]
+			nwStones += board[boardSize-1-a-b][b]
+			seStones += board[a+b][boardSize-1-b]
+		}
 
-	//     for (0..board_size - 5 - a) |b| {
-	//         swStones += @intFromEnum(self.board[a + b + 5][b + 5]);
-	//         neStones += @intFromEnum(self.board[b + 5][a + b + 5]);
-	//         nwStones += @intFromEnum(self.board[board_size - 6 - a - b][b + 5]);
-	//         seStones += @intFromEnum(self.board[a + b + 5][board_size - 6 - b]);
-	//         const swScore = calcScore(stone, swStones);
-	//         const neScore = calcScore(stone, neStones);
-	//         const nwScore = calcScore(stone, nwStones);
-	//         const seScore = calcScore(stone, seStones);
-	//         inline for (0..6) |c| {
-	//             scores[a + b + c][b + c] += swScore;
-	//             scores[b + c][a + b + c] += neScore;
-	//             scores[board_size - 1 - a - b - c][b + c] += nwScore;
-	//             scores[a + b + c][board_size - 1 - b - c] += seScore;
-	//         }
-	//         swStones -= @intFromEnum(self.board[a + b][b]);
-	//         neStones -= @intFromEnum(self.board[b][a + b]);
-	//         nwStones -= @intFromEnum(self.board[board_size - 1 - a - b][b]);
-	//         seStones -= @intFromEnum(self.board[a + b][board_size - 1 - b]);
-	//     }
-	// }
+		for b := range boardSize - 5 - a {
+			swStones += board[a+b+5][b+5]
+			neStones += board[b+5][a+b+5]
+			nwStones += board[boardSize-6-a-b][b+5]
+			seStones += board[a+b+5][boardSize-6-b]
+			swScore := calcScore(stone, swStones)
+			neScore := calcScore(stone, neStones)
+			nwScore := calcScore(stone, nwStones)
+			seScore := calcScore(stone, seStones)
+			for c := range 6 {
+				scores[a+b+c][b+c] += swScore
+				scores[b+c][a+b+c] += neScore
+				scores[boardSize-1-a-b-c][b+c] += nwScore
+				scores[a+b+c][boardSize-1-b-c] += seScore
+			}
+			swStones -= board[a+b][b]
+			neStones -= board[b][a+b]
+			nwStones -= board[boardSize-1-a-b][b]
+			seStones -= board[a+b][boardSize-1-b]
+		}
+	}
 
-	// var nwseStones: i32 = @intFromEnum(self.board[0][0]);
-	// var neswStones: i32 = @intFromEnum(self.board[0][board_size - 1]);
-	// for (1..5) |a| {
-	//     nwseStones += @intFromEnum(self.board[a][a]);
-	//     neswStones += @intFromEnum(self.board[a][board_size - 1 - a]);
-	// }
-	// for (0..board_size - 5) |b| {
-	//     nwseStones += @intFromEnum(self.board[b + 5][b + 5]);
-	//     neswStones += @intFromEnum(self.board[b + 5][board_size - 6 - b]);
-	//     const nwseScore = calcScore(stone, nwseStones);
-	//     const neswScore = calcScore(stone, neswStones);
-	//     inline for (0..6) |c| {
-	//         scores[b + c][b + c] += nwseScore;
-	//         scores[b + c][board_size - 1 - b - c] += neswScore;
-	//     }
-	//     nwseStones -= @intFromEnum(self.board[b][b]);
-	//     neswStones -= @intFromEnum(self.board[b][board_size - 1 - b]);
-	// }
+	nwseStones := board[0][0]
+	neswStones := board[0][boardSize-1]
+	for a := 1; a < 5; a++ {
+		nwseStones += board[a][a]
+		neswStones += board[a][boardSize-1-a]
+	}
+	for b := range boardSize - 5 {
+		nwseStones += board[b+5][b+5]
+		neswStones += board[b+5][boardSize-6-b]
+		nwseScore := calcScore(stone, nwseStones)
+		neswScore := calcScore(stone, neswStones)
+		for c := range 6 {
+			scores[b+c][b+c] += nwseScore
+			scores[b+c][boardSize-1-b-c] += neswScore
+		}
+		nwseStones -= board[b][b]
+		neswStones -= board[b][boardSize-1-b]
+	}
 
 	return scores
 }
