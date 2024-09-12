@@ -2,7 +2,7 @@ package tree
 
 import (
 	"fmt"
-	"g_of_stones/heap"
+	"game_of_stones/heap"
 	"math"
 )
 

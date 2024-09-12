@@ -1,50 +1,50 @@
-package game
+package board
 
 import (
 	"bytes"
 	"fmt"
 )
 
-const boardSize = 19
+const Size = 19
 
-type stone byte
+type Stone byte
 
 const (
-	black stone = 0x01
-	white stone = 0x10
-	none  stone = 0x00
+	Black Stone = 0x01
+	White Stone = 0x10
+	None  Stone = 0x00
 )
 
-type board [boardSize][boardSize]stone
-type scores [boardSize][boardSize]int32
+type Board [Size][Size]Stone
+type Scores [Size][Size]int32
 
-func (b *board) ratePlace(x, y byte, stone stone) int32 {
+func (b *Board) RatePlace(x, y byte, stone Stone) int32 {
 	var score int32 = 0
 
 	{
 		startX := max(x, 5) - 5
-		endX := min(x+1, boardSize-5)
+		endX := min(x+1, Size-5)
 		stones := b[y][startX]
 		for i := byte(1); i < 5; i++ {
 			stones += b[y][startX+i]
 		}
 		for dx := startX; dx < endX; dx++ {
 			stones += b[y][dx+5]
-			score += calcScore(stone, stones)
+			score += CalcScore(stone, stones)
 			stones -= b[y][dx]
 		}
 	}
 
 	{
 		startY := max(y, 5) - 5
-		endY := min(y+1, boardSize-5)
+		endY := min(y+1, Size-5)
 		stones := b[startY][x]
 		for i := byte(1); i < 5; i++ {
 			stones += b[startY+i][x]
 		}
 		for dy := startY; dy < endY; dy++ {
 			stones += b[dy+5][x]
-			score += calcScore(stone, stones)
+			score += CalcScore(stone, stones)
 			stones -= b[dy][x]
 		}
 	}
@@ -53,10 +53,10 @@ func (b *board) ratePlace(x, y byte, stone stone) int32 {
 		mindiff := min(x, y, 5)
 		maxdiff := max(x, y)
 
-		if maxdiff-mindiff < boardSize-5 {
+		if maxdiff-mindiff < Size-5 {
 			startX := x - mindiff
 			startY := y - mindiff
-			count := min(mindiff+1, boardSize-maxdiff, boardSize-5+mindiff-maxdiff)
+			count := min(mindiff+1, Size-maxdiff, Size-5+mindiff-maxdiff)
 
 			stones := b[startY][startX]
 			for i := byte(1); i < 5; i++ {
@@ -65,21 +65,21 @@ func (b *board) ratePlace(x, y byte, stone stone) int32 {
 
 			for c := byte(0); c < count; c++ {
 				stones += b[startY+c+5][startX+c+5]
-				score += calcScore(stone, stones)
+				score += CalcScore(stone, stones)
 				stones -= b[startY+c][startX+c]
 			}
 		}
 	}
 
 	{
-		revX := boardSize - 1 - x
+		revX := Size - 1 - x
 		mindiff := min(revX, y, 5)
 		maxdiff := max(revX, y)
 
-		if maxdiff-mindiff < boardSize-5 {
+		if maxdiff-mindiff < Size-5 {
 			startX := x + mindiff
 			startY := y - mindiff
-			count := min(mindiff+1, boardSize-maxdiff, boardSize-5+mindiff-maxdiff)
+			count := min(mindiff+1, Size-maxdiff, Size-5+mindiff-maxdiff)
 
 			stones := b[startY][startX]
 			for i := byte(1); i < 5; i++ {
@@ -87,7 +87,7 @@ func (b *board) ratePlace(x, y byte, stone stone) int32 {
 			}
 			for c := range count {
 				stones += b[startY+5+c][startX-5-c]
-				score += calcScore(stone, stones)
+				score += CalcScore(stone, stones)
 				stones -= b[startY+c][startX-c]
 			}
 		}
@@ -96,19 +96,19 @@ func (b *board) ratePlace(x, y byte, stone stone) int32 {
 	return score
 }
 
-func (board *board) calcScores(stone stone) (scores scores) {
-	for a := range boardSize {
+func (board *Board) CalcScores(stone Stone) (scores Scores) {
+	for a := range Size {
 		hStones := board[a][0]
 		vStones := board[0][a]
 		for b := 1; b < 5; b++ {
 			hStones += board[a][b]
 			vStones += board[b][a]
 		}
-		for b := 0; b < boardSize-5; b++ {
+		for b := 0; b < Size-5; b++ {
 			hStones += board[a][b+5]
 			vStones += board[b+5][a]
-			eScore := calcScore(stone, hStones)
-			sScore := calcScore(stone, vStones)
+			eScore := CalcScore(stone, hStones)
+			sScore := CalcScore(stone, vStones)
 			for c := 0; c < 6; c++ {
 				scores[a][b+c] += eScore
 				scores[b+c][a] += sScore
@@ -118,57 +118,57 @@ func (board *board) calcScores(stone stone) (scores scores) {
 		}
 	}
 
-	for a := 1; a < boardSize-5; a++ {
+	for a := 1; a < Size-5; a++ {
 		swStones := board[a][0]
 		neStones := board[0][a]
-		nwStones := board[boardSize-1-a][0]
-		seStones := board[a][boardSize-1]
+		nwStones := board[Size-1-a][0]
+		seStones := board[a][Size-1]
 		for b := 1; b < 5; b++ {
 			swStones += board[a+b][b]
 			neStones += board[b][a+b]
-			nwStones += board[boardSize-1-a-b][b]
-			seStones += board[a+b][boardSize-1-b]
+			nwStones += board[Size-1-a-b][b]
+			seStones += board[a+b][Size-1-b]
 		}
 
-		for b := range boardSize - 5 - a {
+		for b := range Size - 5 - a {
 			swStones += board[a+b+5][b+5]
 			neStones += board[b+5][a+b+5]
-			nwStones += board[boardSize-6-a-b][b+5]
-			seStones += board[a+b+5][boardSize-6-b]
-			swScore := calcScore(stone, swStones)
-			neScore := calcScore(stone, neStones)
-			nwScore := calcScore(stone, nwStones)
-			seScore := calcScore(stone, seStones)
+			nwStones += board[Size-6-a-b][b+5]
+			seStones += board[a+b+5][Size-6-b]
+			swScore := CalcScore(stone, swStones)
+			neScore := CalcScore(stone, neStones)
+			nwScore := CalcScore(stone, nwStones)
+			seScore := CalcScore(stone, seStones)
 			for c := range 6 {
 				scores[a+b+c][b+c] += swScore
 				scores[b+c][a+b+c] += neScore
-				scores[boardSize-1-a-b-c][b+c] += nwScore
-				scores[a+b+c][boardSize-1-b-c] += seScore
+				scores[Size-1-a-b-c][b+c] += nwScore
+				scores[a+b+c][Size-1-b-c] += seScore
 			}
 			swStones -= board[a+b][b]
 			neStones -= board[b][a+b]
-			nwStones -= board[boardSize-1-a-b][b]
-			seStones -= board[a+b][boardSize-1-b]
+			nwStones -= board[Size-1-a-b][b]
+			seStones -= board[a+b][Size-1-b]
 		}
 	}
 
 	nwseStones := board[0][0]
-	neswStones := board[0][boardSize-1]
+	neswStones := board[0][Size-1]
 	for a := 1; a < 5; a++ {
 		nwseStones += board[a][a]
-		neswStones += board[a][boardSize-1-a]
+		neswStones += board[a][Size-1-a]
 	}
-	for b := range boardSize - 5 {
+	for b := range Size - 5 {
 		nwseStones += board[b+5][b+5]
-		neswStones += board[b+5][boardSize-6-b]
-		nwseScore := calcScore(stone, nwseStones)
-		neswScore := calcScore(stone, neswStones)
+		neswStones += board[b+5][Size-6-b]
+		nwseScore := CalcScore(stone, nwseStones)
+		neswScore := CalcScore(stone, neswStones)
 		for c := range 6 {
 			scores[b+c][b+c] += nwseScore
-			scores[b+c][boardSize-1-b-c] += neswScore
+			scores[b+c][Size-1-b-c] += neswScore
 		}
 		nwseStones -= board[b][b]
-		neswStones -= board[b][boardSize-1-b]
+		neswStones -= board[b][Size-1-b]
 	}
 
 	return scores
@@ -183,8 +183,8 @@ const (
 	sixStones   = 10_000
 )
 
-func calcScore(stone stone, stones stone) int32 {
-	if stone == black {
+func CalcScore(stone Stone, stones Stone) int32 {
+	if stone == Black {
 		switch stones {
 		case 0x00:
 			return oneStone
@@ -241,22 +241,22 @@ func calcScore(stone stone, stones stone) int32 {
 	}
 }
 
-func (b *board) String() string {
+func (b *Board) String() string {
 	buf := &bytes.Buffer{}
 	buf.WriteString("\n  ")
 
-	for i := range boardSize {
+	for i := range Size {
 		fmt.Fprintf(buf, " %c", i+'a')
 	}
 	buf.WriteByte('\n')
 
-	for y := range boardSize {
+	for y := range Size {
 		fmt.Fprintf(buf, "%2d", y)
-		for x := range boardSize {
+		for x := range Size {
 			switch b[y][x] {
-			case black:
+			case Black:
 				buf.WriteString("-X")
-			case white:
+			case White:
 				buf.WriteString("-O")
 			default:
 				switch y {
@@ -264,16 +264,16 @@ func (b *board) String() string {
 					switch x {
 					case 0:
 						buf.WriteString(" ┌")
-					case boardSize - 1:
+					case Size - 1:
 						buf.WriteString("─┐")
 					default:
 						buf.WriteString("─┬")
 					}
-				case boardSize - 1:
+				case Size - 1:
 					switch x {
 					case 0:
 						buf.WriteString(" └")
-					case boardSize - 1:
+					case Size - 1:
 						buf.WriteString("─┘")
 					default:
 						buf.WriteString("─┴")
@@ -282,7 +282,7 @@ func (b *board) String() string {
 					switch x {
 					case 0:
 						buf.WriteString(" ├")
-					case boardSize - 1:
+					case Size - 1:
 						buf.WriteString("─┤")
 					default:
 						buf.WriteString("─┼")
@@ -295,7 +295,7 @@ func (b *board) String() string {
 
 	buf.WriteString("  ")
 
-	for i := range boardSize {
+	for i := range Size {
 		fmt.Fprintf(buf, " %c", i+'a')
 	}
 	buf.WriteByte('\n')
@@ -303,10 +303,10 @@ func (b *board) String() string {
 	return buf.String()
 }
 
-func (s *scores) String() string {
+func (s *Scores) String() string {
 	buf := &bytes.Buffer{}
-	for y := range boardSize {
-		for x := range boardSize {
+	for y := range Size {
+		for x := range Size {
 			fmt.Fprintf(buf, "%4d", s[y][x])
 		}
 		buf.WriteByte('\n')

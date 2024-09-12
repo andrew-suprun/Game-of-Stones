@@ -1,5 +1,5 @@
 //go:build debug
 
-package game
+package connect6
 
 const debug = true

@@ -1,4 +1,4 @@
-package game
+package connect6
 
 import (
 	"fmt"
