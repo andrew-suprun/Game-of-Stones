@@ -1,5 +1,5 @@
 //go:build debug
 
-package connect6
+package board
 
 const debug = true

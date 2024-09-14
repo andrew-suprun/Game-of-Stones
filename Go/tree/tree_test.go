@@ -19,11 +19,11 @@ func newTestGame(seed int64) *testGame {
 	}
 }
 
-func (g *testGame) MakeMove(m testMove) {
+func (g *testGame) playMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
-func (g *testGame) UnmakeMove(m testMove) {
+func (g *testGame) UndoMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
@@ -109,6 +109,4 @@ func TestTree(t *testing.T) {
 	tree := genTestTree(5, 0)
 	move, score := tree.root.bestMove(true)
 	fmt.Println("best move", move, "score", score)
-
-	t.Fail()
 }

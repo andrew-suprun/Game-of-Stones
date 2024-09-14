@@ -15,37 +15,79 @@ const (
 	None  Stone = 0x00
 )
 
-type Board [Size][Size]Stone
-type Scores [Size][Size]int32
+type Scores struct {
+	values [Size][Size]int32
+}
 
-func (b *Board) RatePlace(x, y byte, stone Stone) int32 {
+func (s *Scores) Value(x, y int) int32 {
+	return s.values[y][x]
+}
+
+func (s *Scores) String() string {
+	buf := &bytes.Buffer{}
+	for y := range Size {
+		for x := range Size {
+			fmt.Fprintf(buf, "%4d", s.Value(x, y))
+		}
+		buf.WriteByte('\n')
+	}
+	return buf.String()
+}
+
+type Board struct {
+	stones [Size][Size]Stone
+}
+
+func (b *Board) Stone(x, y int) Stone {
+	return b.stones[y][x]
+}
+
+func (b *Board) PlaceStone(x, y int, stone Stone) {
+	if debug {
+		if b.stones[y][x] != None {
+			panic("PANIC: Invalid PlaceStone")
+		}
+	}
+	b.stones[y][x] = stone
+}
+
+func (b *Board) RemoveStone(x, y int) {
+	if debug {
+		if b.stones[y][x] == None {
+			panic("PANIC: Invalid RemoveStone")
+		}
+	}
+	b.stones[y][x] = None
+}
+
+func (b *Board) RatePlace(x, y int, stone Stone) int32 {
 	var score int32 = 0
 
 	{
 		startX := max(x, 5) - 5
 		endX := min(x+1, Size-5)
-		stones := b[y][startX]
-		for i := byte(1); i < 5; i++ {
-			stones += b[y][startX+i]
+		stones := b.stones[y][startX]
+		for i := 1; i < 5; i++ {
+			stones += b.stones[y][startX+i]
 		}
 		for dx := startX; dx < endX; dx++ {
-			stones += b[y][dx+5]
+			stones += b.stones[y][dx+5]
 			score += CalcScore(stone, stones)
-			stones -= b[y][dx]
+			stones -= b.stones[y][dx]
 		}
 	}
 
 	{
 		startY := max(y, 5) - 5
 		endY := min(y+1, Size-5)
-		stones := b[startY][x]
-		for i := byte(1); i < 5; i++ {
-			stones += b[startY+i][x]
+		stones := b.stones[startY][x]
+		for i := 1; i < 5; i++ {
+			stones += b.stones[startY+i][x]
 		}
 		for dy := startY; dy < endY; dy++ {
-			stones += b[dy+5][x]
+			stones += b.stones[dy+5][x]
 			score += CalcScore(stone, stones)
-			stones -= b[dy][x]
+			stones -= b.stones[dy][x]
 		}
 	}
 
@@ -58,15 +100,15 @@ func (b *Board) RatePlace(x, y byte, stone Stone) int32 {
 			startY := y - mindiff
 			count := min(mindiff+1, Size-maxdiff, Size-5+mindiff-maxdiff)
 
-			stones := b[startY][startX]
-			for i := byte(1); i < 5; i++ {
-				stones += b[startY+i][startX+i]
+			stones := b.stones[startY][startX]
+			for i := 1; i < 5; i++ {
+				stones += b.stones[startY+i][startX+i]
 			}
 
-			for c := byte(0); c < count; c++ {
-				stones += b[startY+c+5][startX+c+5]
+			for c := 0; c < count; c++ {
+				stones += b.stones[startY+c+5][startX+c+5]
 				score += CalcScore(stone, stones)
-				stones -= b[startY+c][startX+c]
+				stones -= b.stones[startY+c][startX+c]
 			}
 		}
 	}
@@ -81,14 +123,14 @@ func (b *Board) RatePlace(x, y byte, stone Stone) int32 {
 			startY := y - mindiff
 			count := min(mindiff+1, Size-maxdiff, Size-5+mindiff-maxdiff)
 
-			stones := b[startY][startX]
-			for i := byte(1); i < 5; i++ {
-				stones += b[startY+i][startX-i]
+			stones := b.stones[startY][startX]
+			for i := 1; i < 5; i++ {
+				stones += b.stones[startY+i][startX-i]
 			}
 			for c := range count {
-				stones += b[startY+5+c][startX-5-c]
+				stones += b.stones[startY+5+c][startX-5-c]
 				score += CalcScore(stone, stones)
-				stones -= b[startY+c][startX-c]
+				stones -= b.stones[startY+c][startX-c]
 			}
 		}
 	}
@@ -98,77 +140,77 @@ func (b *Board) RatePlace(x, y byte, stone Stone) int32 {
 
 func (board *Board) CalcScores(stone Stone) (scores Scores) {
 	for a := range Size {
-		hStones := board[a][0]
-		vStones := board[0][a]
+		hStones := board.stones[a][0]
+		vStones := board.stones[0][a]
 		for b := 1; b < 5; b++ {
-			hStones += board[a][b]
-			vStones += board[b][a]
+			hStones += board.stones[a][b]
+			vStones += board.stones[b][a]
 		}
 		for b := 0; b < Size-5; b++ {
-			hStones += board[a][b+5]
-			vStones += board[b+5][a]
+			hStones += board.stones[a][b+5]
+			vStones += board.stones[b+5][a]
 			eScore := CalcScore(stone, hStones)
 			sScore := CalcScore(stone, vStones)
 			for c := 0; c < 6; c++ {
-				scores[a][b+c] += eScore
-				scores[b+c][a] += sScore
+				scores.values[a][b+c] += eScore
+				scores.values[b+c][a] += sScore
 			}
-			hStones -= board[a][b]
-			vStones -= board[b][a]
+			hStones -= board.stones[a][b]
+			vStones -= board.stones[b][a]
 		}
 	}
 
 	for a := 1; a < Size-5; a++ {
-		swStones := board[a][0]
-		neStones := board[0][a]
-		nwStones := board[Size-1-a][0]
-		seStones := board[a][Size-1]
+		swStones := board.stones[a][0]
+		neStones := board.stones[0][a]
+		nwStones := board.stones[Size-1-a][0]
+		seStones := board.stones[a][Size-1]
 		for b := 1; b < 5; b++ {
-			swStones += board[a+b][b]
-			neStones += board[b][a+b]
-			nwStones += board[Size-1-a-b][b]
-			seStones += board[a+b][Size-1-b]
+			swStones += board.stones[a+b][b]
+			neStones += board.stones[b][a+b]
+			nwStones += board.stones[Size-1-a-b][b]
+			seStones += board.stones[a+b][Size-1-b]
 		}
 
 		for b := range Size - 5 - a {
-			swStones += board[a+b+5][b+5]
-			neStones += board[b+5][a+b+5]
-			nwStones += board[Size-6-a-b][b+5]
-			seStones += board[a+b+5][Size-6-b]
+			swStones += board.stones[a+b+5][b+5]
+			neStones += board.stones[b+5][a+b+5]
+			nwStones += board.stones[Size-6-a-b][b+5]
+			seStones += board.stones[a+b+5][Size-6-b]
 			swScore := CalcScore(stone, swStones)
 			neScore := CalcScore(stone, neStones)
 			nwScore := CalcScore(stone, nwStones)
 			seScore := CalcScore(stone, seStones)
 			for c := range 6 {
-				scores[a+b+c][b+c] += swScore
-				scores[b+c][a+b+c] += neScore
-				scores[Size-1-a-b-c][b+c] += nwScore
-				scores[a+b+c][Size-1-b-c] += seScore
+				scores.values[a+b+c][b+c] += swScore
+				scores.values[b+c][a+b+c] += neScore
+				scores.values[Size-1-a-b-c][b+c] += nwScore
+				scores.values[a+b+c][Size-1-b-c] += seScore
 			}
-			swStones -= board[a+b][b]
-			neStones -= board[b][a+b]
-			nwStones -= board[Size-1-a-b][b]
-			seStones -= board[a+b][Size-1-b]
+			swStones -= board.stones[a+b][b]
+			neStones -= board.stones[b][a+b]
+			nwStones -= board.stones[Size-1-a-b][b]
+			seStones -= board.stones[a+b][Size-1-b]
 		}
 	}
 
-	nwseStones := board[0][0]
-	neswStones := board[0][Size-1]
+	nwseStones := board.stones[0][0]
+	neswStones := board.stones[0][Size-1]
 	for a := 1; a < 5; a++ {
-		nwseStones += board[a][a]
-		neswStones += board[a][Size-1-a]
+		nwseStones += board.stones[a][a]
+		neswStones += board.stones[a][Size-1-a]
 	}
 	for b := range Size - 5 {
-		nwseStones += board[b+5][b+5]
-		neswStones += board[b+5][Size-6-b]
+		nwseStones += board.stones[b+5][b+5]
+		neswStones += board.stones[b+5][Size-6-b]
 		nwseScore := CalcScore(stone, nwseStones)
 		neswScore := CalcScore(stone, neswStones)
 		for c := range 6 {
-			scores[b+c][b+c] += nwseScore
-			scores[b+c][Size-1-b-c] += neswScore
+			scores.values[b+c][b+c] += nwseScore
+			scores.values[b+c][Size-1-b-c] += neswScore
 		}
-		nwseStones -= board[b][b]
-		neswStones -= board[b][Size-1-b]
+		nwseStones -= board.stones[b][b]
+		neswStones -= board.stones[b][Size-1-b]
 	}
 
 	return scores
@@ -180,7 +222,7 @@ const (
 	threeStones = 40
 	fourStones  = 120
 	fiveStones  = 240
-	sixStones   = 10_000
+	SixStones   = 10_000
 )
 
 func CalcScore(stone Stone, stones Stone) int32 {
@@ -197,7 +239,7 @@ func CalcScore(stone Stone, stones Stone) int32 {
 		case 0x04:
 			return fiveStones - fourStones
 		case 0x05:
-			return sixStones
+			return SixStones
 		case 0x10:
 			return oneStone
 		case 0x20:
@@ -234,7 +276,7 @@ func CalcScore(stone Stone, stones Stone) int32 {
 		case 0x40:
 			return fourStones - fiveStones
 		case 0x50:
-			return -sixStones
+			return -SixStones
 		default:
 			return 0
 		}
@@ -251,13 +293,13 @@ func (b *Board) String() string {
 	buf.WriteByte('\n')
 
 	for y := range Size {
-		fmt.Fprintf(buf, "%2d", y)
+		fmt.Fprintf(buf, "%2d", Size-y)
 		for x := range Size {
-			switch b[y][x] {
+			switch b.stones[y][x] {
 			case Black:
-				buf.WriteString("-X")
+				buf.WriteString("─X")
 			case White:
-				buf.WriteString("-O")
+				buf.WriteString("─O")
 			default:
 				switch y {
 				case 0:
@@ -290,7 +332,7 @@ func (b *Board) String() string {
 				}
 			}
 		}
-		fmt.Fprintf(buf, "%2d\n", y)
+		fmt.Fprintf(buf, "%2d\n", Size-y)
 	}
 
 	buf.WriteString("  ")
@@ -300,16 +342,5 @@ func (b *Board) String() string {
 	}
 	buf.WriteByte('\n')
 
-	return buf.String()
-}
-
-func (s *Scores) String() string {
-	buf := &bytes.Buffer{}
-	for y := range Size {
-		for x := range Size {
-			fmt.Fprintf(buf, "%4d", s[y][x])
-		}
-		buf.WriteByte('\n')
-	}
 	return buf.String()
 }
