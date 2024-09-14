@@ -5,17 +5,23 @@ import (
 	"fmt"
 	"game_of_stones/board"
 	"game_of_stones/heap"
+	"math"
 	"strings"
 )
 
 type move struct {
 	x1, y1, x2, y2 byte
-	score          int32
+	score          int16
 }
 
-func (m move) IsDraw() bool { return m.score == -1 }
-func (m move) IsWin() bool  { return m.score == 1 }
-func (m move) Score() int32 { return m.score }
+const (
+	draw int16 = math.MinInt16
+	win  int16 = math.MaxInt16
+)
+
+func (m move) IsDraw() bool { return m.score == draw }
+func (m move) IsWin() bool  { return m.score == win }
+func (m move) Score() int16 { return m.score }
 func (m move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.x1+'a', board.Size-m.y1, m.x2+'a', board.Size-m.y2)
 }
@@ -82,7 +88,7 @@ func parseToken(token string) (int, int, error) {
 	return int(x), int(y), nil
 }
 
-func makeMove(x1, y1, x2, y2 int, score int32) move {
+func makeMove(x1, y1, x2, y2 int, score int16) move {
 	if x1 > x2 || x1 == x2 && y1 > y2 {
 		return move{byte(x2), byte(y2), byte(x1), byte(y1), score}
 	}
@@ -109,15 +115,15 @@ func (c *Connect6) UndoMove(x1, y1, x2, y2 int) {
 	}
 }
 
-func (c *Connect6) PossibleMoves(limit int32) []move {
+func (c *Connect6) PossibleMoves(limit int16) []move {
 	scores := c.board.CalcScores(c.turn)
 	places := c.possiblePlaces(&scores)
-	return c.selectMoves(&scores, places)
+	return c.selectMoves(places)
 }
 
 type place struct {
 	x, y  int
-	score int32
+	score int16
 }
 
 func lessForBlackPlace(a, b place) bool {
@@ -153,7 +159,7 @@ func lessForWhiteMove(a, b move) bool {
 	return b.score < a.score
 }
 
-func (c *Connect6) selectMoves(scores *board.Scores, places []place) []move {
+func (c *Connect6) selectMoves(places []place) []move {
 	var h *heap.Heap[move]
 	if c.turn == board.Black {
 		h = heap.NewHeap(c.maxMoves, lessForBlackMove)
@@ -163,7 +169,7 @@ func (c *Connect6) selectMoves(scores *board.Scores, places []place) []move {
 
 	for i, p1 := range places[:len(places)-1] {
 		if p1.score >= board.SixStones || -p1.score >= board.SixStones {
-			return []move{makeMove(p1.x, p1.y, p1.x, p1.y, 1)}
+			return []move{makeMove(p1.x, p1.y, p1.x, p1.y, win)}
 		}
 		for _, p2 := range places[i+1:] {
 			if p1.x == p2.x || p1.y == p2.y || p1.x+p1.y == p2.x+p2.y || p1.x+p2.y == p2.x+p1.y {
@@ -173,11 +179,11 @@ func (c *Connect6) selectMoves(scores *board.Scores, places []place) []move {
 			}
 
 			if p2.score >= board.SixStones || -p2.score >= board.SixStones {
-				return []move{makeMove(p1.x, p1.y, p2.x, p2.y, 1)}
+				return []move{makeMove(p1.x, p1.y, p2.x, p2.y, win)}
 			}
 
 			if p1.score == 0 && p2.score == 0 {
-				return []move{makeMove(p1.x, p1.y, p2.x, p2.y, -1)}
+				return []move{makeMove(p1.x, p1.y, p2.x, p2.y, draw)}
 			}
 
 			h.Add(makeMove(p1.x, p1.y, p2.x, p2.y, p1.score+p2.score))

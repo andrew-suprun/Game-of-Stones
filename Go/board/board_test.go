@@ -11,7 +11,7 @@ func TestScores(t *testing.T) {
 		fmt.Println("Run", i)
 		board := Board{}
 		var rng = rand.New(rand.NewSource(int64(i)))
-		var score int32 = 0
+		var score int16 = 0
 		for range 100 {
 			x := rng.Intn(Size)
 			y := rng.Intn(Size)

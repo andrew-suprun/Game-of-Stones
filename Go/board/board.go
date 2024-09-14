@@ -16,10 +16,10 @@ const (
 )
 
 type Scores struct {
-	values [Size][Size]int32
+	values [Size][Size]int16
 }
 
-func (s *Scores) Value(x, y int) int32 {
+func (s *Scores) Value(x, y int) int16 {
 	return s.values[y][x]
 }
 
@@ -60,8 +60,8 @@ func (b *Board) RemoveStone(x, y int) {
 	b.stones[y][x] = None
 }
 
-func (b *Board) RatePlace(x, y int, stone Stone) int32 {
-	var score int32 = 0
+func (b *Board) RatePlace(x, y int, stone Stone) int16 {
+	var score int16 = 0
 
 	{
 		startX := max(x, 5) - 5
@@ -225,7 +225,7 @@ const (
 	SixStones   = 10_000
 )
 
-func CalcScore(stone Stone, stones Stone) int32 {
+func CalcScore(stone Stone, stones Stone) int16 {
 	if stone == Black {
 		switch stones {
 		case 0x00:

@@ -10,14 +10,14 @@ type iMove interface {
 	comparable
 	IsDraw() bool
 	IsWin() bool
-	Score() int32
+	Score() int16
 	String() string
 }
 
 type iGame[move iMove] interface {
 	playMove(move)
 	UndoMove(move)
-	PossibleMoves(limit int32) []move
+	PossibleMoves(limit int16) []move
 }
 
 type tree[pMove iMove] struct {
@@ -88,14 +88,14 @@ func (tree *tree[pMove]) Expand() expandResult {
 func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[pMove]]) expandResult {
 	if len(node.children) == 0 {
 
-		var limit int32
+		var limit int16
 
 		if leaves.Len() == tree.capacity {
 			limit = leaves.Peek().move.Score()
 		} else if tree.maxer && tree.depth%2 == 0 || !tree.maxer && tree.depth%2 == 1 {
-			limit = math.MinInt32
+			limit = math.MinInt16
 		} else {
-			limit = math.MaxInt32
+			limit = math.MaxInt16
 		}
 
 		moves := tree.game.PossibleMoves(limit)

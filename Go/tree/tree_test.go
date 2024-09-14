@@ -27,7 +27,7 @@ func (g *testGame) UndoMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
-func (g *testGame) PossibleMoves(limit int32) []testMove {
+func (g *testGame) PossibleMoves(limit int16) []testMove {
 	r := g.rng.Intn(5)
 	if r == 0 {
 		g.id++
@@ -44,9 +44,9 @@ func (g *testGame) PossibleMoves(limit int32) []testMove {
 
 	result := make([]testMove, 0)
 	for range 5 {
-		var score int32 = 0
+		var score int16 = 0
 		if g.rng.Intn(5) > 0 {
-			score = int32(g.rng.Intn(201) - 100)
+			score = int16(g.rng.Intn(201) - 100)
 		}
 		if g.maxer {
 			if score > limit {
@@ -71,7 +71,7 @@ func (g *testGame) PossibleMoves(limit int32) []testMove {
 
 type testMove struct {
 	id    int
-	score int32
+	score int16
 }
 
 func (m testMove) String() string {
@@ -84,7 +84,7 @@ func (m testMove) String() string {
 	return fmt.Sprintf("<move %d score %d%s>", m.id, m.score, state)
 }
 
-func (m testMove) Score() int32 {
+func (m testMove) Score() int16 {
 	return m.score
 }
 

@@ -29,10 +29,10 @@ func minLess[move iMove](a, b *node[move]) bool {
 	return a.move.Score() > b.move.Score()
 }
 
-func (node *node[move]) bestMove(maxer bool) (move, int32) {
+func (node *node[move]) bestMove(maxer bool) (move, int16) {
 	var bestMove move
 	if maxer {
-		var bestScore int32 = math.MinInt32
+		var bestScore int16 = math.MinInt16
 		for _, child := range node.children {
 			childScore := child.bestScore(!maxer)
 			if bestScore < childScore {
@@ -42,7 +42,7 @@ func (node *node[move]) bestMove(maxer bool) (move, int32) {
 		}
 		return bestMove, bestScore
 	} else {
-		var bestScore int32 = math.MaxInt32
+		var bestScore int16 = math.MaxInt16
 		for _, child := range node.children {
 			childScore := child.bestScore(!maxer)
 			if bestScore > childScore {
@@ -54,13 +54,13 @@ func (node *node[move]) bestMove(maxer bool) (move, int32) {
 	}
 }
 
-func (node *node[_]) bestScore(maxer bool) int32 {
+func (node *node[_]) bestScore(maxer bool) int16 {
 	if len(node.children) == 0 {
 		return node.move.Score()
 	}
 
 	if maxer {
-		var bestScore int32 = math.MinInt32
+		var bestScore int16 = math.MinInt16
 		for _, child := range node.children {
 			childScore := child.bestScore(!maxer)
 			if bestScore < childScore {
@@ -69,7 +69,7 @@ func (node *node[_]) bestScore(maxer bool) int32 {
 		}
 		return bestScore
 	} else {
-		var bestScore int32 = math.MaxInt32
+		var bestScore int16 = math.MaxInt16
 		for _, child := range node.children {
 			childScore := child.bestScore(!maxer)
 			if bestScore > childScore {

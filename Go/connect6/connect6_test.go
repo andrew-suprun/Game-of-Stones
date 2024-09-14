@@ -46,7 +46,7 @@ func TestPossibleMoves(t *testing.T) {
 	c6 := NewGame(8)
 	c6.playMove(9, 9, 9, 9)
 	c6.playMove(8, 9, 8, 8)
-	moves := c6.PossibleMoves(math.MaxInt32)
+	moves := c6.PossibleMoves(math.MaxInt16)
 
 	fmt.Println(c6.board.String())
 	fmt.Println(moves)
