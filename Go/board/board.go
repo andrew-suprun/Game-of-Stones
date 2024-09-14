@@ -2,6 +2,7 @@ package board
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 )
 
@@ -42,7 +43,7 @@ func (b *Board) Stone(x, y int) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) PlaceStone(x, y int, stone Stone) {
+func (b *Board) PlaceStone(x, y byte, stone Stone) {
 	if debug {
 		if b.stones[y][x] != None {
 			panic("PANIC: Invalid PlaceStone")
@@ -51,7 +52,7 @@ func (b *Board) PlaceStone(x, y int, stone Stone) {
 	b.stones[y][x] = stone
 }
 
-func (b *Board) RemoveStone(x, y int) {
+func (b *Board) RemoveStone(x, y byte) {
 	if debug {
 		if b.stones[y][x] == None {
 			panic("PANIC: Invalid RemoveStone")
@@ -60,14 +61,14 @@ func (b *Board) RemoveStone(x, y int) {
 	b.stones[y][x] = None
 }
 
-func (b *Board) RatePlace(x, y int, stone Stone) int16 {
+func (b *Board) RatePlace(x, y byte, stone Stone) int16 {
 	var score int16 = 0
 
 	{
 		startX := max(x, 5) - 5
 		endX := min(x+1, Size-5)
 		stones := b.stones[y][startX]
-		for i := 1; i < 5; i++ {
+		for i := byte(1); i < 5; i++ {
 			stones += b.stones[y][startX+i]
 		}
 		for dx := startX; dx < endX; dx++ {
@@ -81,7 +82,7 @@ func (b *Board) RatePlace(x, y int, stone Stone) int16 {
 		startY := max(y, 5) - 5
 		endY := min(y+1, Size-5)
 		stones := b.stones[startY][x]
-		for i := 1; i < 5; i++ {
+		for i := byte(1); i < 5; i++ {
 			stones += b.stones[startY+i][x]
 		}
 		for dy := startY; dy < endY; dy++ {
@@ -101,11 +102,11 @@ func (b *Board) RatePlace(x, y int, stone Stone) int16 {
 			count := min(mindiff+1, Size-maxdiff, Size-5+mindiff-maxdiff)
 
 			stones := b.stones[startY][startX]
-			for i := 1; i < 5; i++ {
+			for i := byte(1); i < 5; i++ {
 				stones += b.stones[startY+i][startX+i]
 			}
 
-			for c := 0; c < count; c++ {
+			for c := byte(0); c < count; c++ {
 				stones += b.stones[startY+c+5][startX+c+5]
 				score += CalcScore(stone, stones)
 				stones -= b.stones[startY+c][startX+c]
@@ -124,7 +125,7 @@ func (b *Board) RatePlace(x, y int, stone Stone) int16 {
 			count := min(mindiff+1, Size-maxdiff, Size-5+mindiff-maxdiff)
 
 			stones := b.stones[startY][startX]
-			for i := 1; i < 5; i++ {
+			for i := byte(1); i < 5; i++ {
 				stones += b.stones[startY+i][startX-i]
 			}
 			for c := range count {
@@ -281,6 +282,31 @@ func CalcScore(stone Stone, stones Stone) int16 {
 			return 0
 		}
 	}
+}
+
+func ParsePlace(place string) (byte, byte, error) {
+	if len(place) < 2 || len(place) > 3 {
+		return 0, 0, errors.New("failed to parse place")
+	}
+	if place[0] < 'a' || place[0] > 's' {
+		return 0, 0, errors.New("failed to parse place")
+	}
+	if place[1] < '0' || place[1] > '9' {
+		return 0, 0, errors.New("failed to parse place")
+	}
+	x := place[0] - 'a'
+	y := place[1] - '0'
+	if len(place) == 3 {
+		if place[2] < '0' || place[2] > '9' {
+			return 0, 0, errors.New("failed to parse place")
+		}
+		y = 10*y + place[2] - '0'
+	}
+	y = Size - y
+	if x > Size || y > Size {
+		return 0, 0, errors.New("failed to parse place")
+	}
+	return x, y, nil
 }
 
 func (b *Board) String() string {

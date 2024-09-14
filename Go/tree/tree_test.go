@@ -19,7 +19,7 @@ func newTestGame(seed int64) *testGame {
 	}
 }
 
-func (g *testGame) playMove(m testMove) {
+func (g *testGame) PlayMove(m testMove) {
 	g.maxer = !g.maxer
 }
 

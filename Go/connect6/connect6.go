@@ -49,8 +49,8 @@ func (c *Connect6) MakeMove(moveStr string) (move, error) {
 	if len(tokens) != 2 {
 		return move{}, errors.New("failed to parse move")
 	}
-	x1, y1, err1 := parseToken(tokens[0])
-	x2, y2, err2 := parseToken(tokens[1])
+	x1, y1, err1 := board.ParsePlace(tokens[0])
+	x2, y2, err2 := board.ParsePlace(tokens[1])
 	if err1 != nil || err2 != nil {
 		return move{}, errors.New("failed to parse move")
 	}
@@ -63,41 +63,16 @@ func (c *Connect6) MakeMove(moveStr string) (move, error) {
 	return makeMove(x1, y1, x2, y2, score1+score2), nil
 }
 
-func parseToken(token string) (int, int, error) {
-	if len(token) < 2 || len(token) > 3 {
-		return 0, 0, errors.New("failed to parse token")
-	}
-	if token[0] < 'a' || token[0] > 's' {
-		return 0, 0, errors.New("failed to parse token")
-	}
-	if token[1] < '0' || token[1] > '9' {
-		return 0, 0, errors.New("failed to parse token")
-	}
-	x := token[0] - 'a'
-	y := token[1] - '0'
-	if len(token) == 3 {
-		if token[2] < '0' || token[2] > '9' {
-			return 0, 0, errors.New("failed to parse token")
-		}
-		y = 10*y + token[2] - '0'
-	}
-	y = board.Size - y
-	if x > board.Size || y > board.Size {
-		return 0, 0, errors.New("failed to parse token")
-	}
-	return int(x), int(y), nil
-}
-
-func makeMove(x1, y1, x2, y2 int, score int16) move {
+func makeMove(x1, y1, x2, y2 byte, score int16) move {
 	if x1 > x2 || x1 == x2 && y1 > y2 {
 		return move{byte(x2), byte(y2), byte(x1), byte(y1), score}
 	}
 	return move{byte(x1), byte(y1), byte(x2), byte(y2), score}
 }
 
-func (c *Connect6) playMove(x1, y1, x2, y2 int) {
-	c.board.PlaceStone(x1, y1, c.turn)
-	c.board.PlaceStone(x2, y2, c.turn)
+func (c *Connect6) PlayMove(m move) {
+	c.board.PlaceStone(m.x1, m.y1, c.turn)
+	c.board.PlaceStone(m.x2, m.y2, c.turn)
 	if c.turn == board.Black {
 		c.turn = board.White
 	} else {
@@ -105,9 +80,9 @@ func (c *Connect6) playMove(x1, y1, x2, y2 int) {
 	}
 }
 
-func (c *Connect6) UndoMove(x1, y1, x2, y2 int) {
-	c.board.RemoveStone(x1, y1)
-	c.board.RemoveStone(x2, y2)
+func (c *Connect6) UndoMove(m move) {
+	c.board.RemoveStone(m.x1, m.y1)
+	c.board.RemoveStone(m.x2, m.y2)
 	if c.turn == board.Black {
 		c.turn = board.White
 	} else {
@@ -122,7 +97,7 @@ func (c *Connect6) PossibleMoves(limit int16) []move {
 }
 
 type place struct {
-	x, y  int
+	x, y  byte
 	score int16
 }
 
@@ -144,7 +119,7 @@ func (c *Connect6) possiblePlaces(scores *board.Scores) []place {
 	for y := range board.Size {
 		for x := range board.Size {
 			if c.board.Stone(x, y) == board.None {
-				h.Add(place{x: x, y: y, score: scores.Value(x, y)})
+				h.Add(place{x: byte(x), y: byte(y), score: scores.Value(x, y)})
 			}
 		}
 	}

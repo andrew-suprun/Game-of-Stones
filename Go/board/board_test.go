@@ -13,8 +13,8 @@ func TestScores(t *testing.T) {
 		var rng = rand.New(rand.NewSource(int64(i)))
 		var score int16 = 0
 		for range 100 {
-			x := rng.Intn(Size)
-			y := rng.Intn(Size)
+			x := byte(rng.Intn(Size))
+			y := byte(rng.Intn(Size))
 			if board.stones[y][x] != None {
 				continue
 			}
@@ -31,7 +31,7 @@ func TestScores(t *testing.T) {
 		fmt.Println(&scores)
 		for y := range Size {
 			for x := range Size {
-				score := board.RatePlace(x, y, Black)
+				score := board.RatePlace(byte(x), byte(y), Black)
 				fmt.Println(x, y, score)
 				if score != scores.Value(x, y) {
 					t.FailNow()
@@ -41,7 +41,7 @@ func TestScores(t *testing.T) {
 		scores = board.CalcScores(White)
 		for y := range Size {
 			for x := range Size {
-				score := board.RatePlace(x, y, White)
+				score := board.RatePlace(byte(x), byte(y), White)
 				fmt.Println(x, y, score)
 				if score != scores.Value(x, y) {
 					t.FailNow()
@@ -76,7 +76,7 @@ func BenchmarkStone(b *testing.B) {
 		if rand.Intn(2) == 0 {
 			stone = White
 		}
-		board.PlaceStone(rand.Intn(19), rand.Intn(19), stone)
+		board.PlaceStone(byte(rand.Intn(19)), byte(rand.Intn(19)), stone)
 		stone2 := board.Stone(rand.Intn(19), rand.Intn(19))
 		if stone == stone2 {
 			count++

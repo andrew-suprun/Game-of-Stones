@@ -16,8 +16,10 @@ func TestGoString(t *testing.T) {
 
 func TestPossiblePlaces(t *testing.T) {
 	c6 := NewGame(8)
-	c6.playMove(9, 9, 9, 9)
-	c6.playMove(8, 9, 8, 8)
+	move, _ := c6.MakeMove("j10-j10")
+	c6.PlayMove(move)
+	move, _ = c6.MakeMove("i9-i10")
+	c6.PlayMove(move)
 	scores := c6.board.CalcScores(board.Black)
 	places := c6.possiblePlaces(&scores)
 
@@ -35,7 +37,6 @@ func TestPossiblePlaces(t *testing.T) {
 
 func TestMakeMove(t *testing.T) {
 	c6 := NewGame(8)
-	c6.MakeMove("j10-j10")
 	m, err := c6.MakeMove("i10-i11")
 	if m.GoString() != "makeMove(8, 8, 8, 9, 126)" || err != nil {
 		t.FailNow()
@@ -44,8 +45,10 @@ func TestMakeMove(t *testing.T) {
 
 func TestPossibleMoves(t *testing.T) {
 	c6 := NewGame(8)
-	c6.playMove(9, 9, 9, 9)
-	c6.playMove(8, 9, 8, 8)
+	move, _ := c6.MakeMove("j10-j10")
+	c6.PlayMove(move)
+	move, _ = c6.MakeMove("i9-i10")
+	c6.PlayMove(move)
 	moves := c6.PossibleMoves(math.MaxInt16)
 
 	fmt.Println(c6.board.String())

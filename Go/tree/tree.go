@@ -15,7 +15,7 @@ type iMove interface {
 }
 
 type iGame[move iMove] interface {
-	playMove(move)
+	PlayMove(move)
 	UndoMove(move)
 	PossibleMoves(limit int16) []move
 }
@@ -124,7 +124,7 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 	result := drawing
 	for _, child := range node.children {
 		if !child.move.IsDraw() {
-			tree.game.playMove(child.move)
+			tree.game.PlayMove(child.move)
 			expandResult := tree.expandNode(child, leaves)
 			tree.game.UndoMove(child.move)
 			switch expandResult {
