@@ -37,14 +37,6 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 	return nilE, false
 }
 
-func (h *Heap[E]) Len() int {
-	return len(h.Items)
-}
-
-func (h *Heap[E]) Peek() E {
-	return h.Items[0]
-}
-
 func (h *Heap[E]) Remove() E {
 	if len(h.Items) == 1 {
 		result := h.Items[0]

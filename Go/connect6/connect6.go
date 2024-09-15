@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"game_of_stones/board"
-	"game_of_stones/heap"
 	"math"
 	"strings"
 )
@@ -30,17 +29,13 @@ func (m move) GoString() string {
 }
 
 type Connect6 struct {
-	turn      board.Stone
-	board     board.Board
-	maxMoves  int
-	maxPlaces int
+	turn  board.Stone
+	board board.Board
 }
 
 func NewGame(maxPlaces int) Connect6 {
 	return Connect6{
-		turn:      board.Black,
-		maxMoves:  maxPlaces * maxPlaces / 16,
-		maxPlaces: maxPlaces,
+		turn: board.Black,
 	}
 }
 
@@ -90,79 +85,47 @@ func (c *Connect6) UndoMove(m move) {
 	}
 }
 
-func (c *Connect6) PossibleMoves(limit int16) []move {
+func (c *Connect6) PossibleMoves() func() (move, bool) {
 	scores := c.board.CalcScores(c.turn)
-	places := c.possiblePlaces(&scores)
-	return c.selectMoves(places)
-}
-
-type place struct {
-	x, y  byte
-	score int16
-}
-
-func lessForBlackPlace(a, b place) bool {
-	return a.score < b.score
-}
-
-func lessForWhitePlace(a, b place) bool {
-	return b.score < a.score
-}
-
-func (c *Connect6) possiblePlaces(scores *board.Scores) []place {
-	var h *heap.Heap[place]
-	if c.turn == board.Black {
-		h = heap.NewHeap(c.maxPlaces, lessForBlackPlace)
-	} else {
-		h = heap.NewHeap(c.maxPlaces, lessForWhitePlace)
-	}
-	for y := range board.Size {
-		for x := range board.Size {
-			if c.board.Stone(x, y) == board.None {
-				h.Add(place{x: byte(x), y: byte(y), score: scores.Value(x, y)})
+	var x1, y1, x2, y2 byte
+	var ok bool
+	return func() (move, bool) {
+		if x2, y2, ok = c.incPosition(x2, y2); ok {
+			return c.scoreMove(x1, y1, x2, y2, &scores), true
+		}
+		if x1, y1, ok = c.incPosition(x1, y1); ok {
+			if x2, y2, ok = c.incPosition(x1, y1); ok {
+				return c.scoreMove(x1, y1, x2, y2, &scores), true
 			}
 		}
+		return move{}, false
 	}
-	return h.Items
 }
 
-func lessForBlackMove(a, b move) bool {
-	return a.score < b.score
-}
-
-func lessForWhiteMove(a, b move) bool {
-	return b.score < a.score
-}
-
-func (c *Connect6) selectMoves(places []place) []move {
-	var h *heap.Heap[move]
-	if c.turn == board.Black {
-		h = heap.NewHeap(c.maxMoves, lessForBlackMove)
-	} else {
-		h = heap.NewHeap(c.maxMoves, lessForWhiteMove)
-	}
-
-	for i, p1 := range places[:len(places)-1] {
-		if p1.score >= board.SixStones || -p1.score >= board.SixStones {
-			return []move{makeMove(p1.x, p1.y, p1.x, p1.y, win)}
+func (c *Connect6) incPosition(x, y byte) (byte, byte, bool) {
+	for {
+		x++
+		if x >= board.Size {
+			y++
+			x = 0
 		}
-		for _, p2 := range places[i+1:] {
-			if p1.x == p2.x || p1.y == p2.y || p1.x+p1.y == p2.x+p2.y || p1.x+p2.y == p2.x+p1.y {
-				c.board.PlaceStone(p1.x, p1.y, c.turn)
-				p2.score = c.board.RatePlace(p2.x, p2.y, c.turn)
-				c.board.RemoveStone(p1.x, p1.y)
-			}
-
-			if p2.score >= board.SixStones || -p2.score >= board.SixStones {
-				return []move{makeMove(p1.x, p1.y, p2.x, p2.y, win)}
-			}
-
-			if p1.score == 0 && p2.score == 0 {
-				return []move{makeMove(p1.x, p1.y, p2.x, p2.y, draw)}
-			}
-
-			h.Add(makeMove(p1.x, p1.y, p2.x, p2.y, p1.score+p2.score))
+		if y >= board.Size {
+			return 0, 0, false
+		}
+		if c.board.Stone(int(x), int(y)) == board.None {
+			return x, y, true
 		}
 	}
-	return h.Sorted()
+}
+
+func (c *Connect6) scoreMove(x1, y1, x2, y2 byte, scores *board.Scores) move {
+	p1Score := scores.Value(int(x1), int(y1))
+	p2Score := scores.Value(int(x2), int(y2))
+
+	if x1 == x2 || y1 == y2 || x1+y1 == x2+y2 || x1+y2 == x2+y1 {
+		c.board.PlaceStone(x1, y1, c.turn)
+		p2Score = c.board.RatePlace(x2, y2, c.turn)
+		c.board.RemoveStone(x1, y1)
+	}
+	return move{x1, y1, x2, y2, p1Score + p2Score}
 }

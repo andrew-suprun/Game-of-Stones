@@ -1,7 +1,6 @@
 package heap
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -23,7 +22,6 @@ func TestHeap(t *testing.T) {
 		heap.Add(values[i])
 	}
 
-	fmt.Println("len", heap.Len())
 	oldElem := 0
 	for range 20 {
 		elem := heap.Remove()

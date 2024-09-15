@@ -27,46 +27,33 @@ func (g *testGame) UndoMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
-func (g *testGame) PossibleMoves(limit int16) []testMove {
-	r := g.rng.Intn(5)
-	if r == 0 {
-		g.id++
-		move := testMove{
-			id: g.id,
+func (g *testGame) PossibleMoves() func() (testMove, bool) {
+	children := 5
+	return func() (testMove, bool) {
+		if children == 0 {
+			return testMove{}, false
 		}
-		if g.maxer {
-			move.score = 1000
-		} else {
-			move.score = -1000
+		if g.rng.Intn(5) == 0 {
+			g.id++
+			children = 0
+			move := testMove{
+				id: g.id,
+			}
+			if g.maxer {
+				move.score = 1000
+			} else {
+				move.score = -1000
+			}
+			return move, true
 		}
-		return []testMove{move}
-	}
 
-	result := make([]testMove, 0)
-	for range 5 {
-		var score int16 = 0
-		if g.rng.Intn(5) > 0 {
-			score = int16(g.rng.Intn(201) - 100)
-		}
-		if g.maxer {
-			if score > limit {
-				g.id++
-				result = append(result, testMove{
-					id:    g.id,
-					score: score,
-				})
-			}
-		} else {
-			if score < limit {
-				g.id++
-				result = append(result, testMove{
-					id:    g.id,
-					score: score,
-				})
-			}
-		}
+		children--
+		g.id++
+		return testMove{
+			id:    g.id,
+			score: int16(g.rng.Intn(201) - 100),
+		}, true
 	}
-	return result
 }
 
 type testMove struct {

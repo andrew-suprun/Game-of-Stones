@@ -3,7 +3,6 @@ package tree
 import (
 	"fmt"
 	"game_of_stones/heap"
-	"math"
 )
 
 type iMove interface {
@@ -17,7 +16,7 @@ type iMove interface {
 type iGame[move iMove] interface {
 	PlayMove(move)
 	UndoMove(move)
-	PossibleMoves(limit int16) []move
+	PossibleMoves() func() (move, bool)
 }
 
 type tree[pMove iMove] struct {
@@ -88,29 +87,24 @@ func (tree *tree[pMove]) Expand() expandResult {
 func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[pMove]]) expandResult {
 	if len(node.children) == 0 {
 
-		var limit int16
-
-		if leaves.Len() == tree.capacity {
-			limit = leaves.Peek().move.Score()
-		} else if tree.maxer && tree.depth%2 == 0 || !tree.maxer && tree.depth%2 == 1 {
-			limit = math.MinInt16
-		} else {
-			limit = math.MaxInt16
-		}
-
-		moves := tree.game.PossibleMoves(limit)
-		if len(moves) == 0 {
+		moves := tree.game.PossibleMoves()
+		move, ok := moves()
+		if !ok {
 			fmt.Println("## node", node.move, "is winning")
 			return winning
 		}
-		if moves[0].IsWin() {
+		if move.IsWin() {
 			fmt.Println("## node", node.move, "is losing")
 			return losing
 		}
-		node.addMoves(moves)
-		fmt.Println(">> node", node.move, "added", len(moves), moves, "limit", limit)
 		result := drawing
-		for _, child := range node.children {
+		for {
+			move, ok = moves()
+			if !ok {
+				break
+			}
+			child := node.addMove(move)
+			fmt.Println(">> node", node.move, "added", move)
 			if !child.move.IsDraw() {
 				if minNode, pushedOut := leaves.Add(child); pushedOut {
 					tree.removeChild(minNode, leaves)
