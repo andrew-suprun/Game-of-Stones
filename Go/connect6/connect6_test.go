@@ -3,6 +3,7 @@ package connect6
 import (
 	"fmt"
 	"game_of_stones/board"
+	"math"
 	"testing"
 )
 
@@ -37,7 +38,7 @@ func TestPossibleMoves(t *testing.T) {
 	nMoves := 0
 	places := map[place]struct{}{}
 	for {
-		if move, ok := moves(); ok {
+		if move, ok := moves(math.MinInt16); ok {
 			nMoves++
 			places[place{move.x1, move.y1}] = struct{}{}
 			places[place{move.x2, move.y2}] = struct{}{}

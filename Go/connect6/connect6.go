@@ -85,17 +85,23 @@ func (c *Connect6) UndoMove(m move) {
 	}
 }
 
-func (c *Connect6) PossibleMoves() func() (move, bool) {
+func (c *Connect6) PossibleMoves() func(limit int16) (move, bool) {
 	scores := c.board.CalcScores(c.turn)
 	var x1, y1, x2, y2 byte
 	var ok bool
-	return func() (move, bool) {
-		if x2, y2, ok = c.incPosition(x2, y2); ok {
-			return c.scoreMove(x1, y1, x2, y2, &scores), true
-		}
-		if x1, y1, ok = c.incPosition(x1, y1); ok {
-			if x2, y2, ok = c.incPosition(x1, y1); ok {
-				return c.scoreMove(x1, y1, x2, y2, &scores), true
+	return func(limit int16) (move, bool) {
+		for {
+			x2, y2, ok = c.incPosition(x2, y2)
+			if !ok {
+				x1, y1, _ = c.incPosition(x1, y1)
+				x2, y2, ok = c.incPosition(x1, y1)
+				if !ok {
+					break
+				}
+			}
+			score := c.scoreMove(x1, y1, x2, y2, &scores)
+			if c.turn == board.Black && score > limit || c.turn == board.White && score < limit {
+				return move{x1, y1, x2, y2, score}, true
 			}
 		}
 		return move{}, false
@@ -118,7 +124,7 @@ func (c *Connect6) incPosition(x, y byte) (byte, byte, bool) {
 	}
 }
 
-func (c *Connect6) scoreMove(x1, y1, x2, y2 byte, scores *board.Scores) move {
+func (c *Connect6) scoreMove(x1, y1, x2, y2 byte, scores *board.Scores) int16 {
 	p1Score := scores.Value(int(x1), int(y1))
 	p2Score := scores.Value(int(x2), int(y2))
 
@@ -127,5 +133,5 @@ func (c *Connect6) scoreMove(x1, y1, x2, y2 byte, scores *board.Scores) move {
 		p2Score = c.board.RatePlace(x2, y2, c.turn)
 		c.board.RemoveStone(x1, y1)
 	}
-	return move{x1, y1, x2, y2, p1Score + p2Score}
+	return p1Score + p2Score
 }

@@ -27,32 +27,39 @@ func (g *testGame) UndoMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
-func (g *testGame) PossibleMoves() func() (testMove, bool) {
+func (g *testGame) PossibleMoves() func(int16) (testMove, bool) {
 	children := 5
-	return func() (testMove, bool) {
-		if children == 0 {
-			return testMove{}, false
-		}
-		if g.rng.Intn(5) == 0 {
-			g.id++
-			children = 0
-			move := testMove{
-				id: g.id,
+	return func(limit int16) (testMove, bool) {
+		for {
+			children--
+			if children < 0 {
+				return testMove{}, false
 			}
-			if g.maxer {
-				move.score = 1000
-			} else {
-				move.score = -1000
+			if g.rng.Intn(10) == 0 {
+				g.id++
+				children = 0
+				move := testMove{
+					id: g.id,
+				}
+				if g.maxer {
+					move.score = 1000
+				} else {
+					move.score = -1000
+				}
+				return move, true
 			}
-			return move, true
-		}
 
-		children--
-		g.id++
-		return testMove{
-			id:    g.id,
-			score: int16(g.rng.Intn(201) - 100),
-		}, true
+			score := int16(g.rng.Intn(201) - 100)
+			if g.maxer && score < limit || !g.maxer && score > limit {
+				continue
+			}
+
+			g.id++
+			return testMove{
+				id:    g.id,
+				score: score,
+			}, true
+		}
 	}
 }
 
