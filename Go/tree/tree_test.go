@@ -93,7 +93,7 @@ func genTestTree(depth int, seed int64) *tree[testMove] {
 }
 
 func TestTree(t *testing.T) {
-	tree := genTestTree(5, 0)
+	tree := genTestTree(5, 1)
 	move, score := tree.root.bestMove(true)
 	fmt.Println("best move", move, "score", score)
 }
