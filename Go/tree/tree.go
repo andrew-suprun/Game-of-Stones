@@ -20,29 +20,23 @@ type iGame[move iMove] interface {
 }
 
 type tree[pMove iMove] struct {
-	game       iGame[pMove]
-	capacity   int
-	root       node[pMove]
-	freeNodes  *node[pMove]
-	maxerLess  func(a, b *node[pMove]) bool
-	minnerLess func(a, b *node[pMove]) bool
-	maxer      bool
-	depth      int
+	game      iGame[pMove]
+	capacity  int
+	root      node[pMove]
+	freeNodes *node[pMove]
+	maxer     bool
+	depth     int
 }
 
 func NewTree[pMove iMove](
 	game iGame[pMove],
 	capacity int,
-	maxerLess func(a, b *node[pMove]) bool,
-	minnerLess func(a, b *node[pMove]) bool,
 ) *tree[pMove] {
 	return &tree[pMove]{
-		game:       game,
-		capacity:   capacity,
-		maxerLess:  maxerLess,
-		minnerLess: minnerLess,
-		maxer:      true,
-		depth:      0,
+		game:     game,
+		capacity: capacity,
+		maxer:    true,
+		depth:    0,
 	}
 }
 
@@ -54,10 +48,10 @@ func (tree *tree[pMove]) Expand() {
 	var leaves *heap.Heap[*node[pMove]]
 	var limit int16
 	if tree.maxer && tree.depth%2 == 0 || !tree.maxer && tree.depth%2 == 1 {
-		leaves = heap.NewHeap(tree.capacity, tree.maxerLess)
+		leaves = heap.NewHeap(tree.capacity, maxLess[pMove])
 		limit = math.MinInt16
 	} else {
-		leaves = heap.NewHeap(tree.capacity, tree.minnerLess)
+		leaves = heap.NewHeap(tree.capacity, minLess[pMove])
 		limit = math.MaxInt16
 	}
 	tree.expandNode(&tree.root, leaves, &limit)

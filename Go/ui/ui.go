@@ -22,32 +22,12 @@ const (
 
 var (
 	colorBg       = color.NRGBA{127, 106, 79, 255}
-	colorSelected = color.NRGBA{0, 0, 0, 127}
+	colorSelected = color.NRGBA{0, 0, 0, 195}
 	colorBlack    = color.NRGBA{0, 0, 0, 255}
 	colorWhite    = color.NRGBA{255, 255, 255, 255}
 )
 
-type cellState int
-
-const (
-	empty cellState = iota
-	selected
-	black
-	white
-)
-
-type stateStruct struct {
-	cells [board.Size][board.Size]cellState
-}
-
-func main() {
-	go run()
-	app.Main()
-}
-
-func run() error {
-	state := make(chan *stateStruct, 1)
-	state <- &stateStruct{}
+func runUi(state chan *gameState) error {
 	var ops op.Ops
 
 	window := new(app.Window)
@@ -73,7 +53,7 @@ func run() error {
 	}
 }
 
-func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *stateStruct) {
+func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 	state := <-stateChan
 	defer func() {
 		stateChan <- state
@@ -96,6 +76,14 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *stateStruct) {
 		}.Op())
 	}
 
+	nSelected := 0
+	for y := range board.Size {
+		for x := range board.Size {
+			if state.cells[y][x] == selected {
+				nSelected++
+			}
+		}
+	}
 	for y := range board.Size {
 		for x := range board.Size {
 			for {
@@ -106,7 +94,14 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *stateStruct) {
 				if !ok {
 					break
 				}
-				state.cells[y][x] = selected
+				switch state.cells[y][x] {
+				case selected:
+					state.cells[y][x] = empty
+				case empty:
+					if nSelected < 2 {
+						state.cells[y][x] = selected
+					}
+				}
 			}
 			stack := clip.Rect{Min: image.Point{X: (x+1)*d - r, Y: (y+1)*d - r}, Max: image.Point{X: (x+1)*d + r, Y: (y+1)*d + r}}.Push(ops)
 			event.Op(ops, &state.cells[y][x])

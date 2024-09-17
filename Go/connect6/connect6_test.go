@@ -40,8 +40,8 @@ func TestPossibleMoves(t *testing.T) {
 	for {
 		if move, ok := moves(math.MinInt16); ok {
 			nMoves++
-			places[place{move.x1, move.y1}] = struct{}{}
-			places[place{move.x2, move.y2}] = struct{}{}
+			places[place{move.X1, move.Y1}] = struct{}{}
+			places[place{move.X2, move.Y2}] = struct{}{}
 		} else {
 			break
 		}

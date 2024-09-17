@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-type move struct {
-	x1, y1, x2, y2 byte
+type Move struct {
+	X1, Y1, X2, Y2 byte
 	score          int16
 }
 
@@ -18,14 +18,14 @@ const (
 	win  int16 = math.MaxInt16
 )
 
-func (m move) IsDraw() bool { return m.score == draw }
-func (m move) IsWin() bool  { return m.score == win }
-func (m move) Score() int16 { return m.score }
-func (m move) String() string {
-	return fmt.Sprintf("%c%d-%c%d", m.x1+'a', board.Size-m.y1, m.x2+'a', board.Size-m.y2)
+func (m Move) IsDraw() bool { return m.score == draw }
+func (m Move) IsWin() bool  { return m.score == win }
+func (m Move) Score() int16 { return m.score }
+func (m Move) String() string {
+	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
 }
-func (m move) GoString() string {
-	return fmt.Sprintf("makeMove(%d, %d, %d, %d, %d)", m.x1, m.y1, m.x2, m.y2, m.score)
+func (m Move) GoString() string {
+	return fmt.Sprintf("makeMove(%d, %d, %d, %d, %d)", m.X1, m.Y1, m.X2, m.Y2, m.score)
 }
 
 type Connect6 struct {
@@ -33,41 +33,44 @@ type Connect6 struct {
 	board board.Board
 }
 
-func NewGame(maxPlaces int) Connect6 {
-	return Connect6{
+func NewGame() *Connect6 {
+	return &Connect6{
 		turn: board.Black,
 	}
 }
 
-func (c *Connect6) MakeMove(moveStr string) (move, error) {
+func (c *Connect6) ParseMove(moveStr string) ([4]byte, error) {
 	tokens := strings.Split(moveStr, "-")
-	if len(tokens) != 2 {
-		return move{}, errors.New("failed to parse move")
+	tokenId := 1
+	if len(tokens) == 1 {
+		tokenId = 0
 	}
 	x1, y1, err1 := board.ParsePlace(tokens[0])
-	x2, y2, err2 := board.ParsePlace(tokens[1])
+	x2, y2, err2 := board.ParsePlace(tokens[tokenId])
 	if err1 != nil || err2 != nil {
-		return move{}, errors.New("failed to parse move")
+		return [4]byte{}, errors.New("failed to parse move")
 	}
+	return [4]byte{x1, y1, x2, y2}, nil
+}
 
+func (c *Connect6) MakeMove(x1, y1, x2, y2 byte) Move {
 	score1 := c.board.RatePlace(x1, y1, c.turn)
 	c.board.PlaceStone(x1, y1, c.turn)
 	score2 := c.board.RatePlace(x2, y2, c.turn)
 	c.board.RemoveStone(x1, y1)
-
-	return makeMove(x1, y1, x2, y2, score1+score2), nil
+	return makeMove(x1, y1, x2, y2, score1+score2)
 }
 
-func makeMove(x1, y1, x2, y2 byte, score int16) move {
+func makeMove(x1, y1, x2, y2 byte, score int16) Move {
 	if x1 > x2 || x1 == x2 && y1 > y2 {
-		return move{byte(x2), byte(y2), byte(x1), byte(y1), score}
+		return Move{byte(x2), byte(y2), byte(x1), byte(y1), score}
 	}
-	return move{byte(x1), byte(y1), byte(x2), byte(y2), score}
+	return Move{byte(x1), byte(y1), byte(x2), byte(y2), score}
 }
 
-func (c *Connect6) PlayMove(m move) {
-	c.board.PlaceStone(m.x1, m.y1, c.turn)
-	c.board.PlaceStone(m.x2, m.y2, c.turn)
+func (c *Connect6) PlayMove(m Move) {
+	c.board.PlaceStone(m.X1, m.Y1, c.turn)
+	c.board.PlaceStone(m.X2, m.Y2, c.turn)
 	if c.turn == board.Black {
 		c.turn = board.White
 	} else {
@@ -75,9 +78,9 @@ func (c *Connect6) PlayMove(m move) {
 	}
 }
 
-func (c *Connect6) UndoMove(m move) {
-	c.board.RemoveStone(m.x1, m.y1)
-	c.board.RemoveStone(m.x2, m.y2)
+func (c *Connect6) UndoMove(m Move) {
+	c.board.RemoveStone(m.X1, m.Y1)
+	c.board.RemoveStone(m.X2, m.Y2)
 	if c.turn == board.Black {
 		c.turn = board.White
 	} else {
@@ -85,11 +88,11 @@ func (c *Connect6) UndoMove(m move) {
 	}
 }
 
-func (c *Connect6) PossibleMoves() func(limit int16) (move, bool) {
+func (c *Connect6) PossibleMoves() func(limit int16) (Move, bool) {
 	scores := c.board.CalcScores(c.turn)
 	var x1, y1, x2, y2 byte
 	var ok bool
-	return func(limit int16) (move, bool) {
+	return func(limit int16) (Move, bool) {
 		for {
 			x2, y2, ok = c.incPosition(x2, y2)
 			if !ok {
@@ -101,10 +104,10 @@ func (c *Connect6) PossibleMoves() func(limit int16) (move, bool) {
 			}
 			score := c.scoreMove(x1, y1, x2, y2, &scores)
 			if c.turn == board.Black && score > limit || c.turn == board.White && score < limit {
-				return move{x1, y1, x2, y2, score}, true
+				return Move{x1, y1, x2, y2, score}, true
 			}
 		}
-		return move{}, false
+		return Move{}, false
 	}
 }
 
