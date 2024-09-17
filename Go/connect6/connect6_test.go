@@ -15,9 +15,10 @@ func TestGoString(t *testing.T) {
 }
 
 func TestMakeMove(t *testing.T) {
-	c6 := NewGame(8)
-	m, err := c6.MakeMove("i10-i11")
-	if m.GoString() != "makeMove(8, 8, 8, 9, 126)" || err != nil {
+	c6 := NewGame()
+	m := c6.MakeMove(8, 8, 8, 9)
+	if m.GoString() != "makeMove(8, 8, 8, 9, 48)" {
+		fmt.Printf("%#v\n", m.GoString())
 		t.FailNow()
 	}
 }
@@ -27,10 +28,10 @@ type place struct {
 }
 
 func TestPossibleMoves(t *testing.T) {
-	c6 := NewGame(8)
-	move, _ := c6.MakeMove("j10-j10")
+	c6 := NewGame()
+	move := c6.MakeMove(9, 9, 9, 9)
 	c6.PlayMove(move)
-	move, _ = c6.MakeMove("i9-i10")
+	move = c6.MakeMove(8, 9, 8, 10)
 	c6.PlayMove(move)
 	moves := c6.PossibleMoves()
 

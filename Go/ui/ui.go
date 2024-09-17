@@ -10,6 +10,7 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/io/event"
+	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -22,7 +23,7 @@ const (
 
 var (
 	colorBg       = color.NRGBA{127, 106, 79, 255}
-	colorSelected = color.NRGBA{0, 0, 0, 195}
+	colorSelected = color.NRGBA{127, 127, 127, 255}
 	colorBlack    = color.NRGBA{0, 0, 0, 255}
 	colorWhite    = color.NRGBA{255, 255, 255, 255}
 )
@@ -59,6 +60,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 		stateChan <- state
 	}()
 	ops.Reset()
+
 	size := min(ev.Size.X, ev.Size.Y)
 	d := size / 20
 	r := d / 2
@@ -76,14 +78,15 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 		}.Op())
 	}
 
-	nSelected := 0
+	selected := []int{}
 	for y := range board.Size {
 		for x := range board.Size {
-			if state.cells[y][x] == selected {
-				nSelected++
+			if state.cells[y][x] == stateBlackSelected {
+				selected = append(selected, x, y)
 			}
 		}
 	}
+
 	for y := range board.Size {
 		for x := range board.Size {
 			for {
@@ -95,11 +98,11 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 					break
 				}
 				switch state.cells[y][x] {
-				case selected:
-					state.cells[y][x] = empty
-				case empty:
-					if nSelected < 2 {
-						state.cells[y][x] = selected
+				case stateBlackSelected:
+					state.cells[y][x] = stateEmpty
+				case stateEmpty:
+					if state.turn == human && len(selected) < 4 {
+						state.cells[y][x] = stateBlackSelected
 					}
 				}
 			}
@@ -109,23 +112,60 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 
 			var stoneColor color.NRGBA
 			switch state.cells[y][x] {
-			case empty:
+			case stateEmpty:
 				continue
-			case black:
+			case stateBlack, stateBlackSelected:
 				stoneColor = colorBlack
-			case white:
+			case stateWhite, stateWhiteSelected:
 				stoneColor = colorWhite
-			case selected:
-				stoneColor = colorSelected
 			}
 			stack = clip.Ellipse{
-				Min: image.Point{X: (x+1)*d - r + 1, Y: (y+1)*d - r + 1},
-				Max: image.Point{X: (x+1)*d + r - 1, Y: (y+1)*d + r - 1},
+				Min: image.Point{X: (x+1)*d - r + 2, Y: (y+1)*d - r + 2},
+				Max: image.Point{X: (x+1)*d + r - 2, Y: (y+1)*d + r - 2},
 			}.Push(ops)
 			paint.ColorOp{Color: stoneColor}.Add(ops)
 			paint.PaintOp{}.Add(ops)
 			stack.Pop()
+
+			if state.cells[y][x] == stateBlackSelected || state.cells[y][x] == stateWhiteSelected {
+				rr := r / 6
+				stack = clip.Ellipse{
+					Min: image.Point{X: (x+1)*d - rr, Y: (y+1)*d - rr},
+					Max: image.Point{X: (x+1)*d + rr, Y: (y+1)*d + rr},
+				}.Push(ops)
+				paint.ColorOp{Color: colorSelected}.Add(ops)
+				paint.PaintOp{}.Add(ops)
+				stack.Pop()
+			}
 		}
 	}
+
+	if keyEv, ok := ev.Source.Event(key.Filter{Name: ""}); ok {
+		keyEvent := keyEv.(key.Event)
+		if keyEvent.State == key.Press {
+			switch keyEvent.Name {
+			case key.NameReturn:
+				fmt.Println("Enter")
+				if len(selected) == 4 {
+					fmt.Println(selected)
+					state.cells[selected[1]][selected[0]] = stateBlack
+					state.cells[selected[3]][selected[2]] = stateBlack
+					state.turn = engine
+				}
+			case key.NameEscape:
+				fmt.Println("Escape")
+				for y := range board.Size {
+					for x := range board.Size {
+						if state.cells[y][x] == stateBlackSelected || state.cells[y][x] == stateWhiteSelected {
+							state.cells[y][x] = stateEmpty
+						}
+					}
+				}
+			default:
+				fmt.Println("Other", keyEvent)
+			}
+		}
+	}
+
 	ev.Frame(ops)
 }

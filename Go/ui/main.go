@@ -9,10 +9,11 @@ import (
 type cellState int
 
 const (
-	empty cellState = iota
-	selected
-	black
-	white
+	stateEmpty cellState = iota
+	stateBlackSelected
+	stateWhiteSelected
+	stateBlack
+	stateWhite
 )
 
 type turn int
@@ -24,6 +25,7 @@ const (
 
 type gameState struct {
 	cells [board.Size][board.Size]cellState
+	turn  turn
 }
 
 func main() {
