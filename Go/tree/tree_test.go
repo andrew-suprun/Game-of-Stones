@@ -92,7 +92,8 @@ func (m testMove) IsWin() bool {
 
 func genTestTree(depth int, seed int64) *tree[testMove] {
 	t := NewTree(newTestGame(seed), 8, maxLess[testMove], minLess[testMove])
-	for range depth {
+	for i := range depth {
+		fmt.Println("\nEXPAND", i+1)
 		t.Expand()
 		t.root.Print()
 	}

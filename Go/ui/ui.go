@@ -1,87 +1,122 @@
 package main
 
 import (
+	"fmt"
+	"game_of_stones/board"
+	"image"
 	"image/color"
-	"time"
+	"log"
+	"os"
 
-	"math/rand"
-
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
+	"gioui.org/app"
+	"gioui.org/io/event"
+	"gioui.org/io/pointer"
+	"gioui.org/op"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 )
 
-const boardSize = 1000
-const radius = boardSize/40 - 1
-const diameter = boardSize / 20
+const (
+	windowSize = 1000
+)
+
+var (
+	bg    = color.NRGBA{127, 106, 79, 255}
+	black = color.NRGBA{0, 0, 0, 255}
+	white = color.NRGBA{255, 255, 255, 255}
+)
 
 func main() {
-	app := app.New()
-	win := app.NewWindow("Connect6")
-	win.Resize(fyne.NewSize(boardSize, boardSize))
-	win.SetPadded(false)
+	go run()
+	app.Main()
+}
 
-	rect := canvas.NewRectangle(color.NRGBA{127, 106, 79, 255})
-	rect.Move(fyne.Position{X: 0, Y: 0})
-	rect.Resize(fyne.Size{Width: boardSize, Height: boardSize})
+func run() error {
+	var ops op.Ops
 
-	objects := []fyne.CanvasObject{rect}
-	var i float32 = diameter
-	for ; i < 20*diameter; i += diameter {
-		objects = append(objects,
-			&canvas.Line{
-				Position1:   fyne.Position{X: diameter - 1, Y: i - 1},
-				Position2:   fyne.Position{X: boardSize - diameter - 1, Y: i - 1},
-				StrokeColor: color.NRGBA{R: 0, G: 0, B: 0, A: 127},
-				StrokeWidth: 3,
-			},
-			&canvas.Line{
-				Position1:   fyne.Position{X: i - 1, Y: diameter - 1},
-				Position2:   fyne.Position{X: i - 1, Y: boardSize - diameter - 1},
-				StrokeColor: color.NRGBA{R: 0, G: 0, B: 0, A: 127},
-				StrokeWidth: 3,
-			},
-		)
+	cells := [board.Size][board.Size]struct {
+		stone board.Stone
+	}{}
+
+	stones := []struct {
+		x     int
+		y     int
+		stone board.Stone
+	}{
+		{x: 9, y: 9, stone: board.Black},
+		{x: 8, y: 9, stone: board.White},
+		{x: 8, y: 8, stone: board.White},
 	}
 
-	texts := []fyne.CanvasObject{}
-	for range 19 * 19 {
-		switch rand.Intn(3) {
-		case 0:
-			texts = append(texts, canvas.NewCircle(color.Black))
-		case 1:
-			texts = append(texts, canvas.NewCircle(color.White))
-		case 2:
-			texts = append(texts, canvas.NewCircle(color.Transparent))
-		}
-	}
-	grid := container.New(layout.NewGridLayout(19), texts...)
-	grid.Move(fyne.Position{X: radius, Y: radius})
-	grid.Resize(fyne.Size{Width: 1000 - diameter, Height: 1000 - diameter})
+	window := new(app.Window)
+	window.Option(app.Title("Connect6"), app.Size(windowSize, windowSize))
+	window.Option(app.Decorated(false))
 
-	go func() {
-		for {
-			time.Sleep(time.Second)
-			for _, object := range grid.Objects {
-				switch rand.Intn(3) {
-				case 0:
-					object.(*canvas.Circle).FillColor = color.Black
-				case 1:
-					object.(*canvas.Circle).FillColor = color.White
-				case 2:
-					object.(*canvas.Circle).FillColor = color.Transparent
+	for {
+		switch e := window.Event().(type) {
+		case app.DestroyEvent:
+			if e.Err != nil {
+				log.Fatal(e.Err)
+			}
+			os.Exit(0)
+		case app.FrameEvent:
+			ops.Reset()
+			size := min(e.Size.X, e.Size.Y)
+			d := size / 20
+			r := d / 2
+
+			for y := range board.Size {
+				for x := range board.Size {
+					for {
+						_, ok := e.Source.Event(pointer.Filter{
+							Target: &cells[y][x],
+							Kinds:  pointer.Press,
+						})
+						if !ok {
+							break
+						}
+						fmt.Println("clicked", x, y)
+					}
+					stack := clip.Rect{Min: image.Point{X: (x+1)*d - r, Y: (y+1)*d - r}, Max: image.Point{X: (x+1)*d + r, Y: (y+1)*d + r}}.Push(&ops)
+					event.Op(&ops, &cells[y][x])
+					stack.Pop()
 				}
 			}
-			grid.Refresh()
+
+			paint.Fill(&ops, bg)
+
+			for i := 1; i < 20; i++ {
+				paint.FillShape(&ops, black, clip.Stroke{
+					Path:  clip.Rect{Min: image.Point{X: d, Y: i * d}, Max: image.Point{X: board.Size * d, Y: i * d}}.Path(),
+					Width: 1,
+				}.Op())
+				paint.FillShape(&ops, black, clip.Stroke{
+					Path:  clip.Rect{Min: image.Point{X: i * d, Y: d}, Max: image.Point{X: i * d, Y: board.Size * d}}.Path(),
+					Width: 1,
+				}.Op())
+				for _, stone := range stones {
+					color := black
+					if stone.stone == board.White {
+						color = white
+					}
+					stack := clip.Ellipse{
+						Min: image.Point{X: (stone.x+1)*d - r + 1, Y: (stone.y+1)*d - r + 1},
+						Max: image.Point{X: (stone.x+1)*d + r - 1, Y: (stone.y+1)*d + r - 1},
+					}.Push(&ops)
+					paint.ColorOp{Color: color}.Add(&ops)
+					paint.PaintOp{}.Add(&ops)
+					stack.Pop()
+				}
+
+			}
+
+			e.Frame(&ops)
+		case app.AppKitViewEvent:
+			// ignore
+		case app.ConfigEvent:
+			// ignore
+		default:
+			fmt.Printf("event %T\n", e)
 		}
-	}()
-
-	objects = append(objects, grid)
-
-	content := container.NewWithoutLayout(objects...)
-	// content := container.NewWithoutLayout(c)
-	win.SetContent(content)
-	win.ShowAndRun()
+	}
 }

@@ -1,5 +1,5 @@
 # Tree
-* create object pool for nodes
+* accumulate results
 * make connect6.PossibleMoves() an iterator function?
 
 # Game

@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"fmt"
 	"game_of_stones/heap"
 	"math"
 )
@@ -48,8 +47,6 @@ func NewTree[pMove iMove](
 }
 
 func (tree *tree[pMove]) Expand() {
-	fmt.Println("\n===================\n#### expand depth", tree.depth)
-
 	defer func() {
 		tree.depth++
 	}()
@@ -78,17 +75,14 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 			}
 			hasChildren = true
 			if move.IsWin() {
-				fmt.Println("## node", node.move, "is losing to", move)
 				tree.removeNode(node)
 				return
 			}
 			child := tree.addChild(node, move)
-			fmt.Println("++ node", node.move, "added", move, "limit", *limit)
 			if !child.move.IsDraw() {
 				node.draw = false
 				if minNode, pushedOut := leaves.Add(child); pushedOut {
 					if minNode.alive {
-						fmt.Println("-- node", minNode.move)
 						*limit = minNode.move.Score()
 						tree.removeNode(minNode)
 					}
@@ -96,7 +90,6 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 			}
 		}
 		if !hasChildren {
-			fmt.Println("## node", node.move, "is winning")
 			tree.removeNode(node)
 		}
 		return
@@ -142,7 +135,6 @@ func (tree *tree[move]) removeNode(node *node[move]) {
 		return
 	}
 	if node == nil || node.parent == nil {
-		fmt.Println("## cannot remove root node")
 		return
 	}
 
@@ -155,7 +147,6 @@ func (tree *tree[move]) removeNode(node *node[move]) {
 }
 
 func (tree *tree[move]) detachNode(node *node[move]) {
-	fmt.Println("^^ detach node", node.move)
 	parent := node.parent
 	if parent.child == node {
 		parent.child = node.sibling
@@ -170,7 +161,6 @@ func (tree *tree[move]) detachNode(node *node[move]) {
 }
 
 func (tree *tree[move]) freeNode(node *node[move]) {
-	fmt.Println("^^ free node", node.move)
 	for child := node.child; child != nil; {
 		sibling := child.sibling
 		tree.freeNode(child)
