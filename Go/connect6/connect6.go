@@ -25,7 +25,7 @@ func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
 }
 func (m Move) GoString() string {
-	return fmt.Sprintf("makeMove(%d, %d, %d, %d, %d)", m.X1, m.Y1, m.X2, m.Y2, m.score)
+	return fmt.Sprintf("move(%d, %d, %d, %d, %d)", m.X1, m.Y1, m.X2, m.Y2, m.score)
 }
 
 type Connect6 struct {
@@ -58,10 +58,10 @@ func (c *Connect6) MakeMove(x1, y1, x2, y2 byte) Move {
 	c.board.PlaceStone(x1, y1, c.turn)
 	score2 := c.board.RatePlace(x2, y2, c.turn)
 	c.board.RemoveStone(x1, y1)
-	return makeMove(x1, y1, x2, y2, score1+score2)
+	return move(x1, y1, x2, y2, score1+score2)
 }
 
-func makeMove(x1, y1, x2, y2 byte, score int16) Move {
+func move(x1, y1, x2, y2 byte, score int16) Move {
 	if x1 > x2 || x1 == x2 && y1 > y2 {
 		return Move{byte(x2), byte(y2), byte(x1), byte(y1), score}
 	}

@@ -1,6 +1,7 @@
 # Tree
 * accumulate results
-* make connect6.PossibleMoves() an iterator function?
+* change game root into `[]*node`
+* removeNode should be able to remove roots
 
 # Game
 * packages gomoku and connect6

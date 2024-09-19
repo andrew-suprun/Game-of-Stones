@@ -30,10 +30,11 @@ func (eng *engine) run() {
 		switch cmd := cmd.(type) {
 		case cmdStart:
 			eng.game = connect6.NewGame()
-			eng.root = tree.NewTree[connect6.Move](eng.game, 20)
+			eng.root = tree.NewTree[connect6.Move](eng.game, 1000)
 
 		case cmdMakeMove:
 			move := eng.game.MakeMove(cmd[0], cmd[1], cmd[2], cmd[3])
+			eng.game.PlayMove(move)
 			eng.moves = append(eng.moves, move)
 			eng.bestMove()
 		}
@@ -46,7 +47,7 @@ func (eng *engine) bestMove() {
 		for j := range 3 {
 			for i := range 3 {
 				if i != 1 || j != 1 {
-					m = append(m, move{i + 8, j + 8})
+					m = append(m, move{byte(i + 8), byte(j + 8)})
 				}
 			}
 		}
@@ -56,13 +57,22 @@ func (eng *engine) bestMove() {
 		m[idx] = m[len(m)-1]
 		m2 := m[rand.Intn(7)]
 
-		eng.events <- evMove([4]byte{byte(m1.x), byte(m1.y), byte(m2.x), byte(m2.y)})
+		gameMove := eng.game.MakeMove(m1.x, m1.y, m2.x, m2.y)
+		eng.game.PlayMove(gameMove)
+		eng.events <- evMove([4]byte{m1.x, m1.y, m2.x, m2.y})
+		return
 	}
 	move := eng.root.BestMove()
+
 	start := time.Now()
+	i := 1
 	for time.Since(start) < 2*time.Second {
 		eng.root.Expand()
 		move = eng.root.BestMove()
+		fmt.Println("best move", move, i)
+		i++
 	}
+
+	eng.game.PlayMove(move)
 	eng.events <- evMove([4]byte{move.X1, move.Y1, move.X2, move.Y2})
 }

@@ -74,27 +74,8 @@ func (self *node[_]) bestScore(maxer bool) int16 {
 	}
 }
 
-func (self *node[_]) Print() {
-	self.print(0)
-}
-
-func (self *node[_]) print(level int) {
-	for range level {
-		fmt.Print(" |")
-	}
-
-	if self.alive {
-		fmt.Printf("%s\n", self.move.String())
-	} else {
-		fmt.Printf("%s DEAD\n", self.move.String())
-	}
-	for child := self.child; child != nil; child = child.sibling {
-		child.print(level + 1)
-	}
-}
-
-func (self *node[_]) String() string {
-	return self.move.String()
+func (self *node[_]) GoString() string {
+	return string(self.Bytes())
 }
 
 func (self *node[_]) Bytes() []byte {
@@ -105,9 +86,9 @@ func (self *node[_]) Bytes() []byte {
 
 func (self *node[_]) bytes(buf *bytes.Buffer, level int) {
 	for range level {
-		buf.Write([]byte("| "))
+		buf.WriteString("| ")
 	}
-	buf.WriteString(fmt.Sprintf("%s\n", self.move.String()))
+	buf.WriteString(fmt.Sprintf("%#v\n", self.move))
 	for child := self.child; child != nil; child = child.sibling {
 		child.bytes(buf, level+1)
 	}

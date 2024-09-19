@@ -8,8 +8,8 @@ import (
 )
 
 func TestGoString(t *testing.T) {
-	result := fmt.Sprintf("%[1]v: %#[1]v", makeMove(1, 2, 3, 4, 5))
-	if result != "b17-d15: makeMove(1, 2, 3, 4, 5)" {
+	result := fmt.Sprintf("%[1]v: %#[1]v", move(1, 2, 3, 4, 5))
+	if result != "b17-d15: move(1, 2, 3, 4, 5)" {
 		t.Fail()
 	}
 }
@@ -17,7 +17,7 @@ func TestGoString(t *testing.T) {
 func TestMakeMove(t *testing.T) {
 	c6 := NewGame()
 	m := c6.MakeMove(8, 8, 8, 9)
-	if m.GoString() != "makeMove(8, 8, 8, 9, 48)" {
+	if m.GoString() != "move(8, 8, 8, 9, 48)" {
 		fmt.Printf("%#v\n", m.GoString())
 		t.FailNow()
 	}

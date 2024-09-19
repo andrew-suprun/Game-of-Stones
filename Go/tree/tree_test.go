@@ -95,7 +95,7 @@ func genTestTree(depth int, seed int64) *SearchTree[testMove] {
 	for i := range depth {
 		fmt.Println("\nEXPAND", i+1)
 		t.Expand()
-		t.root.Print()
+		fmt.Printf("%#v\n", t.root)
 	}
 	return t
 }

@@ -219,11 +219,11 @@ func (board *Board) CalcScores(stone Stone) (scores Scores) {
 
 const (
 	oneStone    = 1
-	twoStones   = 2
-	threeStones = 4
-	fourStones  = 8
-	fiveStones  = 16
-	SixStones   = 256
+	twoStones   = 5
+	threeStones = 20
+	fourStones  = 60
+	fiveStones  = 120
+	SixStones   = 1000
 )
 
 func CalcScore(stone Stone, stones Stone) int16 {

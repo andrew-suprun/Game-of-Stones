@@ -45,19 +45,23 @@ const (
 	engineTurn
 )
 
-var state struct {
+type state struct {
 	cells [board.Size][board.Size]cellState
 	turn  turn
 }
 
 type move struct {
-	x, y int
+	x, y byte
 }
 
 func runUi(commands chan any, events chan any) error {
+
 	commands <- cmdStart{}
 	commands <- cmdMakeMove{9, 9, 9, 9}
-	state.cells[9][9] = stateBlack
+	gameState := state{}
+	gameState.cells[9][9] = stateBlack
+	stateChan := make(chan *state, 1)
+	stateChan <- &gameState
 
 	var ops op.Ops
 
@@ -65,16 +69,9 @@ func runUi(commands chan any, events chan any) error {
 	window.Option(app.Title("Connect6"), app.Size(windowSize, windowSize))
 	window.Option(app.Decorated(false))
 
+	go input(window, stateChan, events)
+
 	for {
-		select {
-		case engineEvent := <-events:
-			switch e := engineEvent.(type) {
-			case evMove:
-				state.cells[e[1]][e[0]] = stateWhite
-				state.cells[e[3]][e[2]] = stateWhite
-			}
-		default:
-		}
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
 			if e.Err != nil {
@@ -82,7 +79,7 @@ func runUi(commands chan any, events chan any) error {
 			}
 			os.Exit(0)
 		case app.FrameEvent:
-			frame(&ops, e, commands)
+			frame(&ops, e, commands, stateChan)
 		case app.AppKitViewEvent:
 			// ignore
 		case app.ConfigEvent:
@@ -93,7 +90,11 @@ func runUi(commands chan any, events chan any) error {
 	}
 }
 
-func frame(ops *op.Ops, ev app.FrameEvent, commands chan any) {
+func frame(ops *op.Ops, ev app.FrameEvent, commands chan any, stateChan chan *state) {
+	state := <-stateChan
+	defer func() {
+		stateChan <- state
+	}()
 	ops.Reset()
 
 	size := min(ev.Size.X, ev.Size.Y)
@@ -203,4 +204,18 @@ func frame(ops *op.Ops, ev app.FrameEvent, commands chan any) {
 	}
 
 	ev.Frame(ops)
+}
+
+func input(window *app.Window, stateChan chan *state, events chan any) {
+	for engineEvent := range events {
+		state := <-stateChan
+		switch e := engineEvent.(type) {
+		case evMove:
+			state.cells[e[1]][e[0]] = stateWhite
+			state.cells[e[3]][e[2]] = stateWhite
+			window.Invalidate()
+		}
+		state.turn = humanTurn
+		stateChan <- state
+	}
 }
