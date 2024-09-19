@@ -1,38 +1,18 @@
 package main
 
 import (
-	"game_of_stones/board"
-
 	"gioui.org/app"
 )
 
-type cellState int
-
-const (
-	stateEmpty cellState = iota
-	stateBlackSelected
-	stateWhiteSelected
-	stateBlack
-	stateWhite
-)
-
-type turn int
-
-const (
-	human turn = iota
-	engine
-)
-
-type gameState struct {
-	cells [board.Size][board.Size]cellState
-	turn  turn
-}
+type cmdStart struct{}
+type cmdMakeMove [4]byte
+type evMove [4]byte
 
 func main() {
-	state := make(chan *gameState, 1)
-	state <- &gameState{}
+	commands := make(chan any, 1)
+	events := make(chan any, 1)
 
-	go runEngine(state)
-	go runUi(state)
+	go runEngine(commands, events)
+	go runUi(commands, events)
 	app.Main()
 }

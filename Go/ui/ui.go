@@ -28,7 +28,37 @@ var (
 	colorWhite    = color.NRGBA{255, 255, 255, 255}
 )
 
-func runUi(state chan *gameState) error {
+type cellState int
+
+const (
+	stateEmpty cellState = iota
+	stateBlackSelected
+	stateWhiteSelected
+	stateBlack
+	stateWhite
+)
+
+type turn int
+
+const (
+	humanTurn turn = iota
+	engineTurn
+)
+
+var state struct {
+	cells [board.Size][board.Size]cellState
+	turn  turn
+}
+
+type move struct {
+	x, y int
+}
+
+func runUi(commands chan any, events chan any) error {
+	commands <- cmdStart{}
+	commands <- cmdMakeMove{9, 9, 9, 9}
+	state.cells[9][9] = stateBlack
+
 	var ops op.Ops
 
 	window := new(app.Window)
@@ -36,6 +66,15 @@ func runUi(state chan *gameState) error {
 	window.Option(app.Decorated(false))
 
 	for {
+		select {
+		case engineEvent := <-events:
+			switch e := engineEvent.(type) {
+			case evMove:
+				state.cells[e[1]][e[0]] = stateWhite
+				state.cells[e[3]][e[2]] = stateWhite
+			}
+		default:
+		}
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
 			if e.Err != nil {
@@ -43,7 +82,7 @@ func runUi(state chan *gameState) error {
 			}
 			os.Exit(0)
 		case app.FrameEvent:
-			frame(&ops, e, state)
+			frame(&ops, e, commands)
 		case app.AppKitViewEvent:
 			// ignore
 		case app.ConfigEvent:
@@ -54,11 +93,7 @@ func runUi(state chan *gameState) error {
 	}
 }
 
-func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
-	state := <-stateChan
-	defer func() {
-		stateChan <- state
-	}()
+func frame(ops *op.Ops, ev app.FrameEvent, commands chan any) {
 	ops.Reset()
 
 	size := min(ev.Size.X, ev.Size.Y)
@@ -78,11 +113,11 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 		}.Op())
 	}
 
-	selected := []int{}
+	selected := []byte{}
 	for y := range board.Size {
 		for x := range board.Size {
 			if state.cells[y][x] == stateBlackSelected {
-				selected = append(selected, x, y)
+				selected = append(selected, byte(x), byte(y))
 			}
 		}
 	}
@@ -101,7 +136,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 				case stateBlackSelected:
 					state.cells[y][x] = stateEmpty
 				case stateEmpty:
-					if state.turn == human && len(selected) < 4 {
+					if state.turn == humanTurn && len(selected) < 4 {
 						state.cells[y][x] = stateBlackSelected
 					}
 				}
@@ -147,10 +182,10 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *gameState) {
 			case key.NameReturn:
 				fmt.Println("Enter")
 				if len(selected) == 4 {
-					fmt.Println(selected)
 					state.cells[selected[1]][selected[0]] = stateBlack
 					state.cells[selected[3]][selected[2]] = stateBlack
-					state.turn = engine
+					state.turn = engineTurn
+					commands <- cmdMakeMove{selected[0], selected[1], selected[2], selected[3]}
 				}
 			case key.NameEscape:
 				fmt.Println("Escape")

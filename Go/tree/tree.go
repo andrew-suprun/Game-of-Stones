@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"fmt"
 	"game_of_stones/heap"
 	"math"
 )
@@ -19,7 +20,7 @@ type iGame[move iMove] interface {
 	PossibleMoves() func(limit int16) (move, bool)
 }
 
-type tree[pMove iMove] struct {
+type SearchTree[pMove iMove] struct {
 	game      iGame[pMove]
 	capacity  int
 	root      node[pMove]
@@ -31,16 +32,17 @@ type tree[pMove iMove] struct {
 func NewTree[pMove iMove](
 	game iGame[pMove],
 	capacity int,
-) *tree[pMove] {
-	return &tree[pMove]{
+) *SearchTree[pMove] {
+	return &SearchTree[pMove]{
 		game:     game,
 		capacity: capacity,
+		root:     node[pMove]{alive: true},
 		maxer:    true,
 		depth:    0,
 	}
 }
 
-func (tree *tree[pMove]) Expand() {
+func (tree *SearchTree[pMove]) Expand() {
 	defer func() {
 		tree.depth++
 	}()
@@ -57,7 +59,15 @@ func (tree *tree[pMove]) Expand() {
 	tree.expandNode(&tree.root, leaves, &limit)
 }
 
-func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[pMove]], limit *int16) {
+func (tree *SearchTree[pMove]) BestMove() pMove {
+	move, _ := tree.root.bestMove(true)
+	return move
+}
+
+func (tree *SearchTree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[pMove]], limit *int16) {
+	if !node.alive {
+		panic("expanding dead node")
+	}
 	node.draw = true
 	if node.child == nil {
 		hasChildren := false
@@ -68,8 +78,11 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 				break
 			}
 			hasChildren = true
-			if move.IsWin() {
+			if move.IsWin() && node.parent != nil {
 				tree.removeNode(node)
+				return
+			}
+			if !node.alive {
 				return
 			}
 			child := tree.addChild(node, move)
@@ -83,13 +96,16 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 				}
 			}
 		}
-		if !hasChildren {
-			tree.removeNode(node)
+		if !hasChildren && node.parent != nil {
+			tree.removeNode(node.parent)
 		}
 		return
 	}
 
 	for child := node.child; child != nil; {
+		if !child.alive {
+			return
+		}
 		sibling := child.sibling
 		if !child.draw {
 			tree.game.PlayMove(child.move)
@@ -101,10 +117,16 @@ func (tree *tree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[p
 	}
 }
 
-func (tree *tree[pMove]) addChild(parent *node[pMove], move pMove) *node[pMove] {
+func (tree *SearchTree[pMove]) addChild(parent *node[pMove], move pMove) *node[pMove] {
 	var child *node[pMove]
 	if tree.freeNodes != nil {
 		child = tree.freeNodes
+		if child.alive {
+			panic("ALIVE")
+		}
+		if parent == child {
+			panic("CHILD is PARENT")
+		}
 		tree.freeNodes = child.parent
 		child.parent = parent
 		child.move = move
@@ -124,7 +146,12 @@ func (tree *tree[pMove]) addChild(parent *node[pMove], move pMove) *node[pMove] 
 	return child
 }
 
-func (tree *tree[move]) removeNode(node *node[move]) {
+func (tree *SearchTree[move]) removeNode(node *node[move]) {
+	if node.parent == node {
+		fmt.Printf("NODE %v\n", node)
+		panic("NODE")
+	}
+
 	if !node.alive {
 		return
 	}
@@ -135,12 +162,15 @@ func (tree *tree[move]) removeNode(node *node[move]) {
 	if node.parent.child.sibling != nil {
 		tree.detachNode(node)
 		tree.freeNode(node)
-	} else {
+	} else if node.parent.parent != nil {
 		tree.removeNode(node.parent.parent)
 	}
 }
 
-func (tree *tree[move]) detachNode(node *node[move]) {
+func (tree *SearchTree[move]) detachNode(node *node[move]) {
+	if !node.alive {
+		panic("DEAD")
+	}
 	parent := node.parent
 	if parent.child == node {
 		parent.child = node.sibling
@@ -150,20 +180,24 @@ func (tree *tree[move]) detachNode(node *node[move]) {
 	for child := parent.child; child != nil; child = child.sibling {
 		if child.sibling == node {
 			child.sibling = node.sibling
+			return
 		}
 	}
+	panic("UNDETACHED")
 }
 
-func (tree *tree[move]) freeNode(node *node[move]) {
+func (tree *SearchTree[move]) freeNode(node *node[move]) {
 	for child := node.child; child != nil; {
 		sibling := child.sibling
 		tree.freeNode(child)
 		child = sibling
+	}
+	if !node.alive {
+		panic("DEAD")
 	}
 	node.parent = tree.freeNodes
 	node.child = nil
 	node.sibling = nil
 	node.alive = false
 	tree.freeNodes = node
-
 }

@@ -83,7 +83,11 @@ func (self *node[_]) print(level int) {
 		fmt.Print(" |")
 	}
 
-	fmt.Printf("%s\n", self.move.String())
+	if self.alive {
+		fmt.Printf("%s\n", self.move.String())
+	} else {
+		fmt.Printf("%s DEAD\n", self.move.String())
+	}
 	for child := self.child; child != nil; child = child.sibling {
 		child.print(level + 1)
 	}

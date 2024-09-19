@@ -90,7 +90,7 @@ func (m testMove) IsWin() bool {
 	return m.score == 1000 || m.score == -1000
 }
 
-func genTestTree(depth int, seed int64) *tree[testMove] {
+func genTestTree(depth int, seed int64) *SearchTree[testMove] {
 	t := NewTree(newTestGame(seed), 8)
 	for i := range depth {
 		fmt.Println("\nEXPAND", i+1)
