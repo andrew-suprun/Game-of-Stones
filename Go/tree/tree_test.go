@@ -7,15 +7,17 @@ import (
 )
 
 type testGame struct {
-	id    int
-	rng   *rand.Rand
-	maxer bool
+	id          int
+	rng         *rand.Rand
+	maxer       bool
+	maxChildren int
 }
 
-func newTestGame(seed int64) *testGame {
+func newTestGame(maxChildren int, seed int64) *testGame {
 	return &testGame{
-		rng:   rand.New(rand.NewSource(seed)),
-		maxer: true,
+		rng:         rand.New(rand.NewSource(seed)),
+		maxer:       true,
+		maxChildren: maxChildren,
 	}
 }
 
@@ -27,8 +29,15 @@ func (g *testGame) UndoMove(m testMove) {
 	g.maxer = !g.maxer
 }
 
+func (g *testGame) Turn() Player {
+	if g.maxer {
+		return First
+	}
+	return Second
+}
+
 func (g *testGame) PossibleMoves() func(int16) (testMove, bool) {
-	children := 5
+	children := g.maxChildren
 	return func(limit int16) (testMove, bool) {
 		for {
 			children--
@@ -70,9 +79,9 @@ type testMove struct {
 
 func (m testMove) String() string {
 	state := ""
-	if m.IsWin() {
+	if m.IsWinning() {
 		state = " win"
-	} else if m.IsDraw() {
+	} else if m.IsDrawing() {
 		state = " draw"
 	}
 	return fmt.Sprintf("<move %d score %d%s>", m.id, m.score, state)
@@ -82,16 +91,16 @@ func (m testMove) Score() int16 {
 	return m.score
 }
 
-func (m testMove) IsDraw() bool {
+func (m testMove) IsDrawing() bool {
 	return m.score == 0
 }
 
-func (m testMove) IsWin() bool {
+func (m testMove) IsWinning() bool {
 	return m.score == 1000 || m.score == -1000
 }
 
 func genTestTree(depth int, seed int64) *SearchTree[testMove] {
-	t := NewTree(newTestGame(seed), 8)
+	t := NewTree(newTestGame(5, seed), 8)
 	for i := range depth {
 		fmt.Println("\nEXPAND", i+1)
 		t.Expand()

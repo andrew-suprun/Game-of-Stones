@@ -4,136 +4,204 @@ import (
 	"fmt"
 	"game_of_stones/heap"
 	"math"
+	"time"
 )
 
 type iMove interface {
 	comparable
-	IsDraw() bool
-	IsWin() bool
+	IsDrawing() bool
+	IsWinning() bool
 	Score() int16
 	String() string
 }
 
+type Player int
+
+const (
+	First  Player = 1
+	Second Player = 2
+)
+
 type iGame[move iMove] interface {
+	Turn() Player
 	PlayMove(move)
 	UndoMove(move)
 	PossibleMoves() func(limit int16) (move, bool)
 }
 
-type SearchTree[pMove iMove] struct {
-	game      iGame[pMove]
-	capacity  int
-	root      node[pMove]
-	freeNodes *node[pMove]
-	maxer     bool
-	depth     int
-}
-
-func NewTree[pMove iMove](
-	game iGame[pMove],
-	capacity int,
-) *SearchTree[pMove] {
-	return &SearchTree[pMove]{
-		game:     game,
-		capacity: capacity,
-		root:     node[pMove]{alive: true},
-		maxer:    true,
-		depth:    0,
-	}
-}
-
-func (tree *SearchTree[pMove]) Expand() {
-	defer func() {
-		tree.depth++
-	}()
+func Search[pMove iMove](game iGame[pMove], capacity int, duration time.Duration) pMove {
+	root := &node[pMove]{}
 
 	var leaves *heap.Heap[*node[pMove]]
 	var limit int16
-	if tree.maxer && tree.depth%2 == 0 || !tree.maxer && tree.depth%2 == 1 {
-		leaves = heap.NewHeap(tree.capacity, maxLess[pMove])
+
+	if game.Turn() == First {
+		leaves = heap.NewHeap(capacity, maxLess[pMove])
 		limit = math.MinInt16
 	} else {
-		leaves = heap.NewHeap(tree.capacity, minLess[pMove])
+		leaves = heap.NewHeap(capacity, minLess[pMove])
 		limit = math.MaxInt16
 	}
-	tree.expandNode(&tree.root, leaves, &limit)
+
+	var freeNodes *node[pMove]
+	expand(root, game, leaves, &limit, freeNodes)
+	if root.child.move.IsWinning() {
+		return root.child.move
+	}
+
+	nodes := []*node[pMove]{}
+	for node := root.child; node != nil; node = node.sibling {
+		nodes = append(nodes, node)
+	}
+
+	depth := 0
+	start := time.Now()
+	for time.Since(start) < duration {
+		depth++
+		if depth%2 == 0 && game.Turn() == First || depth%2 == 1 && game.Turn() == Second {
+			leaves = heap.NewHeap(capacity, maxLess[pMove])
+			limit = math.MinInt16
+		} else {
+			leaves = heap.NewHeap(capacity, minLess[pMove])
+			limit = math.MaxInt16
+		}
+		for idx := 0; idx < len(nodes); {
+			if nodes[idx].move.IsDrawing() {
+				idx++
+				continue
+			}
+			switch expand(nodes[idx], game, leaves, &limit, freeNodes) {
+			case win:
+				nodes[idx] = nodes[len(nodes)-1]
+				nodes = nodes[:len(nodes)-1]
+				if len(nodes) == 1 {
+					return nodes[0].move
+				}
+				continue
+			case loss:
+				return nodes[idx].move
+			}
+			idx++
+		}
+	}
+
+	var bestMove pMove
+	var bestScore int16
+	if game.Turn() == First {
+		bestScore = math.MinInt16
+		for _, node := range nodes {
+			nodeScore := node.bestScore(true)
+			if bestScore < nodeScore {
+				bestScore = nodeScore
+				bestMove = node.move
+			}
+		}
+	} else {
+		bestScore = math.MaxInt16
+		for _, node := range nodes {
+			nodeScore := node.bestScore(false)
+			if bestScore > nodeScore {
+				bestScore = nodeScore
+				bestMove = node.move
+			}
+		}
+	}
+	return bestMove
 }
 
-func (tree *SearchTree[pMove]) BestMove() pMove {
-	move, _ := tree.root.bestMove(true)
-	return move
-}
+type expandResult int
 
-func (tree *SearchTree[pMove]) expandNode(node *node[pMove], leaves *heap.Heap[*node[pMove]], limit *int16) {
+const (
+	inconclusive expandResult = iota
+	win
+	loss
+	draw
+)
+
+func expand[pMove iMove](
+	node *node[pMove],
+	game iGame[pMove],
+	leaves *heap.Heap[*node[pMove]],
+	limit *int16,
+	freeNodes *node[pMove],
+) expandResult {
 	if !node.alive {
 		panic("expanding dead node")
 	}
 	node.draw = true
 	if node.child == nil {
 		hasChildren := false
-		moves := tree.game.PossibleMoves()
+		moves := game.PossibleMoves()
 		for {
 			move, ok := moves(*limit)
 			if !ok {
 				break
 			}
 			hasChildren = true
-			if move.IsWin() && node.parent != nil {
-				tree.removeNode(node)
-				return
+			if move.IsWinning() && node.parent != nil {
+				node.removeSelf(freeNodes)
+				return loss
 			}
-			if !node.alive {
-				return
-			}
-			child := tree.addChild(node, move)
-			if !child.move.IsDraw() {
+			child := node.addChild(move, freeNodes)
+			if !child.move.IsDrawing() {
 				node.draw = false
 				if minNode, pushedOut := leaves.Add(child); pushedOut {
 					if minNode.alive {
 						*limit = minNode.move.Score()
-						tree.removeNode(minNode)
+						minNode.removeSelf(freeNodes)
 					}
 				}
 			}
 		}
-		if !hasChildren && node.parent != nil {
-			tree.removeNode(node.parent)
+		if !hasChildren {
+			if node.parent == nil {
+				panic("node.parent == nil")
+			}
+			node.parent.removeSelf(freeNodes)
 		}
-		return
+		if node.draw {
+			return draw
+		}
+		return inconclusive
 	}
 
 	for child := node.child; child != nil; {
 		if !child.alive {
-			return
+			fmt.Println("dead child")
+			continue
 		}
 		sibling := child.sibling
 		if !child.draw {
-			tree.game.PlayMove(child.move)
-			tree.expandNode(child, leaves, limit)
-			tree.game.UndoMove(child.move)
+			game.PlayMove(child.move)
+			result := expand(child, game, leaves, limit, freeNodes)
+			game.UndoMove(child.move)
 			node.draw = node.draw && child.draw
+			switch result {
+			case win:
+			case loss:
+			case draw:
+			case inconclusive:
+			}
 		}
 		child = sibling
 	}
+	return inconclusive
 }
 
-func (tree *SearchTree[pMove]) addChild(parent *node[pMove], move pMove) *node[pMove] {
+func (parent *node[pMove]) addChild(move pMove, freeNodes *node[pMove]) *node[pMove] {
 	var child *node[pMove]
-	if tree.freeNodes != nil {
-		child = tree.freeNodes
+	if freeNodes != nil {
+		child = freeNodes
 		if child.alive {
 			panic("ALIVE")
 		}
-		if parent == child {
-			panic("CHILD is PARENT")
-		}
-		tree.freeNodes = child.parent
+		freeNodes = child.parent
 		child.parent = parent
 		child.move = move
-		child.draw = move.IsDraw()
+		child.draw = move.IsDrawing()
 		child.alive = true
 	} else {
-		child = &node[pMove]{parent: parent, move: move, draw: move.IsDraw(), alive: true}
+		child = &node[pMove]{parent: parent, move: move, draw: move.IsDrawing(), alive: true}
 	}
 	if parent.child == nil {
 		parent.child = child
@@ -146,58 +214,33 @@ func (tree *SearchTree[pMove]) addChild(parent *node[pMove], move pMove) *node[p
 	return child
 }
 
-func (tree *SearchTree[move]) removeNode(node *node[move]) {
-	if node.parent == node {
-		fmt.Printf("NODE %v\n", node)
-		panic("NODE")
-	}
-
+func (node *node[move]) removeSelf(freeNodes *node[move]) {
 	if !node.alive {
-		return
-	}
-	if node == nil || node.parent == nil {
-		return
+		panic("node.removeSelf(): !node.alive")
 	}
 
-	if node.parent.child.sibling != nil {
-		tree.detachNode(node)
-		tree.freeNode(node)
-	} else if node.parent.parent != nil {
-		tree.removeNode(node.parent.parent)
-	}
-}
-
-func (tree *SearchTree[move]) detachNode(node *node[move]) {
-	if !node.alive {
-		panic("DEAD")
-	}
 	parent := node.parent
 	if parent.child == node {
 		parent.child = node.sibling
-		return
 	}
 
 	for child := parent.child; child != nil; child = child.sibling {
 		if child.sibling == node {
 			child.sibling = node.sibling
-			return
+			break
 		}
 	}
-	panic("UNDETACHED")
-}
 
-func (tree *SearchTree[move]) freeNode(node *node[move]) {
-	for child := node.child; child != nil; {
-		sibling := child.sibling
-		tree.freeNode(child)
-		child = sibling
-	}
-	if !node.alive {
-		panic("DEAD")
-	}
-	node.parent = tree.freeNodes
+	node.parent = freeNodes
 	node.child = nil
 	node.sibling = nil
 	node.alive = false
-	tree.freeNodes = node
+	freeNodes = node
+
+	if parent.child == nil {
+		if parent.parent == nil {
+			panic("node.removeSelf(): parent.parent == nil")
+		}
+		parent.parent.removeSelf(freeNodes)
+	}
 }

@@ -67,7 +67,7 @@ func (eng *engine) bestMove() {
 	start := time.Now()
 	i := 1
 	for time.Since(start) < 2*time.Second {
-		eng.root.Expand()
+		eng.root.expand()
 		move = eng.root.BestMove()
 		fmt.Println("best move", move, i)
 		i++

@@ -18,9 +18,9 @@ const (
 	win  int16 = math.MaxInt16
 )
 
-func (m Move) IsDraw() bool { return m.score == draw }
-func (m Move) IsWin() bool  { return m.score == win }
-func (m Move) Score() int16 { return m.score }
+func (m Move) IsDrawing() bool { return m.score == draw }
+func (m Move) IsWinning() bool { return m.score == win }
+func (m Move) Score() int16    { return m.score }
 func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
 }
@@ -89,7 +89,6 @@ func (c *Connect6) UndoMove(m Move) {
 }
 
 func (c *Connect6) PossibleMoves() func(limit int16) (Move, bool) {
-	scores := c.board.CalcScores(c.turn)
 	var x1, y1, x2, y2 byte
 	var ok bool
 	return func(limit int16) (Move, bool) {
@@ -102,7 +101,7 @@ func (c *Connect6) PossibleMoves() func(limit int16) (Move, bool) {
 					break
 				}
 			}
-			score := c.scoreMove(x1, y1, x2, y2, &scores)
+			score := c.scoreMove(x1, y1, x2, y2, &c.board)
 			if c.turn == board.Black && score > limit || c.turn == board.White && score < limit {
 				return Move{x1, y1, x2, y2, score}, true
 			}
@@ -127,9 +126,9 @@ func (c *Connect6) incPosition(x, y byte) (byte, byte, bool) {
 	}
 }
 
-func (c *Connect6) scoreMove(x1, y1, x2, y2 byte, scores *board.Scores) int16 {
-	p1Score := scores.Value(int(x1), int(y1))
-	p2Score := scores.Value(int(x2), int(y2))
+func (c *Connect6) scoreMove(x1, y1, x2, y2 byte, board *board.Board) int16 {
+	p2Score := board.Score(int(x2), int(y2))
+	p1Score := board.Score(int(x1), int(y1))
 
 	if x1 == x2 || y1 == y2 || x1+y1 == x2+y2 || x1+y2 == x2+y1 {
 		c.board.PlaceStone(x1, y1, c.turn)

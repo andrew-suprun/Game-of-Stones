@@ -1,0 +1,7 @@
+{
+    "go.buildTags": "debug,gomoku,size9",
+    "go.testTimeout": "3s",
+    "go.buildFlags": [
+        "-v"
+    ]
+}
