@@ -12,16 +12,14 @@ type Score int16
 const (
 	None  Stone = 0
 	Black Stone = 1
-	White Stone = maxStones
+	White Stone = 0x10
 )
 
 const maxStones1 = maxStones - 1
 
 type Board struct {
-	stones        [Size][Size]Stone
-	scores        [Size][Size][2]Score
-	scoreTable    [maxStones * maxStones]Score
-	scoreTableIdx Stone
+	stones [Size][Size]Stone
+	scores [Size][Size][2]Score
 }
 
 func NewBoard() *Board {
@@ -198,89 +196,4 @@ func ParsePlace(place string) (byte, byte, error) {
 		return 0, 0, errors.New("failed to parse place")
 	}
 	return x, y, nil
-}
-
-func (b *Board) debugRatePlace(x, y byte, stone Stone) Score {
-	if b.scoreTableIdx != stone {
-		if stone == Black {
-			b.scoreTable = debugBlackScores
-		} else {
-			b.scoreTable = debugWhiteScores
-		}
-	}
-	var score Score = 0
-
-	{
-		startX := max(x, maxStones1) - maxStones1
-		endX := min(x+1, Size-maxStones1)
-		stones := b.stones[y][startX]
-		for i := byte(1); i < maxStones1; i++ {
-			stones += b.stones[y][startX+i]
-		}
-		for dx := startX; dx < endX; dx++ {
-			stones += b.stones[y][dx+maxStones1]
-			score += b.scoreTable[stones]
-			stones -= b.stones[y][dx]
-		}
-	}
-
-	{
-		startY := max(y, maxStones1) - maxStones1
-		endY := min(y+1, Size-maxStones1)
-		stones := b.stones[startY][x]
-		for i := byte(1); i < maxStones1; i++ {
-			stones += b.stones[startY+i][x]
-		}
-		for dy := startY; dy < endY; dy++ {
-			stones += b.stones[dy+maxStones1][x]
-			score += b.scoreTable[stones]
-			stones -= b.stones[dy][x]
-		}
-	}
-
-	{
-		mindiff := min(x, y, maxStones1)
-		maxdiff := max(x, y)
-
-		if maxdiff-mindiff < Size-maxStones1 {
-			startX := x - mindiff
-			startY := y - mindiff
-			count := min(mindiff+1, Size-maxdiff, Size-maxStones1+mindiff-maxdiff)
-
-			stones := b.stones[startY][startX]
-			for i := byte(1); i < maxStones1; i++ {
-				stones += b.stones[startY+i][startX+i]
-			}
-
-			for c := byte(0); c < count; c++ {
-				stones += b.stones[startY+c+maxStones1][startX+c+maxStones1]
-				score += b.scoreTable[stones]
-				stones -= b.stones[startY+c][startX+c]
-			}
-		}
-	}
-
-	{
-		revX := Size - 1 - x
-		mindiff := min(revX, y, maxStones1)
-		maxdiff := max(revX, y)
-
-		if maxdiff-mindiff < Size-maxStones1 {
-			startX := x + mindiff
-			startY := y - mindiff
-			count := min(mindiff+1, Size-maxdiff, Size-maxStones1+mindiff-maxdiff)
-
-			stones := b.stones[startY][startX]
-			for i := byte(1); i < maxStones1; i++ {
-				stones += b.stones[startY+i][startX-i]
-			}
-			for c := range count {
-				stones += b.stones[startY+maxStones1+c][startX-maxStones1-c]
-				score += b.scoreTable[stones]
-				stones -= b.stones[startY+c][startX-c]
-			}
-		}
-	}
-
-	return score
 }
