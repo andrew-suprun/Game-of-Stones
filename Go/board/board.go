@@ -29,8 +29,8 @@ func NewBoard() *Board {
 		for x := 0; x < Size; x++ {
 			h := Score(1 + min(maxStones1, x, Size-1-x))
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
-			t1 := Score(min(maxStones, m, max(0, min(Size-maxStones1-y+x, Size-maxStones1-x+y))))
-			t2 := Score(min(maxStones, m, max(0, min(2*Size-1-maxStones1-y-x, x+y-maxStones1+1))))
+			t1 := Score(max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y)))
+			t2 := Score(max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1)))
 			total := v + h + t1 + t2
 			board.scores[y][x] = [2]Score{total, -total}
 		}
@@ -39,25 +39,101 @@ func NewBoard() *Board {
 }
 
 func (b *Board) PlaceStone(stone Stone, x, y int) {
-	b.stones[y][x] = stone
-	xStart := max(0, x-maxStones1)
-	xEnd := min(x+maxStones, Size) - maxStones1
-	stones := Stone(0)
-	for xx := xStart; xx < xEnd-1; xx++ {
-		stones += b.stones[y][xx]
+	{
+		start := max(0, x-maxStones1)
+		end := min(x+maxStones, Size) - maxStones1
+		stones := Stone(0)
+		for i := start; i < end-1; i++ {
+			stones += b.stones[y][i]
+		}
+
+		for i := start; i < end; i++ {
+			stones += b.stones[y][i+maxStones1]
+			blackScore, whiteScore := scoreStones(stone, stones)
+			if blackScore != 0 || whiteScore != 0 {
+				for j := i; j < i+maxStones; j++ {
+					b.scores[y][j][0] += blackScore
+					b.scores[y][j][1] += whiteScore
+				}
+			}
+			stones -= b.stones[y][i]
+		}
 	}
-	fmt.Println("init stones", stones)
 
-	// for xx := xStart; xx < xEnd; xx++ {
-	// 	stones += b.stones[y][xx+maxStones1]
-	// 	inc := scoreTable[stones]
-	// 	fmt.Println("stones", stones, "inc", inc)
-	// 	for xxx := xx; xxx < xx+maxStones; xxx++ {
-	// 		b.scores[y][xxx][0] += inc[0]
-	// 		b.scores[y][xxx][1] += inc[1]
-	// 	}
-	// }
+	{
+		start := max(0, y-maxStones1)
+		end := min(y+maxStones, Size) - maxStones1
+		stones := Stone(0)
+		for i := start; i < end-1; i++ {
+			stones += b.stones[i][x]
+		}
 
+		for i := start; i < end; i++ {
+			stones += b.stones[i+maxStones1][x]
+			blackScore, whiteScore := scoreStones(stone, stones)
+			if blackScore != 0 || whiteScore != 0 {
+				for j := i; j < i+maxStones; j++ {
+					b.scores[j][x][0] += blackScore
+					b.scores[j][x][1] += whiteScore
+				}
+			}
+			stones -= b.stones[i][x]
+		}
+	}
+
+	m := 1 + min(x, y, Size-1-x, Size-1-y)
+
+	{
+		rows := min(maxStones, m, min(Size-maxStones1-y+x, Size-maxStones1-x+y))
+		if rows > 0 {
+			mn := min(x, y, maxStones1)
+			xStart := x - mn
+			yStart := y - mn
+
+			stones := Stone(0)
+			for i := 0; i < maxStones1; i++ {
+				stones += b.stones[yStart+i][xStart+i]
+			}
+			for i := 0; i < rows; i++ {
+				stones += b.stones[yStart+i+maxStones1][xStart+i+maxStones1]
+				blackScore, whiteScore := scoreStones(stone, stones)
+				if blackScore != 0 || whiteScore != 0 {
+					for j := i; j < i+maxStones; j++ {
+						b.scores[yStart+j][xStart+j][0] += blackScore
+						b.scores[yStart+j][xStart+j][1] += whiteScore
+					}
+				}
+				stones -= b.stones[yStart+i][xStart+i]
+			}
+		}
+	}
+
+	{
+		rows := min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1)
+		if rows > 0 {
+			mn := min(Size-1-x, y, maxStones1)
+			xStart := x + mn
+			yStart := y - mn
+
+			stones := Stone(0)
+			for i := 0; i < maxStones1; i++ {
+				stones += b.stones[yStart+i][xStart-i]
+			}
+			for i := 0; i < rows; i++ {
+				stones += b.stones[yStart+i+maxStones1][xStart-i-maxStones1]
+				blackScore, whiteScore := scoreStones(stone, stones)
+				if blackScore != 0 || whiteScore != 0 {
+					for j := i; j < i+maxStones; j++ {
+						b.scores[yStart+j][xStart-j][0] += blackScore
+						b.scores[yStart+j][xStart-j][1] += whiteScore
+					}
+				}
+				stones -= b.stones[yStart+i][xStart-i]
+			}
+		}
+	}
+
+	b.stones[y][x] = stone
 }
 
 func (b *Board) String() string {
