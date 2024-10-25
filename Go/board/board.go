@@ -49,6 +49,23 @@ func NewBoard() *Board {
 }
 
 func (b *Board) PlaceStone(stone Stone, x, y int) {
+	b.placeStone(stone, x, y, 1)
+}
+
+func (b *Board) RemoveStone(stone Stone, x, y int) {
+	b.placeStone(stone, x, y, -1)
+}
+
+func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
+	if coeff == -1 {
+		b.stones[y][x] = None
+	}
+	defer func() {
+		if coeff == 1 {
+			b.stones[y][x] = stone
+		}
+	}()
+
 	{
 		start := max(0, x-maxStones1)
 		end := min(x+maxStones, Size) - maxStones1
@@ -59,7 +76,7 @@ func (b *Board) PlaceStone(stone Stone, x, y int) {
 
 		for i := start; i < end; i++ {
 			stones += b.stones[y][i+maxStones1]
-			blackScore, whiteScore := scoreStones(stone, stones)
+			blackScore, whiteScore := scoreStones(stone, stones, coeff)
 			if blackScore != 0 || whiteScore != 0 {
 				for j := i; j < i+maxStones; j++ {
 					b.scores[y][j][0] += blackScore
@@ -80,7 +97,7 @@ func (b *Board) PlaceStone(stone Stone, x, y int) {
 
 		for i := start; i < end; i++ {
 			stones += b.stones[i+maxStones1][x]
-			blackScore, whiteScore := scoreStones(stone, stones)
+			blackScore, whiteScore := scoreStones(stone, stones, coeff)
 			if blackScore != 0 || whiteScore != 0 {
 				for j := i; j < i+maxStones; j++ {
 					b.scores[j][x][0] += blackScore
@@ -106,7 +123,7 @@ func (b *Board) PlaceStone(stone Stone, x, y int) {
 			}
 			for i := 0; i < rows; i++ {
 				stones += b.stones[yStart+i+maxStones1][xStart+i+maxStones1]
-				blackScore, whiteScore := scoreStones(stone, stones)
+				blackScore, whiteScore := scoreStones(stone, stones, coeff)
 				if blackScore != 0 || whiteScore != 0 {
 					for j := i; j < i+maxStones; j++ {
 						b.scores[yStart+j][xStart+j][0] += blackScore
@@ -131,7 +148,7 @@ func (b *Board) PlaceStone(stone Stone, x, y int) {
 			}
 			for i := 0; i < rows; i++ {
 				stones += b.stones[yStart+i+maxStones1][xStart-i-maxStones1]
-				blackScore, whiteScore := scoreStones(stone, stones)
+				blackScore, whiteScore := scoreStones(stone, stones, coeff)
 				if blackScore != 0 || whiteScore != 0 {
 					for j := i; j < i+maxStones; j++ {
 						b.scores[yStart+j][xStart-j][0] += blackScore
@@ -142,8 +159,6 @@ func (b *Board) PlaceStone(stone Stone, x, y int) {
 			}
 		}
 	}
-
-	b.stones[y][x] = stone
 }
 
 func (b *Board) String() string {

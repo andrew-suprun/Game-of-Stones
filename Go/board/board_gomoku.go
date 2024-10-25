@@ -28,40 +28,40 @@ var debugWhiteScores = [maxStones * maxStones]Score{
 	s4 - s5, 0, 0, 0, 0,
 }
 
-func scoreStones(stone, stones Stone) (Score, Score) {
+func scoreStones(stone, stones Stone, coeff Score) (Score, Score) {
 	if stone == Black {
 		switch stones {
 		case 0x03:
-			return 150, -90
+			return 150 * coeff, -90 * coeff
 		case 0x02:
-			return 66, -24
+			return 66 * coeff, -24 * coeff
 		case 0x01:
-			return 19, -5
+			return 19 * coeff, -5 * coeff
 		case 0x00:
-			return 4, 0
+			return 4 * coeff, 0 * coeff
 		case 0x10:
-			return -1, 5
+			return -1 * coeff, 5 * coeff
 		case 0x20:
-			return -6, 24
+			return -6 * coeff, 24 * coeff
 		case 0x30:
-			return -30, 90
+			return -30 * coeff, 90 * coeff
 		}
 	} else {
 		switch stones {
 		case 0x03:
-			return -90, 30
+			return -90 * coeff, 30 * coeff
 		case 0x02:
-			return -24, 6
+			return -24 * coeff, 6 * coeff
 		case 0x01:
-			return -5, 1
+			return -5 * coeff, 1 * coeff
 		case 0x00:
-			return 0, -4
+			return 0 * coeff, -4 * coeff
 		case 0x10:
-			return 5, -19
+			return 5 * coeff, -19 * coeff
 		case 0x20:
-			return 24, -66
+			return 24 * coeff, -66 * coeff
 		case 0x30:
-			return 90, -150
+			return 90 * coeff, -150 * coeff
 		}
 	}
 	return 0, 0
