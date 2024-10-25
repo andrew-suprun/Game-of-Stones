@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
@@ -109,34 +110,6 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 		}
 	}
 
-	for y := 0; y < Size; y++ {
-		for x := 0; x < Size; x++ {
-			switch b.stones[y][x] {
-			case Black:
-				fmt.Print("   X")
-			case White:
-				fmt.Print("   O")
-			case None:
-				fmt.Printf("%4d", scores[y][x][0])
-			}
-		}
-		fmt.Println()
-	}
-	fmt.Println()
-	for y := 0; y < Size; y++ {
-		for x := 0; x < Size; x++ {
-			switch b.stones[y][x] {
-			case Black:
-				fmt.Print("   X")
-			case White:
-				fmt.Print("   O")
-			case None:
-				fmt.Printf("%4d", scores[y][x][1])
-			}
-		}
-		fmt.Println()
-	}
-	fmt.Println()
 	return scores
 }
 
@@ -168,36 +141,62 @@ func testPlaceScores(stones Stone) (Score, Score) {
 	return 0, 0
 }
 
-func Test1(t *testing.T) {
+func TestPlaceStone(t *testing.T) {
+	rnd := rand.New(rand.NewSource(3))
 	b := NewBoard()
-	b.testBoardScores()
-	t.Logf("%#v\n", b)
+	for range Size * Size {
+		x := rnd.Intn(Size)
+		y := rnd.Intn(Size)
+		if b.stones[y][x] != None {
+			continue
+		}
+		stone := Black
+		if rnd.Intn(2) == 0 {
+			stone = White
+		}
+		b.PlaceStone(stone, x, y)
+		scores := b.testBoardScores()
 
-	b.PlaceStone(Black, Size/2, Size/2)
-	b.testBoardScores()
-	t.Logf("%#v\n", b)
-
-	b.PlaceStone(White, Size/2+1, Size/2)
-	scores := b.testBoardScores()
-	t.Logf("%#v\n", b)
-	for y := 0; y < Size; y++ {
-		for x := 0; x < Size; x++ {
-			if b.scores[y][x] != scores[y][x] {
-				t.Logf("x=%d y=%d expected=%v got%v\n", x, y, scores[y][x], b.scores[y][x])
-				t.Fail()
+		for y := 0; y < Size; y++ {
+			for x := 0; x < Size; x++ {
+				if b.stones[y][x] == None && b.scores[y][x] != scores[y][x] {
+					t.Logf("x=%d y=%d expected=%v got%v\n", x, y, scores[y][x], b.scores[y][x])
+					t.Fail()
+				}
 			}
 		}
+		if t.Failed() {
+			for y := 0; y < Size; y++ {
+				for x := 0; x < Size; x++ {
+					switch b.stones[y][x] {
+					case Black:
+						fmt.Print("   X")
+					case White:
+						fmt.Print("   O")
+					case None:
+						fmt.Printf("%4d", scores[y][x][0])
+					}
+				}
+				fmt.Println()
+			}
+			fmt.Println()
+			for y := 0; y < Size; y++ {
+				for x := 0; x < Size; x++ {
+					switch b.stones[y][x] {
+					case Black:
+						fmt.Print("   X")
+					case White:
+						fmt.Print("   O")
+					case None:
+						fmt.Printf("%4d", scores[y][x][1])
+					}
+				}
+				fmt.Println()
+			}
+			fmt.Println()
+			t.Logf("%#v\n", b)
+			t.FailNow()
+		}
 	}
-}
-
-func Test2(t *testing.T) {
-}
-
-func Test3(t *testing.T) {
-}
-
-func Test4(t *testing.T) {
-}
-
-func Test5(t *testing.T) {
+	t.Logf("%#v\n", b)
 }

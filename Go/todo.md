@@ -4,4 +4,5 @@
 * removeNode should be able to remove roots
 
 # Game
-* packages gomoku and connect6
+* scoreStones() returns winner flag
+* Board.UnplaceStone()

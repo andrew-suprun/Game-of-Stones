@@ -15,6 +15,16 @@ const (
 	White Stone = 0x10
 )
 
+func (stone Stone) String() string {
+	switch stone {
+	case Black:
+		return "Black"
+	case White:
+		return "White"
+	}
+	return "None"
+}
+
 const maxStones1 = maxStones - 1
 
 type Board struct {
@@ -43,7 +53,7 @@ func (b *Board) PlaceStone(stone Stone, x, y int) {
 		start := max(0, x-maxStones1)
 		end := min(x+maxStones, Size) - maxStones1
 		stones := Stone(0)
-		for i := start; i < end-1; i++ {
+		for i := start; i < start+maxStones1; i++ {
 			stones += b.stones[y][i]
 		}
 
@@ -64,7 +74,7 @@ func (b *Board) PlaceStone(stone Stone, x, y int) {
 		start := max(0, y-maxStones1)
 		end := min(y+maxStones, Size) - maxStones1
 		stones := Stone(0)
-		for i := start; i < end-1; i++ {
+		for i := start; i < start+maxStones1; i++ {
 			stones += b.stones[i][x]
 		}
 
@@ -163,9 +173,17 @@ func (b *Board) BoardString(buf *bytes.Buffer) {
 		for x := range Size {
 			switch b.stones[y][x] {
 			case Black:
-				buf.WriteString("─X")
+				if x == 0 {
+					buf.WriteString(" X")
+				} else {
+					buf.WriteString("─X")
+				}
 			case White:
-				buf.WriteString("─O")
+				if x == 0 {
+					buf.WriteString(" O")
+				} else {
+					buf.WriteString("─O")
+				}
 			default:
 				switch y {
 				case 0:
