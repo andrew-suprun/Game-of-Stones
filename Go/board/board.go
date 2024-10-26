@@ -76,7 +76,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 
 		for i := start; i < end; i++ {
 			stones += b.stones[y][i+maxStones1]
-			blackScore, whiteScore := scoreStones(stone, stones, coeff)
+			blackScore, whiteScore, _ := scoreStones(stone, stones, coeff)
 			if blackScore != 0 || whiteScore != 0 {
 				for j := i; j < i+maxStones; j++ {
 					b.scores[y][j][0] += blackScore
@@ -97,7 +97,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 
 		for i := start; i < end; i++ {
 			stones += b.stones[i+maxStones1][x]
-			blackScore, whiteScore := scoreStones(stone, stones, coeff)
+			blackScore, whiteScore, _ := scoreStones(stone, stones, coeff)
 			if blackScore != 0 || whiteScore != 0 {
 				for j := i; j < i+maxStones; j++ {
 					b.scores[j][x][0] += blackScore
@@ -111,7 +111,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 	m := 1 + min(x, y, Size-1-x, Size-1-y)
 
 	{
-		rows := min(maxStones, m, min(Size-maxStones1-y+x, Size-maxStones1-x+y))
+		rows := min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y)
 		if rows > 0 {
 			mn := min(x, y, maxStones1)
 			xStart := x - mn
@@ -123,7 +123,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 			}
 			for i := 0; i < rows; i++ {
 				stones += b.stones[yStart+i+maxStones1][xStart+i+maxStones1]
-				blackScore, whiteScore := scoreStones(stone, stones, coeff)
+				blackScore, whiteScore, _ := scoreStones(stone, stones, coeff)
 				if blackScore != 0 || whiteScore != 0 {
 					for j := i; j < i+maxStones; j++ {
 						b.scores[yStart+j][xStart+j][0] += blackScore
@@ -148,7 +148,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 			}
 			for i := 0; i < rows; i++ {
 				stones += b.stones[yStart+i+maxStones1][xStart-i-maxStones1]
-				blackScore, whiteScore := scoreStones(stone, stones, coeff)
+				blackScore, whiteScore, _ := scoreStones(stone, stones, coeff)
 				if blackScore != 0 || whiteScore != 0 {
 					for j := i; j < i+maxStones; j++ {
 						b.scores[yStart+j][xStart-j][0] += blackScore
