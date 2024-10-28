@@ -32,38 +32,38 @@ func scoreStones(stone, stones Stone, coeff Score) (Score, Score, Stone) {
 	if stone == Black {
 		switch stones {
 		case 0x00:
-			return 4 * coeff, 0 * coeff, None
+			return 6 * coeff, 0, None
 		case 0x01:
-			return 19 * coeff, -5 * coeff, None
+			return 41 * coeff, -7 * coeff, None
 		case 0x02:
-			return 66 * coeff, -24 * coeff, None
+			return 232 * coeff, -48 * coeff, None
 		case 0x03:
-			return 150 * coeff, -90 * coeff, None
+			return 1064 * coeff, -280 * coeff, None
 		case 0x04:
 			return 0, 0, Black
 		case 0x10:
-			return -1 * coeff, 5 * coeff, None
+			return -coeff, 7 * coeff, None
 		case 0x20:
-			return -6 * coeff, 24 * coeff, None
+			return -8 * coeff, 48 * coeff, None
 		case 0x30:
-			return -30 * coeff, 90 * coeff, None
+			return -56 * coeff, 280 * coeff, None
 		}
 	} else {
 		switch stones {
 		case 0x00:
-			return 0 * coeff, -4 * coeff, None
+			return 0, -6 * coeff, None
 		case 0x01:
-			return -5 * coeff, 1 * coeff, None
+			return -7 * coeff, coeff, None
 		case 0x02:
-			return -24 * coeff, 6 * coeff, None
+			return -48 * coeff, 8 * coeff, None
 		case 0x03:
-			return -90 * coeff, 30 * coeff, None
+			return -280 * coeff, 56 * coeff, None
 		case 0x10:
-			return 5 * coeff, -19 * coeff, None
+			return 7 * coeff, -41 * coeff, None
 		case 0x20:
-			return 24 * coeff, -66 * coeff, None
+			return 48 * coeff, -232 * coeff, None
 		case 0x30:
-			return 90 * coeff, -150 * coeff, None
+			return 280 * coeff, -1064 * coeff, None
 		case 0x40:
 			return 0, 0, White
 		}
