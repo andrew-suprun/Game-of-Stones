@@ -10,17 +10,17 @@ import (
 
 type Move struct {
 	X1, Y1, X2, Y2 byte
-	score          int16
+	score          board.Score
 }
 
 const (
-	draw int16 = math.MinInt16
-	win  int16 = math.MaxInt16
+	draw board.Score = math.MinInt16
+	win  board.Score = math.MaxInt16
 )
 
-func (m Move) IsDrawing() bool { return m.score == draw }
-func (m Move) IsWinning() bool { return m.score == win }
-func (m Move) Score() int16    { return m.score }
+func (m Move) IsDrawing() bool    { return m.score == draw }
+func (m Move) IsWinning() bool    { return m.score == win }
+func (m Move) Score() board.Score { return m.score }
 func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
 }
@@ -53,64 +53,64 @@ func (c *Connect6) ParseMove(moveStr string) ([4]byte, error) {
 	return [4]byte{x1, y1, x2, y2}, nil
 }
 
-func (c *Connect6) MakeMove(x1, y1, x2, y2 byte) Move {
-	score1 := c.board.RatePlace(x1, y1, c.turn)
-	c.board.PlaceStone(x1, y1, c.turn)
-	score2 := c.board.RatePlace(x2, y2, c.turn)
-	c.board.RemoveStone(x1, y1)
-	return move(x1, y1, x2, y2, score1+score2)
+func (c *Connect6) MakeMove(x1, y1, x2, y2 int) Move {
+	score := c.board.Score(c.turn, x1, y1)
+	c.board.PlaceStone(c.turn, x1, y1)
+	score += c.board.Score(c.turn, x2, y2)
+	c.board.PlaceStone(c.turn, x2, y2)
+	if c.turn == board.Black {
+		c.turn = board.White
+	} else {
+		c.turn = board.Black
+	}
+	return move(x1, y1, x2, y2, score)
 }
 
-func move(x1, y1, x2, y2 byte, score int16) Move {
+func move(x1, y1, x2, y2 int, score board.Score) Move {
 	if x1 > x2 || x1 == x2 && y1 > y2 {
 		return Move{byte(x2), byte(y2), byte(x1), byte(y1), score}
 	}
 	return Move{byte(x1), byte(y1), byte(x2), byte(y2), score}
 }
 
-func (c *Connect6) PlayMove(m Move) {
-	c.board.PlaceStone(m.X1, m.Y1, c.turn)
-	c.board.PlaceStone(m.X2, m.Y2, c.turn)
-	if c.turn == board.Black {
-		c.turn = board.White
-	} else {
-		c.turn = board.Black
-	}
-}
-
 func (c *Connect6) UndoMove(m Move) {
-	c.board.RemoveStone(m.X1, m.Y1)
-	c.board.RemoveStone(m.X2, m.Y2)
 	if c.turn == board.Black {
 		c.turn = board.White
 	} else {
 		c.turn = board.Black
 	}
+	c.board.RemoveStone(c.turn, int(m.X1), int(m.Y1))
+	c.board.RemoveStone(c.turn, int(m.X2), int(m.Y2))
 }
 
-func (c *Connect6) PossibleMoves() func(limit int16) (Move, bool) {
-	var x1, y1, x2, y2 byte
+func (c *Connect6) PossibleMoves() func(limit board.Score) (Move, bool) {
+	var x1, y1, x2, y2 int
 	var ok bool
-	return func(limit int16) (Move, bool) {
+	score1 := c.board.Score(c.turn, 0, 0)
+	c.board.PlaceStone(c.turn, x1, x2)
+	return func(limit board.Score) (Move, bool) {
 		for {
 			x2, y2, ok = c.incPosition(x2, y2)
 			if !ok {
 				x1, y1, _ = c.incPosition(x1, y1)
+				score1 = c.board.Score(c.turn, x1, y1)
+				c.board.PlaceStone(c.turn, x1, x2)
 				x2, y2, ok = c.incPosition(x1, y1)
 				if !ok {
 					break
 				}
 			}
-			score := c.scoreMove(x1, y1, x2, y2, &c.board)
+			score := score1 + c.board.Score(c.turn, x2, y2)
 			if c.turn == board.Black && score > limit || c.turn == board.White && score < limit {
-				return Move{x1, y1, x2, y2, score}, true
+				return move(x1, y1, x2, y2, score), true
 			}
 		}
+		c.board.RemoveStone(c.turn, x1, x2)
 		return Move{}, false
 	}
 }
 
-func (c *Connect6) incPosition(x, y byte) (byte, byte, bool) {
+func (c *Connect6) incPosition(x, y int) (int, int, bool) {
 	for {
 		x++
 		if x >= board.Size {
@@ -120,20 +120,8 @@ func (c *Connect6) incPosition(x, y byte) (byte, byte, bool) {
 		if y >= board.Size {
 			return 0, 0, false
 		}
-		if c.board.Stone(int(x), int(y)) == board.None {
+		if c.board.Stone(x, y) == board.None {
 			return x, y, true
 		}
 	}
-}
-
-func (c *Connect6) scoreMove(x1, y1, x2, y2 byte, board *board.Board) int16 {
-	p2Score := board.Score(int(x2), int(y2))
-	p1Score := board.Score(int(x1), int(y1))
-
-	if x1 == x2 || y1 == y2 || x1+y1 == x2+y2 || x1+y2 == x2+y1 {
-		c.board.PlaceStone(x1, y1, c.turn)
-		p2Score = c.board.RatePlace(x2, y2, c.turn)
-		c.board.RemoveStone(x1, y1)
-	}
-	return p1Score + p2Score
 }

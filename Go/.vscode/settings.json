@@ -3,7 +3,7 @@
     "go.buildFlags": [
         "-v"
     ],
-    "go.testTags": "debug,gomoku,size11",
+    "go.testTags": "debug,gomoku",
     "go.testTimeout": "3s",
     "go.testFlags": [
         "-v"

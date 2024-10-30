@@ -36,10 +36,10 @@ func Search[pMove iMove](game iGame[pMove], capacity int, duration time.Duration
 	var limit int16
 
 	if game.Turn() == First {
-		leaves = heap.NewHeap(capacity, maxLess[pMove])
+		leaves = heap.MakeHeap(capacity, maxLess[pMove])
 		limit = math.MinInt16
 	} else {
-		leaves = heap.NewHeap(capacity, minLess[pMove])
+		leaves = heap.MakeHeap(capacity, minLess[pMove])
 		limit = math.MaxInt16
 	}
 
@@ -59,10 +59,10 @@ func Search[pMove iMove](game iGame[pMove], capacity int, duration time.Duration
 	for time.Since(start) < duration {
 		depth++
 		if depth%2 == 0 && game.Turn() == First || depth%2 == 1 && game.Turn() == Second {
-			leaves = heap.NewHeap(capacity, maxLess[pMove])
+			leaves = heap.MakeHeap(capacity, maxLess[pMove])
 			limit = math.MinInt16
 		} else {
-			leaves = heap.NewHeap(capacity, minLess[pMove])
+			leaves = heap.MakeHeap(capacity, minLess[pMove])
 			limit = math.MaxInt16
 		}
 		for idx := 0; idx < len(nodes); {

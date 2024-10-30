@@ -10,7 +10,8 @@ func less(i, j int) bool {
 }
 
 func TestHeap(t *testing.T) {
-	heap := NewHeap(20, less)
+	items := make([]int, 0, 20)
+	heap := MakeHeap(&items, less)
 	values := make([]int, 100)
 	for i := range 100 {
 		values[i] = i + 1
@@ -22,12 +23,11 @@ func TestHeap(t *testing.T) {
 		heap.Add(values[i])
 	}
 
-	oldElem := 0
-	for range 20 {
-		elem := heap.Remove()
-		if elem <= oldElem {
-			t.Fail()
+	heap.Sort()
+
+	for item, i := range items {
+		if item+i != 100 {
+			t.FailNow()
 		}
-		oldElem = elem
 	}
 }

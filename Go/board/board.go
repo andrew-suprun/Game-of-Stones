@@ -28,12 +28,12 @@ func (stone Stone) String() string {
 const maxStones1 = maxStones - 1
 
 type Board struct {
-	Stones [Size][Size]Stone
-	Scores [Size][Size][2]Score
+	stones [Size][Size]Stone
+	scores [Size][Size][2]Score
 }
 
-func NewBoard() *Board {
-	board := &Board{}
+func MakeBoard() Board {
+	board := Board{}
 	for y := 0; y < Size; y++ {
 		v := Score(1 + min(maxStones1, y, Size-1-y))
 		for x := 0; x < Size; x++ {
@@ -42,7 +42,7 @@ func NewBoard() *Board {
 			t1 := Score(max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y)))
 			t2 := Score(max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1)))
 			total := v + h + t1 + t2
-			board.Scores[y][x] = [2]Score{total, -total}
+			board.scores[y][x] = [2]Score{total, -total}
 		}
 	}
 	return board
@@ -56,13 +56,28 @@ func (b *Board) RemoveStone(stone Stone, x, y int) {
 	b.placeStone(stone, x, y, -1)
 }
 
+func (b *Board) Stone(x, y int) Stone {
+	return b.stones[y][x]
+}
+
+func (b *Board) Score(stone Stone, x, y int) Score {
+	switch stone {
+	case Black:
+		return b.scores[y][x][0]
+	case White:
+		return b.scores[y][x][1]
+	default:
+		return 0
+	}
+}
+
 func (b *Board) placeStone(stone Stone, x, y int, coeff Score) Stone {
 	if coeff == -1 {
-		b.Stones[y][x] = None
+		b.stones[y][x] = None
 	}
 	defer func() {
 		if coeff == 1 {
-			b.Stones[y][x] = stone
+			b.stones[y][x] = stone
 		}
 	}()
 
@@ -71,22 +86,22 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) Stone {
 		end := min(x+maxStones, Size) - maxStones1
 		stones := Stone(0)
 		for i := start; i < start+maxStones1; i++ {
-			stones += b.Stones[y][i]
+			stones += b.stones[y][i]
 		}
 
 		for i := start; i < end; i++ {
-			stones += b.Stones[y][i+maxStones1]
+			stones += b.stones[y][i+maxStones1]
 			blackScore, whiteScore, winner := scoreStones(stone, stones, coeff)
 			if winner != None {
 				return winner
 			}
 			if blackScore != 0 || whiteScore != 0 {
 				for j := i; j < i+maxStones; j++ {
-					b.Scores[y][j][0] += blackScore
-					b.Scores[y][j][1] += whiteScore
+					b.scores[y][j][0] += blackScore
+					b.scores[y][j][1] += whiteScore
 				}
 			}
-			stones -= b.Stones[y][i]
+			stones -= b.stones[y][i]
 		}
 	}
 
@@ -95,22 +110,22 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) Stone {
 		end := min(y+maxStones, Size) - maxStones1
 		stones := Stone(0)
 		for i := start; i < start+maxStones1; i++ {
-			stones += b.Stones[i][x]
+			stones += b.stones[i][x]
 		}
 
 		for i := start; i < end; i++ {
-			stones += b.Stones[i+maxStones1][x]
+			stones += b.stones[i+maxStones1][x]
 			blackScore, whiteScore, winner := scoreStones(stone, stones, coeff)
 			if winner != None {
 				return winner
 			}
 			if blackScore != 0 || whiteScore != 0 {
 				for j := i; j < i+maxStones; j++ {
-					b.Scores[j][x][0] += blackScore
-					b.Scores[j][x][1] += whiteScore
+					b.scores[j][x][0] += blackScore
+					b.scores[j][x][1] += whiteScore
 				}
 			}
-			stones -= b.Stones[i][x]
+			stones -= b.stones[i][x]
 		}
 	}
 
@@ -125,21 +140,21 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) Stone {
 
 			stones := Stone(0)
 			for i := 0; i < maxStones1; i++ {
-				stones += b.Stones[yStart+i][xStart+i]
+				stones += b.stones[yStart+i][xStart+i]
 			}
 			for i := 0; i < rows; i++ {
-				stones += b.Stones[yStart+i+maxStones1][xStart+i+maxStones1]
+				stones += b.stones[yStart+i+maxStones1][xStart+i+maxStones1]
 				blackScore, whiteScore, winner := scoreStones(stone, stones, coeff)
 				if winner != None {
 					return winner
 				}
 				if blackScore != 0 || whiteScore != 0 {
 					for j := i; j < i+maxStones; j++ {
-						b.Scores[yStart+j][xStart+j][0] += blackScore
-						b.Scores[yStart+j][xStart+j][1] += whiteScore
+						b.scores[yStart+j][xStart+j][0] += blackScore
+						b.scores[yStart+j][xStart+j][1] += whiteScore
 					}
 				}
-				stones -= b.Stones[yStart+i][xStart+i]
+				stones -= b.stones[yStart+i][xStart+i]
 			}
 		}
 	}
@@ -153,25 +168,76 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) Stone {
 
 			stones := Stone(0)
 			for i := 0; i < maxStones1; i++ {
-				stones += b.Stones[yStart+i][xStart-i]
+				stones += b.stones[yStart+i][xStart-i]
 			}
 			for i := 0; i < rows; i++ {
-				stones += b.Stones[yStart+i+maxStones1][xStart-i-maxStones1]
+				stones += b.stones[yStart+i+maxStones1][xStart-i-maxStones1]
 				blackScore, whiteScore, winner := scoreStones(stone, stones, coeff)
 				if winner != None {
 					return winner
 				}
 				if blackScore != 0 || whiteScore != 0 {
 					for j := i; j < i+maxStones; j++ {
-						b.Scores[yStart+j][xStart-j][0] += blackScore
-						b.Scores[yStart+j][xStart-j][1] += whiteScore
+						b.scores[yStart+j][xStart-j][0] += blackScore
+						b.scores[yStart+j][xStart-j][1] += whiteScore
 					}
 				}
-				stones -= b.Stones[yStart+i][xStart-i]
+				stones -= b.stones[yStart+i][xStart-i]
 			}
 		}
 	}
 	return None
+}
+
+func scoreStones(stone, stones Stone, coeff Score) (Score, Score, Stone) {
+	if stone == Black {
+		switch stones {
+		case 0x00:
+			return 6 * coeff, 0, None
+		case 0x01:
+			return 41 * coeff, -7 * coeff, None
+		case 0x02:
+			return 232 * coeff, -48 * coeff, None
+		case 0x03:
+			return 1064 * coeff, -280 * coeff, None
+		case 0x04:
+			return 3696 * coeff, -1344 * coeff, blackGomokuWin
+		case 0x05:
+			return 0, 0, Black
+		case 0x10:
+			return -coeff, 7 * coeff, None
+		case 0x20:
+			return -8 * coeff, 48 * coeff, None
+		case 0x30:
+			return -56 * coeff, 280 * coeff, None
+		case 0x40:
+			return -336 * coeff, 1344 * coeff, None
+		}
+	} else {
+		switch stones {
+		case 0x00:
+			return 0, -6 * coeff, None
+		case 0x01:
+			return -7 * coeff, coeff, None
+		case 0x02:
+			return -48 * coeff, 8 * coeff, None
+		case 0x03:
+			return -280 * coeff, 56 * coeff, None
+		case 0x04:
+			return -1344 * coeff, 336 * coeff, None
+		case 0x10:
+			return 7 * coeff, -41 * coeff, None
+		case 0x20:
+			return 48 * coeff, -232 * coeff, None
+		case 0x30:
+			return 280 * coeff, -1064 * coeff, None
+		case 0x40:
+			return 1344 * coeff, -3696 * coeff, whiteGomokuWin
+		case 0x50:
+			return 0, 0, White
+		}
+	}
+	return 0, 0, None
 }
 
 func (b *Board) String() string {
@@ -199,7 +265,7 @@ func (b *Board) BoardString(buf *bytes.Buffer) {
 	for y := range Size {
 		fmt.Fprintf(buf, "%2d", Size-y)
 		for x := range Size {
-			switch b.Stones[y][x] {
+			switch b.stones[y][x] {
 			case Black:
 				if x == 0 {
 					buf.WriteString(" X")
@@ -271,9 +337,9 @@ func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
 		fmt.Fprintf(buf, "%2d %2d │", Size-y, y)
 
 		for x := 0; x < Size; x++ {
-			switch b.Stones[y][x] {
+			switch b.stones[y][x] {
 			case None:
-				fmt.Fprintf(buf, "%5d │", b.Scores[y][x][scoresIdx])
+				fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
 			case Black:
 				buf.WriteString("    X │")
 			case White:

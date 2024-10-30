@@ -29,10 +29,8 @@ type place struct {
 
 func TestPossibleMoves(t *testing.T) {
 	c6 := NewGame()
-	move := c6.MakeMove(9, 9, 9, 9)
-	c6.PlayMove(move)
-	move = c6.MakeMove(8, 9, 8, 10)
-	c6.PlayMove(move)
+	c6.MakeMove(9, 9, 9, 9)
+	c6.MakeMove(8, 9, 8, 10)
 	moves := c6.PossibleMoves()
 
 	fmt.Println(c6.board.String())
