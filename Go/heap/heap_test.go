@@ -16,9 +16,7 @@ func TestHeap(t *testing.T) {
 	for i := range 100 {
 		values[i] = i + 1
 	}
-	rand.Shuffle(100, func(i, j int) {
-		values[i], values[j] = values[j], values[i]
-	})
+	rand.Shuffle(100, func(i, j int) { values[i], values[j] = values[j], values[i] })
 	for i := range 100 {
 		heap.Add(values[i])
 	}

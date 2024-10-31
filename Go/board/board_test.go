@@ -4,7 +4,72 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
+	"time"
 )
+
+func TestPlaceStone(t *testing.T) {
+	rnd := rand.New(rand.NewSource(3))
+	moves := []testMove{}
+	b := MakeBoard()
+	for range 300 {
+		x := rnd.Intn(Size)
+		y := rnd.Intn(Size)
+		if b.stones[y][x] != None {
+			continue
+		}
+		stone := Black
+		if rnd.Intn(2) == 0 {
+			stone = White
+		}
+		moves = append(moves, testMove{x, y, stone})
+		b.PlaceStone(stone, x, y)
+		checkScores(t, &b)
+	}
+	t.Logf("%#v\n", &b)
+	for i := len(moves) - 1; i >= 0; i-- {
+		b.RemoveStone(moves[i].stone, moves[i].x, moves[i].y)
+		checkScores(t, &b)
+	}
+	t.Logf("%#v\n", &b)
+}
+
+func BenchmarkPlaceStone(b *testing.B) {
+	rnd := rand.New(rand.NewSource(3))
+	moves := []testMove{}
+	board := MakeBoard()
+
+	b.ResetTimer()
+	for range b.N {
+		for range Size * Size {
+			x := rnd.Intn(Size)
+			y := rnd.Intn(Size)
+			if board.stones[y][x] != None {
+				continue
+			}
+			stone := Black
+			if rnd.Intn(2) == 0 {
+				stone = White
+			}
+			moves = append(moves, testMove{x, y, stone})
+			board.PlaceStone(stone, x, y)
+		}
+		for i := len(moves) - 1; i >= 0; i-- {
+			board.RemoveStone(moves[i].stone, moves[i].x, moves[i].y)
+		}
+	}
+}
+
+func TestTime(t *testing.T) {
+	board := MakeBoard()
+	n := 5_000_000
+
+	start := time.Now()
+	for range n {
+		board.PlaceStone(Black, 9, 9)
+		board.RemoveStone(Black, 9, 9)
+	}
+	fmt.Println("n", 2*n, "time", time.Since(start))
+}
 
 func (b *Board) testBoardScores() *[Size][Size][2]Score {
 	scores := &[Size][Size][2]Score{}
@@ -113,13 +178,13 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 	return scores
 }
 
-// 1, 8, 56, 336, 1680
+// 1, 8, 56, 336, 10616
 func testPlaceScores(stones Stone) (Score, Score) {
 	switch stones {
 	case 0x05:
-		return 5040, -1680
+		return 5040, -10616
 	case 0x04:
-		return 1344, -336
+		return 10280, -336
 	case 0x03:
 		return 280, -56
 	case 0x02:
@@ -135,9 +200,9 @@ func testPlaceScores(stones Stone) (Score, Score) {
 	case 0x30:
 		return 56, -280
 	case 0x40:
-		return 336, -1344
+		return 336, -10280
 	case 0x50:
-		return 1680, -5040
+		return 10616, -5040
 	}
 	return 0, 0
 }
@@ -145,34 +210,6 @@ func testPlaceScores(stones Stone) (Score, Score) {
 type testMove struct {
 	x, y  int
 	stone Stone
-}
-
-func TestPlaceStone(t *testing.T) {
-	rnd := rand.New(rand.NewSource(3))
-	moves := []testMove{}
-	b := MakeBoard()
-	for range Size * Size {
-		x := rnd.Intn(Size)
-		y := rnd.Intn(Size)
-		if b.stones[y][x] != None {
-			continue
-		}
-		stone := Black
-		if rnd.Intn(2) == 0 {
-			stone = White
-		}
-		moves = append(moves, testMove{x, y, stone})
-		if b.PlaceStone(stone, x, y) != None {
-			break
-		}
-		checkScores(t, &b)
-	}
-	t.Logf("%#v\n", &b)
-	for i := len(moves) - 1; i >= 0; i-- {
-		b.RemoveStone(moves[i].stone, moves[i].x, moves[i].y)
-		checkScores(t, &b)
-	}
-	t.Logf("%#v\n", &b)
 }
 
 func checkScores(t *testing.T, b *Board) {

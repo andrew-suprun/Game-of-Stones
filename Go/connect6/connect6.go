@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"game_of_stones/board"
-	"math"
+	"game_of_stones/heap"
 	"strings"
 )
 
@@ -14,12 +14,11 @@ type Move struct {
 }
 
 const (
-	draw board.Score = math.MinInt16
-	win  board.Score = math.MaxInt16
+	maxMoves int = 120
 )
 
-func (m Move) IsDrawing() bool    { return m.score == draw }
-func (m Move) IsWinning() bool    { return m.score == win }
+func (m Move) IsDrawing() bool    { return m.score.IsDrawing() }
+func (m Move) IsWinning() bool    { return m.score.IsWinning() }
 func (m Move) Score() board.Score { return m.score }
 func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
@@ -31,6 +30,7 @@ func (m Move) GoString() string {
 type Connect6 struct {
 	turn  board.Stone
 	board board.Board
+	score board.Score
 }
 
 func NewGame() *Connect6 {
@@ -83,45 +83,49 @@ func (c *Connect6) UndoMove(m Move) {
 	c.board.RemoveStone(c.turn, int(m.X2), int(m.Y2))
 }
 
-func (c *Connect6) PossibleMoves() func(limit board.Score) (Move, bool) {
-	var x1, y1, x2, y2 int
-	var ok bool
-	score1 := c.board.Score(c.turn, 0, 0)
-	c.board.PlaceStone(c.turn, x1, x2)
-	return func(limit board.Score) (Move, bool) {
-		for {
-			x2, y2, ok = c.incPosition(x2, y2)
-			if !ok {
-				x1, y1, _ = c.incPosition(x1, y1)
-				score1 = c.board.Score(c.turn, x1, y1)
-				c.board.PlaceStone(c.turn, x1, x2)
-				x2, y2, ok = c.incPosition(x1, y1)
-				if !ok {
-					break
-				}
-			}
-			score := score1 + c.board.Score(c.turn, x2, y2)
-			if c.turn == board.Black && score > limit || c.turn == board.White && score < limit {
-				return move(x1, y1, x2, y2, score), true
-			}
-		}
-		c.board.RemoveStone(c.turn, x1, x2)
-		return Move{}, false
-	}
+func blackLess(a, b Move) bool {
+	return a.score < b.score
 }
 
-func (c *Connect6) incPosition(x, y int) (int, int, bool) {
-	for {
-		x++
-		if x >= board.Size {
-			y++
-			x = 0
-		}
-		if y >= board.Size {
-			return 0, 0, false
-		}
-		if c.board.Stone(x, y) == board.None {
-			return x, y, true
+func whiteLess(a, b Move) bool {
+	return b.score < a.score
+}
+
+func (c *Connect6) PossibleMoves(result *[]Move) {
+	less := blackLess
+	if c.turn == board.White {
+		less = whiteLess
+	}
+	heap := heap.MakeHeap[Move](result, less)
+	for y1 := 0; y1 < board.Size; y1++ {
+		for x1 := 0; x1 < board.Size; x1++ {
+			if c.board.Stone(x1, y1) != board.None {
+				continue
+			}
+			score1 := c.board.PlaceStone(c.turn, x1, y1)
+			if score1.IsWinning() {
+				c.board.RemoveStone(c.turn, x1, y1)
+				(*result)[0] = move(x1, y1, x1, y1, score1)
+				(*result) = (*result)[:1]
+				return
+			}
+
+			for y2 := y1; y2 < board.Size; y2++ {
+				x2 := 0
+				if y1 == y2 {
+					x2 = x1 + 1
+				}
+				for ; x2 < board.Size; x2++ {
+					if c.board.Stone(x2, y2) != board.None {
+						continue
+					}
+					score2 := c.board.Score(c.turn, x2, y2)
+					fmt.Println("add", x1, y1, x2, y2, c.score+score1+score2, len(*result))
+					heap.Add(move(x1, y1, x2, y2, c.score+score1+score2))
+				}
+			}
+			c.board.RemoveStone(c.turn, x1, y1)
 		}
 	}
+	heap.Sort()
 }
