@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math"
 )
 
 type Stone byte
@@ -15,8 +14,7 @@ const (
 	Black Stone = 1
 	White Stone = 0x10
 
-	win  Score = math.MaxInt32
-	draw Score = math.MaxInt32 - 1
+	win Score = 20_000
 )
 
 func (stone Stone) String() string {
@@ -30,11 +28,11 @@ func (stone Stone) String() string {
 }
 
 func (s Score) IsWinning() bool {
-	return s == win
+	return s > win || s < -win
 }
 
 func (s Score) IsDrawing() bool {
-	return s == draw
+	return s == 0
 }
 
 const maxStones1 = maxStones - 1

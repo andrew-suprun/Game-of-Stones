@@ -15,9 +15,13 @@ func TestGoString(t *testing.T) {
 func TestMakeMove(t *testing.T) {
 	c6 := NewGame()
 	m := c6.MakeMove(8, 8, 8, 9)
-	if m.GoString() != "move(8, 8, 8, 9, 48)" {
-		fmt.Printf("%#v\n", m.GoString())
-		t.FailNow()
+	if m.GoString() != "move(8, 8, 8, 9, 24)" {
+		fmt.Printf("%#v\n", m)
+		t.Fail()
+	}
+	if m.String() != "i11-i10" {
+		fmt.Printf("%v\n", m)
+		t.Fail()
 	}
 }
 
@@ -27,5 +31,8 @@ func TestPossibleMoves(t *testing.T) {
 	c6.MakeMove(8, 9, 8, 10)
 	moves := make([]Move, 0, 20)
 	c6.PossibleMoves(&moves)
-	fmt.Println(moves, len(moves), moves[0].score, moves[0].IsWinning())
+	fmt.Println(c6.board.String())
+	for i, m := range moves {
+		fmt.Println(i+1, m, m.score)
+	}
 }

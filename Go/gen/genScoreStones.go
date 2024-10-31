@@ -22,7 +22,7 @@ const tmpl = `func scoreStones(stone, stones Stone) (Score, Score) {
 `
 
 func main() {
-	data := prepareData(0, 1, 8, 56, 336, 10616)
+	data := prepareData(0, 1, 8, 56, 336, 20616)
 	// data := prepareData(0, 1, 8, 56, 336, 1680, 23024)
 	tmpl := template.Must(template.New("").Parse(tmpl))
 	err := tmpl.Execute(os.Stdout, data)

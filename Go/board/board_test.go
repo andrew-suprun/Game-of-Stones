@@ -178,13 +178,13 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 	return scores
 }
 
-// 1, 8, 56, 336, 10616
+// 1, 8, 56, 336, 20616
 func testPlaceScores(stones Stone) (Score, Score) {
 	switch stones {
 	case 0x05:
-		return 5040, -10616
+		return 5040, -20616
 	case 0x04:
-		return 10280, -336
+		return 20280, -336
 	case 0x03:
 		return 280, -56
 	case 0x02:
@@ -200,9 +200,9 @@ func testPlaceScores(stones Stone) (Score, Score) {
 	case 0x30:
 		return 56, -280
 	case 0x40:
-		return 336, -10280
+		return 336, -20280
 	case 0x50:
-		return 10616, -5040
+		return 20616, -5040
 	}
 	return 0, 0
 }
@@ -227,11 +227,11 @@ func checkScores(t *testing.T, b *Board) {
 			for x := 0; x < Size; x++ {
 				switch b.stones[y][x] {
 				case Black:
-					fmt.Print("   X")
+					fmt.Print("    X")
 				case White:
-					fmt.Print("   O")
+					fmt.Print("    O")
 				case None:
-					fmt.Printf("%4d", scores[y][x][0])
+					fmt.Printf("%5d", scores[y][x][0])
 				}
 			}
 			fmt.Println()
@@ -241,11 +241,11 @@ func checkScores(t *testing.T, b *Board) {
 			for x := 0; x < Size; x++ {
 				switch b.stones[y][x] {
 				case Black:
-					fmt.Print("   X")
+					fmt.Print("    X")
 				case White:
-					fmt.Print("   O")
+					fmt.Print("    O")
 				case None:
-					fmt.Printf("%4d", scores[y][x][1])
+					fmt.Printf("%5d", scores[y][x][1])
 				}
 			}
 			fmt.Println()

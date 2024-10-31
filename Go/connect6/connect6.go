@@ -63,6 +63,7 @@ func (c *Connect6) MakeMove(x1, y1, x2, y2 int) Move {
 	} else {
 		c.turn = board.Black
 	}
+	c.score += score
 	return move(x1, y1, x2, y2, score)
 }
 
@@ -81,6 +82,7 @@ func (c *Connect6) UndoMove(m Move) {
 	}
 	c.board.RemoveStone(c.turn, int(m.X1), int(m.Y1))
 	c.board.RemoveStone(c.turn, int(m.X2), int(m.Y2))
+	c.score -= m.score
 }
 
 func blackLess(a, b Move) bool {
@@ -102,13 +104,16 @@ func (c *Connect6) PossibleMoves(result *[]Move) {
 			if c.board.Stone(x1, y1) != board.None {
 				continue
 			}
-			score1 := c.board.PlaceStone(c.turn, x1, y1)
+
+			score1 := c.board.Score(c.turn, x1, y1)
+
 			if score1.IsWinning() {
-				c.board.RemoveStone(c.turn, x1, y1)
 				(*result)[0] = move(x1, y1, x1, y1, score1)
 				(*result) = (*result)[:1]
 				return
 			}
+
+			c.board.PlaceStone(c.turn, x1, y1)
 
 			for y2 := y1; y2 < board.Size; y2++ {
 				x2 := 0
@@ -120,10 +125,10 @@ func (c *Connect6) PossibleMoves(result *[]Move) {
 						continue
 					}
 					score2 := c.board.Score(c.turn, x2, y2)
-					fmt.Println("add", x1, y1, x2, y2, c.score+score1+score2, len(*result))
 					heap.Add(move(x1, y1, x2, y2, c.score+score1+score2))
 				}
 			}
+
 			c.board.RemoveStone(c.turn, x1, y1)
 		}
 	}
