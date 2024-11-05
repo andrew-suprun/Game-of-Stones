@@ -14,7 +14,7 @@ const (
 	Black Stone = 1
 	White Stone = 0x10
 
-	win Score = 20_000
+	win Score = 50_000
 )
 
 func (stone Stone) String() string {
@@ -82,15 +82,9 @@ func (b *Board) Score(stone Stone, x, y int) Score {
 }
 
 func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
-	b.Score(stone, x, y)
 	if coeff == -1 {
 		b.stones[y][x] = None
 	}
-	defer func() {
-		if coeff == 1 {
-			b.stones[y][x] = stone
-		}
-	}()
 
 	{
 		start := max(0, x-maxStones1)
@@ -126,6 +120,10 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 			yStart := y - mn
 			b.updateRow(stone, xStart, yStart, -1, 1, n, coeff)
 		}
+	}
+
+	if coeff == 1 {
+		b.stones[y][x] = stone
 	}
 }
 

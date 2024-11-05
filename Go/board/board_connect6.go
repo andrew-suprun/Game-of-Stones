@@ -18,7 +18,7 @@ func scoreStones(stone, stones Stone) (Score, Score) {
 		case 0x03:
 			return 1064, -280
 		case 0x04:
-			return 20000, -1344
+			return 100000, -1344
 		case 0x10:
 			return -1, 7
 		case 0x20:
@@ -47,7 +47,7 @@ func scoreStones(stone, stones Stone) (Score, Score) {
 		case 0x30:
 			return 280, -1064
 		case 0x40:
-			return 1344, -20000
+			return 1344, -100000
 		}
 	}
 	return 0, 0

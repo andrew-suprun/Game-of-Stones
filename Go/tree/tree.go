@@ -7,12 +7,22 @@ import (
 	"time"
 )
 
-type iMove interface {
+type iScore interface {
 	comparable
 	IsDrawing() bool
 	IsWinning() bool
-	Score() int16
-	String() string
+}
+
+type iScoredMove[move any, score iScore] interface {
+	Move() move
+	Score() score
+}
+
+type iGame[move any, score iScore] interface {
+	Turn() Player
+	PlayMove(move)
+	UndoMove(move)
+	PossibleMoves(result *[]iScoredMove[move, score])
 }
 
 type Player int
@@ -22,11 +32,12 @@ const (
 	Second Player = 2
 )
 
-type iGame[move iMove] interface {
-	Turn() Player
-	PlayMove(move)
-	UndoMove(move)
-	PossibleMoves() func(limit int16) (move, bool)
+type node[move any, score iScore] struct {
+	parent  uint32
+	child   uint32
+	sibling uint32
+	move    move
+	score   score
 }
 
 func Search[pMove iMove](game iGame[pMove], capacity int, duration time.Duration) pMove {

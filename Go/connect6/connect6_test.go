@@ -6,33 +6,36 @@ import (
 )
 
 func TestGoString(t *testing.T) {
-	result := fmt.Sprintf("%[1]v: %#[1]v", move(1, 2, 3, 4, 5))
-	if result != "b17-d15: move(1, 2, 3, 4, 5)" {
-		t.Fail()
-	}
-}
-
-func TestMakeMove(t *testing.T) {
-	c6 := NewGame()
-	m := c6.MakeMove(8, 8, 8, 9)
-	if m.GoString() != "move(8, 8, 8, 9, 24)" {
-		fmt.Printf("%#v\n", m)
-		t.Fail()
-	}
-	if m.String() != "i11-i10" {
-		fmt.Printf("%v\n", m)
+	result := fmt.Sprintf("%[1]v: %#[1]v", MakeMove(1, 2, 3, 4))
+	if result != "b17-d15: move(1, 2, 3, 4)" {
 		t.Fail()
 	}
 }
 
 func TestPossibleMoves(t *testing.T) {
 	c6 := NewGame()
-	c6.MakeMove(9, 9, 9, 9)
-	c6.MakeMove(8, 9, 8, 10)
-	moves := make([]Move, 0, 20)
-	c6.PossibleMoves(&moves)
-	fmt.Println(c6.board.String())
-	for i, m := range moves {
-		fmt.Println(i+1, m, m.score)
+	originalBoard := c6.board
+	c6.PlayMove(MakeMove(8, 9, 9, 8))
+	moves := make([]ScoredMove, 0, 1)
+
+	played := []Move{}
+
+	nMoves := 3
+
+	for range nMoves {
+		c6.PossibleMoves(&moves)
+		fmt.Println(moves)
+		c6.PlayMove(moves[0].Move)
+		fmt.Println(&c6.board)
+		played = append(played, moves[0].Move)
+	}
+	for i := range nMoves {
+		c6.UndoMove(played[nMoves-1-i])
+	}
+
+	c6.UndoMove(MakeMove(8, 9, 9, 8))
+
+	if originalBoard != c6.board {
+		t.Fail()
 	}
 }
