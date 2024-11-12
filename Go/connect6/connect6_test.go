@@ -16,7 +16,7 @@ func TestPossibleMoves(t *testing.T) {
 	c6 := NewGame()
 	originalBoard := c6.board
 	c6.PlayMove(MakeMove(8, 9, 9, 8))
-	moves := make([]ScoredMove, 0, 1)
+	moves := make([]Move, 0, 1)
 
 	played := []Move{}
 
@@ -25,9 +25,9 @@ func TestPossibleMoves(t *testing.T) {
 	for range nMoves {
 		c6.PossibleMoves(&moves)
 		fmt.Println(moves)
-		c6.PlayMove(moves[0].Move)
+		c6.PlayMove(moves[0])
 		fmt.Println(&c6.board)
-		played = append(played, moves[0].Move)
+		played = append(played, moves[0])
 	}
 	for i := range nMoves {
 		c6.UndoMove(played[nMoves-1-i])

@@ -31,10 +31,6 @@ func (s Score) IsWinning() bool {
 	return s > win || s < -win
 }
 
-func (s Score) IsDrawing() bool {
-	return s == 0
-}
-
 const maxStones1 = maxStones - 1
 
 type Board struct {
@@ -270,7 +266,7 @@ func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
 	buf.WriteString("\n")
 }
 
-func ParsePlace(place string) (byte, byte, error) {
+func ParsePlace(place string) (int, int, error) {
 	if len(place) < 2 || len(place) > 3 {
 		return 0, 0, errors.New("failed to parse place")
 	}
@@ -292,5 +288,5 @@ func ParsePlace(place string) (byte, byte, error) {
 	if x > Size || y > Size {
 		return 0, 0, errors.New("failed to parse place")
 	}
-	return x, y, nil
+	return int(x), int(y), nil
 }

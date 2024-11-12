@@ -19,7 +19,7 @@ func TestPool(t *testing.T) {
 	pool.Add(8)
 	values := [...]int{1, 6, 7, 4, 8}
 	for i, v := range values {
-		if v != *pool.Get(uint32(i)) {
+		if v != *pool.Get(Idx(i)) {
 			t.FailNow()
 		}
 	}

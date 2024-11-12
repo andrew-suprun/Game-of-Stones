@@ -74,5 +74,5 @@ func (eng *engine) bestMove() {
 	}
 
 	eng.game.PlayMove(move)
-	eng.events <- evMove([4]byte{move.X1, move.Y1, move.X2, move.Y2})
+	eng.events <- evMove([4]byte{move.x1, move.y1, move.x2, move.y2})
 }

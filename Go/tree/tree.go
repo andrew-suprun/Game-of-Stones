@@ -1,257 +1,109 @@
 package tree
 
 import (
-	"fmt"
-	"game_of_stones/heap"
-	"math"
-	"time"
+	"game_of_stones/pool"
 )
 
-type iScore interface {
-	comparable
-	IsDrawing() bool
+type iMove interface {
 	IsWinning() bool
 }
 
-type iScoredMove[move any, score iScore] interface {
-	Move() move
-	Score() score
-}
-
-type iGame[move any, score iScore] interface {
+type iGame[move iMove] interface {
 	Turn() Player
 	PlayMove(move)
 	UndoMove(move)
-	PossibleMoves(result *[]iScoredMove[move, score])
+	PossibleMoves(result *[]move)
 }
 
 type Player int
 
 const (
-	First  Player = 1
-	Second Player = 2
+	Maxer  Player = 1
+	Minner Player = 2
 )
 
-type node[move any, score iScore] struct {
-	parent  uint32
-	child   uint32
-	sibling uint32
-	move    move
-	score   score
+type node[move iMove] struct {
+	parent pool.Idx
+	child  pool.Idx
+	prev   pool.Idx
+	next   pool.Idx
+	move   move
 }
 
-func Search[pMove iMove](game iGame[pMove], capacity int, duration time.Duration) pMove {
-	root := &node[pMove]{}
-
-	var leaves *heap.Heap[*node[pMove]]
-	var limit int16
-
-	if game.Turn() == First {
-		leaves = heap.MakeHeap(capacity, maxLess[pMove])
-		limit = math.MinInt16
-	} else {
-		leaves = heap.MakeHeap(capacity, minLess[pMove])
-		limit = math.MaxInt16
-	}
-
-	var freeNodes *node[pMove]
-	expand(root, game, leaves, &limit, freeNodes)
-	if root.child.move.IsWinning() {
-		return root.child.move
-	}
-
-	nodes := []*node[pMove]{}
-	for node := root.child; node != nil; node = node.sibling {
-		nodes = append(nodes, node)
-	}
-
-	depth := 0
-	start := time.Now()
-	for time.Since(start) < duration {
-		depth++
-		if depth%2 == 0 && game.Turn() == First || depth%2 == 1 && game.Turn() == Second {
-			leaves = heap.MakeHeap(capacity, maxLess[pMove])
-			limit = math.MinInt16
-		} else {
-			leaves = heap.MakeHeap(capacity, minLess[pMove])
-			limit = math.MaxInt16
-		}
-		for idx := 0; idx < len(nodes); {
-			if nodes[idx].move.IsDrawing() {
-				idx++
-				continue
-			}
-			switch expand(nodes[idx], game, leaves, &limit, freeNodes) {
-			case win:
-				nodes[idx] = nodes[len(nodes)-1]
-				nodes = nodes[:len(nodes)-1]
-				if len(nodes) == 1 {
-					return nodes[0].move
-				}
-				continue
-			case loss:
-				return nodes[idx].move
-			}
-			idx++
-		}
-	}
-
-	var bestMove pMove
-	var bestScore int16
-	if game.Turn() == First {
-		bestScore = math.MinInt16
-		for _, node := range nodes {
-			nodeScore := node.bestScore(true)
-			if bestScore < nodeScore {
-				bestScore = nodeScore
-				bestMove = node.move
-			}
-		}
-	} else {
-		bestScore = math.MaxInt16
-		for _, node := range nodes {
-			nodeScore := node.bestScore(false)
-			if bestScore > nodeScore {
-				bestScore = nodeScore
-				bestMove = node.move
-			}
-		}
-	}
-	return bestMove
+type nodeHeap[move iMove] struct {
+	pool    pool.Pool[node[move]]
+	indices []pool.Idx
 }
 
-type expandResult int
-
-const (
-	inconclusive expandResult = iota
-	win
-	loss
-	draw
-)
-
-func expand[pMove iMove](
-	node *node[pMove],
-	game iGame[pMove],
-	leaves *heap.Heap[*node[pMove]],
-	limit *int16,
-	freeNodes *node[pMove],
-) expandResult {
-	if !node.alive {
-		panic("expanding dead node")
-	}
-	node.draw = true
-	if node.child == nil {
-		hasChildren := false
-		moves := game.PossibleMoves()
-		for {
-			move, ok := moves(*limit)
-			if !ok {
-				break
-			}
-			hasChildren = true
-			if move.IsWinning() && node.parent != nil {
-				node.removeSelf(freeNodes)
-				return loss
-			}
-			child := node.addChild(move, freeNodes)
-			if !child.move.IsDrawing() {
-				node.draw = false
-				if minNode, pushedOut := leaves.Add(child); pushedOut {
-					if minNode.alive {
-						*limit = minNode.move.Score()
-						minNode.removeSelf(freeNodes)
-					}
-				}
-			}
-		}
-		if !hasChildren {
-			if node.parent == nil {
-				panic("node.parent == nil")
-			}
-			node.parent.removeSelf(freeNodes)
-		}
-		if node.draw {
-			return draw
-		}
-		return inconclusive
-	}
-
-	for child := node.child; child != nil; {
-		if !child.alive {
-			fmt.Println("dead child")
-			continue
-		}
-		sibling := child.sibling
-		if !child.draw {
-			game.PlayMove(child.move)
-			result := expand(child, game, leaves, limit, freeNodes)
-			game.UndoMove(child.move)
-			node.draw = node.draw && child.draw
-			switch result {
-			case win:
-			case loss:
-			case draw:
-			case inconclusive:
-			}
-		}
-		child = sibling
-	}
-	return inconclusive
+func (h *nodeHeap[move]) Less(i, j int) bool {
+	iNode := h.pool.Get(pool.Idx(i)).move
+	jNode := h.pool.Get(pool.Idx(j)).move
+	return iNode.Less(jNode)
 }
 
-func (parent *node[pMove]) addChild(move pMove, freeNodes *node[pMove]) *node[pMove] {
-	var child *node[pMove]
-	if freeNodes != nil {
-		child = freeNodes
-		if child.alive {
-			panic("ALIVE")
-		}
-		freeNodes = child.parent
-		child.parent = parent
-		child.move = move
-		child.draw = move.IsDrawing()
-		child.alive = true
-	} else {
-		child = &node[pMove]{parent: parent, move: move, draw: move.IsDrawing(), alive: true}
-	}
-	if parent.child == nil {
-		parent.child = child
-	} else if parent.child.sibling == nil {
-		parent.child.sibling = child
-	} else {
-		child.sibling = parent.child.sibling
-		parent.child.sibling = child
-	}
-	return child
+func (h *nodeHeap) Swap(i, j int) {
+	iNode := h.pool.Get(i)
+	jNode := h.pool.Get(j)
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
-func (node *node[move]) removeSelf(freeNodes *node[move]) {
-	if !node.alive {
-		panic("node.removeSelf(): !node.alive")
-	}
+func (h *nodeHeap) Len() int {
+	return len(*h)
+}
 
-	parent := node.parent
-	if parent.child == node {
-		parent.child = node.sibling
-	}
+func (h *nodeHeap) Pop() (v any) {
+	*h, v = (*h)[:h.Len()-1], (*h)[h.Len()-1]
+	return
+}
 
-	for child := parent.child; child != nil; child = child.sibling {
-		if child.sibling == node {
-			child.sibling = node.sibling
+func (h *nodeHeap) Push(v any) {
+	*h = append(*h, v.(int))
+}
+
+type Tree[game iGame[move], move iMove] struct {
+	game     iGame[move]
+	pool     pool.Pool[node[move]]
+	heap     nodeHeap[move]
+	root     pool.Idx
+	current  pool.Idx
+	capacity int
+}
+
+func NewTree[g iGame[m], m iMove](game g, capacity int) *Tree[g, m] {
+
+	tree := &Tree[g, m]{
+		game:     game,
+		pool:     pool.MakePool[node[m]](),
+		capacity: capacity,
+	}
+	tree.root = tree.pool.Add(node[m]{})
+	return tree
+}
+
+func (tree *Tree[game, move]) firstLeaf() {
+	for {
+		child := tree.pool.Get(tree.current).child
+		if child == 0 {
 			break
 		}
+		tree.current = child
 	}
+}
 
-	node.parent = freeNodes
-	node.child = nil
-	node.sibling = nil
-	node.alive = false
-	freeNodes = node
-
-	if parent.child == nil {
-		if parent.parent == nil {
-			panic("node.removeSelf(): parent.parent == nil")
+func (tree *Tree[game, move]) nextSibling() bool {
+	for {
+		currentNode := tree.pool.Get(tree.current)
+		if currentNode.next != 0 {
+			break
 		}
-		parent.parent.removeSelf(freeNodes)
+		if currentNode.parent == 0 {
+			return false
+		}
+		tree.current = currentNode.parent
 	}
+	tree.firstLeaf()
+	return true
+}
+
+func (tree *Tree[game, move]) expand() {
 }

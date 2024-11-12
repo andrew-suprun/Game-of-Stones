@@ -1,4 +1,4 @@
-package heap
+package heap2
 
 type Less[Item any] func(Item, Item) bool
 

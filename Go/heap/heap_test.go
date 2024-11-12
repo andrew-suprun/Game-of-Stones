@@ -1,4 +1,4 @@
-package heap
+package heap2
 
 import (
 	"math/rand"
