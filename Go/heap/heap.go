@@ -1,76 +1,44 @@
-package heap2
+package heap
 
-type Less[Item any] func(Item, Item) bool
+import "sort"
 
-type Heap[Item any] struct {
-	items *[]Item
-	less  Less[Item]
+type Heap[item any] interface {
+	sort.Interface
+	Push(item item)
+	Pop() item
 }
 
-func MakeHeap[Item any](items *[]Item, less Less[Item]) Heap[Item] {
-	return Heap[Item]{
-		items: items,
-		less:  less,
-	}
-}
-
-func (h *Heap[Item]) Add(item Item) (minItem Item, pushedOut bool) {
-	if len(*h.items) == cap(*h.items) {
-		if h.less((*h.items)[0], item) {
-			minItem = (*h.items)[0]
-			(*h.items)[0] = item
-			siftDown(*h.items, h.less)
-			return minItem, true
-		} else {
-			return minItem, false
-		}
-	} else {
-		*h.items = append(*h.items, item)
-		siftUp(*h.items, h.less)
-	}
-	return minItem, false
-}
-
-func (h *Heap[E]) Sort() {
-	for i := len(*h.items) - 1; i > 0; i-- {
-		(*h.items)[0], (*h.items)[i] = (*h.items)[i], (*h.items)[0]
-		siftDown((*h.items)[:i], h.less)
-	}
-}
-
-func siftUp[Item any](items []Item, less Less[Item]) {
-	childIdx := len(items) - 1
-	child := items[childIdx]
-	for childIdx > 0 && less(child, items[(childIdx-1)/2]) {
-		parentIdx := (childIdx - 1) / 2
-		parent := items[parentIdx]
-		items[childIdx] = parent
-		childIdx = parentIdx
-	}
-	items[childIdx] = child
-}
-
-func siftDown[Item any](items []Item, less Less[Item]) {
-	idx := 0
-	elem := items[idx]
+func Push[heap Heap[item], item any](h heap, i item) {
+	h.Push(i)
+	j := h.Len() - 1
 	for {
-		first := idx
-		leftChildIdx := idx*2 + 1
-		if leftChildIdx < len(items) && less(items[leftChildIdx], elem) {
-			first = leftChildIdx
-		}
-		rightChildIdx := idx*2 + 2
-		if rightChildIdx < len(items) &&
-			less(items[rightChildIdx], elem) &&
-			less(items[rightChildIdx], items[leftChildIdx]) {
-			first = rightChildIdx
-		}
-		if idx == first {
+		i := (j - 1) / 2
+		if i == j || !h.Less(j, i) {
 			break
 		}
-
-		items[idx] = items[first]
-		idx = first
+		h.Swap(i, j)
+		j = i
 	}
-	items[idx] = elem
+}
+
+func Pop[heap Heap[item], item any](h heap) item {
+	h.Swap(0, h.Len()-1)
+	i := 0
+	n := h.Len() - 1
+	for {
+		j1 := 2*i + 1
+		if j1 >= n {
+			break
+		}
+		j := j1
+		if j2 := j1 + 1; j2 < n && h.Less(j2, j1) {
+			j = j2
+		}
+		if !h.Less(j, i) {
+			break
+		}
+		h.Swap(i, j)
+		i = j
+	}
+	return h.Pop()
 }
