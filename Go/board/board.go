@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+
+	"game_of_stones/tree"
 )
 
 type Stone byte
@@ -27,8 +29,15 @@ func (stone Stone) String() string {
 	return "None"
 }
 
-func (s Score) IsWinning() bool {
-	return s > win || s < -win
+func (s Score) State() tree.GameState {
+	if s > win {
+		return tree.MaxerWin
+	} else if s < -win {
+		return tree.MinnerWin
+	} else if s == 0 {
+		return tree.Draw
+	}
+	return tree.Inconclusive
 }
 
 const maxStones1 = maxStones - 1

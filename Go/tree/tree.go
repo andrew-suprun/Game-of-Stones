@@ -1,19 +1,17 @@
 package tree
 
 import (
-	"game_of_stones/pool"
+	"bytes"
 )
 
-type iMove interface {
-	IsWinning() bool
-}
+type GameState int
 
-type iGame[move iMove] interface {
-	Turn() Player
-	PlayMove(move)
-	UndoMove(move)
-	PossibleMoves(result *[]move)
-}
+const (
+	Inconclusive GameState = iota
+	MinnerWin
+	Draw
+	MaxerWin
+)
 
 type Player int
 
@@ -22,88 +20,147 @@ const (
 	Minner Player = 2
 )
 
+type iMove interface {
+	State() GameState
+}
+
+type iGame[move iMove] interface {
+	Turn() Player
+	PlayMove(move)
+	UndoMove(move)
+	PossibleMoves(result *[]move) GameState
+	Less(move, move) bool
+}
+
 type node[move iMove] struct {
-	parent pool.Idx
-	child  pool.Idx
-	prev   pool.Idx
-	next   pool.Idx
+	parent *node[move]
+	child  *node[move]
+	prev   *node[move]
+	next   *node[move]
 	move   move
 }
 
-type nodeHeap[move iMove] struct {
-	pool    pool.Pool[node[move]]
-	indices []pool.Idx
+type nodeHeap[game iGame[move], move iMove] struct {
+	game  *game
+	nodes []*node[move]
 }
 
-func (h *nodeHeap[move]) Less(i, j int) bool {
-	iNode := h.pool.Get(pool.Idx(i)).move
-	jNode := h.pool.Get(pool.Idx(j)).move
-	return iNode.Less(jNode)
+type nodeHeapMaxer[game iGame[move], move iMove] struct {
+	nodeHeap[game, move]
 }
 
-func (h *nodeHeap) Swap(i, j int) {
-	iNode := h.pool.Get(i)
-	jNode := h.pool.Get(j)
-	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+type nodeHeapMinner[game iGame[move], move iMove] struct {
+	nodeHeap[game, move]
 }
 
-func (h *nodeHeap) Len() int {
-	return len(*h)
+func (h *nodeHeapMaxer[game, move]) Less(i, j int) bool {
+	return (*h.game).Less(h.nodes[i].move, h.nodes[j].move)
 }
 
-func (h *nodeHeap) Pop() (v any) {
-	*h, v = (*h)[:h.Len()-1], (*h)[h.Len()-1]
+func (h *nodeHeapMinner[game, move]) Less(i, j int) bool {
+	return (*h.game).Less(h.nodes[j].move, h.nodes[i].move)
+}
+
+func (h *nodeHeap[game, move]) Swap(i, j int) {
+	h.nodes[i], h.nodes[j] = h.nodes[j], h.nodes[i]
+}
+
+func (h *nodeHeap[game, move]) Len() int {
+	return len(h.nodes)
+}
+
+func (h *nodeHeap[game, move]) Pop() (v *node[move]) {
+	h.nodes, v = h.nodes[:h.Len()-1], h.nodes[h.Len()-1]
 	return
 }
 
-func (h *nodeHeap) Push(v any) {
-	*h = append(*h, v.(int))
+func (h *nodeHeap[game, move]) Push(v *node[move]) {
+	h.nodes = append(h.nodes, v)
 }
 
 type Tree[game iGame[move], move iMove] struct {
-	game     iGame[move]
-	pool     pool.Pool[node[move]]
-	heap     nodeHeap[move]
-	root     pool.Idx
-	current  pool.Idx
-	capacity int
+	game          iGame[move]
+	root          *node[move]
+	current       *node[move]
+	capacity      int
+	curDepth      int
+	maxDepth      int
+	possibleMoves []move
+	freeNodes     []*node[move]
 }
 
 func NewTree[g iGame[m], m iMove](game g, capacity int) *Tree[g, m] {
 
 	tree := &Tree[g, m]{
 		game:     game,
-		pool:     pool.MakePool[node[m]](),
 		capacity: capacity,
 	}
-	tree.root = tree.pool.Add(node[m]{})
+	tree.root = &node[m]{}
+	tree.current = tree.root
 	return tree
 }
 
-func (tree *Tree[game, move]) firstLeaf() {
+func (tree *Tree[game, move]) findLeaf(findNeatLeaf bool) {
 	for {
-		child := tree.pool.Get(tree.current).child
-		if child == 0 {
+		if !findNeatLeaf {
+			if tree.current.next != nil {
+				tree.current = tree.current.next
+				findNeatLeaf = true
+				continue
+			}
+
+			if tree.current.parent == nil {
+				break
+			}
+
+			tree.game.UndoMove(tree.current.move)
+			tree.current = tree.current.parent
+			tree.curDepth--
+			continue
+		}
+
+		if tree.curDepth == tree.maxDepth {
 			break
 		}
-		tree.current = child
+
+		if tree.current.child != nil {
+			tree.current = tree.current.child
+			tree.game.PlayMove(tree.current.move)
+		}
+
+		findNeatLeaf = false
 	}
 }
 
-func (tree *Tree[game, move]) nextSibling() bool {
-	for {
-		currentNode := tree.pool.Get(tree.current)
-		if currentNode.next != 0 {
-			break
+func (tree *Tree[game, move]) expand() GameState {
+	gameState := tree.game.PossibleMoves(&tree.possibleMoves)
+
+	if gameState == Inconclusive {
+		nNodes := len(tree.possibleMoves)
+		nodes := make([]*node[move], nNodes)
+		parent := tree.current
+
+		nodes[0].parent = parent
+		nodes[0].move = tree.possibleMoves[0]
+		for i, m := range tree.possibleMoves[1:] {
+			prev := nodes[i-1]
+			next := nodes[i]
+			prev.next = next
+			next.prev = prev
+			prev.parent = parent
+			prev.move = m
 		}
-		if currentNode.parent == 0 {
-			return false
-		}
-		tree.current = currentNode.parent
+		tree.current.child = nodes[0]
 	}
-	tree.firstLeaf()
-	return true
+
+	return gameState
 }
 
-func (tree *Tree[game, move]) expand() {
+func (tree *Tree[game, move]) String() string {
+	buf := &bytes.Buffer{}
+	tree.string(tree.root, buf, 0)
+	return buf.String()
+}
+
+func (tree *Tree[game, move]) string(node *node[move], buf *bytes.Buffer, level int) {
 }
