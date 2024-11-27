@@ -136,24 +136,39 @@ func (tree *Tree[game, move]) expand() GameState {
 	gameState := tree.game.PossibleMoves(&tree.possibleMoves)
 
 	if gameState == Inconclusive {
-		nNodes := len(tree.possibleMoves)
-		nodes := make([]*node[move], nNodes)
 		parent := tree.current
-
-		nodes[0].parent = parent
-		nodes[0].move = tree.possibleMoves[0]
-		for i, m := range tree.possibleMoves[1:] {
-			prev := nodes[i-1]
-			next := nodes[i]
+		next := tree.acqireNode(parent, tree.possibleMoves[0])
+		for _, prevMove := range tree.possibleMoves[1:] {
+			prev := tree.acqireNode(parent, prevMove)
 			prev.next = next
 			next.prev = prev
-			prev.parent = parent
-			prev.move = m
+			next = prev
 		}
-		tree.current.child = nodes[0]
+		tree.current.child = next
 	}
 
 	return gameState
+}
+
+func (tree *Tree[game, move]) acqireNode(parent *node[move], m move) *node[move] {
+	nFreeNodes := len(tree.freeNodes)
+	if nFreeNodes > 0 {
+		result := tree.freeNodes[nFreeNodes-1]
+		result.parent = parent
+		result.move = m
+		tree.freeNodes = tree.freeNodes[:nFreeNodes-1]
+		return result
+	}
+	return &node[move]{
+		parent: parent,
+		move:   m,
+	}
+}
+
+func (tree *Tree[game, move]) releaseNode(n *node[move]) {
+	n.next = nil
+	n.prev = nil
+	n.child = nil
 }
 
 func (tree *Tree[game, move]) String() string {
@@ -163,4 +178,5 @@ func (tree *Tree[game, move]) String() string {
 }
 
 func (tree *Tree[game, move]) string(node *node[move], buf *bytes.Buffer, level int) {
+
 }
