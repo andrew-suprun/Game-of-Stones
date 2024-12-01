@@ -2,6 +2,7 @@ package tree
 
 import (
 	"bytes"
+	"fmt"
 )
 
 type GameState int
@@ -100,40 +101,56 @@ func NewTree[g iGame[m], m iMove](game g, capacity int) *Tree[g, m] {
 	return tree
 }
 
-func (tree *Tree[game, move]) findLeaf(findNeatLeaf bool) {
+func (tree *Tree[game, move]) Expand() bool {
+	tree.findLeaf()
+	if tree.curDepth > 0 || tree.maxDepth == 0 {
+		tree.expand()
+		return true
+	}
+	return false
+}
+
+func (tree *Tree[game, move]) findLeaf() {
+	findFirstLeaf := tree.curDepth == 0
 	for {
-		if !findNeatLeaf {
-			if tree.current.next != nil {
-				tree.current = tree.current.next
-				findNeatLeaf = true
+		if findFirstLeaf {
+			if tree.current.child != nil {
+				tree.current = tree.current.child
+				tree.curDepth++
+				tree.game.PlayMove(tree.current.move)
 				continue
 			}
 
-			if tree.current.parent == nil {
-				break
+			if tree.curDepth < tree.maxDepth {
+				findFirstLeaf = false
+				continue
 			}
 
+			return
+		}
+
+		if tree.current.next != nil {
 			tree.game.UndoMove(tree.current.move)
-			tree.current = tree.current.parent
-			tree.curDepth--
+			tree.current = tree.current.next
+			tree.game.PlayMove(tree.current.move)
+			findFirstLeaf = true
 			continue
 		}
 
-		if tree.curDepth == tree.maxDepth {
-			break
+		if tree.curDepth == 0 {
+			tree.maxDepth++
+			return
 		}
 
-		if tree.current.child != nil {
-			tree.current = tree.current.child
-			tree.game.PlayMove(tree.current.move)
-		}
-
-		findNeatLeaf = false
+		tree.game.UndoMove(tree.current.move)
+		tree.current = tree.current.parent
+		tree.curDepth--
 	}
 }
 
 func (tree *Tree[game, move]) expand() GameState {
 	gameState := tree.game.PossibleMoves(&tree.possibleMoves)
+	// TODO: Implement terminal moves
 
 	if gameState == Inconclusive {
 		parent := tree.current
@@ -172,11 +189,35 @@ func (tree *Tree[game, move]) releaseNode(n *node[move]) {
 }
 
 func (tree *Tree[game, move]) String() string {
+	return tree.root.String()
+}
+
+func (node *node[move]) String() string {
 	buf := &bytes.Buffer{}
-	tree.string(tree.root, buf, 0)
+	node.string(buf, 0, "%v\n")
 	return buf.String()
 }
 
-func (tree *Tree[game, move]) string(node *node[move], buf *bytes.Buffer, level int) {
+func (tree *Tree[game, move]) GoString() string {
+	buf := &bytes.Buffer{}
+	tree.root.string(buf, 0, "%#v\n")
+	return buf.String()
+}
 
+func (node *node[move]) GoString() string {
+	buf := &bytes.Buffer{}
+	node.string(buf, 0, "%#v\n")
+	return buf.String()
+}
+
+func (node *node[move]) string(buf *bytes.Buffer, level int, format string) {
+	for range level {
+		buf.WriteString("|   ")
+	}
+	fmt.Fprintf(buf, format, node.move)
+	child := node.child
+	for child != nil {
+		child.string(buf, level+1, format)
+		child = child.next
+	}
 }
