@@ -6,61 +6,59 @@ import (
 	"testing"
 )
 
+const maxScore = 5
+
 var rnd = rand.New(rand.NewSource(3))
-
-type testMove struct {
-	id    int
-	score int
-	state GameState
-}
-
-func (m testMove) Score() int {
-	return m.score
-}
-
-func (m testMove) State() GameState {
-	return m.state
-}
-
 var id = 0
 
-const maxScore = 5
+type testMove struct {
+	id     int
+	score  int
+	isDraw bool
+	isWin  bool
+}
 
 func newMove() testMove {
 	move := testMove{
 		id:    id,
 		score: rnd.Intn(maxScore*2+1) - maxScore,
-		state: Inconclusive,
 	}
 	switch move.score {
 	case 0:
-		move.state = Draw
-	case -5:
-		move.state = MinnerWin
-	case 5:
-		move.state = MaxerWin
+		move.isDraw = true
+	case 5, -5:
+		move.isWin = true
 	}
 	id++
 	return move
+}
+
+func (m testMove) IsWin() bool {
+	return m.isWin
+}
+
+func (m testMove) IsDraw() bool {
+	return m.isDraw
+}
+
+func (m testMove) String() string {
+	if m.isDraw {
+		return fmt.Sprintf("%v: score Draw", m.id)
+	}
+	if m.isWin {
+		return fmt.Sprintf("%v: score Win", m.id)
+	}
+	return fmt.Sprintf("%v: score %v", m.id, m.score)
 }
 
 type testGame struct {
 	depth int
 }
 
-func (game *testGame) Turn() Player {
-	if game.depth%2 == 0 {
-		return Maxer
-	}
-	return Minner
-}
-
 func (game *testGame) PlayMove(move testMove) {
-	fmt.Println(">>> PlayMove", move)
 }
 
 func (game *testGame) UndoMove(move testMove) {
-	fmt.Println("<<< UndoMove", move)
 }
 
 func (game *testGame) PossibleMoves(result *[]testMove) {

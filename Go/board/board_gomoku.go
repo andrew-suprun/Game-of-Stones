@@ -6,7 +6,7 @@ const (
 	maxStones = 5
 )
 
-func scoreStones(stone, stones Stone) (Score, Score) {
+func scoreStones(stone, stones Stone) (int32, int32) {
 	if stone == Black {
 		switch stones {
 		case 0x00:

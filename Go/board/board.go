@@ -4,12 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-
-	"game_of_stones/tree"
 )
 
 type Stone byte
-type Score int32
 
 const (
 	None  Stone = 0
@@ -17,7 +14,7 @@ const (
 	White Stone = 0x10
 )
 
-const win Score = 50_000
+const win int32 = 50_000
 
 func (stone Stone) String() string {
 	switch stone {
@@ -29,35 +26,24 @@ func (stone Stone) String() string {
 	return "None"
 }
 
-func (s Score) State() tree.GameState {
-	if s > win {
-		return tree.MaxerWin
-	} else if s < -win {
-		return tree.MinnerWin
-	} else if s == 0 {
-		return tree.Draw
-	}
-	return tree.Inconclusive
-}
-
 const maxStones1 = maxStones - 1
 
 type Board struct {
 	stones [Size][Size]Stone
-	scores [Size][Size][2]Score
+	scores [Size][Size][2]int32
 }
 
 func MakeBoard() Board {
 	board := Board{}
 	for y := 0; y < Size; y++ {
-		v := Score(1 + min(maxStones1, y, Size-1-y))
+		v := 1 + min(maxStones1, y, Size-1-y)
 		for x := 0; x < Size; x++ {
-			h := Score(1 + min(maxStones1, x, Size-1-x))
+			h := 1 + min(maxStones1, x, Size-1-x)
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
-			t1 := Score(max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y)))
-			t2 := Score(max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1)))
-			total := v + h + t1 + t2
-			board.scores[y][x] = [2]Score{total, -total}
+			t1 := max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y))
+			t2 := max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1))
+			total := int32(v + h + t1 + t2)
+			board.scores[y][x] = [2]int32{total, -total}
 		}
 	}
 	return board
@@ -75,18 +61,32 @@ func (b *Board) Stone(x, y int) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) Score(stone Stone, x, y int) Score {
+func (b *Board) Score(stone Stone, x, y int) int32 {
 	switch stone {
 	case Black:
 		return b.scores[y][x][0]
 	case White:
 		return b.scores[y][x][1]
-	default:
-		return 0
 	}
+	panic("IsWin")
 }
 
-func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
+func (b *Board) IsWin(stone Stone, x, y int) bool {
+	switch stone {
+	case Black:
+		return b.scores[y][x][0] > win
+	case White:
+		return b.scores[y][x][1] < -win
+	}
+	panic("IsWin")
+}
+
+func (b *Board) IsDraw(x, y int) bool {
+	scores := b.scores[y][x]
+	return scores[0] == 0 && scores[1] == 0
+}
+
+func (b *Board) placeStone(stone Stone, x, y int, coeff int32) {
 	if coeff == -1 {
 		b.stones[y][x] = None
 	}
@@ -132,7 +132,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 	}
 }
 
-func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff Score) {
+func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff int32) {
 	stones := Stone(0)
 	for i := 0; i < maxStones1; i++ {
 		stones += b.stones[y+i*dy][x+i*dx]
@@ -253,7 +253,11 @@ func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
 		for x := 0; x < Size; x++ {
 			switch b.stones[y][x] {
 			case None:
-				fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
+				if b.IsWin(Black, x, y) || b.IsWin(White, x, y) {
+					buf.WriteString("  WIN │")
+				} else {
+					fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
+				}
 			case Black:
 				buf.WriteString("    X │")
 			case White:

@@ -9,27 +9,12 @@ import (
 
 type GameState int
 
-const (
-	Inconclusive GameState = iota
-	MinnerWin
-	Draw
-	MaxerWin
-)
-
-type Player int
-
-const (
-	Maxer  Player = 1
-	Minner Player = 2
-)
-
 type iMove interface {
-	State() GameState
-	Score() int
+	IsWin() bool
+	IsDraw() bool
 }
 
 type iGame[move iMove] interface {
-	Turn() Player
 	PlayMove(move)
 	UndoMove(move)
 	PossibleMoves(result *[]move)
@@ -48,7 +33,6 @@ type Tree[game iGame[move], move iMove] struct {
 	root          *node[move]
 	current       *node[move]
 	capacity      int
-	curDepth      int
 	maxDepth      int
 	possibleMoves []move
 	freeNodes     []*node[move]
@@ -73,11 +57,11 @@ func (tree *Tree[game, move]) grow() {
 	var less func(a, b nodePair[move]) bool
 	if tree.maxDepth%2 == 0 {
 		less = func(a, b nodePair[move]) bool {
-			return a.child.move.Score() < b.child.move.Score()
+			return tree.game.Less(a.child.move, b.child.move)
 		}
 	} else {
 		less = func(a, b nodePair[move]) bool {
-			return b.child.move.Score() < a.child.move.Score()
+			return tree.game.Less(b.child.move, a.child.move)
 		}
 	}
 	tree.growRec(heap.NewHeap(tree.capacity, less), tree.root, 0)
@@ -96,12 +80,10 @@ func (tree *Tree[game, move]) growRec(leaves *heap.Heap[nodePair[move]], node *n
 		return
 	}
 	tree.game.PossibleMoves(&tree.possibleMoves)
-	fmt.Println("possibleMoves", tree.possibleMoves)
 	for _, childMove := range tree.possibleMoves {
 		childNode := tree.acqireNode(childMove)
 
 		pair := nodePair[move]{child: childNode, parent: node}
-		fmt.Println("WillAdd", childMove, leaves.WillAdd(pair))
 		if leaves.WillAdd(pair) {
 			if node.child != nil {
 				childNode.next = node.child

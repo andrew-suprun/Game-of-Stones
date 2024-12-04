@@ -3,19 +3,20 @@ package connect6
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 
 	"game_of_stones/board"
-	"game_of_stones/tree"
+)
+
+const (
+	winningScore int32 = math.MaxInt32 - 1
+	drawingScore int32 = math.MaxInt32 - 2
 )
 
 type Move struct {
 	x1, y1, x2, y2 byte
-	score          board.Score
-}
-
-func (move *Move) State() tree.GameState {
-	return move.score.State()
+	score          int32
 }
 
 func (m Move) String() string {
@@ -25,10 +26,18 @@ func (m Move) GoString() string {
 	return fmt.Sprintf("move(%d, %d, %d, %d)", m.x1, m.y1, m.x2, m.y2)
 }
 
+func (m Move) IsWinning() bool {
+	return m.score == winningScore
+}
+
+func (m Move) IsDraw() bool {
+	return m.score == drawingScore
+}
+
 type Connect6 struct {
 	turn  board.Stone
 	board board.Board
-	score board.Score
+	score int32
 }
 
 func NewGame() *Connect6 {
@@ -37,16 +46,6 @@ func NewGame() *Connect6 {
 		board: board.MakeBoard(),
 	}
 	return game
-}
-
-func (c *Connect6) Turn() tree.Player {
-	switch c.turn {
-	case board.Black:
-		return tree.Maxer
-	case board.White:
-		return tree.Minner
-	}
-	panic("Illegal Turn()")
 }
 
 func (c *Connect6) ParseMove(moveStr string) (Move, error) {
@@ -62,11 +61,11 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-	return MakeMove(x1, y1, x2, y2), nil
+	return MakeMove(x1, y1, x2, y2, 0), nil
 }
 
-func MakeMove(x1, y1, x2, y2 int) Move {
-	return Move{byte(x1), byte(y1), byte(x2), byte(y2), 0}
+func MakeMove(x1, y1, x2, y2 int, score int32) Move {
+	return Move{byte(x1), byte(y1), byte(x2), byte(y2), score}
 }
 
 func (c *Connect6) PlayMove(move Move) {
@@ -101,7 +100,7 @@ func MinnerLess(a, b Move) bool {
 	return b.score < a.score
 }
 
-func (c *Connect6) PossibleMoves(moves *[]Move) tree.GameState {
+func (c *Connect6) PossibleMoves(moves *[]Move) {
 	*moves = (*moves)[:0]
 	for y1 := 0; y1 < board.Size; y1++ {
 		for x1 := 0; x1 < board.Size; x1++ {
@@ -111,14 +110,10 @@ func (c *Connect6) PossibleMoves(moves *[]Move) tree.GameState {
 
 			score1 := c.board.Score(c.turn, x1, y1)
 
-			if score1 == 0 {
-				continue
-			}
-
-			if score1.State() == tree.MaxerWin || score1.State() == tree.MinnerWin {
-				(*moves)[0] = Move{byte(x1), byte(y1), byte(x1), byte(y1), c.score + score1}
+			if c.board.IsWin(c.turn, x1, y1) {
+				(*moves)[0] = MakeMove(x1, y1, x1, y1, winningScore)
 				*moves = (*moves)[:1]
-				return score1.State()
+				return
 			}
 
 			c.board.PlaceStone(c.turn, x1, y1)
@@ -133,15 +128,17 @@ func (c *Connect6) PossibleMoves(moves *[]Move) tree.GameState {
 						continue
 					}
 					score2 := c.board.Score(c.turn, x2, y2)
-					*moves = append(*moves, Move{byte(x1), byte(y1), byte(x2), byte(y2), c.score + score1 + score2})
+					score := score1 + score2
+					if score == 0 {
+						score = drawingScore
+					} else {
+						score += c.score
+					}
+					*moves = append(*moves, MakeMove(x1, y1, x2, y2, score))
 				}
 			}
 
 			c.board.RemoveStone(c.turn, x1, y1)
 		}
 	}
-	if len(*moves) == 0 {
-		return tree.Draw
-	}
-	return tree.Inconclusive
 }
