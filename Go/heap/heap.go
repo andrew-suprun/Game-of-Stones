@@ -1,44 +1,105 @@
 package heap
 
-import "sort"
+import (
+	"bytes"
+	"fmt"
+)
 
-type Heap[item any] interface {
-	sort.Interface
-	Push(item item)
-	Pop() item
+type Less[E any] func(E, E) bool
+
+type Heap[E any] struct {
+	Items []E
+	less  Less[E]
 }
 
-func Push[heap Heap[item], item any](h heap, i item) {
-	h.Push(i)
-	j := h.Len() - 1
-	for {
-		i := (j - 1) / 2
-		if i == j || !h.Less(j, i) {
-			break
-		}
-		h.Swap(i, j)
-		j = i
+func NewHeap[E any](capacity int, less Less[E]) *Heap[E] {
+	return &Heap[E]{
+		Items: make([]E, 0, capacity),
+		less:  less,
 	}
 }
 
-func Pop[heap Heap[item], item any](h heap) item {
-	h.Swap(0, h.Len()-1)
-	i := 0
-	n := h.Len() - 1
-	for {
-		j1 := 2*i + 1
-		if j1 >= n {
-			break
-		}
-		j := j1
-		if j2 := j1 + 1; j2 < n && h.Less(j2, j1) {
-			j = j2
-		}
-		if !h.Less(j, i) {
-			break
-		}
-		h.Swap(i, j)
-		i = j
+func (h *Heap[E]) WillAdd(e E) bool {
+	return len(h.Items) < cap(h.Items) || h.less(h.Items[0], e)
+}
+
+func (h *Heap[E]) Add(e E) (E, bool) {
+	if len(h.Items) == cap(h.Items) {
+		result := h.Items[0]
+		h.Items[0] = e
+		h.siftDown()
+		return result, true
 	}
-	return h.Pop()
+	h.Items = append(h.Items, e)
+	h.siftUp()
+	var nilE E
+	return nilE, false
+}
+
+func (h *Heap[E]) Remove() E {
+	if len(h.Items) == 1 {
+		result := h.Items[0]
+		h.Items = nil
+		return result
+	}
+	result := h.Items[0]
+	h.Items[0] = h.Items[len(h.Items)-1]
+	h.Items = h.Items[:len(h.Items)-1]
+	h.siftDown()
+	return result
+}
+
+func (h *Heap[E]) Sorted() []E {
+	size := len(h.Items)
+	result := make([]E, size)
+	for i := range size {
+		result[size-i-1] = h.Remove()
+	}
+	return result
+}
+
+func (h *Heap[E]) siftUp() {
+	childIdx := len(h.Items) - 1
+	child := h.Items[childIdx]
+	for childIdx > 0 && h.less(child, h.Items[(childIdx-1)/2]) {
+		parentIdx := (childIdx - 1) / 2
+		parent := h.Items[parentIdx]
+		h.Items[childIdx] = parent
+		childIdx = parentIdx
+	}
+	h.Items[childIdx] = child
+}
+
+func (h *Heap[E]) siftDown() {
+	idx := 0
+	elem := h.Items[idx]
+	for {
+		first := idx
+		leftChildIdx := idx*2 + 1
+		if leftChildIdx < len(h.Items) && h.less(h.Items[leftChildIdx], elem) {
+			first = leftChildIdx
+		}
+		rightChildIdx := idx*2 + 2
+		if rightChildIdx < len(h.Items) &&
+			h.less(h.Items[rightChildIdx], elem) &&
+			h.less(h.Items[rightChildIdx], h.Items[leftChildIdx]) {
+			first = rightChildIdx
+		}
+		if idx == first {
+			break
+		}
+
+		h.Items[idx] = h.Items[first]
+		idx = first
+	}
+	h.Items[idx] = elem
+}
+
+func (h *Heap[E]) String() string {
+	buf := &bytes.Buffer{}
+	fmt.Fprintln(buf, "---- Heap")
+	for _, item := range h.Items {
+		fmt.Fprintf(buf, "  - %v\n", item)
+	}
+	return buf.String()
 }

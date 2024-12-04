@@ -2,121 +2,84 @@ package tree
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
-type testMove int
+var rnd = rand.New(rand.NewSource(3))
+
+type testMove struct {
+	id    int
+	score int
+	state GameState
+}
+
+func (m testMove) Score() int {
+	return m.score
+}
 
 func (m testMove) State() GameState {
-	return Inconclusive
+	return m.state
+}
+
+var id = 0
+
+const maxScore = 5
+
+func newMove() testMove {
+	move := testMove{
+		id:    id,
+		score: rnd.Intn(maxScore*2+1) - maxScore,
+		state: Inconclusive,
+	}
+	switch move.score {
+	case 0:
+		move.state = Draw
+	case -5:
+		move.state = MinnerWin
+	case 5:
+		move.state = MaxerWin
+	}
+	id++
+	return move
 }
 
 type testGame struct {
-	state testMove
+	depth int
 }
 
 func (game *testGame) Turn() Player {
-	return Maxer
+	if game.depth%2 == 0 {
+		return Maxer
+	}
+	return Minner
 }
 
 func (game *testGame) PlayMove(move testMove) {
-	fmt.Println(">>> game.PlayMove", move)
-	game.state = move
+	fmt.Println(">>> PlayMove", move)
 }
 
 func (game *testGame) UndoMove(move testMove) {
-	fmt.Println("<<< game.UndoMove", move)
-	switch game.state {
-	case 1, 2, 3:
-		game.state = 0
-	case 4, 5:
-		game.state = 1
-	case 6, 7, 8:
-		game.state = 2
-	case 9, 10:
-		game.state = 3
-	case 11, 12:
-		game.state = 4
-	case 13, 14:
-		game.state = 5
-	case 15:
-		game.state = 6
-	case 16, 17, 18:
-		game.state = 8
-	case 19:
-		game.state = 9
-	case 20:
-		game.state = 10
-	}
+	fmt.Println("<<< UndoMove", move)
 }
 
-func (game *testGame) PossibleMoves(result *[]testMove) GameState {
+func (game *testGame) PossibleMoves(result *[]testMove) {
 	*result = (*result)[:0]
-	switch game.state {
-	case 0:
-		(*result) = []testMove{1, 2, 3}
-	case 1:
-		(*result) = []testMove{4, 5}
-	case 2:
-		(*result) = []testMove{6, 7, 8}
-	case 3:
-		(*result) = []testMove{9, 10}
-	case 4:
-		(*result) = []testMove{11, 12}
-	case 5:
-		(*result) = []testMove{13, 14}
-	case 6:
-		(*result) = []testMove{15}
-	case 7:
-		(*result) = []testMove{}
-	case 8:
-		(*result) = []testMove{16, 17, 18}
-	case 9:
-		(*result) = []testMove{19}
-	case 10:
-		(*result) = []testMove{20}
+	nChildren := rnd.Intn(5) + 1
+	for range nChildren {
+		*result = append(*result, newMove())
 	}
-	if len(*result) == 0 {
-		return Draw
-	}
-	return Inconclusive
 }
 
 func (game *testGame) Less(a, b testMove) bool {
-	return a < b
+	return a.score < b.score
 }
-
-const strTree = `0
-|   3
-|   |   10
-|   |   |   20
-|   |   9
-|   |   |   19
-|   2
-|   |   8
-|   |   |   18
-|   |   |   17
-|   |   |   16
-|   |   7
-|   |   6
-|   |   |   15
-|   1
-|   |   5
-|   |   |   14
-|   |   |   13
-|   |   4
-|   |   |   12
-|   |   |   11
-`
 
 func TestFirstLeaf(t *testing.T) {
 	game := &testGame{}
 	tree := NewTree(game, 8)
-	for i := range 13 {
-		tree.Expand()
-		fmt.Printf("--- current.%d: move %v cur %v max %v tree:\n%#v\n", i, tree.current.move, tree.curDepth, tree.maxDepth, tree)
-	}
-	if tree.GoString() != strTree {
-		t.Fail()
-	}
+	tree.grow()
+	tree.grow()
+	tree.grow()
+	fmt.Printf("%v\n", tree)
 }

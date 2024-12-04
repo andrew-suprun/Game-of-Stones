@@ -5,41 +5,29 @@ import (
 	"testing"
 )
 
-type IntHeap []int
-
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-
-func (h *IntHeap) Push(i int) {
-	*h = append(*h, i)
+func less(i, j int) bool {
+	return i < j
 }
-
-func (h *IntHeap) Pop() int {
-	old := *h
-	n := len(old)
-	i := old[n-1]
-	*h = old[0 : n-1]
-	return i
-}
-
-const N = 100
 
 func TestHeap(t *testing.T) {
-	heap := &IntHeap{}
-	values := make([]int, N)
-	for i := range N {
-		values[i] = i
+	heap := NewHeap(20, less)
+	values := make([]int, 100)
+	for i := range 100 {
+		values[i] = i + 1
 	}
-	rand.Shuffle(N, func(i, j int) { values[i], values[j] = values[j], values[i] })
-	for i := range N {
-		Push(heap, values[i])
+	rand.Shuffle(100, func(i, j int) {
+		values[i], values[j] = values[j], values[i]
+	})
+	for i := range 100 {
+		heap.Add(values[i])
 	}
 
-	for i := range N {
-		item := Pop(heap)
-		if item != i {
-			t.FailNow()
+	oldElem := 0
+	for range 20 {
+		elem := heap.Remove()
+		if elem <= oldElem {
+			t.Fail()
 		}
+		oldElem = elem
 	}
 }

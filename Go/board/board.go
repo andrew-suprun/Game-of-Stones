@@ -15,9 +15,9 @@ const (
 	None  Stone = 0
 	Black Stone = 1
 	White Stone = 0x10
-
-	win Score = 50_000
 )
+
+const win Score = 50_000
 
 func (stone Stone) String() string {
 	switch stone {

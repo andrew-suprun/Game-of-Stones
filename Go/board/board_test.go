@@ -178,13 +178,13 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 	return scores
 }
 
-// 1, 8, 56, 336, 20616
+// 1, 8, 56, 336, 100616
 func testPlaceScores(stones Stone) (Score, Score) {
 	switch stones {
 	case 0x05:
-		return 5040, -20616
+		return 5040, -100616
 	case 0x04:
-		return 20280, -336
+		return 100280, -336
 	case 0x03:
 		return 280, -56
 	case 0x02:
@@ -200,9 +200,9 @@ func testPlaceScores(stones Stone) (Score, Score) {
 	case 0x30:
 		return 56, -280
 	case 0x40:
-		return 336, -20280
+		return 336, -100280
 	case 0x50:
-		return 20616, -5040
+		return 100616, -5040
 	}
 	return 0, 0
 }
