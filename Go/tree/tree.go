@@ -92,29 +92,35 @@ func (tree *Tree[game, move]) growRec(leaves *heap.Heap[nodePair[move]], node *n
 			node.child = childNode
 
 			if minPair, ok := leaves.Add(pair); ok {
-				minNode := minPair.child
-				if minNode.prev != nil {
-					if minNode.next != nil {
-						minNode.prev.next = minNode.next
-						minNode.next.prev = minNode.prev
+				minChild := minPair.child
+				if minChild.prev != nil {
+					if minChild.next != nil {
+						minChild.prev.next = minChild.next
+						minChild.next.prev = minChild.prev
 					} else {
-						minNode.prev.next = nil
+						minChild.prev.next = nil
 					}
 				} else {
-					minPair.parent.child = minNode.next
+					minPair.parent.child = minChild.next
+					if minChild.next != nil {
+						minChild.next.prev = nil
+					}
 				}
 				tree.releaseNode(minPair.child)
 			}
 		} else {
 			tree.releaseNode(childNode)
 		}
+		tree.validate()
 	}
 }
 
 func (tree *Tree[game, move]) acqireNode(m move) *node[move] {
+	fmt.Println(">>> acqire", m)
 	nFreeNodes := len(tree.freeNodes)
 	if nFreeNodes > 0 {
 		result := tree.freeNodes[nFreeNodes-1]
+		fmt.Println("    got", result.move, "child", result.child, "next", result.next, "prev", result.prev)
 		result.move = m
 		tree.freeNodes = tree.freeNodes[:nFreeNodes-1]
 		return result
@@ -125,6 +131,7 @@ func (tree *Tree[game, move]) acqireNode(m move) *node[move] {
 }
 
 func (tree *Tree[game, move]) releaseNode(node *node[move]) {
+	fmt.Println("<<< release", node.move, "child", node.child, "next", node.next, "prev", node.prev)
 	node.next = nil
 	node.prev = nil
 	node.child = nil

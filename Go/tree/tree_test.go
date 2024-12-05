@@ -19,6 +19,7 @@ type testMove struct {
 }
 
 func newMove() testMove {
+	id++
 	move := testMove{
 		id:    id,
 		score: rnd.Intn(maxScore*2+1) - maxScore,
@@ -29,7 +30,6 @@ func newMove() testMove {
 	case 5, -5:
 		move.isWin = true
 	}
-	id++
 	return move
 }
 
@@ -56,9 +56,11 @@ type testGame struct {
 }
 
 func (game *testGame) PlayMove(move testMove) {
+	fmt.Println(">>> play", move.id)
 }
 
 func (game *testGame) UndoMove(move testMove) {
+	fmt.Println("<<< undo", move.id)
 }
 
 func (game *testGame) PossibleMoves(result *[]testMove) {
@@ -79,5 +81,6 @@ func TestFirstLeaf(t *testing.T) {
 	tree.grow()
 	tree.grow()
 	tree.grow()
-	fmt.Printf("%v\n", tree)
+	// tree.grow()
+	// tree.grow()
 }

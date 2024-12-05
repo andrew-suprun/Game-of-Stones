@@ -1,0 +1,28 @@
+//go:build debug
+
+package tree
+
+import "fmt"
+
+func (tree *Tree[game, move]) validate() {
+	tree.root.validate()
+}
+
+func (node *node[move]) validate() {
+	if node.child != nil {
+		if node.child.prev != nil {
+			panic(fmt.Sprintf("### PANIC.1: node: %v, child: %v, child.prev: %v", node.move, node.child.move, node.child.prev.move))
+		}
+		child := node.child
+		for child != nil {
+			if child.next != nil {
+				if child != child.next.prev {
+					panic("### 2")
+				}
+			}
+			child.validate()
+			child = child.next
+		}
+	}
+
+}
