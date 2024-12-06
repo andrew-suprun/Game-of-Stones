@@ -42,12 +42,6 @@ func (m testMove) IsDraw() bool {
 }
 
 func (m testMove) String() string {
-	if m.isDraw {
-		return fmt.Sprintf("%v: score Draw", m.id)
-	}
-	if m.isWin {
-		return fmt.Sprintf("%v: score Win", m.id)
-	}
 	return fmt.Sprintf("%v: score %v", m.id, m.score)
 }
 
@@ -78,9 +72,10 @@ func (game *testGame) Less(a, b testMove) bool {
 func TestFirstLeaf(t *testing.T) {
 	game := &testGame{}
 	tree := NewTree(game, 8)
-	tree.grow()
-	tree.grow()
-	tree.grow()
-	// tree.grow()
-	// tree.grow()
+	tree.Grow()
+	tree.Grow()
+	tree.Grow()
+	tree.Grow()
+	tree.Grow()
+	fmt.Println(tree)
 }
