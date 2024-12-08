@@ -11,34 +11,50 @@ const maxScore = 5
 var rnd = rand.New(rand.NewSource(3))
 var id = 0
 
-type testMove struct {
-	id     int
+type testScore struct {
 	score  int
 	isDraw bool
 	isWin  bool
+}
+
+func (s testScore) IsWinning() bool {
+	return s.isWin
+}
+
+func (s testScore) IsDrawing() bool {
+	return s.isDraw
+}
+
+type testMove struct {
+	id    int
+	score testScore
+}
+
+func (m testMove) Score() testScore {
+	return m.score
 }
 
 func newMove() testMove {
 	id++
 	move := testMove{
 		id:    id,
-		score: rnd.Intn(maxScore*2+1) - maxScore,
+		score: testScore{score: rnd.Intn(maxScore*2+1) - maxScore},
 	}
-	switch move.score {
+	switch move.score.score {
 	case 0:
-		move.isDraw = true
+		move.score.isDraw = true
 	case 5, -5:
-		move.isWin = true
+		move.score.isWin = true
 	}
 	return move
 }
 
-func (m testMove) IsWin() bool {
-	return m.isWin
+func (m testMove) IsWinning() bool {
+	return m.score.isWin
 }
 
-func (m testMove) IsDraw() bool {
-	return m.isDraw
+func (m testMove) IsDrawing() bool {
+	return m.score.isDraw
 }
 
 func (m testMove) String() string {
@@ -66,7 +82,7 @@ func (game *testGame) PossibleMoves(result *[]testMove) {
 }
 
 func (game *testGame) Less(a, b testMove) bool {
-	return a.score < b.score
+	return a.score.score < b.score.score
 }
 
 func TestFirstLeaf(t *testing.T) {

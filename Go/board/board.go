@@ -7,7 +7,6 @@ import (
 )
 
 type Stone byte
-type Score int32
 
 const (
 	None  Stone = 0
@@ -15,7 +14,14 @@ const (
 	White Stone = 0x10
 )
 
-const win Score = 50_000
+type Score int32
+
+func (score Score) IsWinning() bool {
+	return score < -winning || score > winning
+}
+
+const DrawingScore Score = 1
+const winning Score = 50_000
 
 func (stone Stone) String() string {
 	switch stone {
@@ -43,7 +49,7 @@ func MakeBoard() Board {
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
 			t1 := max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y))
 			t2 := max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1))
-			total := Score(v + h + t1 + t2)
+			total := 2 * Score(v+h+t1+t2)
 			board.scores[y][x] = [2]Score{total, -total}
 		}
 	}
@@ -69,23 +75,16 @@ func (b *Board) Score(stone Stone, x, y int) Score {
 	case White:
 		return b.scores[y][x][1]
 	}
-	panic("IsWin")
+	panic("Score")
 }
 
-func (b *Board) IsWin(stone Stone, x, y int) bool {
-	switch stone {
-	case Black:
-		return b.scores[y][x][0] > win
-	case White:
-		return b.scores[y][x][1] < -win
-	}
-	panic("IsWin")
-}
+// func (b *Board) IsWinning(stone Stone, x, y int) bool {
+// 	return b.scores[y][x][0] > win || b.scores[y][x][1] < -win
+// }
 
-func (b *Board) IsDraw(x, y int) bool {
-	scores := b.scores[y][x]
-	return scores[0] == 0 && scores[1] == 0
-}
+// func (b *Board) IsDrawing(x, y int) bool {
+// 	return b.scores[y][x][0] == 0
+// }
 
 func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 	if coeff == -1 {
@@ -254,7 +253,8 @@ func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
 		for x := 0; x < Size; x++ {
 			switch b.stones[y][x] {
 			case None:
-				if b.IsWin(Black, x, y) || b.IsWin(White, x, y) {
+				score := b.Score(Black, x, y)
+				if score.IsWinning() {
 					buf.WriteString("  WIN │")
 				} else {
 					fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])

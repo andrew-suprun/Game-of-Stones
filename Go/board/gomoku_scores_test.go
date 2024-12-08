@@ -4,7 +4,6 @@
 
 package board
 
-// 2, 16, 112, 672, 3360, 106048
 func testScoreStones(stones Stone) (Score, Score) {
 	switch stones {
 	case 0x00:

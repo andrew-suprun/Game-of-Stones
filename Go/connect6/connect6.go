@@ -3,16 +3,9 @@ package connect6
 import (
 	"errors"
 	"fmt"
-	"math"
 	"strings"
 
 	"game_of_stones/board"
-)
-
-const (
-	// TODO: use IsWinning(), IsDrawing() instead
-	winningScore board.Score = math.MaxInt32
-	drawingScore board.Score = math.MaxInt32 - 1
 )
 
 type Move struct {
@@ -20,19 +13,15 @@ type Move struct {
 	score          board.Score
 }
 
+func (move Move) Score() board.Score {
+	return move.score
+}
+
 func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.x1+'a', board.Size-m.y1, m.x2+'a', board.Size-m.y2)
 }
 func (m Move) GoString() string {
 	return fmt.Sprintf("move(%d, %d, %d, %d)", m.x1, m.y1, m.x2, m.y2)
-}
-
-func (m Move) IsWinning() bool {
-	return m.score == winningScore
-}
-
-func (m Move) IsDraw() bool {
-	return m.score == drawingScore
 }
 
 type Connect6 struct {
@@ -111,8 +100,8 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 
 			score1 := c.board.Score(c.turn, x1, y1)
 
-			if c.board.IsWin(c.turn, x1, y1) {
-				(*moves)[0] = MakeMove(x1, y1, x1, y1, winningScore)
+			if score1.IsWinning() {
+				(*moves)[0] = MakeMove(x1, y1, x1, y1, c.score+score1)
 				*moves = (*moves)[:1]
 				return
 			}
@@ -131,7 +120,7 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 					score2 := c.board.Score(c.turn, x2, y2)
 					score := score1 + score2
 					if score == 0 {
-						score = drawingScore
+						score = board.DrawingScore
 					} else {
 						score += c.score
 					}

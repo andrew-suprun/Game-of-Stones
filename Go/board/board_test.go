@@ -80,7 +80,7 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 		}
 		for x := 0; x < Size-maxStones1; x++ {
 			stones += b.stones[y][x+maxStones1]
-			blackScore, whiteScore := testPlaceScores(stones)
+			blackScore, whiteScore := testScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
 				scores[y][x+i][0] += blackScore
@@ -97,7 +97,7 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 		}
 		for y := 0; y < Size-maxStones1; y++ {
 			stones += b.stones[y+maxStones1][x]
-			blackScore, whiteScore := testPlaceScores(stones)
+			blackScore, whiteScore := testScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
 				scores[y+i][x][0] += blackScore
@@ -114,7 +114,7 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 		}
 		for x := 0; x < Size-maxStones1-y; x++ {
 			stones += b.stones[x+y+maxStones1][x+maxStones1]
-			blackScore, whiteScore := testPlaceScores(stones)
+			blackScore, whiteScore := testScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
 				scores[x+y+i][x+i][0] += blackScore
@@ -131,7 +131,7 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 		}
 		for y := 0; y < Size-maxStones1-x; y++ {
 			stones += b.stones[y+maxStones1][x+y+maxStones1]
-			blackScore, whiteScore := testPlaceScores(stones)
+			blackScore, whiteScore := testScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
 				scores[y+i][x+y+i][0] += blackScore
@@ -148,7 +148,7 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 		}
 		for x := 0; x < Size-maxStones1-y; x++ {
 			stones += b.stones[x+y+maxStones1][Size-1-x-maxStones1]
-			blackScore, whiteScore := testPlaceScores(stones)
+			blackScore, whiteScore := testScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
 				scores[x+y+i][Size-1-x-i][0] += blackScore
@@ -165,7 +165,7 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 		}
 		for y := 0; y < Size-maxStones1-x; y++ {
 			stones += b.stones[y+maxStones1][Size-1-maxStones1-x-y]
-			blackScore, whiteScore := testPlaceScores(stones)
+			blackScore, whiteScore := testScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
 				scores[y+i][Size-1-x-y-i][0] += blackScore
@@ -176,35 +176,6 @@ func (b *Board) testBoardScores() *[Size][Size][2]Score {
 	}
 
 	return scores
-}
-
-// 1, 8, 56, 336, 100616
-func testPlaceScores(stones Stone) (Score, Score) {
-	switch stones {
-	case 0x00:
-		return 1, -1
-	case 0x01:
-		return 7, -1
-	case 0x02:
-		return 48, -8
-	case 0x03:
-		return 280, -56
-	case 0x04:
-		return 100280, -336
-	case 0x05:
-		return 5040, -100616
-	case 0x10:
-		return 1, -7
-	case 0x20:
-		return 8, -48
-	case 0x30:
-		return 56, -280
-	case 0x40:
-		return 336, -100280
-	case 0x50:
-		return 100616, -5040
-	}
-	return 0, 0
 }
 
 type testMove struct {
