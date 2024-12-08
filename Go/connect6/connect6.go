@@ -10,13 +10,14 @@ import (
 )
 
 const (
-	winningScore int32 = math.MaxInt32 - 1
-	drawingScore int32 = math.MaxInt32 - 2
+	// TODO: use IsWinning(), IsDrawing() instead
+	winningScore board.Score = math.MaxInt32
+	drawingScore board.Score = math.MaxInt32 - 1
 )
 
 type Move struct {
 	x1, y1, x2, y2 byte
-	score          int32
+	score          board.Score
 }
 
 func (m Move) String() string {
@@ -37,7 +38,7 @@ func (m Move) IsDraw() bool {
 type Connect6 struct {
 	turn  board.Stone
 	board board.Board
-	score int32
+	score board.Score
 }
 
 func NewGame() *Connect6 {
@@ -64,7 +65,7 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	return MakeMove(x1, y1, x2, y2, 0), nil
 }
 
-func MakeMove(x1, y1, x2, y2 int, score int32) Move {
+func MakeMove(x1, y1, x2, y2 int, score board.Score) Move {
 	return Move{byte(x1), byte(y1), byte(x2), byte(y2), score}
 }
 

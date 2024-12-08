@@ -71,8 +71,8 @@ func TestTime(t *testing.T) {
 	fmt.Println("n", 2*n, "time", time.Since(start))
 }
 
-func (b *Board) testBoardScores() *[Size][Size][2]int32 {
-	scores := &[Size][Size][2]int32{}
+func (b *Board) testBoardScores() *[Size][Size][2]Score {
+	scores := &[Size][Size][2]Score{}
 	for y := 0; y < Size; y++ {
 		stones := Stone(0)
 		for x := 0; x < maxStones1; x++ {
@@ -179,20 +179,20 @@ func (b *Board) testBoardScores() *[Size][Size][2]int32 {
 }
 
 // 1, 8, 56, 336, 100616
-func testPlaceScores(stones Stone) (int32, int32) {
+func testPlaceScores(stones Stone) (Score, Score) {
 	switch stones {
-	case 0x05:
-		return 5040, -100616
-	case 0x04:
-		return 100280, -336
-	case 0x03:
-		return 280, -56
-	case 0x02:
-		return 48, -8
-	case 0x01:
-		return 7, -1
 	case 0x00:
 		return 1, -1
+	case 0x01:
+		return 7, -1
+	case 0x02:
+		return 48, -8
+	case 0x03:
+		return 280, -56
+	case 0x04:
+		return 100280, -336
+	case 0x05:
+		return 5040, -100616
 	case 0x10:
 		return 1, -7
 	case 0x20:

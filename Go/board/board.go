@@ -7,6 +7,7 @@ import (
 )
 
 type Stone byte
+type Score int32
 
 const (
 	None  Stone = 0
@@ -14,7 +15,7 @@ const (
 	White Stone = 0x10
 )
 
-const win int32 = 50_000
+const win Score = 50_000
 
 func (stone Stone) String() string {
 	switch stone {
@@ -30,7 +31,7 @@ const maxStones1 = maxStones - 1
 
 type Board struct {
 	stones [Size][Size]Stone
-	scores [Size][Size][2]int32
+	scores [Size][Size][2]Score
 }
 
 func MakeBoard() Board {
@@ -42,8 +43,8 @@ func MakeBoard() Board {
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
 			t1 := max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y))
 			t2 := max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1))
-			total := int32(v + h + t1 + t2)
-			board.scores[y][x] = [2]int32{total, -total}
+			total := Score(v + h + t1 + t2)
+			board.scores[y][x] = [2]Score{total, -total}
 		}
 	}
 	return board
@@ -61,7 +62,7 @@ func (b *Board) Stone(x, y int) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) Score(stone Stone, x, y int) int32 {
+func (b *Board) Score(stone Stone, x, y int) Score {
 	switch stone {
 	case Black:
 		return b.scores[y][x][0]
@@ -86,7 +87,7 @@ func (b *Board) IsDraw(x, y int) bool {
 	return scores[0] == 0 && scores[1] == 0
 }
 
-func (b *Board) placeStone(stone Stone, x, y int, coeff int32) {
+func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 	if coeff == -1 {
 		b.stones[y][x] = None
 	}
@@ -132,7 +133,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff int32) {
 	}
 }
 
-func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff int32) {
+func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff Score) {
 	stones := Stone(0)
 	for i := 0; i < maxStones1; i++ {
 		stones += b.stones[y+i*dy][x+i*dx]
