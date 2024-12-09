@@ -49,8 +49,8 @@ func testScoreStones(stones Stone) (Score, Score) {
 `
 
 func main() {
-	gen("gomoku", 0, 2, 16, 112, 672, 101232)
-	gen("connect6", 0, 2, 16, 112, 672, 3360, 106048)
+	gen("gomoku", 0, 1, 8, 64, 448, 2688)
+	gen("connect6", 0, 1, 6, 36, 180, 720, 2160)
 }
 
 func gen(game string, scores ...int) {
@@ -145,8 +145,8 @@ func prepareData(game string, scores ...int) Data {
 	// Test scores
 	data.TestCases = append(data.TestCases, Case{
 		Stones:     0,
-		BlackScore: 2,
-		WhiteScore: -2,
+		BlackScore: 1,
+		WhiteScore: -1,
 	})
 	for i := 1; i < len(scores)-1; i++ {
 		data.TestCases = append(data.TestCases, Case{
@@ -157,7 +157,7 @@ func prepareData(game string, scores ...int) Data {
 	}
 	for i := 1; i < len(scores)-1; i++ {
 		data.TestCases = append(data.TestCases, Case{
-			Stones:     i * 16,
+			Stones:     i * 0x10,
 			BlackScore: scores[i],
 			WhiteScore: scores[i] - scores[i+1],
 		})

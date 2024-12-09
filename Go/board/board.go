@@ -49,7 +49,7 @@ func MakeBoard() Board {
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
 			t1 := max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y))
 			t2 := max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1))
-			total := 2 * Score(v+h+t1+t2)
+			total := Score(v + h + t1 + t2)
 			board.scores[y][x] = [2]Score{total, -total}
 		}
 	}

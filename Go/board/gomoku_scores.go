@@ -12,36 +12,36 @@ func scoreStones(stone, stones Stone) (Score, Score) {
 	if stone == Black {
 		switch stones {
 		case 0x00:
-			return 12, 0
+			return 6, 0
 		case 0x01:
-			return 82, -14
+			return 49, -7
 		case 0x02:
-			return 464, -96
+			return 328, -56
 		case 0x03:
-			return 100000, -560
+			return 1856, -384
 		case 0x10:
-			return -2, 14
+			return -1, 7
 		case 0x20:
-			return -16, 96
+			return -8, 56
 		case 0x30:
-			return -112, 560
+			return -64, 384
 		}
 	} else {
 		switch stones {
 		case 0x00:
-			return 0, -12
+			return 0, -6
 		case 0x01:
-			return -14, 2
+			return -7, 1
 		case 0x02:
-			return -96, 16
+			return -56, 8
 		case 0x03:
-			return -560, 112
+			return -384, 64
 		case 0x10:
-			return 14, -82
+			return 7, -49
 		case 0x20:
-			return 96, -464
+			return 56, -328
 		case 0x30:
-			return 560, -100000
+			return 384, -1856
 		}
 	}
 	return 0, 0

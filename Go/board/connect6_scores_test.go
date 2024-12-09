@@ -7,27 +7,27 @@ package board
 func testScoreStones(stones Stone) (Score, Score) {
 	switch stones {
 	case 0x00:
-		return 2, -2
+		return 1, -1
 	case 0x01:
-		return 14, -2
+		return 5, -1
 	case 0x02:
-		return 96, -16
+		return 30, -6
 	case 0x03:
-		return 560, -112
+		return 144, -36
 	case 0x04:
-		return 2688, -672
+		return 540, -180
 	case 0x05:
-		return 102688, -3360
+		return 1440, -720
 	case 0x10:
-		return 2, -14
+		return 1, -5
 	case 0x20:
-		return 16, -96
+		return 6, -30
 	case 0x30:
-		return 112, -560
+		return 36, -144
 	case 0x40:
-		return 672, -2688
+		return 180, -540
 	case 0x50:
-		return 3360, -102688
+		return 720, -1440
 
 	}
 	return 0, 0

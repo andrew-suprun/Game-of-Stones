@@ -1,5 +1,5 @@
 {
-    "go.buildTags": "debug,gomoku,size19",
+    "go.buildTags": "debug,gomoku",
     "go.buildFlags": [
         "-v"
     ],
