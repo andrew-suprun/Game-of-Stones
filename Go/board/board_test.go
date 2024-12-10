@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
-	"time"
 )
 
 func TestPlaceStone(t *testing.T) {
@@ -33,42 +32,14 @@ func TestPlaceStone(t *testing.T) {
 	t.Logf("%#v\n", &b)
 }
 
-func BenchmarkPlaceStone(b *testing.B) {
-	rnd := rand.New(rand.NewSource(3))
-	moves := []testMove{}
+func BenchmarkTime(b *testing.B) {
 	board := MakeBoard()
 
 	b.ResetTimer()
 	for range b.N {
-		for range Size * Size {
-			x := rnd.Intn(Size)
-			y := rnd.Intn(Size)
-			if board.stones[y][x] != None {
-				continue
-			}
-			stone := Black
-			if rnd.Intn(2) == 0 {
-				stone = White
-			}
-			moves = append(moves, testMove{x, y, stone})
-			board.PlaceStone(stone, x, y)
-		}
-		for i := len(moves) - 1; i >= 0; i-- {
-			board.RemoveStone(moves[i].stone, moves[i].x, moves[i].y)
-		}
-	}
-}
-
-func TestTime(t *testing.T) {
-	board := MakeBoard()
-	n := 5_000_000
-
-	start := time.Now()
-	for range n {
 		board.PlaceStone(Black, 9, 9)
 		board.RemoveStone(Black, 9, 9)
 	}
-	fmt.Println("n", 2*n, "time", time.Since(start))
 }
 
 func (b *Board) testBoardScores() *[Size][Size][2]Score {

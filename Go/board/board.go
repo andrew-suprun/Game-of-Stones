@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+type Score int16
 type Stone byte
 
 const (
@@ -13,15 +14,6 @@ const (
 	Black Stone = 1
 	White Stone = 0x10
 )
-
-type Score int32
-
-func (score Score) IsWinning() bool {
-	return score < -winning || score > winning
-}
-
-const DrawingScore Score = 1
-const winning Score = 50_000
 
 func (stone Stone) String() string {
 	switch stone {
@@ -253,12 +245,7 @@ func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
 		for x := 0; x < Size; x++ {
 			switch b.stones[y][x] {
 			case None:
-				score := b.Score(Black, x, y)
-				if score.IsWinning() {
-					buf.WriteString("  WIN │")
-				} else {
-					fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
-				}
+				fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
 			case Black:
 				buf.WriteString("    X │")
 			case White:

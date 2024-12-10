@@ -6,14 +6,15 @@ import (
 	"strings"
 
 	"game_of_stones/board"
+	"game_of_stones/score"
 )
 
 type Move struct {
 	x1, y1, x2, y2 byte
-	score          board.Score
+	score          score.Score
 }
 
-func (move Move) Score() board.Score {
+func (move Move) Score() score.Score {
 	return move.score
 }
 
@@ -51,10 +52,10 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-	return MakeMove(x1, y1, x2, y2, 0), nil
+	return MakeMove(x1, y1, x2, y2, score.MakeScore(0, 0)), nil
 }
 
-func MakeMove(x1, y1, x2, y2 int, score board.Score) Move {
+func MakeMove(x1, y1, x2, y2 int, score score.Score) Move {
 	return Move{byte(x1), byte(y1), byte(x2), byte(y2), score}
 }
 
@@ -83,11 +84,11 @@ func (c *Connect6) UndoMove(move Move) {
 }
 
 func MaxerLess(a, b Move) bool {
-	return a.score < b.score
+	return a.score.Value() < b.score.Value()
 }
 
 func MinnerLess(a, b Move) bool {
-	return b.score < a.score
+	return b.score.Value() < a.score.Value()
 }
 
 func (c *Connect6) PossibleMoves(moves *[]Move) {
@@ -100,8 +101,8 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 
 			score1 := c.board.Score(c.turn, x1, y1)
 
-			if score1.IsWinning() {
-				(*moves)[0] = MakeMove(x1, y1, x1, y1, c.score+score1)
+			if score1 >= board.WinScore || score1 <= -board.WinScore {
+				(*moves)[0] = MakeMove(x1, y1, x1, y1, score.MakeScore(score1, c.score+score1))
 				*moves = (*moves)[:1]
 				return
 			}
@@ -117,14 +118,8 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 					if c.board.Stone(x2, y2) != board.None {
 						continue
 					}
-					score2 := c.board.Score(c.turn, x2, y2)
-					score := score1 + score2
-					if score == 0 {
-						score = board.DrawingScore
-					} else {
-						score += c.score
-					}
-					*moves = append(*moves, MakeMove(x1, y1, x2, y2, score))
+					score2 := score1 + c.board.Score(c.turn, x2, y2)
+					*moves = append(*moves, MakeMove(x1, y1, x2, y2, score.MakeScore(score2, c.score+score2)))
 				}
 			}
 

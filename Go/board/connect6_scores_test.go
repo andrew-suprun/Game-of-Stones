@@ -17,7 +17,7 @@ func testScoreStones(stones Stone) (Score, Score) {
 	case 0x04:
 		return 540, -180
 	case 0x05:
-		return 1440, -720
+		return 3376, -720
 	case 0x10:
 		return 1, -5
 	case 0x20:
@@ -27,7 +27,7 @@ func testScoreStones(stones Stone) (Score, Score) {
 	case 0x40:
 		return 180, -540
 	case 0x50:
-		return 720, -1440
+		return 720, -3376
 
 	}
 	return 0, 0

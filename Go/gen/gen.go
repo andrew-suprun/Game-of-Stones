@@ -16,6 +16,8 @@ const (
 	maxStones = {{.MaxStones}}
 )
 
+const WinScore = {{.WinScore}}
+
 func scoreStones(stone, stones Stone) (Score, Score) {
 	if stone == Black {
 		switch stones {
@@ -49,8 +51,8 @@ func testScoreStones(stones Stone) (Score, Score) {
 `
 
 func main() {
-	gen("gomoku", 0, 1, 8, 64, 448, 2688)
-	gen("connect6", 0, 1, 6, 36, 180, 720, 2160)
+	gen("gomoku", 0, 1, 8, 64, 448, 4096)
+	gen("connect6", 0, 1, 6, 36, 180, 720, 4096)
 }
 
 func gen(game string, scores ...int) {
@@ -87,6 +89,7 @@ func gen(game string, scores ...int) {
 type Data struct {
 	Game       string
 	MaxStones  int
+	WinScore   int
 	BlackCases []Case
 	WhiteCases []Case
 	TestCases  []Case
@@ -100,6 +103,7 @@ type Case struct {
 
 func prepareData(game string, scores ...int) Data {
 	data := Data{Game: game, MaxStones: len(scores) - 1}
+	data.WinScore = scores[len(scores)-1]
 	for i := 0; i < len(scores)-2; i++ {
 		data.BlackCases = append(data.BlackCases,
 			Case{

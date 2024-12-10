@@ -8,6 +8,8 @@ const (
 	maxStones = 5
 )
 
+const WinScore = 4096
+
 func scoreStones(stone, stones Stone) (Score, Score) {
 	if stone == Black {
 		switch stones {
@@ -18,7 +20,7 @@ func scoreStones(stone, stones Stone) (Score, Score) {
 		case 0x02:
 			return 328, -56
 		case 0x03:
-			return 1856, -384
+			return 3264, -384
 		case 0x10:
 			return -1, 7
 		case 0x20:
@@ -41,7 +43,7 @@ func scoreStones(stone, stones Stone) (Score, Score) {
 		case 0x20:
 			return 56, -328
 		case 0x30:
-			return 384, -1856
+			return 384, -3264
 		}
 	}
 	return 0, 0
