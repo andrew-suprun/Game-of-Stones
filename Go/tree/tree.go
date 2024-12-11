@@ -33,6 +33,30 @@ type node[move iMove[score], score iScore] struct {
 	move   move
 }
 
+func (node *node[move, score]) addChild(child *node[move, score]) {
+	if node.child != nil {
+		child.next = node.child
+		node.child.prev = child
+	}
+	node.child = child
+}
+
+func (node *node[move, score]) remove() {
+	if node.prev != nil {
+		if node.next != nil {
+			node.prev.next = node.next
+			node.next.prev = node.prev
+		} else {
+			node.prev.next = nil
+		}
+	} else {
+		node.parent.child = node.next
+		if node.next != nil {
+			node.next.prev = nil
+		}
+	}
+}
+
 type Tree[game iGame[move, score], move iMove[score], score iScore] struct {
 	game          iGame[move, score]
 	root          *node[move, score]
@@ -41,6 +65,7 @@ type Tree[game iGame[move, score], move iMove[score], score iScore] struct {
 	maxDepth      int
 	possibleMoves []move
 	freeNodes     []*node[move, score]
+	children      []*node[move, score]
 }
 
 func NewTree[g iGame[m, s], m iMove[s], s iScore](game g, capacity int) *Tree[g, m, s] {
@@ -76,9 +101,11 @@ func (tree *Tree[game, move, score]) grow(leaves *heap.Heap[*node[move, score]],
 	if depth < tree.maxDepth {
 		child := node.child
 		for child != nil {
-			tree.game.PlayMove(child.move)
-			tree.grow(leaves, child, depth+1)
-			tree.game.UndoMove(child.move)
+			if !child.move.Score().IsDrawing() {
+				tree.game.PlayMove(child.move)
+				tree.grow(leaves, child, depth+1)
+				tree.game.UndoMove(child.move)
+			}
 			child = child.next
 		}
 		return
@@ -86,29 +113,13 @@ func (tree *Tree[game, move, score]) grow(leaves *heap.Heap[*node[move, score]],
 	tree.game.PossibleMoves(&tree.possibleMoves)
 	for _, childMove := range tree.possibleMoves {
 		childNode := tree.acqireNode(node, childMove)
-
-		if leaves.WillAdd(childNode) {
-			if node.child != nil {
-				childNode.next = node.child
-				node.child.prev = childNode
-			}
-			node.child = childNode
-
-			tree.validate()
+		childScore := childMove.Score()
+		if childScore.IsDrawing() || childScore.IsWinning() {
+			node.addChild(childNode)
+		} else if leaves.WillAdd(childNode) {
+			node.addChild(childNode)
 			if minLeaf, ok := leaves.Add(childNode); ok {
-				if minLeaf.prev != nil {
-					if minLeaf.next != nil {
-						minLeaf.prev.next = minLeaf.next
-						minLeaf.next.prev = minLeaf.prev
-					} else {
-						minLeaf.prev.next = nil
-					}
-				} else {
-					minLeaf.parent.child = minLeaf.next
-					if minLeaf.next != nil {
-						minLeaf.next.prev = nil
-					}
-				}
+				minLeaf.remove()
 				tree.releaseNode(minLeaf)
 			}
 		} else {
@@ -116,45 +127,48 @@ func (tree *Tree[game, move, score]) grow(leaves *heap.Heap[*node[move, score]],
 		}
 		tree.validate()
 	}
-	fmt.Println(tree)
 }
 
-type trimResult int
+func (tree *Tree[game, move, score]) trim(parent *node[move, score], depth int) bool {
+	if depth > tree.maxDepth {
+		return parent.move.Score().IsWinning()
+	}
 
-const (
-	inconclusive trimResult = iota
-	winning
-	losing
-)
+	if parent.move.Score().IsDrawing() {
+		return false
+	}
 
-func (tree *Tree[game, move, score]) trim(node *node[move, score], depth int) trimResult {
-	if depth < tree.maxDepth {
-		child := node.child
-		for child != nil {
-			result := tree.trim(child, depth+1)
-			_ = result // TODO
-			child = child.next
+	if parent.child == nil {
+		return true
+	}
+
+	child := parent.child
+	tree.children = []*node[move, score]{}
+	for child != nil {
+		tree.children = append(tree.children, child)
+		child = child.next
+	}
+	for _, child := range tree.children {
+		if tree.trim(child, depth+1) {
+			tree.trimBranch(child)
 		}
-		return inconclusive
-	}
 
-	if node.child == nil {
-		return winning
+		child = child.next
 	}
+	return parent.child == nil
+}
 
-	if node.child.move.Score().IsWinning() {
-		return losing
+func (tree *Tree[game, move, score]) trimBranch(node *node[move, score]) {
+	child := node.child
+	for child != nil {
+		tree.trimBranch(child)
+		child = node.child
 	}
-
-	return inconclusive
+	node.remove()
+	tree.releaseNode(node)
 }
 
 func (tree *Tree[game, move, score]) acqireNode(parent *node[move, score], m move) *node[move, score] {
-	fmt.Print(">>> acqire:  ", m)
-	if parent.parent != nil {
-		fmt.Print(" | parent: ", parent.move)
-	}
-	fmt.Println()
 	nFreeNodes := len(tree.freeNodes)
 	if nFreeNodes > 0 {
 		result := tree.freeNodes[nFreeNodes-1]
@@ -170,20 +184,6 @@ func (tree *Tree[game, move, score]) acqireNode(parent *node[move, score], m mov
 }
 
 func (tree *Tree[game, move, score]) releaseNode(node *node[move, score]) {
-	fmt.Print("<<< release: ", node.move)
-	if node.parent != nil {
-		fmt.Print(" | parent: ", node.parent.move)
-	}
-	if node.child != nil {
-		fmt.Print(" | child:", node.child.move)
-	}
-	if node.next != nil {
-		fmt.Print(" | next: ", node.next.move)
-	}
-	if node.prev != nil {
-		fmt.Print(" | prev: ", node.prev.move)
-	}
-	fmt.Println()
 	node.next = nil
 	node.prev = nil
 	node.child = nil
