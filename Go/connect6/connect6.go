@@ -104,7 +104,10 @@ func MinnerLess(a, b Move) bool {
 }
 
 func (c *Connect6) PossibleMoves(moves *[]Move) {
+	drawMove := Move{}
+	nZeros := 0
 	*moves = (*moves)[:0]
+
 	for y1 := 0; y1 < board.Size; y1++ {
 		for x1 := 0; x1 < board.Size; x1++ {
 			if c.board.Stone(x1, y1) != board.None {
@@ -112,6 +115,18 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 			}
 
 			score1 := c.board.Score(c.turn, x1, y1)
+			if score1 == 0 {
+				switch nZeros {
+				case 0:
+					drawMove.x1 = byte(x1)
+					drawMove.y1 = byte(y1)
+				case 1:
+					drawMove.x2 = byte(x1)
+					drawMove.y2 = byte(y1)
+				}
+				nZeros++
+				continue
+			}
 
 			if score1 >= board.WinScore || score1 <= -board.WinScore {
 				(*moves)[0] = MakeMove(x1, y1, x1, y1, score.MakeScore(score1, c.score+score1))
@@ -130,12 +145,24 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 					if c.board.Stone(x2, y2) != board.None {
 						continue
 					}
-					score2 := score1 + c.board.Score(c.turn, x2, y2)
+					score2 := c.board.Score(c.turn, x2, y2)
+					if score2 == 0 {
+						continue
+					}
+					if score2 >= board.WinScore || score2 <= -board.WinScore {
+						(*moves)[0] = MakeMove(x1, y1, x2, y2, score.MakeScore(score1+score2, c.score+score1+score2))
+						*moves = (*moves)[:1]
+						c.board.RemoveStone(c.turn, x1, y1)
+						return
+					}
 					*moves = append(*moves, MakeMove(x1, y1, x2, y2, score.MakeScore(score2, c.score+score2)))
 				}
 			}
-
 			c.board.RemoveStone(c.turn, x1, y1)
 		}
+	}
+
+	if len(*moves) == 0 {
+		*moves = append(*moves, drawMove)
 	}
 }

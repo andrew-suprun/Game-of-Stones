@@ -8,7 +8,7 @@ const (
 	maxStones = 6
 )
 
-const WinScore = 4096
+const WinScore = 2836
 
 func scoreStones(stone, stones Stone) (Score, Score) {
 	if stone == Black {
