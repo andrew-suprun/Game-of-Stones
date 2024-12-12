@@ -39,6 +39,10 @@ func NewGame() *Connect6 {
 	return game
 }
 
+func MakeRoot() Move {
+	return Move{score: score.MakeScore(1, 0)}
+}
+
 func (game *Connect6) Less(a, b Move) bool {
 	return a.score.Value() < b.Score().Value()
 }

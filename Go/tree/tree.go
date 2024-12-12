@@ -68,20 +68,24 @@ type Tree[game iGame[move, score], move iMove[score], score iScore] struct {
 	children      []*node[move, score]
 }
 
-func NewTree[g iGame[m, s], m iMove[s], s iScore](game g, capacity int) *Tree[g, m, s] {
+func NewTree[g iGame[m, s], m iMove[s], s iScore](game g, root m, capacity int) *Tree[g, m, s] {
 
 	tree := &Tree[g, m, s]{
 		game:     game,
 		capacity: capacity,
 	}
-	tree.root = &node[m, s]{}
+	tree.root = &node[m, s]{
+		move: root,
+	}
 	tree.current = tree.root
 	return tree
 }
 
 func (tree *Tree[game, move, score]) Grow() {
 	tree.grow(heap.NewHeap(tree.capacity, tree.selectLess()), tree.root, 0)
+	fmt.Printf("grown\n%#v\n", tree)
 	tree.trim(tree.root, 0)
+	fmt.Printf("trimmed\n%#v\n", tree)
 	tree.maxDepth++
 }
 
@@ -130,15 +134,19 @@ func (tree *Tree[game, move, score]) grow(leaves *heap.Heap[*node[move, score]],
 }
 
 func (tree *Tree[game, move, score]) trim(parent *node[move, score], depth int) bool {
+	// fmt.Printf(">>> trim: %#v, dep: %d, max: %d\n", parent.move, depth, tree.maxDepth)
 	if depth > tree.maxDepth {
+		// fmt.Printf("<<< trim.1: %#v, %v\n", parent.move, parent.move.Score().IsWinning())
 		return parent.move.Score().IsWinning()
 	}
 
 	if parent.move.Score().IsDrawing() {
+		// fmt.Printf("<<< trim.2: %#v, false\n", parent.move)
 		return false
 	}
 
 	if parent.child == nil {
+		// fmt.Printf("<<< trim.3: %#v, true\n", parent.move)
 		return true
 	}
 
@@ -152,9 +160,8 @@ func (tree *Tree[game, move, score]) trim(parent *node[move, score], depth int) 
 		if tree.trim(child, depth+1) {
 			tree.trimBranch(child)
 		}
-
-		child = child.next
 	}
+	// fmt.Printf("<<< trim.4: %#v, %v\n", parent.move, parent.child == nil)
 	return parent.child == nil
 }
 
