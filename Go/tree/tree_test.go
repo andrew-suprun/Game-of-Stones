@@ -68,13 +68,9 @@ func (m testMove) String() string {
 	return fmt.Sprintf("(%v %v)", m.id, m.score)
 }
 
-type testGame struct {
-	depth    int
-	lastMove testMove
-}
+type testGame struct{}
 
 func (game *testGame) PlayMove(move testMove) {
-	game.lastMove = move
 }
 
 func (game *testGame) UndoMove(move testMove) {
@@ -149,7 +145,7 @@ const expected = `(0 s:0)
 |   |   (12 D)
 `
 
-func TestFirstLeaf(t *testing.T) {
+func TestGrow(t *testing.T) {
 	game := &testGame{}
 	tree := NewTree(game, 8)
 	for range 8 {

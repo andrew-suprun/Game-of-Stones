@@ -1,0 +1,3 @@
+package gomoku
+
+func Foo() {}

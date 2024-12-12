@@ -122,6 +122,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 	if coeff == 1 {
 		b.stones[y][x] = stone
 	}
+	b.Validate()
 }
 
 func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff Score) {
