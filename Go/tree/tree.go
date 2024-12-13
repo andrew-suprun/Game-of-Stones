@@ -15,10 +15,11 @@ type iMove interface {
 }
 
 type iGame[move iMove] interface {
+	ParseMove(string) (move, error)
 	PlayMove(move)
 	UndoMove(move)
 	PossibleMoves(result *[]move)
-	Less(move, move) bool
+	SameMove(a, b move) bool
 }
 
 type node[move iMove] struct {
@@ -58,6 +59,7 @@ type Tree[game iGame[move], move iMove] struct {
 	root          *node[move]
 	current       *node[move]
 	capacity      int
+	player        int
 	maxDepth      int
 	possibleMoves []move
 	freeNodes     []*node[move]
@@ -75,22 +77,47 @@ func NewTree[g iGame[m], m iMove](game g, capacity int) *Tree[g, m] {
 	return tree
 }
 
+func (tree *Tree[game, move]) CommitMove(moveStr string) error {
+	tree.player = 1 - tree.player
+	toPlay, err := tree.game.ParseMove(moveStr)
+	if err != nil {
+		return err
+	}
+	child := tree.root
+	for child != nil {
+		if tree.game.SameMove(child.move, toPlay) {
+			break
+		}
+		child = child.next
+	}
+	if child == nil {
+		tree.game.PlayMove(toPlay)
+		tree.root = &node[move]{move: toPlay}
+		tree.maxDepth = 0
+	} else {
+		child.remove()
+		tree.trimBranch(tree.root)
+		tree.root = child
+		tree.maxDepth--
+	}
+	return nil
+}
+
 func (tree *Tree[game, move]) Grow() {
 	tree.grow(heap.NewHeap(tree.capacity, tree.selectLess()), tree.root, 0)
-	fmt.Printf("grown\n%#v\n", tree)
 	tree.trim(tree.root, 0)
-	fmt.Printf("trimmed\n%#v\n", tree)
 	tree.maxDepth++
 }
 
 func (tree *Tree[game, move]) selectLess() func(a, b *node[move]) bool {
-	if tree.maxDepth%2 == 0 {
+	fmt.Println("tree.player", tree.player, "tree.maxDepth", tree.maxDepth)
+	if tree.maxDepth%2 == tree.player {
 		return func(a, b *node[move]) bool {
 			return a.move.Score().Less(b.move.Score())
 		}
 	} else {
 		return func(a, b *node[move]) bool {
-			return a.move.Score().Less(b.move.Score())
+			return b.move.Score().Less(a.move.Score())
 		}
 	}
 }

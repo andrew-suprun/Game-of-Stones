@@ -22,7 +22,7 @@ func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.x1+'a', board.Size-m.y1, m.x2+'a', board.Size-m.y2)
 }
 func (m Move) GoString() string {
-	return fmt.Sprintf("Move{%d, %d, %d, %d, %#v}", m.x1, m.y1, m.x2, m.y2, m.score)
+	return fmt.Sprintf("%s s:%v", m, m.score)
 }
 
 type Connect6 struct {
@@ -55,10 +55,12 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	return c.MakeMove(x1, y1, x2, y2), nil
 }
 
+func (c *Connect6) SameMove(a, b Move) bool {
+	return a.x1 == b.x1 && a.y1 == b.y1 && a.x2 == b.x2 && a.y2 == b.y2 ||
+		a.x1 == b.x2 && a.y1 == b.y2 && a.x2 == b.x1 && a.y2 == b.y1
+}
+
 func (c *Connect6) MakeMove(x1, y1, x2, y2 int) Move {
-	if y1 > y2 || y1 == y2 && x1 > x2 {
-		x1, y1, x2, y2 = x2, y2, x1, y1
-	}
 	score := c.board.Score(c.turn, x1, y1)
 	c.board.PlaceStone(c.turn, x1, y1)
 	score += c.board.Score(c.turn, x2, y2)
@@ -96,10 +98,6 @@ func (c *Connect6) UndoMove(move Move) {
 		c.board.RemoveStone(c.turn, int(move.x1), int(move.y1))
 		c.score -= c.board.Score(c.turn, int(move.x1), int(move.y1))
 	}
-}
-
-func (c *Connect6) Less(a, b Move) bool {
-	return a.score < b.score
 }
 
 func (c *Connect6) PossibleMoves(moves *[]Move) {
