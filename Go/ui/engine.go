@@ -13,7 +13,7 @@ type engine struct {
 	events   chan any
 	moves    []connect6.Move
 	game     *connect6.Connect6
-	root     *tree.SearchTree[connect6.Move]
+	root     *tree.Tree[*connect6.Connect6, connect6.Move]
 }
 
 func runEngine(commands chan any, events chan any) {
@@ -30,10 +30,10 @@ func (eng *engine) run() {
 		switch cmd := cmd.(type) {
 		case cmdStart:
 			eng.game = connect6.NewGame()
-			eng.root = tree.NewTree[connect6.Move](eng.game, 1000)
+			eng.root = tree.NewTree(eng.game, 1000)
 
 		case cmdMakeMove:
-			move := eng.game.MakeMove(cmd[0], cmd[1], cmd[2], cmd[3])
+			move := connect6.MakeMove(cmd[0], cmd[1], cmd[2], cmd[3], 0)
 			eng.game.PlayMove(move)
 			eng.moves = append(eng.moves, move)
 			eng.bestMove()
@@ -47,7 +47,7 @@ func (eng *engine) bestMove() {
 		for j := range 3 {
 			for i := range 3 {
 				if i != 1 || j != 1 {
-					m = append(m, move{byte(i + 8), byte(j + 8)})
+					m = append(m, move{i + 8, j + 8})
 				}
 			}
 		}
@@ -57,9 +57,9 @@ func (eng *engine) bestMove() {
 		m[idx] = m[len(m)-1]
 		m2 := m[rand.Intn(7)]
 
-		gameMove := eng.game.MakeMove(m1.x, m1.y, m2.x, m2.y)
+		gameMove := connect6.MakeMove(m1.x, m1.y, m2.x, m2.y, 0)
 		eng.game.PlayMove(gameMove)
-		eng.events <- evMove([4]byte{m1.x, m1.y, m2.x, m2.y})
+		eng.events <- evMove([4]int{m1.x, m1.y, m2.x, m2.y})
 		return
 	}
 	move := eng.root.BestMove()
@@ -74,5 +74,5 @@ func (eng *engine) bestMove() {
 	}
 
 	eng.game.PlayMove(move)
-	eng.events <- evMove([4]byte{move.x1, move.y1, move.x2, move.y2})
+	eng.events <- evMove([4]int{move.x1, move.y1, move.x2, move.y2})
 }

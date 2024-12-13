@@ -4,30 +4,32 @@
 
 package board
 
-func debugScoreStones(stones Stone) (Score, Score) {
+import "game_of_stones/score"
+
+func debugScoreStones(stones Stone) (score.Score, score.Score) {
 	switch stones {
 	case 0x00:
-		return 1, -1
+		return 2, -2
 	case 0x01:
-		return 5, -1
+		return 14, -2
 	case 0x02:
-		return 30, -6
+		return 80, -16
 	case 0x03:
-		return 144, -36
+		return 288, -96
 	case 0x04:
-		return 540, -180
+		return 288, -384
 	case 0x05:
-		return 3376, -720
+		return 100288, -672
 	case 0x10:
-		return 1, -5
+		return 2, -14
 	case 0x20:
-		return 6, -30
+		return 16, -80
 	case 0x30:
-		return 36, -144
+		return 96, -288
 	case 0x40:
-		return 180, -540
+		return 384, -288
 	case 0x50:
-		return 720, -3376
+		return 672, -100288
 
 	}
 	return 0, 0

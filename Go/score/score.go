@@ -1,34 +1,61 @@
 package score
 
-import (
-	"fmt"
-	"game_of_stones/board"
+import "fmt"
+
+type Score int32
+
+type State byte
+
+const (
+	Nonterminal State = iota
+	Draw
+	Win
 )
 
-type Score struct {
-	move board.Score
-	acc  board.Score
+const DrawScore = 1
+const winScore = 50_000
+
+func (score Score) State() State {
+	if score < -winScore || score > winScore {
+		return Win
+	} else if score == DrawScore {
+		return Draw
+	}
+	return Nonterminal
 }
 
-func MakeScore(move, acc board.Score) Score {
-	return Score{move: move, acc: acc}
-}
-
-func (score Score) Value() board.Score {
-	return score.acc
-}
-
-func (score Score) IsWinning() bool {
-	return score.move <= -board.WinScore || score.move >= board.WinScore
-}
-
-func (score Score) IsDrawing() bool {
-	return score.move == 0
+func (score Score) String() string {
+	if score < -winScore || score > winScore {
+		return "Win"
+	} else if score == DrawScore {
+		return "Draw"
+	}
+	return fmt.Sprintf("%d", score)
 }
 
 func (score Score) GoString() string {
-	if score.move < -board.WinScore || score.move > board.WinScore {
-		return fmt.Sprintf("m:Win a:%#v", score.acc)
+	return fmt.Sprintf("score.Score(%d)", score)
+}
+
+func (state State) String() string {
+	switch state {
+	case Nonterminal:
+		return "Nonterminal"
+	case Draw:
+		return "Draw"
+	case Win:
+		return "Win"
 	}
-	return fmt.Sprintf("m:%#v a:%#v", score.move, score.acc)
+	return ""
+}
+func (state State) GoString() string {
+	switch state {
+	case Nonterminal:
+		return "score.Nonterminal"
+	case Draw:
+		return "score.Draw"
+	case Win:
+		return "score.Win"
+	}
+	return ""
 }

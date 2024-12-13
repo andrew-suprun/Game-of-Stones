@@ -4,46 +4,46 @@
 
 package board
 
+import "game_of_stones/score"
+
 const (
 	maxStones = 5
 )
 
-const WinScore = 4096
-
-func scoreStones(stone, stones Stone) (Score, Score) {
+func scoreStones(stone, stones Stone) (score.Score, score.Score) {
 	if stone == Black {
 		switch stones {
 		case 0x00:
-			return 6, 0
+			return 12, 0
 		case 0x01:
-			return 49, -7
+			return 66, -14
 		case 0x02:
-			return 328, -56
+			return 208, -80
 		case 0x03:
-			return 3264, -384
+			return 100000, -288
 		case 0x10:
-			return -1, 7
+			return -2, 14
 		case 0x20:
-			return -8, 56
+			return -16, 80
 		case 0x30:
-			return -64, 384
+			return -96, 288
 		}
 	} else {
 		switch stones {
 		case 0x00:
-			return 0, -6
+			return 0, -12
 		case 0x01:
-			return -7, 1
+			return -14, 2
 		case 0x02:
-			return -56, 8
+			return -80, 16
 		case 0x03:
-			return -384, 64
+			return -288, 96
 		case 0x10:
-			return 7, -49
+			return 14, -66
 		case 0x20:
-			return 56, -328
+			return 80, -208
 		case 0x30:
-			return 384, -3264
+			return 288, -100000
 		}
 	}
 	return 0, 0

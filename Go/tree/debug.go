@@ -4,11 +4,11 @@ package tree
 
 import "fmt"
 
-func (tree *Tree[game, move, score]) validate() {
+func (tree *Tree[game, move]) validate() {
 	tree.root.validate()
 }
 
-func (node *node[move, score]) validate() {
+func (node *node[move]) validate() {
 	if node.child != nil {
 		if node.child.parent != node {
 			panic(fmt.Sprintf("### PANIC.1: node: %v, child: %v", node.move, node.child.move))
@@ -27,5 +27,4 @@ func (node *node[move, score]) validate() {
 			child = child.next
 		}
 	}
-
 }

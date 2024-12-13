@@ -51,7 +51,7 @@ type state struct {
 }
 
 type move struct {
-	x, y byte
+	x, y int
 }
 
 func runUi(commands chan any, events chan any) error {

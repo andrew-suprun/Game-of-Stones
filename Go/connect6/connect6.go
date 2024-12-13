@@ -22,13 +22,13 @@ func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.x1+'a', board.Size-m.y1, m.x2+'a', board.Size-m.y2)
 }
 func (m Move) GoString() string {
-	return fmt.Sprintf("move(%d, %d, %d, %d) %#v", m.x1, m.y1, m.x2, m.y2, m.score)
+	return fmt.Sprintf("Move{%d, %d, %d, %d, %#v}", m.x1, m.y1, m.x2, m.y2, m.score)
 }
 
 type Connect6 struct {
 	turn  board.Stone
 	board board.Board
-	score board.Score
+	score score.Score
 }
 
 func NewGame() *Connect6 {
@@ -37,14 +37,6 @@ func NewGame() *Connect6 {
 		board: board.MakeBoard(),
 	}
 	return game
-}
-
-func MakeRoot() Move {
-	return Move{score: score.MakeScore(1, 0)}
-}
-
-func (game *Connect6) Less(a, b Move) bool {
-	return a.score.Value() < b.Score().Value()
 }
 
 func (c *Connect6) ParseMove(moveStr string) (Move, error) {
@@ -60,7 +52,7 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-	return MakeMove(x1, y1, x2, y2, score.MakeScore(0, 0)), nil
+	return MakeMove(x1, y1, x2, y2, 0), nil
 }
 
 func MakeMove(x1, y1, x2, y2 int, score score.Score) Move {
@@ -96,15 +88,19 @@ func (c *Connect6) UndoMove(move Move) {
 }
 
 func MaxerLess(a, b Move) bool {
-	return a.score.Value() < b.score.Value()
+	return a.score < b.score
 }
 
 func MinnerLess(a, b Move) bool {
-	return b.score.Value() < a.score.Value()
+	return b.score < a.score
+}
+
+func (c *Connect6) Less(a, b Move) bool {
+	return a.score < b.score
 }
 
 func (c *Connect6) PossibleMoves(moves *[]Move) {
-	drawMove := Move{}
+	drawMove := Move{score: 1}
 	nZeros := 0
 	*moves = (*moves)[:0]
 
@@ -128,8 +124,8 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 				continue
 			}
 
-			if score1 >= board.WinScore || score1 <= -board.WinScore {
-				(*moves)[0] = MakeMove(x1, y1, x1, y1, score.MakeScore(score1, c.score+score1))
+			if score1.State() == score.Win {
+				(*moves)[0] = MakeMove(x1, y1, x1, y1, c.score+score1)
 				*moves = (*moves)[:1]
 				return
 			}
@@ -149,13 +145,13 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 					if score2 == 0 {
 						continue
 					}
-					if score2 >= board.WinScore || score2 <= -board.WinScore {
-						(*moves)[0] = MakeMove(x1, y1, x2, y2, score.MakeScore(score1+score2, c.score+score1+score2))
+					if score2.State() == score.Win {
+						(*moves)[0] = MakeMove(x1, y1, x2, y2, c.score+score1+score2)
 						*moves = (*moves)[:1]
 						c.board.RemoveStone(c.turn, x1, y1)
 						return
 					}
-					*moves = append(*moves, MakeMove(x1, y1, x2, y2, score.MakeScore(score2, c.score+score2)))
+					*moves = append(*moves, MakeMove(x1, y1, x2, y2, c.score+score1+score2))
 				}
 			}
 			c.board.RemoveStone(c.turn, x1, y1)

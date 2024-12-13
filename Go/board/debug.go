@@ -4,6 +4,7 @@ package board
 
 import (
 	"fmt"
+	"game_of_stones/score"
 )
 
 const debug = true
@@ -24,11 +25,11 @@ func (b *Board) Validate() {
 			for x := 0; x < Size; x++ {
 				switch b.stones[y][x] {
 				case Black:
-					fmt.Print("    X")
+					fmt.Print("    X ")
 				case White:
-					fmt.Print("    O")
+					fmt.Print("    O ")
 				case None:
-					fmt.Printf("%5d", scores[y][x][0])
+					fmt.Printf("%v", scores[y][x][0])
 				}
 			}
 			fmt.Println()
@@ -38,11 +39,11 @@ func (b *Board) Validate() {
 			for x := 0; x < Size; x++ {
 				switch b.stones[y][x] {
 				case Black:
-					fmt.Print("    X")
+					fmt.Print("    X ")
 				case White:
-					fmt.Print("    O")
+					fmt.Print("    O ")
 				case None:
-					fmt.Printf("%5d", scores[y][x][1])
+					fmt.Printf("%v", scores[y][x][1])
 				}
 			}
 			fmt.Println()
@@ -53,8 +54,8 @@ func (b *Board) Validate() {
 	}
 }
 
-func (b *Board) debugBoardScores() *[Size][Size][2]Score {
-	scores := &[Size][Size][2]Score{}
+func (b *Board) debugBoardScores() *[Size][Size][2]score.Score {
+	scores := &[Size][Size][2]score.Score{}
 	for y := 0; y < Size; y++ {
 		stones := Stone(0)
 		for x := 0; x < maxStones1; x++ {
@@ -65,8 +66,9 @@ func (b *Board) debugBoardScores() *[Size][Size][2]Score {
 			blackScore, whiteScore := debugScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
-				scores[y][x+i][0] += blackScore
-				scores[y][x+i][1] += whiteScore
+				s := &scores[y][x+i]
+				s[0] += blackScore
+				s[1] += whiteScore
 			}
 			stones -= b.stones[y][x]
 		}
@@ -82,8 +84,9 @@ func (b *Board) debugBoardScores() *[Size][Size][2]Score {
 			blackScore, whiteScore := debugScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
-				scores[y+i][x][0] += blackScore
-				scores[y+i][x][1] += whiteScore
+				s := &scores[y+i][x]
+				s[0] += blackScore
+				s[1] += whiteScore
 			}
 			stones -= b.stones[y][x]
 		}
@@ -99,8 +102,9 @@ func (b *Board) debugBoardScores() *[Size][Size][2]Score {
 			blackScore, whiteScore := debugScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
-				scores[x+y+i][x+i][0] += blackScore
-				scores[x+y+i][x+i][1] += whiteScore
+				s := &scores[x+y+i][x+i]
+				s[0] += blackScore
+				s[1] += whiteScore
 			}
 			stones -= b.stones[x+y][x]
 		}
@@ -116,8 +120,9 @@ func (b *Board) debugBoardScores() *[Size][Size][2]Score {
 			blackScore, whiteScore := debugScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
-				scores[y+i][x+y+i][0] += blackScore
-				scores[y+i][x+y+i][1] += whiteScore
+				s := &scores[y+i][x+y+i]
+				s[0] += blackScore
+				s[1] += whiteScore
 			}
 			stones -= b.stones[y][x+y]
 		}
@@ -133,8 +138,9 @@ func (b *Board) debugBoardScores() *[Size][Size][2]Score {
 			blackScore, whiteScore := debugScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
-				scores[x+y+i][Size-1-x-i][0] += blackScore
-				scores[x+y+i][Size-1-x-i][1] += whiteScore
+				s := &scores[x+y+i][Size-1-x-i]
+				s[0] += blackScore
+				s[1] += whiteScore
 			}
 			stones -= b.stones[x+y][Size-1-x]
 		}
@@ -150,8 +156,9 @@ func (b *Board) debugBoardScores() *[Size][Size][2]Score {
 			blackScore, whiteScore := debugScoreStones(stones)
 			// fmt.Printf("x=%d y=%d stones=0x%02x black=%d white=%d\n", x, y, stones, blackScore, whiteScore)
 			for i := 0; i < maxStones; i++ {
-				scores[y+i][Size-1-x-y-i][0] += blackScore
-				scores[y+i][Size-1-x-y-i][1] += whiteScore
+				s := &scores[y+i][Size-1-x-y-i]
+				s[0] += blackScore
+				s[1] += whiteScore
 			}
 			stones -= b.stones[y][Size-1-x-y]
 		}

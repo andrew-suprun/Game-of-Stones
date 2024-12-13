@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+
+	"game_of_stones/score"
 )
 
-type Score int16
 type Stone byte
 
 const (
@@ -29,7 +30,7 @@ const maxStones1 = maxStones - 1
 
 type Board struct {
 	stones [Size][Size]Stone
-	scores [Size][Size][2]Score
+	scores [Size][Size][2]score.Score
 }
 
 func MakeBoard() Board {
@@ -41,8 +42,8 @@ func MakeBoard() Board {
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
 			t1 := max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y))
 			t2 := max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1))
-			total := Score(v + h + t1 + t2)
-			board.scores[y][x] = [2]Score{total, -total}
+			total := 2 * score.Score(v+h+t1+t2)
+			board.scores[y][x] = [2]score.Score{total, -total}
 		}
 	}
 	return board
@@ -60,7 +61,7 @@ func (b *Board) Stone(x, y int) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) Score(stone Stone, x, y int) Score {
+func (b *Board) Score(stone Stone, x, y int) score.Score {
 	switch stone {
 	case Black:
 		return b.scores[y][x][0]
@@ -70,15 +71,7 @@ func (b *Board) Score(stone Stone, x, y int) Score {
 	panic("Score")
 }
 
-// func (b *Board) IsWinning(stone Stone, x, y int) bool {
-// 	return b.scores[y][x][0] > win || b.scores[y][x][1] < -win
-// }
-
-// func (b *Board) IsDrawing(x, y int) bool {
-// 	return b.scores[y][x][0] == 0
-// }
-
-func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
+func (b *Board) placeStone(stone Stone, x, y int, coeff score.Score) {
 	if coeff == -1 {
 		b.stones[y][x] = None
 	}
@@ -125,7 +118,7 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff Score) {
 	b.Validate()
 }
 
-func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff Score) {
+func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff score.Score) {
 	stones := Stone(0)
 	for i := 0; i < maxStones1; i++ {
 		stones += b.stones[y+i*dy][x+i*dx]
@@ -246,7 +239,14 @@ func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
 		for x := 0; x < Size; x++ {
 			switch b.stones[y][x] {
 			case None:
-				fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
+				switch b.scores[y][x][scoresIdx].State() {
+				case score.Nonterminal:
+					fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
+				case score.Win:
+					fmt.Fprintf(buf, "  Win │")
+				case score.Draw:
+					fmt.Fprintf(buf, " Draw │")
+				}
 			case Black:
 				buf.WriteString("    X │")
 			case White:

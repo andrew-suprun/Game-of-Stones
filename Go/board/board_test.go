@@ -21,12 +21,10 @@ func TestPlaceStone(t *testing.T) {
 		}
 		moves = append(moves, testMove{x, y, stone})
 		b.PlaceStone(stone, x, y)
-		b.Validate()
 	}
 	t.Logf("%#v\n", &b)
 	for i := len(moves) - 1; i >= 0; i-- {
 		b.RemoveStone(moves[i].stone, moves[i].x, moves[i].y)
-		b.Validate()
 	}
 	t.Logf("%#v\n", &b)
 }
