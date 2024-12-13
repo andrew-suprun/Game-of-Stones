@@ -4,6 +4,10 @@ import "fmt"
 
 type Score int32
 
+func (score Score) Less(other Score) bool {
+	return score < other
+}
+
 type State byte
 
 const (

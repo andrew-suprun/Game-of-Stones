@@ -98,14 +98,6 @@ func (c *Connect6) UndoMove(move Move) {
 	}
 }
 
-func MaxerLess(a, b Move) bool {
-	return a.score < b.score
-}
-
-func MinnerLess(a, b Move) bool {
-	return b.score < a.score
-}
-
 func (c *Connect6) Less(a, b Move) bool {
 	return a.score < b.score
 }

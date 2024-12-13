@@ -86,11 +86,11 @@ func (tree *Tree[game, move]) Grow() {
 func (tree *Tree[game, move]) selectLess() func(a, b *node[move]) bool {
 	if tree.maxDepth%2 == 0 {
 		return func(a, b *node[move]) bool {
-			return tree.game.Less(a.move, b.move)
+			return a.move.Score().Less(b.move.Score())
 		}
 	} else {
 		return func(a, b *node[move]) bool {
-			return tree.game.Less(b.move, a.move)
+			return a.move.Score().Less(b.move.Score())
 		}
 	}
 }
