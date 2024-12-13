@@ -114,11 +114,11 @@ func frame(ops *op.Ops, ev app.FrameEvent, commands chan any, stateChan chan *st
 		}.Op())
 	}
 
-	selected := []byte{}
+	selected := []int{}
 	for y := range board.Size {
 		for x := range board.Size {
 			if state.cells[y][x] == stateBlackSelected {
-				selected = append(selected, byte(x), byte(y))
+				selected = append(selected, x, y)
 			}
 		}
 	}

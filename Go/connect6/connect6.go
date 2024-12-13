@@ -52,10 +52,21 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-	return MakeMove(x1, y1, x2, y2, 0), nil
+	return c.MakeMove(x1, y1, x2, y2), nil
 }
 
-func MakeMove(x1, y1, x2, y2 int, score score.Score) Move {
+func (c *Connect6) MakeMove(x1, y1, x2, y2 int) Move {
+	if y1 > y2 || y1 == y2 && x1 > x2 {
+		x1, y1, x2, y2 = x2, y2, x1, y1
+	}
+	score := c.board.Score(c.turn, x1, y1)
+	c.board.PlaceStone(c.turn, x1, y1)
+	score += c.board.Score(c.turn, x2, y2)
+	c.board.RemoveStone(c.turn, x1, y1)
+	return makeMove(x1, y1, x2, y2, score)
+}
+
+func makeMove(x1, y1, x2, y2 int, score score.Score) Move {
 	return Move{byte(x1), byte(y1), byte(x2), byte(y2), score}
 }
 
@@ -125,7 +136,7 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 			}
 
 			if score1.State() == score.Win {
-				(*moves)[0] = MakeMove(x1, y1, x1, y1, c.score+score1)
+				(*moves)[0] = makeMove(x1, y1, x1, y1, c.score+score1)
 				*moves = (*moves)[:1]
 				return
 			}
@@ -146,12 +157,12 @@ func (c *Connect6) PossibleMoves(moves *[]Move) {
 						continue
 					}
 					if score2.State() == score.Win {
-						(*moves)[0] = MakeMove(x1, y1, x2, y2, c.score+score1+score2)
+						(*moves)[0] = makeMove(x1, y1, x2, y2, c.score+score1+score2)
 						*moves = (*moves)[:1]
 						c.board.RemoveStone(c.turn, x1, y1)
 						return
 					}
-					*moves = append(*moves, MakeMove(x1, y1, x2, y2, c.score+score1+score2))
+					*moves = append(*moves, makeMove(x1, y1, x2, y2, c.score+score1+score2))
 				}
 			}
 			c.board.RemoveStone(c.turn, x1, y1)

@@ -5,7 +5,6 @@ import (
 	"game_of_stones/connect6"
 	"game_of_stones/tree"
 	"math/rand"
-	"time"
 )
 
 type engine struct {
@@ -33,7 +32,7 @@ func (eng *engine) run() {
 			eng.root = tree.NewTree(eng.game, 1000)
 
 		case cmdMakeMove:
-			move := connect6.MakeMove(cmd[0], cmd[1], cmd[2], cmd[3], 0)
+			move := eng.game.MakeMove(cmd[0], cmd[1], cmd[2], cmd[3])
 			eng.game.PlayMove(move)
 			eng.moves = append(eng.moves, move)
 			eng.bestMove()
@@ -57,22 +56,22 @@ func (eng *engine) bestMove() {
 		m[idx] = m[len(m)-1]
 		m2 := m[rand.Intn(7)]
 
-		gameMove := connect6.MakeMove(m1.x, m1.y, m2.x, m2.y, 0)
+		gameMove := eng.game.MakeMove(m1.x, m1.y, m2.x, m2.y)
 		eng.game.PlayMove(gameMove)
 		eng.events <- evMove([4]int{m1.x, m1.y, m2.x, m2.y})
 		return
 	}
-	move := eng.root.BestMove()
+	// move := eng.root.BestMove()
 
-	start := time.Now()
-	i := 1
-	for time.Since(start) < 2*time.Second {
-		eng.root.expand()
-		move = eng.root.BestMove()
-		fmt.Println("best move", move, i)
-		i++
-	}
+	// start := time.Now()
+	// i := 1
+	// for time.Since(start) < 2*time.Second {
+	// 	eng.root.expand()
+	// 	move = eng.root.BestMove()
+	// 	fmt.Println("best move", move, i)
+	// 	i++
+	// }
 
-	eng.game.PlayMove(move)
-	eng.events <- evMove([4]int{move.x1, move.y1, move.x2, move.y2})
+	// eng.game.PlayMove(move)
+	// eng.events <- evMove([4]int{move.x1, move.y1, move.x2, move.y2})
 }
