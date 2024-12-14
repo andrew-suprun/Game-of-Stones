@@ -6,9 +6,9 @@ import (
 )
 
 func TestGoString(t *testing.T) {
-	result := fmt.Sprintf("%[1]v: %#[1]v", makeMove(1, 2, 3, 4, 0))
+	result := fmt.Sprintf("%[1]v: %#[1]v", makeMove(1, 2, 3, 4, 1))
 	fmt.Println(result)
-	if result != "b17-d15: Move{1, 2, 3, 4, score.Score(0)}" {
+	if result != "b17-d15: b17-d15 s:Draw" {
 		t.Fail()
 	}
 }

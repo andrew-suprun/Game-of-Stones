@@ -8,33 +8,24 @@ import (
 
 func TestConnect6Grow(t *testing.T) {
 	game := NewGame()
-	tree := tree.NewTree(game, 8)
-	err := tree.CommitMove("j10-j10")
-	if err != nil {
-		t.Fail()
+	tree := tree.NewTree(game, 20)
+
+	playMove(tree, game, "j10-j10")
+	playMove(tree, game, "i9-i11")
+	// playMove(tree, game, "i10-k10")
+
+	for range 10 {
+		tree.Grow()
+		fmt.Printf("\n---\n\n%#v", tree)
 	}
-	fmt.Printf("%#v\n", &game.board)
+}
+
+func playMove(tree *tree.Tree[*Connect6, Move], game *Connect6, move string) {
+	err := tree.CommitMove(move)
+	if err != nil {
+		panic("ParseMove")
+	}
+	fmt.Printf("%v\n", &game.board)
 	tree.Grow()
 	fmt.Printf("%#v", tree)
-
-	err = tree.CommitMove("i9-i11")
-	if err != nil {
-		t.Fail()
-	}
-	fmt.Printf("%#v\n", &game.board)
-	tree.Grow()
-	fmt.Printf("%#v", tree)
-
-	err = tree.CommitMove("h10-i10")
-	if err != nil {
-		t.Fail()
-	}
-	fmt.Printf("%#v\n", &game.board)
-	tree.Grow()
-	fmt.Printf("%#v", tree)
-
-	// for range 5 {
-	// 	tree.Grow()
-	// 	fmt.Printf("%v", tree)
-	// }
 }

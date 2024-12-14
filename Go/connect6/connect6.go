@@ -19,7 +19,11 @@ func (move Move) Score() score.Score {
 }
 
 func (m Move) String() string {
-	return fmt.Sprintf("%c%d-%c%d", m.x1+'a', board.Size-m.y1, m.x2+'a', board.Size-m.y2)
+	x1, y1, x2, y2 := m.x1, m.y1, m.x2, m.y2
+	if x1 > x2 || x1 == x2 && y1 < y2 {
+		x1, y1, x2, y2 = x2, y2, x1, y1
+	}
+	return fmt.Sprintf("%c%d-%c%d", x1+'a', board.Size-y1, x2+'a', board.Size-y2)
 }
 func (m Move) GoString() string {
 	return fmt.Sprintf("%s s:%v", m, m.score)
@@ -61,10 +65,12 @@ func (c *Connect6) SameMove(a, b Move) bool {
 }
 
 func (c *Connect6) MakeMove(x1, y1, x2, y2 int) Move {
-	score := c.board.Score(c.turn, x1, y1)
-	c.board.PlaceStone(c.turn, x1, y1)
-	score += c.board.Score(c.turn, x2, y2)
-	c.board.RemoveStone(c.turn, x1, y1)
+	score := c.score + c.board.Score(c.turn, x1, y1)
+	if x1 != x2 || y1 != y2 {
+		c.board.PlaceStone(c.turn, x1, y1)
+		score += c.board.Score(c.turn, x2, y2)
+		c.board.RemoveStone(c.turn, x1, y1)
+	}
 	return makeMove(x1, y1, x2, y2, score)
 }
 

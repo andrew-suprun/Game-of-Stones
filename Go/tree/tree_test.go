@@ -30,6 +30,14 @@ func newMove() testMove {
 	return move
 }
 
+func (game *testGame) ParseMove(moveStr string) (testMove, error) {
+	return testMove{}, nil
+}
+
+func (game *testGame) SameMove(a, b testMove) bool {
+	return a.id == b.id
+}
+
 func (m testMove) String() string {
 	return fmt.Sprintf("(%v s:%v)", m.id, m.score)
 }
