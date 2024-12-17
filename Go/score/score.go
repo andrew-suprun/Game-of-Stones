@@ -34,7 +34,7 @@ func (score Score) String() string {
 	} else if score == DrawScore {
 		return "Draw"
 	}
-	return fmt.Sprintf("%d", score)
+	return fmt.Sprintf("S: %d", score)
 }
 
 func (score Score) GoString() string {
