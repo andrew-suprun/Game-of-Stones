@@ -29,6 +29,18 @@ func TestPlaceStone(t *testing.T) {
 	t.Logf("%#v\n", &b)
 }
 
+func TestTopPlaces(t *testing.T) {
+	b := MakeBoard()
+	b.PlaceStone(Black, 9, 9)
+	b.PlaceStone(White, 8, 8)
+	b.PlaceStone(White, 8, 10)
+	places := make([]Place, 0, 3)
+	b.TopPlaces(Black, &places)
+	if places[0] != (Place{10, 9}) {
+		t.Fail()
+	}
+}
+
 func BenchmarkTime(b *testing.B) {
 	board := MakeBoard()
 

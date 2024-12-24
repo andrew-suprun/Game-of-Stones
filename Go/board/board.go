@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"game_of_stones/heap"
 	"game_of_stones/score"
 )
 
@@ -24,6 +25,10 @@ func (stone Stone) String() string {
 		return "White"
 	}
 	return "None"
+}
+
+type Place struct {
+	X, Y int
 }
 
 const maxStones1 = maxStones - 1
@@ -47,6 +52,35 @@ func MakeBoard() Board {
 		}
 	}
 	return board
+}
+
+func (board *Board) TopPlaces(stone Stone, places *[]Place) {
+	player := 0
+	less := func(a, b Place) bool {
+		return board.scores[a.Y][a.X][player] < board.scores[b.Y][b.X][player]
+	}
+	if stone == White {
+		player = 1
+		less = func(a, b Place) bool {
+			return board.scores[a.Y][a.X][player] > board.scores[b.Y][b.X][player]
+		}
+	}
+	*places = (*places)[:0]
+	for y := 0; y < Size; y++ {
+		for x := 0; x < Size; x++ {
+			if board.stones[y][x] != None {
+				continue
+			}
+			state := board.scores[y][x][player].State()
+			if state == score.Nonterminal {
+				heap.Add(Place{x, y}, places, less)
+			} else if state == score.Win {
+				*places = (*places)[:1]
+				(*places)[0] = Place{x, y}
+				return
+			}
+		}
+	}
 }
 
 func (b *Board) PlaceStone(stone Stone, x, y int) {

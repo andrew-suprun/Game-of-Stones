@@ -10,7 +10,7 @@ func less(i, j int) bool {
 }
 
 func TestHeap(t *testing.T) {
-	heap := NewHeap(20, less)
+	heap := make([]int, 0, 20)
 	values := make([]int, 100)
 	for i := range 100 {
 		values[i] = i + 1
@@ -19,21 +19,20 @@ func TestHeap(t *testing.T) {
 		values[i], values[j] = values[j], values[i]
 	})
 	for i := range 100 {
-		heap.Add(values[i])
+		Add(values[i], &heap, less)
 	}
 
-	oldElem := 0
-	for range 20 {
-		elem := heap.Remove()
-		if elem <= oldElem {
-			t.Fail()
+	for i := 1; i < 20; i++ {
+		parent := heap[(i-1)/2]
+		child := heap[i]
+		if parent > child {
+			t.Errorf("parent %d is greater than child %d", parent, child)
 		}
-		oldElem = elem
 	}
 }
 
 func BenchmarkHeap(b *testing.B) {
-	heap := NewHeap(20, less)
+	heap := make([]int, 0, 20)
 	values := make([]int, 100)
 	values2 := make([]int, 100)
 	for i := range 100 {
@@ -47,7 +46,7 @@ func BenchmarkHeap(b *testing.B) {
 	for range b.N {
 		copy(values2, values)
 		for i := range 100 {
-			heap.Add(values2[i])
+			Add(values2[i], &heap, less)
 		}
 	}
 }
