@@ -7,7 +7,7 @@ import (
 )
 
 func TestConnect6Grow(t *testing.T) {
-	game := NewGame()
+	game := NewGame(30)
 	tree := tree.NewTree(game, 20)
 
 	playMove(tree, game, "j10-j10")

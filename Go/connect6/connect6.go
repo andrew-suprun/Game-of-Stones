@@ -6,16 +6,17 @@ import (
 	"strings"
 
 	"game_of_stones/board"
-	"game_of_stones/score"
+	"game_of_stones/heap"
+	"game_of_stones/value"
 )
 
 type Move struct {
-	x1, y1, x2, y2 byte
-	score          score.Score
+	x1, y1, x2, y2  byte
+	value, oppValue value.Value
 }
 
-func (move Move) Score() score.Score {
-	return move.score
+func (move Move) Value() value.Value {
+	return move.value
 }
 
 func (m Move) String() string {
@@ -26,19 +27,21 @@ func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", x1+'a', board.Size-y1, x2+'a', board.Size-y2)
 }
 func (m Move) GoString() string {
-	return fmt.Sprintf("%s s:%v", m, m.score)
+	return fmt.Sprintf("%s %v", m, m.value)
 }
 
 type Connect6 struct {
-	turn  board.Stone
-	board board.Board
-	score score.Score
+	turn      board.Stone
+	board     board.Board
+	value     value.Value
+	topPlaces []board.Place
 }
 
-func NewGame() *Connect6 {
+func NewGame(maxPlaces int) *Connect6 {
 	game := &Connect6{
-		turn:  board.Black,
-		board: board.MakeBoard(),
+		turn:      board.Black,
+		board:     board.MakeBoard(),
+		topPlaces: make([]board.Place, 0, maxPlaces),
 	}
 	return game
 }
@@ -65,24 +68,54 @@ func (c *Connect6) SameMove(a, b Move) bool {
 }
 
 func (c *Connect6) MakeMove(x1, y1, x2, y2 int) Move {
-	score := c.score + c.board.Score(c.turn, x1, y1)
-	if x1 != x2 || y1 != y2 {
-		c.board.PlaceStone(c.turn, x1, y1)
-		score += c.board.Score(c.turn, x2, y2)
-		c.board.RemoveStone(c.turn, x1, y1)
-	}
-	return makeMove(x1, y1, x2, y2, score)
+	return makeMove(x1, y1, x2, y2, 0, 0)
 }
 
-func makeMove(x1, y1, x2, y2 int, score score.Score) Move {
-	return Move{byte(x1), byte(y1), byte(x2), byte(y2), score}
+func (c *Connect6) oppValue() value.Value {
+	oppTurn := board.Black
+	if c.turn == board.Black {
+		oppTurn = board.White
+	}
+	if oppTurn == board.White {
+		oppVal := value.WinValue
+		for y := 0; y < board.Size; y++ {
+			for x := 0; x < board.Size; x++ {
+				if c.board.Stone(x, y) != board.None {
+					continue
+				}
+				v := c.board.Value(oppTurn, x, y)
+				if oppVal > v {
+					oppVal = v
+				}
+			}
+		}
+		return oppVal
+	} else {
+		oppVal := -value.WinValue
+		for y := 0; y < board.Size; y++ {
+			for x := 0; x < board.Size; x++ {
+				if c.board.Stone(x, y) != board.None {
+					continue
+				}
+				v := c.board.Value(oppTurn, x, y)
+				if oppVal < v {
+					oppVal = v
+				}
+			}
+		}
+		return oppVal
+	}
+}
+
+func makeMove(x1, y1, x2, y2 int, value, oppValue value.Value) Move {
+	return Move{byte(x1), byte(y1), byte(x2), byte(y2), value, oppValue}
 }
 
 func (c *Connect6) PlayMove(move Move) {
-	c.score += c.board.Score(c.turn, int(move.x1), int(move.y1))
+	c.value += c.board.Value(c.turn, int(move.x1), int(move.y1))
 	c.board.PlaceStone(c.turn, int(move.x1), int(move.y1))
 	if move.x1 != move.x2 || move.y1 != move.y2 {
-		c.score += c.board.Score(c.turn, int(move.x2), int(move.y2))
+		c.value += c.board.Value(c.turn, int(move.x2), int(move.y2))
 		c.board.PlaceStone(c.turn, int(move.x2), int(move.y2))
 	}
 	if c.turn == board.Black {
@@ -99,72 +132,71 @@ func (c *Connect6) UndoMove(move Move) {
 		c.turn = board.Black
 	}
 	c.board.RemoveStone(c.turn, int(move.x2), int(move.y2))
-	c.score -= c.board.Score(c.turn, int(move.x2), int(move.y2))
+	c.value -= c.board.Value(c.turn, int(move.x2), int(move.y2))
 	if move.x1 != move.x2 || move.y1 != move.y2 {
 		c.board.RemoveStone(c.turn, int(move.x1), int(move.y1))
-		c.score -= c.board.Score(c.turn, int(move.x1), int(move.y1))
+		c.value -= c.board.Value(c.turn, int(move.x1), int(move.y1))
 	}
 }
 
-func (c *Connect6) PossibleMoves(moves *[]Move) {
-	drawMove := Move{score: 1}
-	nZeros := 0
+func (c *Connect6) TopMoves(moves *[]Move) {
 	*moves = (*moves)[:0]
-
-	for y1 := 0; y1 < board.Size; y1++ {
-		for x1 := 0; x1 < board.Size; x1++ {
-			if c.board.Stone(x1, y1) != board.None {
-				continue
-			}
-
-			score1 := c.board.Score(c.turn, x1, y1)
-			if score1 == 0 {
-				switch nZeros {
-				case 0:
-					drawMove.x1 = byte(x1)
-					drawMove.y1 = byte(y1)
-				case 1:
-					drawMove.x2 = byte(x1)
-					drawMove.y2 = byte(y1)
-				}
-				nZeros++
-				continue
-			}
-
-			if score1.State() == score.Win {
-				(*moves)[0] = makeMove(x1, y1, x1, y1, c.score+score1)
-				*moves = (*moves)[:1]
-				return
-			}
-
-			c.board.PlaceStone(c.turn, x1, y1)
-
-			for y2 := y1; y2 < board.Size; y2++ {
-				x2 := 0
-				if y1 == y2 {
-					x2 = x1 + 1
-				}
-				for ; x2 < board.Size; x2++ {
-					if c.board.Stone(x2, y2) != board.None {
-						continue
-					}
-					score2 := c.board.Score(c.turn, x2, y2)
-					if score2 == 0 {
-						continue
-					}
-					if score2.State() == score.Win {
-						(*moves)[0] = makeMove(x1, y1, x2, y2, c.score+score1+score2)
-						*moves = (*moves)[:1]
-						c.board.RemoveStone(c.turn, x1, y1)
-						return
-					}
-					*moves = append(*moves, makeMove(x1, y1, x2, y2, c.score+score1+score2))
-				}
-			}
-			c.board.RemoveStone(c.turn, x1, y1)
+	drawMove := Move{value: 1}
+	nZeros := 0
+	less := func(a, b Move) bool {
+		return a.value < b.value
+	}
+	if c.turn == board.White {
+		less = func(a, b Move) bool {
+			return a.value > b.value
 		}
 	}
 
+	c.board.TopPlaces(c.turn, &c.topPlaces)
+	for i, place1 := range c.topPlaces {
+		value1 := c.board.Value(c.turn, place1.X, place1.Y)
+		if value1 == 0 {
+			switch nZeros {
+			case 0:
+				drawMove.x1 = byte(place1.X)
+				drawMove.y1 = byte(place1.Y)
+			case 1:
+				drawMove.x2 = byte(place1.X)
+				drawMove.y2 = byte(place1.Y)
+			}
+			nZeros++
+			continue
+		}
+
+		if value1.State() == value.Win {
+			*moves = (*moves)[:1]
+			(*moves)[0] = makeMove(place1.X, place1.Y, place1.X, place1.Y, c.value+value1, 0)
+			return
+		}
+
+		c.board.PlaceStone(c.turn, place1.X, place1.Y)
+
+		for _, place2 := range c.topPlaces[i+1:] {
+			value2 := c.board.Value(c.turn, place2.X, place2.Y)
+			if value2 == 0 {
+				continue
+			}
+			if value2.State() == value.Win {
+				(*moves)[0] = makeMove(place1.X, place1.Y, place2.X, place2.Y, c.value+value1+value2, 0)
+				*moves = (*moves)[:1]
+				c.board.RemoveStone(c.turn, place1.X, place1.Y)
+				return
+			}
+			c.board.PlaceStone(c.turn, place2.X, place2.Y)
+			oppVal := c.oppValue()
+			c.board.RemoveStone(c.turn, place2.X, place2.Y)
+
+			move := makeMove(place1.X, place1.Y, place2.X, place2.Y, c.value+value1+value2+oppVal, oppVal)
+			heap.Add(move, moves, less)
+		}
+
+		c.board.RemoveStone(c.turn, place1.X, place1.Y)
+	}
 	if len(*moves) == 0 {
 		*moves = append(*moves, drawMove)
 	}

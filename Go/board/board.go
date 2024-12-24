@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"game_of_stones/heap"
-	"game_of_stones/score"
+	"game_of_stones/value"
 )
 
 type Stone byte
@@ -35,7 +35,7 @@ const maxStones1 = maxStones - 1
 
 type Board struct {
 	stones [Size][Size]Stone
-	scores [Size][Size][2]score.Score
+	values [Size][Size][2]value.Value
 }
 
 func MakeBoard() Board {
@@ -47,8 +47,8 @@ func MakeBoard() Board {
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
 			t1 := max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y))
 			t2 := max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1))
-			total := 2 * score.Score(v+h+t1+t2)
-			board.scores[y][x] = [2]score.Score{total, -total}
+			total := 2 * value.Value(v+h+t1+t2)
+			board.values[y][x] = [2]value.Value{total, -total}
 		}
 	}
 	return board
@@ -57,12 +57,12 @@ func MakeBoard() Board {
 func (board *Board) TopPlaces(stone Stone, places *[]Place) {
 	player := 0
 	less := func(a, b Place) bool {
-		return board.scores[a.Y][a.X][player] < board.scores[b.Y][b.X][player]
+		return board.values[a.Y][a.X][player] < board.values[b.Y][b.X][player]
 	}
 	if stone == White {
 		player = 1
 		less = func(a, b Place) bool {
-			return board.scores[a.Y][a.X][player] > board.scores[b.Y][b.X][player]
+			return board.values[a.Y][a.X][player] > board.values[b.Y][b.X][player]
 		}
 	}
 	*places = (*places)[:0]
@@ -71,10 +71,10 @@ func (board *Board) TopPlaces(stone Stone, places *[]Place) {
 			if board.stones[y][x] != None {
 				continue
 			}
-			state := board.scores[y][x][player].State()
-			if state == score.Nonterminal {
+			state := board.values[y][x][player].State()
+			if state == value.Nonterminal {
 				heap.Add(Place{x, y}, places, less)
-			} else if state == score.Win {
+			} else if state == value.Win {
 				*places = (*places)[:1]
 				(*places)[0] = Place{x, y}
 				return
@@ -95,17 +95,17 @@ func (b *Board) Stone(x, y int) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) Score(stone Stone, x, y int) score.Score {
+func (b *Board) Value(stone Stone, x, y int) value.Value {
 	switch stone {
 	case Black:
-		return b.scores[y][x][0]
+		return b.values[y][x][0]
 	case White:
-		return b.scores[y][x][1]
+		return b.values[y][x][1]
 	}
-	panic("Score")
+	panic("Value")
 }
 
-func (b *Board) placeStone(stone Stone, x, y int, coeff score.Score) {
+func (b *Board) placeStone(stone Stone, x, y int, coeff value.Value) {
 	if coeff == -1 {
 		b.stones[y][x] = None
 	}
@@ -152,20 +152,20 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff score.Score) {
 	b.Validate()
 }
 
-func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff score.Score) {
+func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff value.Value) {
 	stones := Stone(0)
 	for i := 0; i < maxStones1; i++ {
 		stones += b.stones[y+i*dy][x+i*dx]
 	}
 	for range n {
 		stones += b.stones[y+maxStones1*dy][x+maxStones1*dx]
-		blackScore, whiteScore := scoreStones(stone, stones)
-		if blackScore != 0 || whiteScore != 0 {
-			blackScore, whiteScore = blackScore*coeff, whiteScore*coeff
+		blackValue, whiteValue := valueStones(stone, stones)
+		if blackValue != 0 || whiteValue != 0 {
+			blackValue, whiteValue = blackValue*coeff, whiteValue*coeff
 			for j := 0; j < maxStones; j++ {
-				s := &b.scores[y+j*dy][x+j*dx]
-				s[0] += blackScore
-				s[1] += whiteScore
+				s := &b.values[y+j*dy][x+j*dx]
+				s[0] += blackValue
+				s[1] += whiteValue
 			}
 		}
 		stones -= b.stones[y][x]
@@ -183,8 +183,8 @@ func (b *Board) String() string {
 func (b *Board) GoString() string {
 	buf := &bytes.Buffer{}
 	b.BoardString(buf)
-	b.ScoresString(buf, 0)
-	b.ScoresString(buf, 1)
+	b.ValuesString(buf, 0)
+	b.ValuesString(buf, 1)
 	return buf.String()
 }
 
@@ -255,7 +255,7 @@ func (b *Board) BoardString(buf *bytes.Buffer) {
 	buf.WriteByte('\n')
 }
 
-func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
+func (b *Board) ValuesString(buf *bytes.Buffer, valuesIdx int) {
 	buf.WriteString("\n      │")
 
 	for i := range Size {
@@ -273,12 +273,12 @@ func (b *Board) ScoresString(buf *bytes.Buffer, scoresIdx int) {
 		for x := 0; x < Size; x++ {
 			switch b.stones[y][x] {
 			case None:
-				switch b.scores[y][x][scoresIdx].State() {
-				case score.Nonterminal:
-					fmt.Fprintf(buf, "%5d │", b.scores[y][x][scoresIdx])
-				case score.Win:
+				switch b.values[y][x][valuesIdx].State() {
+				case value.Nonterminal:
+					fmt.Fprintf(buf, "%5d │", b.values[y][x][valuesIdx])
+				case value.Win:
 					fmt.Fprintf(buf, "  Win │")
-				case score.Draw:
+				case value.Draw:
 					fmt.Fprintf(buf, " Draw │")
 				}
 			case Black:

@@ -4,13 +4,13 @@
 
 package board
 
-import "game_of_stones/score"
+import "game_of_stones/value"
 
 const (
 	maxStones = 6
 )
 
-func scoreStones(stone, stones Stone) (score.Score, score.Score) {
+func valueStones(stone, stones Stone) (value.Value, value.Value) {
 	if stone == Black {
 		switch stones {
 		case 0x00:

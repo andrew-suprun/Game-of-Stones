@@ -2,30 +2,30 @@ package tree
 
 import (
 	"fmt"
-	"game_of_stones/score"
+	"game_of_stones/value"
 	"math/rand"
 	"testing"
 )
 
-const maxScore = 5
+const maxValue = 5
 
 var rnd = rand.New(rand.NewSource(0))
 var id = 0
 
 type testMove struct {
 	id    int
-	score score.Score
+	value value.Value
 }
 
-func (m testMove) Score() score.Score {
-	return m.score
+func (m testMove) Value() value.Value {
+	return m.value
 }
 
 func newMove() testMove {
 	id++
 	move := testMove{
 		id:    id,
-		score: score.Score(rnd.Intn(maxScore*2+1) - maxScore),
+		value: value.Value(rnd.Intn(maxValue*2+1) - maxValue),
 	}
 	return move
 }
@@ -39,7 +39,7 @@ func (game *testGame) SameMove(a, b testMove) bool {
 }
 
 func (m testMove) String() string {
-	return fmt.Sprintf("(%v s:%v)", m.id, m.score)
+	return fmt.Sprintf("(%v s:%v)", m.id, m.value)
 }
 
 type testGame struct{}
@@ -56,7 +56,7 @@ func (game *testGame) PossibleMoves(result *[]testMove) {
 		id++
 		*result = append(*result, testMove{
 			id:    id,
-			score: 100_000,
+			value: 100_000,
 		})
 		return
 	}
@@ -67,7 +67,7 @@ func (game *testGame) PossibleMoves(result *[]testMove) {
 }
 
 func (game *testGame) Less(a, b testMove) bool {
-	return a.score < b.score
+	return a.value < b.value
 }
 
 const expected = `(0 s:0)

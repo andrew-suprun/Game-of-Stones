@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"fmt"
 
-	"game_of_stones/heap"
-	"game_of_stones/score"
+	"game_of_stones/value"
 )
 
 type GameState int
 
 type iMove interface {
-	Score() score.Score
+	Value() value.Value
 }
 
 type iGame[move iMove] interface {
@@ -104,63 +103,63 @@ func (tree *Tree[game, move]) CommitMove(moveStr string) error {
 }
 
 func (tree *Tree[game, move]) Grow() {
-	tree.grow(heap.NewHeap(tree.capacity, tree.selectLess()), tree.root, 0)
-	tree.trim(tree.root, 0)
-	tree.maxDepth++
+	// tree.grow(heap.NewHeap(tree.capacity, tree.selectLess()), tree.root, 0)
+	// tree.trim(tree.root, 0)
+	// tree.maxDepth++
 }
 
 func (tree *Tree[game, move]) selectLess() func(a, b *node[move]) bool {
 	if tree.maxDepth%2 == tree.player {
 		return func(a, b *node[move]) bool {
-			return a.move.Score().Less(b.move.Score())
+			return a.move.Value().Less(b.move.Value())
 		}
 	} else {
 		return func(a, b *node[move]) bool {
-			return b.move.Score().Less(a.move.Score())
+			return b.move.Value().Less(a.move.Value())
 		}
 	}
 }
 
-func (tree *Tree[game, move]) grow(leaves *heap.Heap[*node[move]], node *node[move], depth int) {
-	if depth < tree.maxDepth {
-		child := node.child
-		for child != nil {
-			if child.move.Score().State() != score.Draw {
-				tree.game.PlayMove(child.move)
-				tree.grow(leaves, child, depth+1)
-				tree.game.UndoMove(child.move)
-			}
-			child = child.next
-		}
-		return
-	}
-	tree.game.PossibleMoves(&tree.possibleMoves)
-	for _, childMove := range tree.possibleMoves {
-		childNode := tree.acqireNode(node, childMove)
-		childScoreState := childMove.Score().State()
-		if childScoreState == score.Draw || childScoreState == score.Win {
-			node.addChild(childNode)
-		} else if leaves.WillAdd(childNode) {
-			node.addChild(childNode)
-			if minLeaf, ok := leaves.Add(childNode); ok {
-				minLeaf.remove()
-				tree.releaseNode(minLeaf)
-			}
-		} else {
-			tree.releaseNode(childNode)
-		}
-		tree.validate()
-	}
-}
+// func (tree *Tree[game, move]) grow(leaves *heap.Heap[*node[move]], node *node[move], depth int) {
+// 	if depth < tree.maxDepth {
+// 		child := node.child
+// 		for child != nil {
+// 			if child.move.Value().State() != value.Draw {
+// 				tree.game.PlayMove(child.move)
+// 				tree.grow(leaves, child, depth+1)
+// 				tree.game.UndoMove(child.move)
+// 			}
+// 			child = child.next
+// 		}
+// 		return
+// 	}
+// 	tree.game.PossibleMoves(&tree.possibleMoves)
+// 	for _, childMove := range tree.possibleMoves {
+// 		childNode := tree.acqireNode(node, childMove)
+// 		childValueState := childMove.Value().State()
+// 		if childValueState == value.Draw || childValueState == value.Win {
+// 			node.addChild(childNode)
+// 		} else if leaves.WillAdd(childNode) {
+// 			node.addChild(childNode)
+// 			if minLeaf, ok := leaves.Add(childNode); ok {
+// 				minLeaf.remove()
+// 				tree.releaseNode(minLeaf)
+// 			}
+// 		} else {
+// 			tree.releaseNode(childNode)
+// 		}
+// 		tree.validate()
+// 	}
+// }
 
 func (tree *Tree[game, move]) trim(parent *node[move], depth int) bool {
 	// fmt.Printf(">>> trim: %#v, dep: %d, max: %d\n", parent.move, depth, tree.maxDepth)
 	if depth > tree.maxDepth {
-		// fmt.Printf("<<< trim.1: %#v, %v\n", parent.move, parent.move.Score().State == score.Win)
-		return parent.move.Score().State() == score.Win
+		// fmt.Printf("<<< trim.1: %#v, %v\n", parent.move, parent.move.Value().State == value.Win)
+		return parent.move.Value().State() == value.Win
 	}
 
-	if parent.move.Score().State() == score.Draw {
+	if parent.move.Value().State() == value.Draw {
 		// fmt.Printf("<<< trim.2: %#v, false\n", parent.move)
 		return false
 	}

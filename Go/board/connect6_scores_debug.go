@@ -4,9 +4,9 @@
 
 package board
 
-import "game_of_stones/score"
+import "game_of_stones/value"
 
-func debugScoreStones(stones Stone) (score.Score, score.Score) {
+func debugValueStones(stones Stone) (value.Value, value.Value) {
 	switch stones {
 	case 0x00:
 		return 2, -2
