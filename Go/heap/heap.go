@@ -19,12 +19,12 @@ func NewHeap[E any](capacity int, less Less[E]) *Heap[E] {
 	}
 }
 
-func (h *Heap[E]) WillAdd(e E) bool {
-	return len(h.Items) < cap(h.Items) || h.less(h.Items[0], e)
-}
-
 func (h *Heap[E]) Add(e E) (E, bool) {
+	var nilE E
 	if len(h.Items) == cap(h.Items) {
+		if !h.less(h.Items[0], e) {
+			return nilE, false
+		}
 		result := h.Items[0]
 		h.Items[0] = e
 		h.siftDown()
@@ -32,7 +32,6 @@ func (h *Heap[E]) Add(e E) (E, bool) {
 	}
 	h.Items = append(h.Items, e)
 	h.siftUp()
-	var nilE E
 	return nilE, false
 }
 

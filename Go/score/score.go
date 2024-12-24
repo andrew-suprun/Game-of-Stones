@@ -52,6 +52,7 @@ func (state State) String() string {
 	}
 	return ""
 }
+
 func (state State) GoString() string {
 	switch state {
 	case Nonterminal:
