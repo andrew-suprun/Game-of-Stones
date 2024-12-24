@@ -10,7 +10,7 @@ import (
 func TestGoString(t *testing.T) {
 	result := fmt.Sprintf("%[1]v: %#[1]v", makeMove(1, 2, 3, 4, 1, 0))
 	fmt.Println(result)
-	if result != "b17-d15: b17-d15 s:Draw" {
+	if result != "b17-d15: b17-d15 Draw" {
 		t.Fail()
 	}
 }

@@ -17,7 +17,7 @@ type iGame[move iMove] interface {
 	ParseMove(string) (move, error)
 	PlayMove(move)
 	UndoMove(move)
-	PossibleMoves(result *[]move)
+	TopMoves(result *[]move)
 	SameMove(a, b move) bool
 }
 
