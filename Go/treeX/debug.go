@@ -1,6 +1,6 @@
 //go:build debug
 
-package tree
+package treeX
 
 import "fmt"
 

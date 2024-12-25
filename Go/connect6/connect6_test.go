@@ -29,8 +29,10 @@ func TestMove(t *testing.T) {
 func TestTopMoves(t *testing.T) {
 	c6 := NewGame(10)
 	originalBoard := c6.board
-	c6.PlayMove(c6.MakeMove(9, 9, 9, 9))
-	c6.PlayMove(c6.MakeMove(8, 8, 8, 10))
+	m1 := c6.MakeMove(9, 9, 9, 9)
+	m2 := c6.MakeMove(8, 8, 8, 10)
+	c6.PlayMove(m1)
+	c6.PlayMove(m2)
 
 	moves := make([]Move, 0, 1)
 
@@ -55,8 +57,8 @@ func TestTopMoves(t *testing.T) {
 		c6.UndoMove(played[len(played)-1-i])
 	}
 
-	c6.UndoMove(c6.MakeMove(8, 8, 8, 10))
-	c6.UndoMove(c6.MakeMove(9, 9, 9, 9))
+	c6.UndoMove(m2)
+	c6.UndoMove(m1)
 
 	if originalBoard != c6.board {
 		t.Fail()

@@ -7,6 +7,7 @@ import (
 
 	"game_of_stones/board"
 	"game_of_stones/heap"
+	"game_of_stones/tree"
 	"game_of_stones/value"
 )
 
@@ -46,6 +47,13 @@ func NewGame(maxPlaces int) *Connect6 {
 	return game
 }
 
+func (c *Connect6) Turn() tree.Turn {
+	if c.turn == board.Black {
+		return tree.First
+	}
+	return tree.Second
+}
+
 func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	tokens := strings.Split(moveStr, "-")
 	x1, y1, err := board.ParsePlace(tokens[0])
@@ -68,7 +76,17 @@ func (c *Connect6) SameMove(a, b Move) bool {
 }
 
 func (c *Connect6) MakeMove(x1, y1, x2, y2 int) Move {
-	return makeMove(x1, y1, x2, y2, 0, 0)
+	value := c.value + c.board.Value(c.turn, x1, y1)
+	if x1 != x2 || y1 != y2 {
+		c.board.PlaceStone(c.turn, x1, y1)
+		value += c.board.Value(c.turn, x2, y2)
+		c.board.PlaceStone(c.turn, x2, y2)
+		oppValue := c.oppValue()
+		c.board.RemoveStone(c.turn, x2, y2)
+		c.board.RemoveStone(c.turn, x1, y1)
+		return makeMove(x1, y1, x2, y2, value+oppValue, oppValue)
+	}
+	return makeMove(x1, y1, x2, y2, value, 0)
 }
 
 func (c *Connect6) oppValue() value.Value {

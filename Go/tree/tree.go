@@ -3,217 +3,143 @@ package tree
 import (
 	"bytes"
 	"fmt"
-
 	"game_of_stones/value"
+	"math"
 )
 
-type GameState int
+type node[move iMove] struct {
+	move     move
+	nSims    int32
+	value    value.Value
+	children []node[move]
+}
+
+type Turn int
+
+const (
+	First Turn = iota
+	Second
+)
+
+type iGame[move iMove] interface {
+	Turn() Turn
+	TopMoves(result *[]move)
+	PlayMove(move move)
+	UndoMove(move move)
+	ParseMove(string) (move, error)
+	SameMove(a, b move) bool
+}
 
 type iMove interface {
 	Value() value.Value
 }
 
-type iGame[move iMove] interface {
-	ParseMove(string) (move, error)
-	PlayMove(move)
-	UndoMove(move)
-	TopMoves(result *[]move)
-	SameMove(a, b move) bool
-}
-
-type node[move iMove] struct {
-	parent *node[move]
-	child  *node[move]
-	prev   *node[move]
-	next   *node[move]
-	move   move
-}
-
-func (node *node[move]) addChild(child *node[move]) {
-	if node.child != nil {
-		child.next = node.child
-		node.child.prev = child
-	}
-	node.child = child
-}
-
-func (node *node[move]) remove() {
-	if node.prev != nil {
-		if node.next != nil {
-			node.prev.next = node.next
-			node.next.prev = node.prev
-		} else {
-			node.prev.next = nil
-		}
-	} else {
-		node.parent.child = node.next
-		if node.next != nil {
-			node.next.prev = nil
-		}
-	}
-}
-
 type Tree[game iGame[move], move iMove] struct {
-	game          iGame[move]
-	root          *node[move]
-	current       *node[move]
-	capacity      int
-	player        int
-	maxDepth      int
-	possibleMoves []move
-	freeNodes     []*node[move]
-	children      []*node[move]
+	root        *node[move]
+	game        iGame[move]
+	topMoves    []move
+	maxChildren int32
 }
 
-func NewTree[g iGame[m], m iMove](game g, capacity int) *Tree[g, m] {
-
-	tree := &Tree[g, m]{
-		game:     game,
-		capacity: capacity,
+func NewTree[g iGame[m], m iMove](game g, maxChildren int32) *Tree[g, m] {
+	return &Tree[g, m]{
+		root:        &node[m]{},
+		game:        game,
+		topMoves:    make([]m, 0, maxChildren),
+		maxChildren: maxChildren,
 	}
-	tree.root = &node[m]{}
-	tree.current = tree.root
-	return tree
+}
+
+func (t *Tree[g, m]) Expand() {
+	t.expand(t.root)
 }
 
 func (tree *Tree[game, move]) CommitMove(moveStr string) error {
-	tree.player = 1 - tree.player
 	toPlay, err := tree.game.ParseMove(moveStr)
 	if err != nil {
 		return err
 	}
-	child := tree.root
-	for child != nil {
+	for i, child := range tree.root.children {
 		if tree.game.SameMove(child.move, toPlay) {
-			break
+			newRoot := &tree.root.children[i]
+			tree.root.children[i] = node[move]{}
+			tree.root = newRoot
+			tree.game.PlayMove(newRoot.move)
+			return nil
 		}
-		child = child.next
 	}
-	if child == nil {
-		tree.game.PlayMove(toPlay)
-		tree.root = &node[move]{move: toPlay}
-		tree.maxDepth = 0
-	} else {
-		child.remove()
-		tree.trimBranch(tree.root)
-		tree.root = child
-		tree.maxDepth--
+	tree.root = &node[move]{
+		value: toPlay.Value(),
 	}
+	tree.game.PlayMove(toPlay)
 	return nil
 }
 
-func (tree *Tree[game, move]) Grow() {
-	// tree.grow(heap.NewHeap(tree.capacity, tree.selectLess()), tree.root, 0)
-	// tree.trim(tree.root, 0)
-	// tree.maxDepth++
-}
+func (t *Tree[g, m]) expand(parent *node[m]) {
+	if parent.value.State() != value.Nonterminal {
+		parent.nSims += t.maxChildren
+		return
+	}
 
-func (tree *Tree[game, move]) selectLess() func(a, b *node[move]) bool {
-	if tree.maxDepth%2 == tree.player {
-		return func(a, b *node[move]) bool {
-			return a.move.Value().Less(b.move.Value())
+	if parent.children == nil {
+		t.game.TopMoves(&t.topMoves)
+		parent.children = make([]node[m], len(t.topMoves))
+		for i, childMove := range t.topMoves {
+			parent.children[i] = node[m]{
+				move:  childMove,
+				nSims: 1,
+				value: childMove.Value(),
+			}
+		}
+		parent.nSims += int32(len(t.topMoves))
+		return
+	}
+
+	selectedChild := &parent.children[0]
+	lnParentSims := math.Log(float64(parent.nSims))
+	if t.game.Turn() == First {
+		maxV := value.Value(math.Inf(-1))
+		for i, child := range parent.children {
+			v := child.value + value.Value(math.Sqrt(lnParentSims/float64(child.nSims)))
+			if v > maxV {
+				maxV = v
+				selectedChild = &parent.children[i]
+			}
+		}
+		t.game.PlayMove(selectedChild.move)
+		t.expand(selectedChild)
+		t.game.UndoMove(selectedChild.move)
+
+		parent.nSims = 0
+		parent.value = value.Value(math.Inf(-1))
+		for _, child := range parent.children {
+			parent.nSims += child.nSims
+			if child.value > parent.value {
+				parent.value = child.value
+			}
 		}
 	} else {
-		return func(a, b *node[move]) bool {
-			return b.move.Value().Less(a.move.Value())
+		maxV := value.Value(math.Inf(1))
+		for i, child := range parent.children {
+			v := -child.value + value.Value(math.Sqrt(lnParentSims/float64(child.nSims)))
+			if v > maxV {
+				maxV = v
+				selectedChild = &parent.children[i]
+			}
+		}
+		t.game.PlayMove(selectedChild.move)
+		t.expand(selectedChild)
+		t.game.UndoMove(selectedChild.move)
+
+		parent.nSims = 0
+		parent.value = value.Value(math.Inf(1))
+		for _, child := range parent.children {
+			parent.nSims += child.nSims
+			if child.value < parent.value {
+				parent.value = child.value
+			}
 		}
 	}
-}
-
-// func (tree *Tree[game, move]) grow(leaves *heap.Heap[*node[move]], node *node[move], depth int) {
-// 	if depth < tree.maxDepth {
-// 		child := node.child
-// 		for child != nil {
-// 			if child.move.Value().State() != value.Draw {
-// 				tree.game.PlayMove(child.move)
-// 				tree.grow(leaves, child, depth+1)
-// 				tree.game.UndoMove(child.move)
-// 			}
-// 			child = child.next
-// 		}
-// 		return
-// 	}
-// 	tree.game.PossibleMoves(&tree.possibleMoves)
-// 	for _, childMove := range tree.possibleMoves {
-// 		childNode := tree.acqireNode(node, childMove)
-// 		childValueState := childMove.Value().State()
-// 		if childValueState == value.Draw || childValueState == value.Win {
-// 			node.addChild(childNode)
-// 		} else if leaves.WillAdd(childNode) {
-// 			node.addChild(childNode)
-// 			if minLeaf, ok := leaves.Add(childNode); ok {
-// 				minLeaf.remove()
-// 				tree.releaseNode(minLeaf)
-// 			}
-// 		} else {
-// 			tree.releaseNode(childNode)
-// 		}
-// 		tree.validate()
-// 	}
-// }
-
-func (tree *Tree[game, move]) trim(parent *node[move], depth int) bool {
-	// fmt.Printf(">>> trim: %#v, dep: %d, max: %d\n", parent.move, depth, tree.maxDepth)
-	if depth > tree.maxDepth {
-		// fmt.Printf("<<< trim.1: %#v, %v\n", parent.move, parent.move.Value().State == value.Win)
-		return parent.move.Value().State() == value.Win
-	}
-
-	if parent.move.Value().State() == value.Draw {
-		// fmt.Printf("<<< trim.2: %#v, false\n", parent.move)
-		return false
-	}
-
-	if parent.child == nil {
-		// fmt.Printf("<<< trim.3: %#v, true\n", parent.move)
-		return true
-	}
-
-	child := parent.child
-	tree.children = []*node[move]{}
-	for child != nil {
-		tree.children = append(tree.children, child)
-		child = child.next
-	}
-	for _, child := range tree.children {
-		if tree.trim(child, depth+1) {
-			tree.trimBranch(child)
-		}
-	}
-	// fmt.Printf("<<< trim.4: %#v, %v\n", parent.move, parent.child == nil)
-	return parent.child == nil
-}
-
-func (tree *Tree[game, move]) trimBranch(node *node[move]) {
-	child := node.child
-	for child != nil {
-		tree.trimBranch(child)
-		child = node.child
-	}
-	node.remove()
-	tree.releaseNode(node)
-}
-
-func (tree *Tree[game, move]) acqireNode(parent *node[move], m move) *node[move] {
-	nFreeNodes := len(tree.freeNodes)
-	if nFreeNodes > 0 {
-		result := tree.freeNodes[nFreeNodes-1]
-		result.parent = parent
-		result.move = m
-		tree.freeNodes = tree.freeNodes[:nFreeNodes-1]
-		return result
-	}
-	return &node[move]{
-		parent: parent,
-		move:   m,
-	}
-}
-
-func (tree *Tree[game, move]) releaseNode(node *node[move]) {
-	node.next = nil
-	node.prev = nil
-	node.child = nil
-	tree.freeNodes = append(tree.freeNodes, node)
 }
 
 func (tree *Tree[game, move]) String() string {
@@ -243,9 +169,7 @@ func (node *node[move]) string(buf *bytes.Buffer, level int, format string) {
 		buf.WriteString("|   ")
 	}
 	fmt.Fprintf(buf, format, node.move)
-	child := node.child
-	for child != nil {
+	for _, child := range node.children {
 		child.string(buf, level+1, format)
-		child = child.next
 	}
 }

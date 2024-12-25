@@ -1,5 +1,5 @@
 //go:build !debug
 
-package tree
+package treeX
 
 func (tree *Tree[game, move]) validate() {}
