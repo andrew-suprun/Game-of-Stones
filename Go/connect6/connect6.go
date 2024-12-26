@@ -11,20 +11,12 @@ import (
 )
 
 type Move struct {
-	x1, y1, x2, y2  byte
-	value, oppValue float32
+	x1, y1, x2, y2 byte
+	state          tree.State
 }
 
-func (move Move) Value() float32 {
-	return move.value
-}
-
-func (move Move) IsWinning() bool {
-	return move.value >= board.WinValue || move.value <= -board.WinValue
-}
-
-func (move Move) IsDrawing() bool {
-	return move.value == 0 && move.oppValue == 1
+func (move Move) State() tree.State {
+	return move.state
 }
 
 func (m Move) String() string {
@@ -35,13 +27,15 @@ func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", x1+'a', board.Size-y1, x2+'a', board.Size-y2)
 }
 func (m Move) GoString() string {
-	if m.IsDrawing() {
-		return fmt.Sprintf("%s Draw", m)
-	} else if m.IsWinning() {
-		return fmt.Sprintf("%s Win", m)
-	} else {
-		return fmt.Sprintf("%s %v", m, m.value)
+	switch m.State() {
+	case tree.BlackWin:
+		return m.String() + " Black Win"
+	case tree.WhiteWin:
+		return m.String() + " White Win"
+	case tree.Draw:
+		return m.String() + " Draw"
 	}
+	return m.String()
 }
 
 type Connect6 struct {
@@ -80,23 +74,7 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-
-	value := c.value + c.board.Value(c.turn, x1, y1)
-	if x1 != x2 || y1 != y2 {
-		c.board.PlaceStone(c.turn, x1, y1)
-		value += c.board.Value(c.turn, x2, y2)
-		c.board.PlaceStone(c.turn, x2, y2)
-		oppValue := c.oppValue()
-		c.board.RemoveStone(c.turn, x2, y2)
-		c.board.RemoveStone(c.turn, x1, y1)
-		return makeMove(x1, y1, x2, y2, value+oppValue, oppValue), nil
-	}
-	return makeMove(x1, y1, x2, y2, value, 0), nil
-}
-
-func (c *Connect6) SameMove(a, b Move) bool {
-	return a.x1 == b.x1 && a.y1 == b.y1 && a.x2 == b.x2 && a.y2 == b.y2 ||
-		a.x1 == b.x2 && a.y1 == b.y2 && a.x2 == b.x1 && a.y2 == b.y1
+	return Move{x1, y1, x2, y2, tree.Nonterminal}, nil
 }
 
 func (c *Connect6) oppValue() float32 {
@@ -135,10 +113,6 @@ func (c *Connect6) oppValue() float32 {
 	}
 }
 
-func makeMove(x1, y1, x2, y2 int, value, oppValue float32) Move {
-	return Move{byte(x1), byte(y1), byte(x2), byte(y2), value, oppValue}
-}
-
 func (c *Connect6) PlayMove(move Move) {
 	c.value += c.board.Value(c.turn, int(move.x1), int(move.y1))
 	c.board.PlaceStone(c.turn, int(move.x1), int(move.y1))
@@ -167,16 +141,16 @@ func (c *Connect6) UndoMove(move Move) {
 	}
 }
 
-func (c *Connect6) TopMoves(moves *[]Move) {
+func (c *Connect6) TopMoves(moves *[]tree.MoveValue[Move]) {
 	*moves = (*moves)[:0]
-	drawMove := Move{oppValue: 1}
+	drawMove := tree.MoveValue[Move]{Move: Move{state: tree.Draw}}
 	nZeros := 0
-	less := func(a, b Move) bool {
-		return a.value < b.value
+	less := func(a, b tree.MoveValue[Move]) bool {
+		return a.Value < b.Value
 	}
 	if c.turn == board.White {
-		less = func(a, b Move) bool {
-			return a.value > b.value
+		less = func(a, b tree.MoveValue[Move]) bool {
+			return a.Value > b.Value
 		}
 	}
 
@@ -186,19 +160,29 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 		if value1 == 0 {
 			switch nZeros {
 			case 0:
-				drawMove.x1 = byte(place1.X)
-				drawMove.y1 = byte(place1.Y)
+				drawMove.Move.x1 = byte(place1.X)
+				drawMove.Move.y1 = byte(place1.Y)
 			case 1:
-				drawMove.x2 = byte(place1.X)
-				drawMove.y2 = byte(place1.Y)
+				drawMove.Move.x2 = byte(place1.X)
+				drawMove.Move.y2 = byte(place1.Y)
 			}
 			nZeros++
 			continue
 		}
 
-		if value1 >= board.WinValue || value1 <= -board.WinValue {
+		if value1 >= board.WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = makeMove(place1.X, place1.Y, place1.X, place1.Y, c.value+value1, 0)
+			(*moves)[0] = tree.MoveValue[Move]{
+				Move:  Move{byte(place1.X), byte(place1.Y), byte(place1.X), byte(place1.Y), tree.BlackWin},
+				Value: c.value + value1,
+			}
+			return
+		} else if value1 <= -board.WinValue {
+			*moves = (*moves)[:1]
+			(*moves)[0] = tree.MoveValue[Move]{
+				Move:  Move{byte(place1.X), byte(place1.Y), byte(place1.X), byte(place1.Y), tree.WhiteWin},
+				Value: c.value + value1,
+			}
 			return
 		}
 
@@ -209,17 +193,33 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 			if value2 == 0 {
 				continue
 			}
-			if value2 >= board.WinValue || value2 <= -board.WinValue {
-				(*moves)[0] = makeMove(place1.X, place1.Y, place2.X, place2.Y, c.value+value1+value2, 0)
+
+			if value2 >= board.WinValue {
 				*moves = (*moves)[:1]
+				(*moves)[0] = tree.MoveValue[Move]{
+					Move:  Move{byte(place1.X), byte(place1.Y), byte(place2.X), byte(place2.Y), tree.BlackWin},
+					Value: c.value + value1 + value2,
+				}
+				c.board.RemoveStone(c.turn, place1.X, place1.Y)
+				return
+			} else if value2 <= -board.WinValue {
+				*moves = (*moves)[:1]
+				(*moves)[0] = tree.MoveValue[Move]{
+					Move:  Move{byte(place1.X), byte(place1.Y), byte(place2.X), byte(place2.Y), tree.WhiteWin},
+					Value: c.value + value1 + value2,
+				}
 				c.board.RemoveStone(c.turn, place1.X, place1.Y)
 				return
 			}
+
 			c.board.PlaceStone(c.turn, place2.X, place2.Y)
 			oppVal := c.oppValue()
 			c.board.RemoveStone(c.turn, place2.X, place2.Y)
 
-			move := makeMove(place1.X, place1.Y, place2.X, place2.Y, c.value+value1+value2+oppVal, oppVal)
+			move := tree.MoveValue[Move]{
+				Move:  Move{byte(place1.X), byte(place1.Y), byte(place2.X), byte(place2.Y), tree.Nonterminal},
+				Value: c.value + value1 + value2 + oppVal,
+			}
 			heap.Add(move, moves, less)
 		}
 

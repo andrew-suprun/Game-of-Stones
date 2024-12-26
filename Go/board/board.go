@@ -305,7 +305,7 @@ func (b *Board) ValuesString(buf *bytes.Buffer, valuesIdx int) {
 	buf.WriteString("\n")
 }
 
-func ParsePlace(place string) (int, int, error) {
+func ParsePlace(place string) (byte, byte, error) {
 	if len(place) < 2 || len(place) > 3 {
 		return 0, 0, errors.New("failed to parse place")
 	}
@@ -327,5 +327,5 @@ func ParsePlace(place string) (int, int, error) {
 	if x > Size || y > Size {
 		return 0, 0, errors.New("failed to parse place")
 	}
-	return int(x), int(y), nil
+	return x, y, nil
 }

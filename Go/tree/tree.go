@@ -22,31 +22,43 @@ const (
 
 type iGame[move iMove] interface {
 	Turn() Turn
-	TopMoves(result *[]move)
+	TopMoves(result *[]MoveValue[move])
 	PlayMove(move move)
 	UndoMove(move move)
-	ParseMove(string) (move, error)
-	SameMove(a, b move) bool
+	ParseMove(moveStr string) (move, error)
 }
 
 type iMove interface {
-	Value() float32
-	IsWinning() bool
-	IsDrawing() bool
+	fmt.Stringer
+	State() State
 }
 
-type Tree[game iGame[move], move iMove] struct {
-	root        *node[move]
-	game        iGame[move]
-	topMoves    []move
+type State byte
+
+const (
+	Nonterminal State = iota
+	BlackWin
+	WhiteWin
+	Draw
+)
+
+type MoveValue[Move iMove] struct {
+	Move  Move
+	Value float32
+}
+
+type Tree[Game iGame[Move], Move iMove] struct {
+	root        *node[Move]
+	game        iGame[Move]
+	topMoves    []MoveValue[Move]
 	maxChildren int32
 }
 
-func NewTree[g iGame[m], m iMove](game g, maxChildren int32) *Tree[g, m] {
-	return &Tree[g, m]{
-		root:        &node[m]{},
+func NewTree[Game iGame[Move], Move iMove](game Game, maxChildren int32) *Tree[Game, Move] {
+	return &Tree[Game, Move]{
+		root:        &node[Move]{},
 		game:        game,
-		topMoves:    make([]m, 0, maxChildren),
+		topMoves:    make([]MoveValue[Move], 0, maxChildren),
 		maxChildren: maxChildren,
 	}
 }
@@ -55,29 +67,24 @@ func (t *Tree[g, m]) Expand() {
 	t.expand(t.root)
 }
 
-func (tree *Tree[game, move]) CommitMove(moveStr string) error {
-	toPlay, err := tree.game.ParseMove(moveStr)
-	if err != nil {
-		return err
-	}
-	for i, child := range tree.root.children {
-		if tree.game.SameMove(child.move, toPlay) {
-			newRoot := &tree.root.children[i]
+func (tree *Tree[game, move]) CommitMove(toPlay string) error {
+	for i := range tree.root.children {
+		child := &tree.root.children[i]
+		if child.move.String() == toPlay {
 			tree.root.children[i] = node[move]{}
-			tree.root = newRoot
-			tree.game.PlayMove(newRoot.move)
+			tree.root = child
+			tree.game.PlayMove(child.move)
 			return nil
 		}
 	}
-	tree.root = &node[move]{
-		value: toPlay.Value(),
-	}
-	tree.game.PlayMove(toPlay)
+	tree.root = &node[move]{}
+	m, _ := tree.game.ParseMove(toPlay)
+	tree.game.PlayMove(m)
 	return nil
 }
 
 func (t *Tree[g, m]) expand(parent *node[m]) {
-	if parent.move.IsWinning() || parent.move.IsDrawing() {
+	if parent.move.State() == Nonterminal {
 		parent.nSims += t.maxChildren
 		return
 	}
@@ -87,9 +94,9 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 		parent.children = make([]node[m], len(t.topMoves))
 		for i, childMove := range t.topMoves {
 			parent.children[i] = node[m]{
-				move:  childMove,
+				move:  childMove.Move,
 				nSims: 1,
-				value: childMove.Value(),
+				value: childMove.Value,
 			}
 		}
 		parent.nSims += int32(len(t.topMoves))
