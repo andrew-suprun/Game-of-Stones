@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestConnect6Grow(t *testing.T) {
+func TestExpand(t *testing.T) {
 	game := NewGame(30)
 	tree := tree.NewTree(game, 8)
 

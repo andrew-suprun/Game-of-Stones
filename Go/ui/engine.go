@@ -5,7 +5,7 @@ import (
 	"math/rand"
 
 	"game_of_stones/connect6"
-	"game_of_stones/treeX"
+	"game_of_stones/tree"
 )
 
 type engine struct {
@@ -13,7 +13,7 @@ type engine struct {
 	events   chan any
 	moves    []connect6.Move
 	game     *connect6.Connect6
-	root     *treeX.Tree[*connect6.Connect6, connect6.Move]
+	root     *tree.Tree[*connect6.Connect6, connect6.Move]
 }
 
 func runEngine(commands chan any, events chan any) {
@@ -30,7 +30,7 @@ func (eng *engine) run() {
 		switch cmd := cmd.(type) {
 		case cmdStart:
 			eng.game = connect6.NewGame(30)
-			eng.root = treeX.NewTree(eng.game, 1000)
+			eng.root = tree.NewTree(eng.game, 1000)
 
 		case cmdMakeMove:
 			move := eng.game.MakeMove(cmd[0], cmd[1], cmd[2], cmd[3])

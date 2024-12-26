@@ -3,12 +3,11 @@ package connect6
 import (
 	"fmt"
 	"game_of_stones/board"
-	"game_of_stones/value"
 	"testing"
 )
 
 func TestGoString(t *testing.T) {
-	result := fmt.Sprintf("%[1]v: %#[1]v", makeMove(1, 2, 3, 4, 1, 0))
+	result := fmt.Sprintf("%[1]v: %#[1]v", makeMove(1, 2, 3, 4, 0, 1))
 	fmt.Println(result)
 	if result != "b17-d15: b17-d15 Draw" {
 		t.Fail()
@@ -17,8 +16,10 @@ func TestGoString(t *testing.T) {
 
 func TestMove(t *testing.T) {
 	c6 := NewGame(10)
-	c6.PlayMove(c6.MakeMove(9, 9, 9, 9))
-	c6.PlayMove(c6.MakeMove(8, 8, 8, 10))
+	m1, _ := c6.ParseMove("j10-j10")
+	c6.PlayMove(m1)
+	m2, _ := c6.ParseMove("i9-i11")
+	c6.PlayMove(m2)
 	fmt.Printf("%#v\n", &c6.board)
 	c6.board.PlaceStone(board.Black, 7, 9)
 	fmt.Printf("%#v\n", &c6.board)
@@ -29,9 +30,9 @@ func TestMove(t *testing.T) {
 func TestTopMoves(t *testing.T) {
 	c6 := NewGame(10)
 	originalBoard := c6.board
-	m1 := c6.MakeMove(9, 9, 9, 9)
-	m2 := c6.MakeMove(8, 8, 8, 10)
+	m1, _ := c6.ParseMove("j10-j10")
 	c6.PlayMove(m1)
+	m2, _ := c6.ParseMove("i9+i11")
 	c6.PlayMove(m2)
 
 	moves := make([]Move, 0, 1)
@@ -49,7 +50,7 @@ func TestTopMoves(t *testing.T) {
 		c6.PlayMove(moves[0])
 		fmt.Printf("%#v\n%v\n", moves[0], &c6.board)
 		played = append(played, moves[0])
-		if moves[0].value.State() == value.Win {
+		if moves[0].IsWinning() {
 			break
 		}
 	}

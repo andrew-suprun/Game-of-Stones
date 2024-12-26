@@ -4,7 +4,6 @@ package board
 
 import (
 	"fmt"
-	"game_of_stones/value"
 )
 
 const debug = true
@@ -29,7 +28,7 @@ func (b *Board) Validate() {
 				case White:
 					fmt.Print("     O")
 				case None:
-					fmt.Printf("%6d", values[y][x][0])
+					fmt.Printf("%6.0f", values[y][x][0])
 				}
 			}
 			fmt.Println()
@@ -43,7 +42,7 @@ func (b *Board) Validate() {
 				case White:
 					fmt.Print("     O")
 				case None:
-					fmt.Printf("%6d", values[y][x][1])
+					fmt.Printf("%6.0f", values[y][x][1])
 				}
 			}
 			fmt.Println()
@@ -54,8 +53,8 @@ func (b *Board) Validate() {
 	}
 }
 
-func (b *Board) debugBoardValues() *[Size][Size][2]value.Value {
-	values := &[Size][Size][2]value.Value{}
+func (b *Board) debugBoardValues() *[Size][Size][2]float32 {
+	values := &[Size][Size][2]float32{}
 	for y := 0; y < Size; y++ {
 		stones := Stone(0)
 		for x := 0; x < maxStones1; x++ {

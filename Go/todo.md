@@ -1,2 +1,2 @@
 # Tree
-* accumulate results
+* gen updated scores

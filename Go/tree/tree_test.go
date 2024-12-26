@@ -2,7 +2,6 @@ package tree
 
 import (
 	"fmt"
-	"game_of_stones/value"
 	"math/rand"
 )
 
@@ -13,10 +12,10 @@ var id = 0
 
 type testMove struct {
 	id    int
-	value value.Value
+	value float32
 }
 
-func (m testMove) Value() value.Value {
+func (m testMove) Value() float32 {
 	return m.value
 }
 
@@ -24,7 +23,7 @@ func newMove() testMove {
 	id++
 	move := testMove{
 		id:    id,
-		value: value.Value(rnd.Intn(maxValue*2+1) - maxValue),
+		value: float32(rnd.Intn(maxValue*2+1) - maxValue),
 	}
 	return move
 }

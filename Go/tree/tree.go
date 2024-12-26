@@ -3,14 +3,13 @@ package tree
 import (
 	"bytes"
 	"fmt"
-	"game_of_stones/value"
 	"math"
 )
 
 type node[move iMove] struct {
 	move     move
 	nSims    int32
-	value    value.Value
+	value    float32
 	children []node[move]
 }
 
@@ -31,7 +30,9 @@ type iGame[move iMove] interface {
 }
 
 type iMove interface {
-	Value() value.Value
+	Value() float32
+	IsWinning() bool
+	IsDrawing() bool
 }
 
 type Tree[game iGame[move], move iMove] struct {
@@ -76,7 +77,7 @@ func (tree *Tree[game, move]) CommitMove(moveStr string) error {
 }
 
 func (t *Tree[g, m]) expand(parent *node[m]) {
-	if parent.value.State() != value.Nonterminal {
+	if parent.move.IsWinning() || parent.move.IsDrawing() {
 		parent.nSims += t.maxChildren
 		return
 	}
@@ -98,9 +99,9 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 	selectedChild := &parent.children[0]
 	lnParentSims := math.Log(float64(parent.nSims))
 	if t.game.Turn() == First {
-		maxV := value.Value(math.Inf(-1))
+		maxV := math.Inf(-1)
 		for i, child := range parent.children {
-			v := child.value + value.Value(math.Sqrt(lnParentSims/float64(child.nSims)))
+			v := float64(child.value) + math.Sqrt(lnParentSims/float64(child.nSims))
 			if v > maxV {
 				maxV = v
 				selectedChild = &parent.children[i]
@@ -111,7 +112,7 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 		t.game.UndoMove(selectedChild.move)
 
 		parent.nSims = 0
-		parent.value = value.Value(math.Inf(-1))
+		parent.value = float32(math.Inf(-1))
 		for _, child := range parent.children {
 			parent.nSims += child.nSims
 			if child.value > parent.value {
@@ -119,9 +120,9 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 			}
 		}
 	} else {
-		maxV := value.Value(math.Inf(1))
+		maxV := math.Inf(1)
 		for i, child := range parent.children {
-			v := -child.value + value.Value(math.Sqrt(lnParentSims/float64(child.nSims)))
+			v := float64(-child.value) + math.Sqrt(lnParentSims/float64(child.nSims))
 			if v > maxV {
 				maxV = v
 				selectedChild = &parent.children[i]
@@ -132,7 +133,7 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 		t.game.UndoMove(selectedChild.move)
 
 		parent.nSims = 0
-		parent.value = value.Value(math.Inf(1))
+		parent.value = float32(math.Inf(1))
 		for _, child := range parent.children {
 			parent.nSims += child.nSims
 			if child.value < parent.value {
