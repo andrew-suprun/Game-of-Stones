@@ -10,12 +10,11 @@ func TestExpand(t *testing.T) {
 	game := NewGame(30)
 	tree := tree.NewTree(game, 8)
 
-	// playMove(tree, game, "j10-j10")
-	// playMove(tree, game, "i9-i11")
-	// playMove(tree, game, "i10-k10")
+	tree.CommitMove("j10-j10")
+	tree.CommitMove("i9-i11")
 
 	for range 20 {
 		tree.Expand()
-		fmt.Printf("\n---\n\n%#v", tree)
+		fmt.Printf("\n---\n\n%#v\n%v\n", tree, &game.board)
 	}
 }

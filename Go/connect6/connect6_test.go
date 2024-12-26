@@ -33,7 +33,7 @@ func TestTopMoves(t *testing.T) {
 	originalBoard := c6.board
 	m1, _ := c6.ParseMove("j10-j10")
 	c6.PlayMove(m1)
-	m2, _ := c6.ParseMove("i9+i11")
+	m2, _ := c6.ParseMove("i9-i11")
 	c6.PlayMove(m2)
 
 	moves := make([]tree.MoveValue[Move], 0, 1)

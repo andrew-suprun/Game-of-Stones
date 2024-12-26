@@ -84,7 +84,7 @@ func (tree *Tree[game, move]) CommitMove(toPlay string) error {
 }
 
 func (t *Tree[g, m]) expand(parent *node[m]) {
-	if parent.move.State() == Nonterminal {
+	if parent.move.State() != Nonterminal {
 		parent.nSims += t.maxChildren
 		return
 	}
