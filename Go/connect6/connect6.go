@@ -24,7 +24,8 @@ func (m Move) String() string {
 	if x1 > x2 || x1 == x2 && y1 < y2 {
 		x1, y1, x2, y2 = x2, y2, x1, y1
 	}
-	return fmt.Sprintf("%c%d-%c%d", x1+'a', board.Size-y1, x2+'a', board.Size-y2)
+	str := fmt.Sprintf("%c%d-%c%d", x1+'a', board.Size-y1, x2+'a', board.Size-y2)
+	return fmt.Sprintf("%-7s", str)
 }
 func (m Move) GoString() string {
 	switch m.State() {

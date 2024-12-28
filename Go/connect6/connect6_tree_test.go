@@ -8,13 +8,14 @@ import (
 
 func TestExpand(t *testing.T) {
 	game := NewGame(30)
-	tree := tree.NewTree(game, 8)
+	tree := tree.NewTree(game, 8, 100)
 
 	tree.CommitMove("j10-j10")
-	tree.CommitMove("i9-i11")
+	tree.CommitMove("i9-i10")
+	fmt.Printf("%v\n", &game.board)
 
-	for range 20 {
+	for range 200 {
 		tree.Expand()
-		fmt.Printf("\n---\n\n%#v\n%v\n", tree, &game.board)
 	}
+	fmt.Printf("%#v\n", tree)
 }
