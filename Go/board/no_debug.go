@@ -2,6 +2,8 @@
 
 package board
 
-const debug = false
-
 func (b *Board) Validate() {}
+
+func (b *Board) BoardValue() int {
+	return 0
+}

@@ -6,7 +6,7 @@ package board
 
 import "game_of_stones/value"
 
-func debugValueStones(stones Stone) (value.Value, value.Value) {
+func debugStonesValues(stones Stone) (value.Value, value.Value) {
 	switch stones {
 	case 0x00:
 		return 2, -2

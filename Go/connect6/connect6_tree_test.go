@@ -11,7 +11,7 @@ func TestExpand(t *testing.T) {
 	tree := tree.NewTree(game, 8, 100)
 
 	tree.CommitMove("j10-j10")
-	tree.CommitMove("i9-i10")
+	tree.CommitMove("i11-k9")
 	fmt.Printf("%v\n", &game.board)
 
 	for range 200 {

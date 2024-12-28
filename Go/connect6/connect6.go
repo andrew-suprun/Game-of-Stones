@@ -126,6 +126,7 @@ func (c *Connect6) PlayMove(move Move) {
 	} else {
 		c.turn = board.Black
 	}
+	c.Validate()
 }
 
 func (c *Connect6) UndoMove(move Move) {
@@ -140,6 +141,7 @@ func (c *Connect6) UndoMove(move Move) {
 		c.board.RemoveStone(c.turn, int(move.x1), int(move.y1))
 		c.value -= c.board.Value(c.turn, int(move.x1), int(move.y1))
 	}
+	c.Validate()
 }
 
 func (c *Connect6) TopMoves(moves *[]tree.MoveValue[Move]) {
