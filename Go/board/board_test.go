@@ -10,8 +10,8 @@ func TestPlaceStone(t *testing.T) {
 	moves := []testMove{}
 	b := MakeBoard()
 	for range 300 {
-		x := rnd.Intn(Size)
-		y := rnd.Intn(Size)
+		y := int8(rnd.Intn(Size))
+		x := int8(rnd.Intn(Size))
 		if b.stones[y][x] != None {
 			continue
 		}
@@ -52,6 +52,6 @@ func BenchmarkTime(b *testing.B) {
 }
 
 type testMove struct {
-	x, y  int
+	x, y  int8
 	stone Stone
 }

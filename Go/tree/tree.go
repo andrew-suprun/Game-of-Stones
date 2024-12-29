@@ -25,7 +25,8 @@ type iGame[move iMove] interface {
 	TopMoves(result *[]MoveValue[move])
 	PlayMove(move move)
 	UndoMove(move move)
-	ParseMove(moveStr string) (move, error)
+	ParseMove(move string) (move, error)
+	SameMove(a, b move) bool
 }
 
 type iMove interface {
@@ -33,7 +34,7 @@ type iMove interface {
 	State() State
 }
 
-type State byte
+type State int8
 
 const (
 	Nonterminal State = iota

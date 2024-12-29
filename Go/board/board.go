@@ -8,7 +8,7 @@ import (
 	"game_of_stones/heap"
 )
 
-type Stone byte
+type Stone int8
 
 const (
 	None  Stone = 0
@@ -27,7 +27,7 @@ func (stone Stone) String() string {
 }
 
 type Place struct {
-	X, Y int
+	X, Y int8
 }
 
 const maxStones1 = maxStones - 1
@@ -65,8 +65,8 @@ func (board *Board) TopPlaces(stone Stone, places *[]Place) {
 		}
 	}
 	*places = (*places)[:0]
-	for y := 0; y < Size; y++ {
-		for x := 0; x < Size; x++ {
+	for y := int8(0); y < Size; y++ {
+		for x := int8(0); x < Size; x++ {
 			if board.stones[y][x] != None {
 				continue
 			}
@@ -84,19 +84,19 @@ func (board *Board) TopPlaces(stone Stone, places *[]Place) {
 	}
 }
 
-func (b *Board) PlaceStone(stone Stone, x, y int) {
+func (b *Board) PlaceStone(stone Stone, x, y int8) {
 	b.placeStone(stone, x, y, 1)
 }
 
-func (b *Board) RemoveStone(stone Stone, x, y int) {
+func (b *Board) RemoveStone(stone Stone, x, y int8) {
 	b.placeStone(stone, x, y, -1)
 }
 
-func (b *Board) Stone(x, y int) Stone {
+func (b *Board) Stone(x, y int8) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) Value(stone Stone, x, y int) float32 {
+func (b *Board) Value(stone Stone, x, y int8) float32 {
 	switch stone {
 	case Black:
 		return b.values[y][x][0]
@@ -106,7 +106,7 @@ func (b *Board) Value(stone Stone, x, y int) float32 {
 	panic("Value")
 }
 
-func (b *Board) placeStone(stone Stone, x, y int, coeff float32) {
+func (b *Board) placeStone(stone Stone, x, y int8, coeff float32) {
 	if coeff == -1 {
 		b.stones[y][x] = None
 	}
@@ -153,9 +153,9 @@ func (b *Board) placeStone(stone Stone, x, y int, coeff float32) {
 	b.Validate()
 }
 
-func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff float32) {
+func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int8, coeff float32) {
 	stones := Stone(0)
-	for i := 0; i < maxStones1; i++ {
+	for i := int8(0); i < maxStones1; i++ {
 		stones += b.stones[y+i*dy][x+i*dx]
 	}
 	for range n {
@@ -163,7 +163,7 @@ func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int, coeff float32) {
 		blackValue, whiteValue := valueStones(stone, stones)
 		if blackValue != 0 || whiteValue != 0 {
 			blackValue, whiteValue = blackValue*coeff, whiteValue*coeff
-			for j := 0; j < maxStones; j++ {
+			for j := int8(0); j < maxStones; j++ {
 				s := &b.values[y+j*dy][x+j*dx]
 				s[0] += blackValue
 				s[1] += whiteValue
@@ -305,7 +305,7 @@ func (b *Board) ValuesString(buf *bytes.Buffer, valuesIdx int) {
 	buf.WriteString("\n")
 }
 
-func ParsePlace(place string) (byte, byte, error) {
+func ParsePlace(place string) (int8, int8, error) {
 	if len(place) < 2 || len(place) > 3 {
 		return 0, 0, errors.New("failed to parse place")
 	}
@@ -315,13 +315,13 @@ func ParsePlace(place string) (byte, byte, error) {
 	if place[1] < '0' || place[1] > '9' {
 		return 0, 0, errors.New("failed to parse place")
 	}
-	x := place[0] - 'a'
-	y := place[1] - '0'
+	x := int8(place[0] - 'a')
+	y := int8(place[1] - '0')
 	if len(place) == 3 {
 		if place[2] < '0' || place[2] > '9' {
 			return 0, 0, errors.New("failed to parse place")
 		}
-		y = 10*y + place[2] - '0'
+		y = 10*y + int8(place[2]-'0')
 	}
 	y = Size - y
 	if x > Size || y > Size {

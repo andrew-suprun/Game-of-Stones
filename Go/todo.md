@@ -4,4 +4,5 @@
   - fix move comparison
     - iGame.ParseMove()
     - iGame.SameMove()
-* Engine
+* write tree.BestMove()
+* write an engine
