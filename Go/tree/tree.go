@@ -48,20 +48,20 @@ type MoveValue[Move iMove] struct {
 }
 
 type Tree[Game iGame[Move], Move iMove] struct {
-	root        *node[Move]
-	game        iGame[Move]
-	topMoves    []MoveValue[Move]
-	maxChildren int32
-	c           float64
+	root              *node[Move]
+	game              iGame[Move]
+	topMoves          []MoveValue[Move]
+	maxChildren       int32
+	explorationFactor float64
 }
 
 func NewTree[Game iGame[Move], Move iMove](game Game, maxChildren int32, explorationFactor float64) *Tree[Game, Move] {
 	return &Tree[Game, Move]{
-		root:        &node[Move]{},
-		game:        game,
-		topMoves:    make([]MoveValue[Move], 0, maxChildren),
-		maxChildren: maxChildren,
-		c:           explorationFactor,
+		root:              &node[Move]{},
+		game:              game,
+		topMoves:          make([]MoveValue[Move], 0, maxChildren),
+		maxChildren:       maxChildren,
+		explorationFactor: explorationFactor,
 	}
 }
 
@@ -129,12 +129,10 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 	if t.game.Turn() == First {
 		maxV := math.Inf(-1)
 		for i, child := range parent.children {
-			v := float64(child.value) + t.c*math.Sqrt(logParentSims/float64(child.nSims))
-			// fmt.Printf("child %v value %.3f S %.3f\n", child.move, child.value, v)
+			v := float64(child.value) + t.explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
 			if v > maxV {
 				maxV = v
 				selectedChild = &parent.children[i]
-				// fmt.Println("  selected")
 			}
 		}
 		t.game.PlayMove(selectedChild.move)
@@ -152,7 +150,7 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 	} else {
 		maxV := math.Inf(1)
 		for i, child := range parent.children {
-			v := float64(-child.value) + t.c*math.Sqrt(logParentSims/float64(child.nSims))
+			v := float64(-child.value) + t.explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
 			if v > maxV {
 				maxV = v
 				selectedChild = &parent.children[i]
