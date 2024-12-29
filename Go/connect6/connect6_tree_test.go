@@ -8,14 +8,23 @@ import (
 
 func TestExpand(t *testing.T) {
 	game := NewGame(30)
-	tree := tree.NewTree(game, 8, 100)
+	searchTree := tree.NewTree(game, 60, 100)
 
-	tree.CommitMove("j10-j10")
-	tree.CommitMove("i11-k9")
-	fmt.Printf("%v\n", &game.board)
+	move, _ := game.ParseMove("j10-j10")
+	searchTree.CommitMove(move)
 
-	for range 200 {
-		tree.Expand()
+	move, _ = game.ParseMove("i11-i9")
+	searchTree.CommitMove(move)
+
+	for {
+		for range 100 {
+			searchTree.Expand()
+		}
+		move = searchTree.BestMove()
+		searchTree.CommitMove(move)
+		fmt.Printf("%#v\n%v\n", move, &game.board)
+		if move.State() != tree.Nonterminal {
+			break
+		}
 	}
-	fmt.Printf("%#v\n", tree)
 }

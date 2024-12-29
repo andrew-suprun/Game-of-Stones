@@ -70,20 +70,31 @@ func (t *Tree[g, m]) Expand() {
 	t.expand(t.root)
 }
 
-func (tree *Tree[game, move]) CommitMove(toPlay string) error {
-	for i := range tree.root.children {
-		child := &tree.root.children[i]
-		if child.move.String() == toPlay {
-			tree.root.children[i] = node[move]{}
-			tree.root = child
-			tree.game.PlayMove(child.move)
-			return nil
+func (tree *Tree[game, move]) CommitMove(toPlay move) {
+	tree.game.PlayMove(toPlay)
+	oldRoot := tree.root
+	tree.root = &node[move]{
+		move: toPlay,
+	}
+	for _, child := range oldRoot.children {
+		if tree.game.SameMove(toPlay, child.move) {
+			tree.root.nSims = child.nSims
+			tree.root.value = child.value
+			tree.root.children = child.children
+			return
 		}
 	}
-	tree.root = &node[move]{}
-	m, _ := tree.game.ParseMove(toPlay)
-	tree.game.PlayMove(m)
-	return nil
+}
+
+func (tree *Tree[game, move]) BestMove() move {
+	var bestNode node[move]
+	for _, node := range tree.root.children {
+		fmt.Printf("%#v v: %.0f s: %d\n", node.move, node.value, node.nSims)
+		if bestNode.nSims < node.nSims {
+			bestNode = node
+		}
+	}
+	return bestNode.move
 }
 
 func (t *Tree[g, m]) expand(parent *node[m]) {
@@ -149,7 +160,7 @@ func (t *Tree[g, m]) expand(parent *node[m]) {
 			}
 		}
 	} else {
-		maxV := math.Inf(1)
+		maxV := math.Inf(-1)
 		for i, child := range parent.children {
 			v := float64(-child.value) + t.explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
 			if v > maxV {
