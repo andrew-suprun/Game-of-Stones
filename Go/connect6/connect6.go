@@ -11,7 +11,7 @@ import (
 )
 
 type Move struct {
-	x1, y1, x2, y2 int8
+	X1, Y1, X2, Y2 int8
 	state          tree.State
 }
 
@@ -20,8 +20,9 @@ func (move Move) State() tree.State {
 }
 
 func (m Move) String() string {
-	return fmt.Sprintf("%c%d-%c%d", m.x1+'a', board.Size-m.y1, m.x2+'a', board.Size-m.y2)
+	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
 }
+
 func (m Move) GoString() string {
 	switch m.State() {
 	case tree.BlackWin:
@@ -58,8 +59,8 @@ func (c *Connect6) Turn() tree.Turn {
 }
 
 func (c *Connect6) SameMove(a, b Move) bool {
-	return a.x1 == b.x1 && a.y1 == b.y1 && a.x2 == b.x2 && a.y2 == b.y2 ||
-		a.x1 == b.x2 && a.y1 == b.y2 && a.x2 == b.x1 && a.y2 == b.y1
+	return a.X1 == b.X1 && a.Y1 == b.Y1 && a.X2 == b.X2 && a.Y2 == b.Y2 ||
+		a.X1 == b.X2 && a.Y1 == b.Y2 && a.X2 == b.X1 && a.Y2 == b.Y1
 }
 
 func (c *Connect6) ParseMove(moveStr string) (Move, error) {
@@ -81,9 +82,9 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 		if err != nil {
 			return Move{}, errors.New("failed to parse move")
 		}
-		c.board.PlaceStone(c.turn, x1, x2)
+		c.board.PlaceStone(c.turn, x1, y1)
 		value = c.board.Value(c.turn, x2, y2)
-		c.board.RemoveStone(c.turn, x1, x2)
+		c.board.RemoveStone(c.turn, x1, y1)
 	}
 	if value > board.WinValue {
 		return Move{x1, y1, x2, y2, tree.BlackWin}, nil
@@ -131,11 +132,11 @@ func (c *Connect6) oppValue() float32 {
 }
 
 func (c *Connect6) PlayMove(move Move) {
-	c.value += c.board.Value(c.turn, move.x1, move.y1)
-	c.board.PlaceStone(c.turn, move.x1, move.y1)
-	if move.x1 != move.x2 || move.y1 != move.y2 {
-		c.value += c.board.Value(c.turn, move.x2, move.y2)
-		c.board.PlaceStone(c.turn, move.x2, move.y2)
+	c.value += c.board.Value(c.turn, move.X1, move.Y1)
+	c.board.PlaceStone(c.turn, move.X1, move.Y1)
+	if move.X1 != move.X2 || move.Y1 != move.Y2 {
+		c.value += c.board.Value(c.turn, move.X2, move.Y2)
+		c.board.PlaceStone(c.turn, move.X2, move.Y2)
 	}
 	if c.turn == board.Black {
 		c.turn = board.White
@@ -151,11 +152,11 @@ func (c *Connect6) UndoMove(move Move) {
 	} else {
 		c.turn = board.Black
 	}
-	c.board.RemoveStone(c.turn, move.x2, move.y2)
-	c.value -= c.board.Value(c.turn, move.x2, move.y2)
-	if move.x1 != move.x2 || move.y1 != move.y2 {
-		c.board.RemoveStone(c.turn, move.x1, move.y1)
-		c.value -= c.board.Value(c.turn, move.x1, move.y1)
+	c.board.RemoveStone(c.turn, move.X2, move.Y2)
+	c.value -= c.board.Value(c.turn, move.X2, move.Y2)
+	if move.X1 != move.X2 || move.Y1 != move.Y2 {
+		c.board.RemoveStone(c.turn, move.X1, move.Y1)
+		c.value -= c.board.Value(c.turn, move.X1, move.Y1)
 	}
 	c.Validate()
 }
@@ -179,11 +180,11 @@ func (c *Connect6) TopMoves(moves *[]tree.MoveValue[Move]) {
 		if value1 == 0 {
 			switch nZeros {
 			case 0:
-				drawMove.Move.x1 = place1.X
-				drawMove.Move.y1 = place1.Y
+				drawMove.Move.X1 = place1.X
+				drawMove.Move.Y1 = place1.Y
 			case 1:
-				drawMove.Move.x2 = place1.X
-				drawMove.Move.y2 = place1.Y
+				drawMove.Move.X2 = place1.X
+				drawMove.Move.Y2 = place1.Y
 			}
 			nZeros++
 			continue
@@ -247,4 +248,12 @@ func (c *Connect6) TopMoves(moves *[]tree.MoveValue[Move]) {
 	if len(*moves) == 0 {
 		*moves = append(*moves, drawMove)
 	}
+}
+
+func (c *Connect6) String() string {
+	return c.board.String()
+}
+
+func (c *Connect6) GoString() string {
+	return c.board.GoString()
 }

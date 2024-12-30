@@ -6,11 +6,11 @@ import (
 	"math"
 )
 
-type node[move iMove] struct {
-	move     move
+type node[Move move] struct {
+	move     Move
 	value    float32
 	nSims    int32
-	children []node[move]
+	children []node[Move]
 }
 
 type Turn int
@@ -20,16 +20,16 @@ const (
 	Second
 )
 
-type iGame[move iMove] interface {
+type game[Move move] interface {
 	Turn() Turn
-	TopMoves(result *[]MoveValue[move])
-	PlayMove(move move)
-	UndoMove(move move)
-	ParseMove(move string) (move, error)
-	SameMove(a, b move) bool
+	TopMoves(result *[]MoveValue[Move])
+	PlayMove(move Move)
+	UndoMove(move Move)
+	ParseMove(move string) (Move, error)
+	SameMove(a, b Move) bool
 }
 
-type iMove interface {
+type move interface {
 	fmt.Stringer
 	State() State
 }
@@ -43,20 +43,20 @@ const (
 	Draw
 )
 
-type MoveValue[Move iMove] struct {
+type MoveValue[Move move] struct {
 	Move  Move
 	Value float32
 }
 
-type Tree[Game iGame[Move], Move iMove] struct {
+type Tree[Game game[Move], Move move] struct {
 	root              *node[Move]
-	game              iGame[Move]
+	game              game[Move]
 	topMoves          []MoveValue[Move]
 	maxChildren       int32
 	explorationFactor float64
 }
 
-func NewTree[Game iGame[Move], Move iMove](game Game, maxChildren int32, explorationFactor float64) *Tree[Game, Move] {
+func NewTree[Game game[Move], Move move](game Game, maxChildren int32, explorationFactor float64) *Tree[Game, Move] {
 	return &Tree[Game, Move]{
 		root:              &node[Move]{},
 		game:              game,
@@ -89,7 +89,6 @@ func (tree *Tree[game, move]) CommitMove(toPlay move) {
 func (tree *Tree[game, move]) BestMove() move {
 	var bestNode node[move]
 	for _, node := range tree.root.children {
-		fmt.Printf("%#v v: %.0f s: %d\n", node.move, node.value, node.nSims)
 		if bestNode.nSims < node.nSims {
 			bestNode = node
 		}

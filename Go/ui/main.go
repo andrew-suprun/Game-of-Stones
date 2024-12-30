@@ -5,8 +5,8 @@ import (
 )
 
 type cmdStart struct{}
-type cmdMakeMove [4]int
-type evMove [4]int
+type cmdMakeMove string
+type evMove string
 
 func main() {
 	commands := make(chan any, 1)

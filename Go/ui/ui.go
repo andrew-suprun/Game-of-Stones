@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"log"
 	"os"
+	"strings"
 
 	"gioui.org/app"
 	"gioui.org/io/event"
@@ -50,14 +51,11 @@ type state struct {
 	turn  turn
 }
 
-type move struct {
-	x, y int
-}
+type move string
 
 func runUi(commands chan any, events chan any) error {
-
 	commands <- cmdStart{}
-	commands <- cmdMakeMove{9, 9, 9, 9}
+	commands <- cmdMakeMove("j10-j10")
 	gameState := state{}
 	gameState.cells[9][9] = stateBlack
 	stateChan := make(chan *state, 1)
@@ -181,15 +179,17 @@ func frame(ops *op.Ops, ev app.FrameEvent, commands chan any, stateChan chan *st
 		if keyEvent.State == key.Press {
 			switch keyEvent.Name {
 			case key.NameReturn:
-				fmt.Println("Enter")
 				if len(selected) == 4 {
 					state.cells[selected[1]][selected[0]] = stateBlack
 					state.cells[selected[3]][selected[2]] = stateBlack
 					state.turn = engineTurn
-					commands <- cmdMakeMove{selected[0], selected[1], selected[2], selected[3]}
+
+					place1 := fmt.Sprintf("%c%d", selected[0]+'a', board.Size-selected[1])
+					place2 := fmt.Sprintf("%c%d", selected[2]+'a', board.Size-selected[3])
+					moveStr := place1 + "-" + place2
+					commands <- cmdMakeMove(moveStr)
 				}
 			case key.NameEscape:
-				fmt.Println("Escape")
 				for y := range board.Size {
 					for x := range board.Size {
 						if state.cells[y][x] == stateBlackSelected || state.cells[y][x] == stateWhiteSelected {
@@ -211,11 +211,22 @@ func input(window *app.Window, stateChan chan *state, events chan any) {
 		state := <-stateChan
 		switch e := engineEvent.(type) {
 		case evMove:
-			state.cells[e[1]][e[0]] = stateWhite
-			state.cells[e[3]][e[2]] = stateWhite
+			x1, y1, x2, y2 := ParseMove(e)
+			state.cells[y1][x1] = stateWhite
+			state.cells[y2][x2] = stateWhite
 			window.Invalidate()
 		}
 		state.turn = humanTurn
 		stateChan <- state
 	}
+}
+
+func ParseMove(moveStr evMove) (int, int, int, int) {
+	tokens := strings.Split(string(moveStr), "-")
+	x1, y1, _ := board.ParsePlace(tokens[0])
+	x2, y2 := x1, y1
+	if len(tokens) > 1 {
+		x2, y2, _ = board.ParsePlace(tokens[1])
+	}
+	return int(x1), int(y1), int(x2), int(y2)
 }
