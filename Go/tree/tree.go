@@ -56,18 +56,19 @@ type Tree[Game game[Move], Move move] struct {
 	explorationFactor float64
 }
 
-func NewTree[Game game[Move], Move move](game Game, maxChildren int32, explorationFactor float64) *Tree[Game, Move] {
+func NewTree[Game game[Move], Move move](game Game, maxChildren int, explorationFactor float64) *Tree[Game, Move] {
 	return &Tree[Game, Move]{
 		root:              &node[Move]{},
 		game:              game,
 		topMoves:          make([]MoveValue[Move], 0, maxChildren),
-		maxChildren:       maxChildren,
+		maxChildren:       int32(maxChildren),
 		explorationFactor: explorationFactor,
 	}
 }
 
-func (t *Tree[g, m]) Expand() {
+func (t *Tree[g, m]) Expand() (float64, int) {
 	t.expand(t.root)
+	return float64(t.root.value), int(t.root.nSims)
 }
 
 func (tree *Tree[game, move]) CommitMove(toPlay move) {
@@ -86,14 +87,14 @@ func (tree *Tree[game, move]) CommitMove(toPlay move) {
 	}
 }
 
-func (tree *Tree[game, move]) BestMove() move {
+func (tree *Tree[game, move]) BestMove() (move, float64, int) {
 	var bestNode node[move]
 	for _, node := range tree.root.children {
 		if bestNode.nSims < node.nSims {
 			bestNode = node
 		}
 	}
-	return bestNode.move
+	return bestNode.move, float64(bestNode.value), int(bestNode.nSims)
 }
 
 func (t *Tree[g, m]) expand(parent *node[m]) {

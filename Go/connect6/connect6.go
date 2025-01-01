@@ -101,7 +101,7 @@ func (c *Connect6) oppValue() float32 {
 		oppTurn = board.White
 	}
 	if oppTurn == board.White {
-		oppVal := board.WinValue
+		var oppVal float32 = board.WinValue
 		for y := int8(0); y < board.Size; y++ {
 			for x := int8(0); x < board.Size; x++ {
 				if c.board.Stone(x, y) != board.None {
@@ -115,7 +115,7 @@ func (c *Connect6) oppValue() float32 {
 		}
 		return oppVal
 	} else {
-		oppVal := -board.WinValue
+		var oppVal float32 = -board.WinValue
 		for y := int8(0); y < board.Size; y++ {
 			for x := int8(0); x < board.Size; x++ {
 				if c.board.Stone(x, y) != board.None {

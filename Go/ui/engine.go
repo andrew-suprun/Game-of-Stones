@@ -63,13 +63,13 @@ func (eng *engine) bestMove() {
 		eng.events <- evMove(moveStr)
 		return
 	}
-	move := eng.tree.BestMove()
+	move, _, _ := eng.tree.BestMove()
 
 	start := time.Now()
 	i := 1
-	for time.Since(start) < time.Second {
+	for time.Since(start) < 250*time.Millisecond {
 		eng.tree.Expand()
-		move = eng.tree.BestMove()
+		move, _, _ = eng.tree.BestMove()
 		i++
 	}
 

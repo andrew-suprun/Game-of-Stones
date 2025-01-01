@@ -5,8 +5,8 @@
 package board
 
 const (
-	maxStones      = 6
-	WinValue float32 = 5000
+	maxStones = 6
+	WinValue  = 5000
 )
 
 func valueStones(stone, stones Stone) (float32, float32) {
