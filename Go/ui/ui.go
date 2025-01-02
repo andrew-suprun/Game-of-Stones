@@ -178,6 +178,13 @@ func frame(ops *op.Ops, ev app.FrameEvent, commands chan any, stateChan chan *st
 			switch keyEvent.Name {
 			case key.NameReturn:
 				if len(selected) == 4 {
+					for y := range board.Size {
+						for x := range board.Size {
+							if state.cells[y][x] == stateWhiteSelected {
+								state.cells[y][x] = stateWhite
+							}
+						}
+					}
 					state.cells[selected[1]][selected[0]] = stateBlack
 					state.cells[selected[3]][selected[2]] = stateBlack
 					state.turn = engineTurn
@@ -210,8 +217,8 @@ func input(window *app.Window, stateChan chan *state, events chan any) {
 		switch e := engineEvent.(type) {
 		case evMove:
 			x1, y1, x2, y2 := ParseMove(e)
-			state.cells[y1][x1] = stateWhite
-			state.cells[y2][x2] = stateWhite
+			state.cells[y1][x1] = stateWhiteSelected
+			state.cells[y2][x2] = stateWhiteSelected
 			window.Invalidate()
 		}
 		state.turn = humanTurn
