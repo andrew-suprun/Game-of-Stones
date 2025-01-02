@@ -17,13 +17,13 @@ func TestExpand(t *testing.T) {
 	searchTree.CommitMove(move)
 
 	for {
-		for range 100 {
+		for range 10 {
 			searchTree.Expand()
 		}
-		move, _, _ = searchTree.BestMove()
+		move, _ = searchTree.BestMove()
 		searchTree.CommitMove(move)
 		fmt.Printf("%#v\n%v\n", move, &game.board)
-		if move.State() != tree.Nonterminal {
+		if move.IsTerminal() {
 			break
 		}
 	}

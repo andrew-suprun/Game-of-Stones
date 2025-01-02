@@ -8,7 +8,7 @@ import (
 
 func main() {
 	game := connect6.NewGame(30)
-	searchTree := tree.NewTree(game, 60, 100)
+	searchTree := tree.NewTree(game, 8, 50)
 
 	move, _ := game.ParseMove("j10-j10")
 	searchTree.CommitMove(move)
@@ -16,14 +16,28 @@ func main() {
 	move, _ = game.ParseMove("i11-i9")
 	searchTree.CommitMove(move)
 
-	for {
-		for range 100 {
-			searchTree.Expand()
+	move, _ = game.ParseMove("a1-a1")
+	searchTree.CommitMove(move)
+
+	move, _ = game.ParseMove("i10-i8")
+	searchTree.CommitMove(move)
+
+	// move, _ = game.ParseMove("a2-a2")
+	// searchTree.CommitMove(move)
+	fmt.Printf("---\n%v\n", game)
+	fmt.Printf("%v\n", searchTree)
+
+	for range 1 {
+		for range 30 {
+			move, _ := searchTree.Expand()
+			if move.IsTerminal() {
+				break
+			}
 		}
-		move, _, _ = searchTree.BestMove()
+		fmt.Printf("\n%v\n", searchTree)
+		move, _ = searchTree.BestMove()
 		searchTree.CommitMove(move)
-		fmt.Printf("%#v\n", move)
-		if move.State() != tree.Nonterminal {
+		if move.IsTerminal() {
 			break
 		}
 	}

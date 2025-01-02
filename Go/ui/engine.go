@@ -15,7 +15,7 @@ type engine struct {
 	events   chan any
 	moves    []connect6.Move
 	game     *connect6.Connect6
-	tree     *tree.Tree[*connect6.Connect6, connect6.Move]
+	tree     *tree.Tree[*connect6.Connect6, connect6.Move, float32]
 }
 
 func runEngine(commands chan any, events chan any) {
@@ -67,15 +67,15 @@ func (eng *engine) bestMove() {
 	}
 
 	start := time.Now()
-	for time.Since(start) < 500*time.Millisecond {
-		m, v, _ := eng.tree.Expand()
-		if m.State() != tree.Nonterminal || v < -board.WinValue || v > board.WinValue {
+	for time.Since(start) < 2000*time.Millisecond {
+		m, _ := eng.tree.Expand()
+		if m.IsTerminal() {
 			break
 		}
 	}
 
-	move, v, s := eng.tree.BestMove()
-	fmt.Printf("%2d: %#v v: %.0f s: %d\n", i, move, v, s)
+	move, s := eng.tree.BestMove()
+	fmt.Printf("%2d: %#v s: %d\n", i, move, s)
 	i++
 	eng.tree.CommitMove(move)
 	eng.events <- evMove(move.String())

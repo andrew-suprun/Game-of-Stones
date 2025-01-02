@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"game_of_stones/board"
 	"game_of_stones/connect6"
 	"game_of_stones/tree"
 	"math/rand"
@@ -55,7 +54,7 @@ func main() {
 type engine struct {
 	title    string
 	game     *connect6.Connect6
-	tree     *tree.Tree[*connect6.Connect6, connect6.Move]
+	tree     *tree.Tree[*connect6.Connect6, connect6.Move, float32]
 	duration time.Duration
 }
 
@@ -96,41 +95,26 @@ func sim(a, b string, moves []string) (string, error) {
 	bTree.CommitMove(m1)
 	bTree.CommitMove(m2)
 	bTree.CommitMove(m3)
-	white := engines[0].title
-	black := engines[1].title
-	// fmt.Println(aGame.String())
+	fmt.Println(aGame)
 	for i := 1; ; i++ {
 		var bestMove connect6.Move
-		var v float64
 		var s int
-		_, _ = v, s
+		_ = s
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
-			m, v, _ := engines[0].tree.Expand()
-			if m.State() != tree.Nonterminal || v < -board.WinValue || v > float64(board.WinValue) {
+			m, _ := engines[0].tree.Expand()
+			if m.IsTerminal() {
 				break
 			}
 		}
-		bestMove, v, s = engines[0].tree.BestMove()
-		fmt.Printf("%s: Move %d %#v v: %.0f s: %d\n", engines[0].title, i, bestMove, v, s)
-		if bestMove.State() != tree.Nonterminal {
-			switch bestMove.State() {
-			case tree.BlackWin:
-				return black, nil
-			case tree.WhiteWin:
-				return white, nil
-			case tree.Draw:
-				return "draw", nil
-			}
-			if bestMove.State() == tree.BlackWin {
-				return engines[0].title, nil
-			} else {
-
-			}
+		bestMove, s = engines[0].tree.BestMove()
+		fmt.Printf("%s: Move %d %#v s: %d\n", engines[0].title, i, bestMove, s)
+		if bestMove.IsTerminal() {
+			return engines[0].title, nil
 		}
 		engines[0].tree.CommitMove(bestMove)
 		engines[1].tree.CommitMove(bestMove)
-		// fmt.Println(engines[0].game)
+		fmt.Println(engines[0].game)
 		engines[0], engines[1] = engines[1], engines[0]
 	}
 }
