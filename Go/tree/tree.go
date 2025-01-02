@@ -30,8 +30,19 @@ type game[Move move] interface {
 }
 
 type move interface {
+	fmt.GoStringer
 	fmt.Stringer
 	State() State
+}
+
+type moveX[value comparable] interface {
+	comparable
+	fmt.GoStringer
+	fmt.Stringer
+	Value() value
+	SetValue(v value)
+	Draw() bool
+	SetDraw()
 }
 
 type State int8
@@ -66,9 +77,9 @@ func NewTree[Game game[Move], Move move](game Game, maxChildren int, exploration
 	}
 }
 
-func (t *Tree[g, m]) Expand() (float64, int) {
+func (t *Tree[g, m]) Expand() (move, float64, int) {
 	t.expand(t.root)
-	return float64(t.root.value), int(t.root.nSims)
+	return t.root.move, float64(t.root.value), int(t.root.nSims)
 }
 
 func (tree *Tree[game, move]) CommitMove(toPlay move) {

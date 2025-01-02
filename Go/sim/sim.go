@@ -42,43 +42,49 @@ func main() {
 		}
 		fmt.Println("winner.1", winner)
 		winners[winner] += 1
+		fmt.Println(winners)
+		fmt.Println()
 		winner, _ = sim(b, a, moves)
 		fmt.Println("winner.2", winner)
 		winners[winner] += 1
 		fmt.Println(winners)
+		fmt.Println()
 	}
 }
 
 type engine struct {
-	title string
-	game  *connect6.Connect6
-	tree  *tree.Tree[*connect6.Connect6, connect6.Move]
+	title    string
+	game     *connect6.Connect6
+	tree     *tree.Tree[*connect6.Connect6, connect6.Move]
+	duration time.Duration
 }
 
 func sim(a, b string, moves []string) (string, error) {
 	engines := [2]engine{}
-	maxPlaces, maxMoves, expFactor, err := parseTitle(a)
+	maxPlaces, maxMoves, expFactor, duration, err := parseTitle(a)
 	if err != nil {
 		return "", err
 	}
 	aGame := connect6.NewGame(maxPlaces)
 	aTree := tree.NewTree(aGame, maxMoves, expFactor)
 	engines[0] = engine{
-		title: a,
-		game:  aGame,
-		tree:  aTree,
+		title:    a,
+		game:     aGame,
+		tree:     aTree,
+		duration: time.Duration(duration) * time.Millisecond,
 	}
 
-	maxPlaces, maxMoves, expFactor, err = parseTitle(b)
+	maxPlaces, maxMoves, expFactor, duration, err = parseTitle(b)
 	if err != nil {
 		return "", err
 	}
 	bGame := connect6.NewGame(maxPlaces)
 	bTree := tree.NewTree(bGame, maxMoves, expFactor)
 	engines[1] = engine{
-		title: b,
-		game:  bGame,
-		tree:  bTree,
+		title:    b,
+		game:     bGame,
+		tree:     bTree,
+		duration: time.Duration(duration) * time.Millisecond,
 	}
 
 	m1, _ := aGame.ParseMove(moves[0])
@@ -99,14 +105,14 @@ func sim(a, b string, moves []string) (string, error) {
 		var s int
 		_, _ = v, s
 		start := time.Now()
-		for time.Since(start) < 250*time.Millisecond {
-			v, _ := engines[0].tree.Expand()
-			if v < -board.WinValue || v > float64(board.WinValue) {
+		for time.Since(start) < engines[0].duration {
+			m, v, _ := engines[0].tree.Expand()
+			if m.State() != tree.Nonterminal || v < -board.WinValue || v > float64(board.WinValue) {
 				break
 			}
 		}
 		bestMove, v, s = engines[0].tree.BestMove()
-		// fmt.Printf("%s: Move %d %#v v: %.0f s: %d\n", engines[0].title, i, bestMove, v, s)
+		fmt.Printf("%s: Move %d %#v v: %.0f s: %d\n", engines[0].title, i, bestMove, v, s)
 		if bestMove.State() != tree.Nonterminal {
 			switch bestMove.State() {
 			case tree.BlackWin:
@@ -129,15 +135,16 @@ func sim(a, b string, moves []string) (string, error) {
 	}
 }
 
-func parseTitle(title string) (int, int, float64, error) {
+func parseTitle(title string) (int, int, float64, int, error) {
 	params := strings.Split(title, ",")
-	if len(params) != 3 {
-		return 0, 0, 0, errors.New("title must be int,int,float")
+	if len(params) != 4 {
+		return 0, 0, 0, 0, errors.New("title must be int,int,float,int")
 	}
 	maxPlaces, _ := strconv.Atoi(params[0])
 	maxMoves, _ := strconv.Atoi(params[1])
 	expFactor, _ := strconv.ParseFloat(params[2], 64)
-	return maxPlaces, maxMoves, expFactor, nil
+	duration, _ := strconv.Atoi(params[3])
+	return maxPlaces, maxMoves, expFactor, duration, nil
 }
 
 func moves() []string {

@@ -82,8 +82,6 @@ func runUi(commands chan any, events chan any) error {
 			// ignore
 		case app.ConfigEvent:
 			// ignore
-		default:
-			fmt.Printf("event %T\n", e)
 		}
 	}
 }

@@ -42,6 +42,8 @@ func (eng *engine) run() {
 	}
 }
 
+var i = 1
+
 func (eng *engine) bestMove() {
 	if len(eng.moves) == 1 {
 		places := []string{}
@@ -63,16 +65,18 @@ func (eng *engine) bestMove() {
 		eng.events <- evMove(moveStr)
 		return
 	}
-	move, _, _ := eng.tree.BestMove()
 
 	start := time.Now()
-	i := 1
-	for time.Since(start) < 250*time.Millisecond {
-		eng.tree.Expand()
-		move, _, _ = eng.tree.BestMove()
-		i++
+	for time.Since(start) < 500*time.Millisecond {
+		m, v, _ := eng.tree.Expand()
+		if m.State() != tree.Nonterminal || v < -board.WinValue || v > board.WinValue {
+			break
+		}
 	}
 
+	move, v, s := eng.tree.BestMove()
+	fmt.Printf("%2d: %#v v: %.0f s: %d\n", i, move, v, s)
+	i++
 	eng.tree.CommitMove(move)
 	eng.events <- evMove(move.String())
 }

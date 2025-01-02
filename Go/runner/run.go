@@ -20,7 +20,7 @@ func main() {
 		for range 100 {
 			searchTree.Expand()
 		}
-		move = searchTree.BestMove()
+		move, _, _ = searchTree.BestMove()
 		searchTree.CommitMove(move)
 		fmt.Printf("%#v\n", move)
 		if move.State() != tree.Nonterminal {
