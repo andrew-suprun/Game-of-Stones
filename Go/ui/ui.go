@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	windowSize = 1000
+	windowSize = 800
 )
 
 var (

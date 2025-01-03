@@ -9,14 +9,19 @@ type Move struct {
 	X1, Y1, X2, Y2 int8
 	value          float32
 	draw           bool
+	terminal       bool
 }
 
 func (m Move) Value() float32 {
 	return m.value
 }
 
-func (m Move) IsTerminal() bool {
+func (m Move) IsDecisive() bool {
 	return m.draw || m.value <= -board.WinValue || m.value >= board.WinValue
+}
+
+func (m Move) IsTerminal() bool {
+	return m.terminal
 }
 
 func (m Move) String() string {
@@ -24,9 +29,11 @@ func (m Move) String() string {
 }
 
 func (m Move) GoString() string {
-	terminal := ""
+	state := ""
 	if m.IsTerminal() {
-		terminal = " Terminal"
+		state = " Terminal"
+	} else if m.IsDecisive() {
+		state = " Decisive"
 	}
-	return fmt.Sprintf("%s v: %.0f%s", m.String(), m.value, terminal)
+	return fmt.Sprintf("%s v: %.0f%s", m.String(), m.value, state)
 }

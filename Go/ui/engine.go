@@ -69,7 +69,7 @@ func (eng *engine) bestMove() {
 	start := time.Now()
 	for time.Since(start) < 2000*time.Millisecond {
 		m, _ := eng.tree.Expand()
-		if m.IsTerminal() {
+		if m.IsDecisive() {
 			break
 		}
 	}

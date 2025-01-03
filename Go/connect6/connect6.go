@@ -48,20 +48,18 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 		return Move{}, errors.New("failed to parse move")
 	}
 	value := c.board.Value(c.turn, x1, y1)
-	if value <= -board.WinValue || value >= board.WinValue {
-		return Move{x1, y1, x1, y1, value, false}, nil
+	if len(tokens) == 1 {
+		return Move{x1, y1, x1, y1, value, false, value <= -board.WinValue || value >= board.WinValue}, nil
 	}
 	x2, y2 := x1, y1
-	if len(tokens) > 1 {
-		x2, y2, err = board.ParsePlace(tokens[1])
-		if err != nil {
-			return Move{}, errors.New("failed to parse move")
-		}
-		c.board.PlaceStone(c.turn, x1, y1)
-		value = c.board.Value(c.turn, x2, y2)
-		c.board.RemoveStone(c.turn, x1, y1)
+	x2, y2, err = board.ParsePlace(tokens[1])
+	if err != nil {
+		return Move{}, errors.New("failed to parse move")
 	}
-	return Move{x1, y1, x2, y2, value, false}, nil
+	c.board.PlaceStone(c.turn, x1, y1)
+	value += c.board.Value(c.turn, x2, y2)
+	c.board.RemoveStone(c.turn, x1, y1)
+	return Move{x1, y1, x2, y2, value, false, value <= -board.WinValue || value >= board.WinValue}, nil
 }
 
 func (c *Connect6) oppValue() float32 {
@@ -132,7 +130,7 @@ func (c *Connect6) UndoMove(move Move) {
 
 func (c *Connect6) TopMoves(moves *[]Move) {
 	*moves = (*moves)[:0]
-	drawMove := Move{draw: true}
+	drawMove := Move{draw: true, terminal: true}
 	nZeros := 0
 	less := func(a, b Move) bool {
 		return a.value < b.value
@@ -161,7 +159,7 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 
 		if value1 <= -board.WinValue || value1 >= board.WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = Move{place1.X, place1.Y, place1.X, place1.Y, c.value + value1, false}
+			(*moves)[0] = Move{place1.X, place1.Y, place1.X, place1.Y, c.value + value1, false, true}
 			return
 		}
 
@@ -175,7 +173,7 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 
 			if value2 <= -board.WinValue || value2 >= board.WinValue {
 				*moves = (*moves)[:1]
-				(*moves)[0] = Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2, false}
+				(*moves)[0] = Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2, false, true}
 				c.board.RemoveStone(c.turn, place1.X, place1.Y)
 				return
 			}
@@ -184,7 +182,7 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 			oppVal := c.oppValue()
 			c.board.RemoveStone(c.turn, place2.X, place2.Y)
 
-			move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2 + oppVal, false}
+			move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2 + oppVal, false, false}
 			heap.Add(move, moves, less)
 		}
 

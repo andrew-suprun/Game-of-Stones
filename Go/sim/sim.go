@@ -103,7 +103,7 @@ func sim(a, b string, moves []string) (string, error) {
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
 			m, _ := engines[0].tree.Expand()
-			if m.IsTerminal() {
+			if m.IsDecisive() {
 				break
 			}
 		}
@@ -132,7 +132,8 @@ func parseTitle(title string) (int, int, float64, int, error) {
 }
 
 func moves() []string {
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rnd := rand.New(rand.NewSource(1))
 	placeMap := map[string]struct{}{}
 	for len(placeMap) < 5 {
 		place := fmt.Sprintf("%c%d", rnd.Intn(9)+'f', rnd.Intn(9)+6)

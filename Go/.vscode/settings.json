@@ -4,7 +4,7 @@
         "-v"
     ],
     "go.testTags": "debug,connect6",
-    "go.testTimeout": "3s",
+    "go.testTimeout": "30s",
     "go.testFlags": [
         "-v"
     ]

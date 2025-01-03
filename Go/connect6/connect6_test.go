@@ -7,7 +7,7 @@ import (
 )
 
 func TestGoString(t *testing.T) {
-	result := fmt.Sprintf("%[1]v: %#[1]v", Move{1, 2, 3, 4, 5, true})
+	result := fmt.Sprintf("%[1]v: %#[1]v", Move{1, 2, 3, 4, 5, false, true})
 	fmt.Println(result)
 	if result != "b17-d15: b17-d15 v: 5 Terminal" {
 		t.Fail()
@@ -33,7 +33,9 @@ func TestTopMoves(t *testing.T) {
 	m1, _ := c6.ParseMove("j10-j10")
 	c6.PlayMove(m1)
 	m2, _ := c6.ParseMove("i9-i11")
+	fmt.Println(m2)
 	c6.PlayMove(m2)
+	fmt.Println(c6)
 
 	moves := make([]Move, 0, 1)
 
