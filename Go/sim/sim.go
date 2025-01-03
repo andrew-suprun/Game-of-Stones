@@ -95,7 +95,7 @@ func sim(a, b string, moves []string) (string, error) {
 	bTree.CommitMove(m1)
 	bTree.CommitMove(m2)
 	bTree.CommitMove(m3)
-	fmt.Println(aGame)
+	// fmt.Println(aGame)
 	for i := 1; ; i++ {
 		var bestMove connect6.Move
 		var s int
@@ -114,7 +114,7 @@ func sim(a, b string, moves []string) (string, error) {
 		}
 		engines[0].tree.CommitMove(bestMove)
 		engines[1].tree.CommitMove(bestMove)
-		fmt.Println(engines[0].game)
+		// fmt.Println(engines[0].game)
 		engines[0], engines[1] = engines[1], engines[0]
 	}
 }
@@ -132,8 +132,8 @@ func parseTitle(title string) (int, int, float64, int, error) {
 }
 
 func moves() []string {
-	// rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// rnd := rand.New(rand.NewSource(1))
 	placeMap := map[string]struct{}{}
 	for len(placeMap) < 5 {
 		place := fmt.Sprintf("%c%d", rnd.Intn(9)+'f', rnd.Intn(9)+6)

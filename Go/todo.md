@@ -2,4 +2,5 @@
 * MCTS w/ rollouts
 * enrich UI
 
-// go run -tags connect6 sim/sim.go -a=28,64,50,250 -b=28,64,50,2500
+// go run -tags connect6 sim/sim.go -a=28,64,40,250 -b=28,64,30,2500
+// go test -tags connect6 game_of_stones/...

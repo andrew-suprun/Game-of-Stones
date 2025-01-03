@@ -41,6 +41,10 @@ func (c *Connect6) SetValue(move *Move, value float32) {
 	move.value = value
 }
 
+func (c *Connect6) SetDraw(move *Move, draw bool) {
+	move.draw = draw
+}
+
 func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	tokens := strings.Split(moveStr, "-")
 	x1, y1, err := board.ParsePlace(tokens[0])

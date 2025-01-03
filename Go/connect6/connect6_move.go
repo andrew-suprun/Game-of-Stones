@@ -24,6 +24,10 @@ func (m Move) IsTerminal() bool {
 	return m.terminal
 }
 
+func (m Move) IsDraw() bool {
+	return m.draw
+}
+
 func (m Move) String() string {
 	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
 }
@@ -35,5 +39,5 @@ func (m Move) GoString() string {
 	} else if m.IsDecisive() {
 		state = " Decisive"
 	}
-	return fmt.Sprintf("%s v: %.0f%s", m.String(), m.value, state)
+	return fmt.Sprintf("%-7s v: %.0f%s", m.String(), m.value, state)
 }

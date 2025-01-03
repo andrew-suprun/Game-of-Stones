@@ -43,6 +43,7 @@ type game[Move move[Value], Value ordered] interface {
 	ParseMove(move string) (Move, error)
 	SameMove(a, b Move) bool
 	SetValue(move *Move, value Value)
+	SetDraw(move *Move, draw bool)
 }
 
 type move[Value ordered] interface {
@@ -51,6 +52,7 @@ type move[Value ordered] interface {
 	Value() Value
 	IsDecisive() bool
 	IsTerminal() bool
+	IsDraw() bool
 }
 
 type Tree[Game game[Move, Value], Move move[Value], Value ordered] struct {
@@ -170,21 +172,18 @@ func (node *node[move, value]) selectChild(turn Turn, explorationFactor float64)
 func (t *Tree[g, m, v]) updateStats(node *node[m, v]) {
 	node.nSims = 0
 	t.game.SetValue(&node.move, node.children[0].move.Value())
+	t.game.SetDraw(&node.move, true)
 	if t.game.Turn() == First {
 		for _, child := range node.children {
 			node.nSims += child.nSims
-			childValue := child.move.Value()
-			if node.move.Value() < childValue {
-				t.game.SetValue(&node.move, childValue)
-			}
+			t.game.SetValue(&node.move, max(node.move.Value(), child.move.Value()))
+			t.game.SetDraw(&node.move, node.move.IsDraw() && child.move.IsDraw())
 		}
 	} else {
 		for _, child := range node.children {
 			node.nSims += child.nSims
-			childValue := child.move.Value()
-			if node.move.Value() > childValue {
-				t.game.SetValue(&node.move, childValue)
-			}
+			t.game.SetValue(&node.move, min(node.move.Value(), child.move.Value()))
+			t.game.SetDraw(&node.move, node.move.IsDraw() && child.move.IsDraw())
 		}
 	}
 }
