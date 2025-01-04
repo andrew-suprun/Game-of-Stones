@@ -2,5 +2,5 @@
 
 package tree
 
-func (tree *Tree[game, move, value]) validate() {
+func (tree *Tree[move, value]) validate() {
 }

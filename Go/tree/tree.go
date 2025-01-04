@@ -13,21 +13,15 @@ type Ordered interface {
 		~float32 | ~float64
 }
 
-type Node[m Move[Value], Value Ordered] struct {
-	move     m
-	nSims    int32
-	children []Node[m, Value]
-}
-
-type Game[m Move[Value], Value Ordered] interface {
+type Game[move Move[value], value Ordered] interface {
 	Turn() Turn
-	TopMoves(result *[]m)
-	PlayMove(move m)
-	UndoMove(move m)
-	ParseMove(move string) (m, error)
-	SameMove(a, b m) bool
-	SetValue(move *m, value Value)
-	SetDecisive(move *m, draw bool)
+	TopMoves(result *[]move)
+	PlayMove(move move)
+	UndoMove(move move)
+	ParseMove(move string) (move, error)
+	SameMove(a, b move) bool
+	SetValue(move *move, value value)
+	SetDecisive(move *move, draw bool)
 }
 
 type Move[Value Ordered] interface {
@@ -38,39 +32,45 @@ type Move[Value Ordered] interface {
 	IsTerminal() bool
 }
 
-type Tree[g Game[m, v], m Move[v], v Ordered] struct {
-	root              *Node[m, v]
-	game              Game[m, v]
-	topMoves          []m
+type Tree[move Move[value], value Ordered] struct {
+	root              *node[move, value]
+	game              Game[move, value]
+	topMoves          []move
 	maxChildren       int32
 	explorationFactor float64
 }
 
-func NewTree[g Game[m, v], m Move[v], v Ordered](
-	game g,
+type node[move Move[value], value Ordered] struct {
+	move     move
+	nSims    int32
+	children []node[move, value]
+}
+
+func NewTree[move Move[value], value Ordered](
+	game Game[move, value],
 	maxChildren int,
 	explorationFactor float64,
-) *Tree[g, m, v] {
-	return &Tree[g, m, v]{
-		root:              &Node[m, v]{},
+) *Tree[move, value] {
+	return &Tree[move, value]{
+		root:              &node[move, value]{},
 		game:              game,
-		topMoves:          make([]m, 0, maxChildren),
+		topMoves:          make([]move, 0, maxChildren),
 		maxChildren:       int32(maxChildren),
 		explorationFactor: explorationFactor,
 	}
 }
 
-func (t *Tree[g, m, v]) Expand() (m, int) {
+func (t *Tree[m, v]) Expand() (m, int) {
 	t.expand(t.root)
 	t.validate()
 	return t.root.move, int(t.root.nSims)
 }
 
-func (tree *Tree[game, move, value]) CommitMove(toPlay move) {
+func (tree *Tree[move, value]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
 	tree.game.SetValue(&toPlay, 0)
 	oldRoot := tree.root
-	tree.root = &Node[move, value]{
+	tree.root = &node[move, value]{
 		move: toPlay,
 	}
 	for _, child := range oldRoot.children {
@@ -82,7 +82,7 @@ func (tree *Tree[game, move, value]) CommitMove(toPlay move) {
 	}
 }
 
-func (tree *Tree[game, move, value]) BestMove() (move, int) {
+func (tree *Tree[move, value]) BestMove() (move, int) {
 	bestNode := tree.root.children[0]
 
 	if tree.game.Turn() == First {
@@ -102,7 +102,7 @@ func (tree *Tree[game, move, value]) BestMove() (move, int) {
 	return bestNode.move, int(bestNode.nSims)
 }
 
-func (t *Tree[g, m, v]) expand(parent *Node[m, v]) {
+func (t *Tree[m, v]) expand(parent *node[m, v]) {
 	if parent.move.IsDecisive() {
 		parent.nSims += int32(cap(t.topMoves))
 		if len(parent.children) > 0 {
@@ -113,9 +113,9 @@ func (t *Tree[g, m, v]) expand(parent *Node[m, v]) {
 
 	if parent.children == nil {
 		t.game.TopMoves(&t.topMoves)
-		parent.children = make([]Node[m, v], len(t.topMoves))
+		parent.children = make([]node[m, v], len(t.topMoves))
 		for i, childMove := range t.topMoves {
-			parent.children[i] = Node[m, v]{
+			parent.children[i] = node[m, v]{
 				move:  childMove,
 				nSims: 1,
 			}
@@ -130,7 +130,7 @@ func (t *Tree[g, m, v]) expand(parent *Node[m, v]) {
 	t.updateStats(parent)
 }
 
-func (node *Node[move, value]) selectChild(turn Turn, explorationFactor float64) *Node[move, value] {
+func (node *node[move, value]) selectChild(turn Turn, explorationFactor float64) *node[move, value] {
 	var coeff float64 = 1
 	if turn == Second {
 		coeff = -1
@@ -152,7 +152,7 @@ func (node *Node[move, value]) selectChild(turn Turn, explorationFactor float64)
 	return selectedChild
 }
 
-func (t *Tree[g, m, v]) updateStats(node *Node[m, v]) {
+func (t *Tree[m, v]) updateStats(node *node[m, v]) {
 	node.nSims = 0
 	t.game.SetValue(&node.move, node.children[0].move.Value())
 	t.game.SetDecisive(&node.move, true)
@@ -171,27 +171,27 @@ func (t *Tree[g, m, v]) updateStats(node *Node[m, v]) {
 	}
 }
 
-func (tree *Tree[game, move, value]) String() string {
+func (tree *Tree[move, value]) String() string {
 	return tree.root.String()
 }
 
-func (tree *Tree[game, move, value]) GoString() string {
+func (tree *Tree[move, value]) GoString() string {
 	return tree.root.GoString()
 }
 
-func (node *Node[move, value]) String() string {
+func (node *node[move, value]) String() string {
 	buf := &bytes.Buffer{}
 	node.string(buf, "%v", 0)
 	return buf.String()
 }
 
-func (node *Node[move, value]) GoString() string {
+func (node *node[move, value]) GoString() string {
 	buf := &bytes.Buffer{}
 	node.string(buf, "%#v", 0)
 	return buf.String()
 }
 
-func (node *Node[move, value]) string(buf *bytes.Buffer, format string, level int) {
+func (node *node[move, value]) string(buf *bytes.Buffer, format string, level int) {
 	buf.WriteByte('\n')
 	for range level {
 		buf.WriteString("|   ")

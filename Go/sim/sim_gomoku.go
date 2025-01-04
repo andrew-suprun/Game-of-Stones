@@ -15,7 +15,7 @@ type move = gomoku.Move
 type engine struct {
 	title    string
 	game     *gomoku.Gomoku
-	tree     *tree.Tree[*gomoku.Gomoku, gomoku.Move, float32]
+	tree     *tree.Tree[gomoku.Move, float32]
 	duration time.Duration
 }
 
