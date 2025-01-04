@@ -3,6 +3,7 @@ package tree
 import (
 	"bytes"
 	"fmt"
+	"game_of_stones/board"
 	. "game_of_stones/turn"
 	"math"
 )
@@ -60,15 +61,16 @@ func NewTree[move Move[value], value Ordered](
 	}
 }
 
-func (t *Tree[m, v]) Expand() (m, int) {
+func (t *Tree[m, v]) Expand() m {
 	t.expand(t.root)
 	t.validate()
-	return t.root.move, int(t.root.nSims)
+	return t.root.move
 }
 
 func (tree *Tree[move, value]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
 	tree.game.SetValue(&toPlay, 0)
+	tree.game.SetDecisive(&toPlay, false)
 	oldRoot := tree.root
 	tree.root = &node[move, value]{
 		move: toPlay,
@@ -91,14 +93,30 @@ func (tree *Tree[move, value]) BestMove() (move, int) {
 				bestNode = node
 			}
 		}
+		if float64(bestNode.move.Value()) <= -board.WinValue {
+			return tree.mostExplored()
+		}
 	} else {
 		for _, node := range tree.root.children {
 			if bestNode.move.Value() > node.move.Value() {
 				bestNode = node
 			}
 		}
+		if float64(bestNode.move.Value()) >= board.WinValue {
+			return tree.mostExplored()
+		}
 	}
 
+	return bestNode.move, int(bestNode.nSims)
+}
+
+func (tree *Tree[move, value]) mostExplored() (move, int) {
+	bestNode := tree.root.children[0]
+	for _, node := range tree.root.children {
+		if bestNode.nSims < node.nSims {
+			bestNode = node
+		}
+	}
 	return bestNode.move, int(bestNode.nSims)
 }
 
@@ -154,21 +172,23 @@ func (node *node[move, value]) selectChild(turn Turn, explorationFactor float64)
 
 func (t *Tree[m, v]) updateStats(node *node[m, v]) {
 	node.nSims = 0
-	t.game.SetValue(&node.move, node.children[0].move.Value())
-	t.game.SetDecisive(&node.move, true)
+	value := node.children[0].move.Value()
+	decisive := true
 	if t.game.Turn() == First {
 		for _, child := range node.children {
 			node.nSims += child.nSims
-			t.game.SetValue(&node.move, max(node.move.Value(), child.move.Value()))
-			t.game.SetDecisive(&node.move, node.move.IsDecisive() && child.move.IsDecisive())
+			value = max(value, child.move.Value())
+			decisive = decisive && child.move.IsDecisive()
 		}
 	} else {
 		for _, child := range node.children {
 			node.nSims += child.nSims
-			t.game.SetValue(&node.move, min(node.move.Value(), child.move.Value()))
-			t.game.SetDecisive(&node.move, node.move.IsDecisive() && child.move.IsDecisive())
+			value = min(value, child.move.Value())
+			decisive = decisive && child.move.IsDecisive()
 		}
 	}
+	t.game.SetValue(&node.move, value)
+	t.game.SetDecisive(&node.move, decisive)
 }
 
 func (tree *Tree[move, value]) String() string {

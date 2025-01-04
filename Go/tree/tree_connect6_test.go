@@ -21,7 +21,7 @@ func TestExpand(t *testing.T) {
 
 	for {
 		for range 10 {
-			move, _ = searchTree.Expand()
+			move = searchTree.Expand()
 			if move.IsTerminal() {
 				fmt.Printf("\n---\n%v\n", searchTree)
 				fmt.Println(game)

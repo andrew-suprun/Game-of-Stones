@@ -30,10 +30,10 @@ func (m Move) String() string {
 
 func (m Move) GoString() string {
 	state := ""
-	if m.IsTerminal() {
+	if m.terminal {
 		state = " Terminal"
-	} else if m.IsDecisive() {
+	} else if m.decisive {
 		state = " Decisive"
 	}
-	return fmt.Sprintf("%-7s v: %.0f%s", m.String(), m.value, state)
+	return fmt.Sprintf("%-3s v: %.0f%s", m.String(), m.value, state)
 }

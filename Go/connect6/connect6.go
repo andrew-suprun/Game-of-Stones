@@ -170,13 +170,12 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 
 			value := value1 + value2
 			isDraw := value1+value2 == 0
-			terminal := isDraw || value <= -board.WinValue || value >= board.WinValue
 			if !isDraw || !addedDraw {
 				c.board.PlaceStone(c.turn, place2.X, place2.Y)
 				oppVal := c.oppValue()
 				c.board.RemoveStone(c.turn, place2.X, place2.Y)
 
-				move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value + oppVal, terminal, terminal}
+				move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value + oppVal, isDraw, isDraw}
 				heap.Add(move, moves, less)
 			}
 			if isDraw {

@@ -28,7 +28,8 @@ func (c *Gomoku) ParseMove(moveStr string) (Move, error) {
 		return Move{}, errors.New("failed to parse move")
 	}
 	value := c.board.Value(c.turn, x, y)
-	return Move{x, y, value, false, value <= -board.WinValue || value >= board.WinValue}, nil
+	terminal := value <= -board.WinValue || value >= board.WinValue
+	return Move{x, y, value, terminal, terminal}, nil
 }
 
 func (c *Gomoku) PlayMove(move Move) {

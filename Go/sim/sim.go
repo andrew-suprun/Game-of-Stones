@@ -67,7 +67,7 @@ func sim(a, b string, moves []string) (string, error) {
 		_ = s
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
-			m, _ := engines[0].tree.Expand()
+			m := engines[0].tree.Expand()
 			if m.IsDecisive() {
 				break
 			}
@@ -82,7 +82,7 @@ func sim(a, b string, moves []string) (string, error) {
 		}
 		engines[0].tree.CommitMove(bestMove)
 		engines[1].tree.CommitMove(bestMove)
-		fmt.Println(engines[0].game)
+		// fmt.Println(engines[0].game)
 		engines[0], engines[1] = engines[1], engines[0]
 	}
 }
