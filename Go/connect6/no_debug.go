@@ -2,5 +2,4 @@
 
 package connect6
 
-func (c *Connect6) Validate() {
-}
+func (c *Connect6) Validate() {}

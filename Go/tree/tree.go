@@ -3,6 +3,7 @@ package tree
 import (
 	"bytes"
 	"fmt"
+	. "game_of_stones/turn"
 	"math"
 )
 
@@ -18,23 +19,6 @@ type node[Move move[Value], Value ordered] struct {
 	children []node[Move, Value]
 }
 
-type Turn int
-
-const (
-	First Turn = iota
-	Second
-)
-
-func (turn Turn) String() string {
-	switch turn {
-	case First:
-		return "First"
-	case Second:
-		return "Second"
-	}
-	panic("Turn.String()")
-}
-
 type game[Move move[Value], Value ordered] interface {
 	Turn() Turn
 	TopMoves(result *[]Move)
@@ -43,7 +27,7 @@ type game[Move move[Value], Value ordered] interface {
 	ParseMove(move string) (Move, error)
 	SameMove(a, b Move) bool
 	SetValue(move *Move, value Value)
-	SetDraw(move *Move, draw bool)
+	SetDecisive(move *Move, draw bool)
 }
 
 type move[Value ordered] interface {
@@ -52,7 +36,6 @@ type move[Value ordered] interface {
 	Value() Value
 	IsDecisive() bool
 	IsTerminal() bool
-	IsDraw() bool
 }
 
 type Tree[Game game[Move, Value], Move move[Value], Value ordered] struct {
@@ -172,18 +155,18 @@ func (node *node[move, value]) selectChild(turn Turn, explorationFactor float64)
 func (t *Tree[g, m, v]) updateStats(node *node[m, v]) {
 	node.nSims = 0
 	t.game.SetValue(&node.move, node.children[0].move.Value())
-	t.game.SetDraw(&node.move, true)
+	t.game.SetDecisive(&node.move, true)
 	if t.game.Turn() == First {
 		for _, child := range node.children {
 			node.nSims += child.nSims
 			t.game.SetValue(&node.move, max(node.move.Value(), child.move.Value()))
-			t.game.SetDraw(&node.move, node.move.IsDraw() && child.move.IsDraw())
+			t.game.SetDecisive(&node.move, node.move.IsDecisive() && child.move.IsDecisive())
 		}
 	} else {
 		for _, child := range node.children {
 			node.nSims += child.nSims
 			t.game.SetValue(&node.move, min(node.move.Value(), child.move.Value()))
-			t.game.SetDraw(&node.move, node.move.IsDraw() && child.move.IsDraw())
+			t.game.SetDecisive(&node.move, node.move.IsDecisive() && child.move.IsDecisive())
 		}
 	}
 }

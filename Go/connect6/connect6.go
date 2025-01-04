@@ -6,7 +6,7 @@ import (
 
 	"game_of_stones/board"
 	"game_of_stones/heap"
-	"game_of_stones/tree"
+	"game_of_stones/turn"
 )
 
 type Connect6 struct {
@@ -25,11 +25,11 @@ func NewGame(maxPlaces int) *Connect6 {
 	return game
 }
 
-func (c *Connect6) Turn() tree.Turn {
+func (c *Connect6) Turn() turn.Turn {
 	if c.turn == board.Black {
-		return tree.First
+		return turn.First
 	}
-	return tree.Second
+	return turn.Second
 }
 
 func (c *Connect6) SameMove(a, b Move) bool {
@@ -41,8 +41,8 @@ func (c *Connect6) SetValue(move *Move, value float32) {
 	move.value = value
 }
 
-func (c *Connect6) SetDraw(move *Move, draw bool) {
-	move.draw = draw
+func (c *Connect6) SetDecisive(move *Move, decisive bool) {
+	move.decisive = decisive
 }
 
 func (c *Connect6) ParseMove(moveStr string) (Move, error) {
@@ -53,7 +53,8 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	}
 	value := c.board.Value(c.turn, x1, y1)
 	if len(tokens) == 1 {
-		return Move{x1, y1, x1, y1, value, false, value <= -board.WinValue || value >= board.WinValue}, nil
+		terminal := value <= -board.WinValue || value >= board.WinValue
+		return Move{x1, y1, x1, y1, value, terminal, terminal}, nil
 	}
 	x2, y2 := x1, y1
 	x2, y2, err = board.ParsePlace(tokens[1])
@@ -63,7 +64,8 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	c.board.PlaceStone(c.turn, x1, y1)
 	value += c.board.Value(c.turn, x2, y2)
 	c.board.RemoveStone(c.turn, x1, y1)
-	return Move{x1, y1, x2, y2, value, false, value <= -board.WinValue || value >= board.WinValue}, nil
+	terminal := value <= -board.WinValue || value >= board.WinValue
+	return Move{x1, y1, x2, y2, value, terminal, terminal}, nil
 }
 
 func (c *Connect6) oppValue() float32 {
@@ -134,8 +136,6 @@ func (c *Connect6) UndoMove(move Move) {
 
 func (c *Connect6) TopMoves(moves *[]Move) {
 	*moves = (*moves)[:0]
-	drawMove := Move{draw: true, terminal: true}
-	nZeros := 0
 	less := func(a, b Move) bool {
 		return a.value < b.value
 	}
@@ -145,25 +145,14 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 		}
 	}
 
+	addedDraw := false
 	c.board.TopPlaces(c.turn, &c.topPlaces)
 	for i, place1 := range c.topPlaces {
 		value1 := c.board.Value(c.turn, place1.X, place1.Y)
-		if value1 == 0 {
-			switch nZeros {
-			case 0:
-				drawMove.X1 = place1.X
-				drawMove.Y1 = place1.Y
-			case 1:
-				drawMove.X2 = place1.X
-				drawMove.Y2 = place1.Y
-			}
-			nZeros++
-			continue
-		}
 
 		if value1 <= -board.WinValue || value1 >= board.WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = Move{place1.X, place1.Y, place1.X, place1.Y, c.value + value1, false, true}
+			(*moves)[0] = Move{place1.X, place1.Y, place1.X, place1.Y, c.value + value1, true, true}
 			return
 		}
 
@@ -171,29 +160,31 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 
 		for _, place2 := range c.topPlaces[i+1:] {
 			value2 := c.board.Value(c.turn, place2.X, place2.Y)
-			if value2 == 0 {
-				continue
-			}
 
 			if value2 <= -board.WinValue || value2 >= board.WinValue {
 				*moves = (*moves)[:1]
-				(*moves)[0] = Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2, false, true}
+				(*moves)[0] = Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2, true, true}
 				c.board.RemoveStone(c.turn, place1.X, place1.Y)
 				return
 			}
 
-			c.board.PlaceStone(c.turn, place2.X, place2.Y)
-			oppVal := c.oppValue()
-			c.board.RemoveStone(c.turn, place2.X, place2.Y)
+			value := value1 + value2
+			isDraw := value1+value2 == 0
+			terminal := isDraw || value <= -board.WinValue || value >= board.WinValue
+			if !isDraw || !addedDraw {
+				c.board.PlaceStone(c.turn, place2.X, place2.Y)
+				oppVal := c.oppValue()
+				c.board.RemoveStone(c.turn, place2.X, place2.Y)
 
-			move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2 + oppVal, false, false}
-			heap.Add(move, moves, less)
+				move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value + oppVal, terminal, terminal}
+				heap.Add(move, moves, less)
+			}
+			if isDraw {
+				addedDraw = true
+			}
 		}
 
 		c.board.RemoveStone(c.turn, place1.X, place1.Y)
-	}
-	if len(*moves) == 0 {
-		*moves = append(*moves, drawMove)
 	}
 }
 

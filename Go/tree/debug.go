@@ -4,6 +4,8 @@ package tree
 
 import (
 	"log"
+
+	. "game_of_stones/turn"
 )
 
 func (tree *Tree[game, move, value]) validate() {

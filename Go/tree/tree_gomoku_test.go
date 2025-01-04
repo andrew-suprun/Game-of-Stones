@@ -1,18 +1,20 @@
-package connect6
+//go:build gomoku
+
+package tree
 
 import (
 	"fmt"
-	"game_of_stones/tree"
+	"game_of_stones/gomoku"
 	"testing"
 )
 
 func TestExpand(t *testing.T) {
-	game := NewGame(28)
-	searchTree := tree.NewTree(game, 8, 50)
+	game := gomoku.NewGame(28)
+	searchTree := NewTree(game, 50)
 
-	move, _ := game.ParseMove("j10-j10")
+	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)
-	move, _ = game.ParseMove("i11-i9")
+	move, _ = game.ParseMove("i11")
 	searchTree.CommitMove(move)
 
 	for {

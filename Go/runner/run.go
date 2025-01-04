@@ -30,7 +30,7 @@ func main() {
 	for range 1 {
 		for range 30 {
 			move, _ := searchTree.Expand()
-			if move.IsTerminal() {
+			if move.IsDecisive() {
 				break
 			}
 		}

@@ -70,15 +70,6 @@ func (board *Board) TopPlaces(stone Stone, places *[]Place) {
 			if board.stones[y][x] != None {
 				continue
 			}
-			value := board.values[y][x][player]
-			if value == 0 {
-				continue
-			}
-			if value >= WinValue || value <= -WinValue {
-				*places = (*places)[:1]
-				(*places)[0] = Place{x, y}
-				return
-			}
 			heap.Add(Place{x, y}, places, less)
 		}
 	}

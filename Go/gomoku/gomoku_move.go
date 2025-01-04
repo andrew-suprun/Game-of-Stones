@@ -1,4 +1,4 @@
-package connect6
+package gomoku
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 )
 
 type Move struct {
-	X1, Y1, X2, Y2 int8
-	value          float32
-	decisive       bool
-	terminal       bool
+	X, Y     int8
+	value    float32
+	draw     bool
+	terminal bool
 }
 
 func (m Move) Value() float32 {
@@ -17,15 +17,19 @@ func (m Move) Value() float32 {
 }
 
 func (m Move) IsDecisive() bool {
-	return m.decisive || m.value <= -board.WinValue || m.value >= board.WinValue
+	return m.draw || m.value <= -board.WinValue || m.value >= board.WinValue
 }
 
 func (m Move) IsTerminal() bool {
 	return m.terminal
 }
 
+func (m Move) IsDraw() bool {
+	return m.draw
+}
+
 func (m Move) String() string {
-	return fmt.Sprintf("%c%d-%c%d", m.X1+'a', board.Size-m.Y1, m.X2+'a', board.Size-m.Y2)
+	return fmt.Sprintf("%c%d", m.X+'a', board.Size-m.Y)
 }
 
 func (m Move) GoString() string {

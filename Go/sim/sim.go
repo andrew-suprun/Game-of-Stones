@@ -110,6 +110,9 @@ func sim(a, b string, moves []string) (string, error) {
 		bestMove, s = engines[0].tree.BestMove()
 		fmt.Printf("%s: Move %d %#v s: %d\n", engines[0].title, i, bestMove, s)
 		if bestMove.IsTerminal() {
+			if bestMove.Value() == 0 {
+				return "Draw", nil
+			}
 			return engines[0].title, nil
 		}
 		engines[0].tree.CommitMove(bestMove)
