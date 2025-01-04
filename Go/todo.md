@@ -1,3 +1,5 @@
+* remove parametrization on Game
+* don't expand past single non-loosing move left
 * generalize UI
 * Multithreading
 * Zig, Odin, Julia, Ocaml, ...?

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -63,7 +62,7 @@ func sim(a, b string, moves []string) (string, error) {
 	fmt.Println(engines[0].game)
 
 	for i := 1; ; i++ {
-		var bestMove bestMove
+		var bestMove move
 		var s int
 		_ = s
 		start := time.Now()
@@ -88,14 +87,14 @@ func sim(a, b string, moves []string) (string, error) {
 	}
 }
 
-func parseTitle(title string) (int, int, float64, int, error) {
+func parseTitle(title string) (int, int, float64, int) {
 	params := strings.Split(title, ",")
 	if len(params) != 4 {
-		return 0, 0, 0, 0, errors.New("title must be int,int,float,int")
+		panic("parseTitle")
 	}
 	maxPlaces, _ := strconv.Atoi(params[0])
 	maxMoves, _ := strconv.Atoi(params[1])
 	expFactor, _ := strconv.ParseFloat(params[2], 64)
 	duration, _ := strconv.Atoi(params[3])
-	return maxPlaces, maxMoves, expFactor, duration, nil
+	return maxPlaces, maxMoves, expFactor, duration
 }

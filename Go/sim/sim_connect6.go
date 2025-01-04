@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type bestMove = connect6.Move
+type move = connect6.Move
 
 type engine struct {
 	title    string
@@ -20,10 +20,7 @@ type engine struct {
 }
 
 func newEngine(title string) *engine {
-	maxPlaces, maxMoves, expFactor, duration, err := parseTitle(title)
-	if err != nil {
-		panic(err)
-	}
+	maxPlaces, maxMoves, expFactor, duration := parseTitle(title)
 	aGame := connect6.NewGame(maxPlaces)
 	aTree := tree.NewTree(aGame, maxMoves, expFactor)
 	return &engine{
