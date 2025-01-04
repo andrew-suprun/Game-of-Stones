@@ -8,7 +8,7 @@ import (
 type Move struct {
 	X, Y     int8
 	value    float32
-	draw     bool
+	decisive bool
 	terminal bool
 }
 
@@ -17,15 +17,11 @@ func (m Move) Value() float32 {
 }
 
 func (m Move) IsDecisive() bool {
-	return m.draw || m.value <= -board.WinValue || m.value >= board.WinValue
+	return m.decisive || m.value <= -board.WinValue || m.value >= board.WinValue
 }
 
 func (m Move) IsTerminal() bool {
 	return m.terminal
-}
-
-func (m Move) IsDraw() bool {
-	return m.draw
 }
 
 func (m Move) String() string {

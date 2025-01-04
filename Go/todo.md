@@ -1,4 +1,4 @@
-* Gomoku
+* generalize UI
 * Multithreading
 * Zig, Odin, Julia, Ocaml, ...?
 * enrich UI

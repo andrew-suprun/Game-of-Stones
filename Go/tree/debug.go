@@ -12,7 +12,7 @@ func (tree *Tree[game, move, value]) validate() {
 	tree.root.validate(tree.game.Turn())
 }
 
-func (node *node[move, value]) validate(turn Turn) {
+func (node *Node[move, value]) validate(turn Turn) {
 	if len(node.children) == 0 {
 		return
 	}

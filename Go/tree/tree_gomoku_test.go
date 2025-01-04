@@ -10,7 +10,7 @@ import (
 
 func TestExpand(t *testing.T) {
 	game := gomoku.NewGame(28)
-	searchTree := NewTree(game, 50)
+	searchTree := NewTree(game, 28, 50)
 
 	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)

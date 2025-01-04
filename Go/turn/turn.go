@@ -16,10 +16,3 @@ func (turn Turn) String() string {
 	}
 	panic("Turn.String()")
 }
-
-type Move struct {
-	X, Y     int8
-	value    float32
-	draw     bool
-	terminal bool
-}
