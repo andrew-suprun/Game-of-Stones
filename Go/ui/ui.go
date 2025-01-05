@@ -228,10 +228,10 @@ func input(window *app.Window, stateChan chan *state, events chan any) {
 
 func ParseMove(moveStr evMove) (int, int, int, int) {
 	tokens := strings.Split(string(moveStr), "-")
-	x1, y1, _ := board.ParsePlace(tokens[0])
-	x2, y2 := x1, y1
+	p1, _ := board.ParsePlace(tokens[0])
+	p2 := p1
 	if len(tokens) > 1 {
-		x2, y2, _ = board.ParsePlace(tokens[1])
+		p2, _ = board.ParsePlace(tokens[1])
 	}
-	return int(x1), int(y1), int(x2), int(y2)
+	return int(p1.X), int(p1.Y), int(p2.X), int(p2.Y)
 }

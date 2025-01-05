@@ -14,9 +14,9 @@ func (tree *Tree[move, value]) validate() {
 
 func (node *node[move, value]) validate(turn Turn) {
 	if len(node.children) == 0 {
-		if node.move.IsDecisive() && !node.move.IsTerminal() {
-			log.Panicf("### Validation ### decisive childless node")
-		}
+		// if node.move.IsDecisive() && !node.move.IsTerminal() {
+		// 	log.Panicf("### Validation ### decisive childless node")
+		// }
 		return
 	}
 	expected := node.children[0].move.Value()

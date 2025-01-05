@@ -75,29 +75,30 @@ func (board *Board) TopPlaces(stone Stone, places *[]Place) {
 	}
 }
 
-func (b *Board) PlaceStone(stone Stone, x, y int8) {
-	b.placeStone(stone, x, y, 1)
+func (b *Board) PlaceStone(stone Stone, place Place) {
+	b.placeStone(stone, place, 1)
 }
 
-func (b *Board) RemoveStone(stone Stone, x, y int8) {
-	b.placeStone(stone, x, y, -1)
+func (b *Board) RemoveStone(stone Stone, place Place) {
+	b.placeStone(stone, place, -1)
 }
 
 func (b *Board) Stone(x, y int8) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) Value(stone Stone, x, y int8) float32 {
+func (b *Board) Value(stone Stone, place Place) float32 {
 	switch stone {
 	case Black:
-		return b.values[y][x][0]
+		return b.values[place.Y][place.X][0]
 	case White:
-		return b.values[y][x][1]
+		return b.values[place.Y][place.X][1]
 	}
 	panic("Value")
 }
 
-func (b *Board) placeStone(stone Stone, x, y int8, coeff float32) {
+func (b *Board) placeStone(stone Stone, place Place, coeff float32) {
+	x, y := place.X, place.Y
 	if coeff == -1 {
 		b.stones[y][x] = None
 	}
@@ -296,27 +297,27 @@ func (b *Board) ValuesString(buf *bytes.Buffer, valuesIdx int) {
 	buf.WriteString("\n")
 }
 
-func ParsePlace(place string) (int8, int8, error) {
+func ParsePlace(place string) (Place, error) {
 	if len(place) < 2 || len(place) > 3 {
-		return 0, 0, errors.New("failed to parse place")
+		return Place{}, errors.New("failed to parse place")
 	}
 	if place[0] < 'a' || place[0] > 's' {
-		return 0, 0, errors.New("failed to parse place")
+		return Place{}, errors.New("failed to parse place")
 	}
 	if place[1] < '0' || place[1] > '9' {
-		return 0, 0, errors.New("failed to parse place")
+		return Place{}, errors.New("failed to parse place")
 	}
 	x := int8(place[0] - 'a')
 	y := int8(place[1] - '0')
 	if len(place) == 3 {
 		if place[2] < '0' || place[2] > '9' {
-			return 0, 0, errors.New("failed to parse place")
+			return Place{}, errors.New("failed to parse place")
 		}
 		y = 10*y + int8(place[2]-'0')
 	}
 	y = Size - y
 	if x > Size || y > Size {
-		return 0, 0, errors.New("failed to parse place")
+		return Place{}, errors.New("failed to parse place")
 	}
-	return x, y, nil
+	return Place{x, y}, nil
 }

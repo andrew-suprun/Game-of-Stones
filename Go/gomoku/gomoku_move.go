@@ -6,25 +6,16 @@ import (
 )
 
 type Move struct {
-	X, Y     int8
-	value    float32
-	terminal bool
+	board.Move
+	Place board.Place
 }
 
-func (m Move) Value() float32 {
-	return m.value
-}
-
-func (m Move) IsDecisive() bool {
-	return m.terminal || m.value <= -board.WinValue || m.value >= board.WinValue
-}
-
-func (m Move) IsTerminal() bool {
-	return m.terminal
+func MakeMove(x, y int8, value float32, terminal bool) Move {
+	return Move{Place: board.Place{X: x, Y: y}, Move: board.Make(value, terminal)}
 }
 
 func (m Move) String() string {
-	return fmt.Sprintf("%c%d", m.X+'a', board.Size-m.Y)
+	return fmt.Sprintf("%c%d", m.Place.X+'a', board.Size-m.Place.Y)
 }
 
 func (m Move) GoString() string {
@@ -34,5 +25,5 @@ func (m Move) GoString() string {
 	} else if m.IsDecisive() {
 		state = " Decisive"
 	}
-	return fmt.Sprintf("%-3s v: %4.0f%s", m.String(), m.value, state)
+	return fmt.Sprintf("%-3v v: %4.0f%s", m, m.Value(), state)
 }

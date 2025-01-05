@@ -18,7 +18,6 @@ func TestExpand(t *testing.T) {
 	move, _ = game.ParseMove("i11-i9")
 	searchTree.CommitMove(move)
 	fmt.Println("Move", move)
-
 	for {
 		for range 10 {
 			move = searchTree.Expand()

@@ -23,18 +23,18 @@ func NewGame(maxPlaces int) *Gomoku {
 }
 
 func (c *Gomoku) ParseMove(moveStr string) (Move, error) {
-	x, y, err := board.ParsePlace(moveStr)
+	place, err := board.ParsePlace(moveStr)
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-	value := c.board.Value(c.turn, x, y)
+	value := c.board.Value(c.turn, place)
 	terminal := value <= -board.WinValue || value >= board.WinValue
-	return Move{x, y, value, terminal}, nil
+	return MakeMove(place.X, place.Y, value, terminal), nil
 }
 
 func (c *Gomoku) PlayMove(move Move) {
-	c.value += c.board.Value(c.turn, move.X, move.Y)
-	c.board.PlaceStone(c.turn, move.X, move.Y)
+	c.value += c.board.Value(c.turn, move.Place)
+	c.board.PlaceStone(c.turn, move.Place)
 	if c.turn == board.Black {
 		c.turn = board.White
 	} else {
@@ -49,17 +49,17 @@ func (c *Gomoku) UndoMove(move Move) {
 	} else {
 		c.turn = board.Black
 	}
-	c.board.RemoveStone(c.turn, move.X, move.Y)
-	c.value -= c.board.Value(c.turn, move.X, move.Y)
+	c.board.RemoveStone(c.turn, move.Place)
+	c.value -= c.board.Value(c.turn, move.Place)
 	c.Validate()
 }
 
 func (c *Gomoku) SameMove(a, b Move) bool {
-	return a.X == b.X && a.Y == b.Y
+	return a == b
 }
 
 func (c *Gomoku) SetValue(move *Move, value float32) {
-	move.value = value
+	move.SetValue(value)
 }
 
 func (c *Gomoku) TopMoves(moves *[]Move) {
@@ -67,11 +67,11 @@ func (c *Gomoku) TopMoves(moves *[]Move) {
 	addedDraw := false
 	c.board.TopPlaces(c.turn, &c.topPlaces)
 	for _, place := range c.topPlaces {
-		value := c.board.Value(c.turn, place.X, place.Y)
+		value := c.board.Value(c.turn, place)
 
 		if value <= -board.WinValue || value >= board.WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = Move{place.X, place.Y, c.value + value, true}
+			(*moves)[0] = MakeMove(place.X, place.Y, c.value+value, true)
 			return
 		}
 
@@ -80,7 +80,7 @@ func (c *Gomoku) TopMoves(moves *[]Move) {
 			terminal = true
 		}
 		if !terminal || !addedDraw {
-			move := Move{place.X, place.Y, c.value + value/2, terminal}
+			move := MakeMove(place.X, place.Y, c.value+value/2, terminal)
 			*moves = append(*moves, move)
 		}
 		if value == 0 {
