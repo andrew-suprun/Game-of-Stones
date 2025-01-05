@@ -41,10 +41,6 @@ func (c *Connect6) SetValue(move *Move, value float32) {
 	move.value = value
 }
 
-func (c *Connect6) SetDecisive(move *Move, decisive bool) {
-	move.decisive = decisive
-}
-
 func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	tokens := strings.Split(moveStr, "-")
 	x1, y1, err := board.ParsePlace(tokens[0])
@@ -54,7 +50,7 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	value := c.board.Value(c.turn, x1, y1)
 	if len(tokens) == 1 {
 		terminal := value <= -board.WinValue || value >= board.WinValue
-		return Move{x1, y1, x1, y1, value, terminal, terminal}, nil
+		return Move{x1, y1, x1, y1, value, terminal}, nil
 	}
 	x2, y2 := x1, y1
 	x2, y2, err = board.ParsePlace(tokens[1])
@@ -65,7 +61,7 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	value += c.board.Value(c.turn, x2, y2)
 	c.board.RemoveStone(c.turn, x1, y1)
 	terminal := value <= -board.WinValue || value >= board.WinValue
-	return Move{x1, y1, x2, y2, value, terminal, terminal}, nil
+	return Move{x1, y1, x2, y2, value, terminal}, nil
 }
 
 func (c *Connect6) oppValue() float32 {
@@ -152,7 +148,7 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 
 		if value1 <= -board.WinValue || value1 >= board.WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = Move{place1.X, place1.Y, place1.X, place1.Y, c.value + value1, true, true}
+			(*moves)[0] = Move{place1.X, place1.Y, place1.X, place1.Y, c.value + value1, true}
 			return
 		}
 
@@ -163,7 +159,7 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 
 			if value2 <= -board.WinValue || value2 >= board.WinValue {
 				*moves = (*moves)[:1]
-				(*moves)[0] = Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2, true, true}
+				(*moves)[0] = Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value1 + value2, true}
 				c.board.RemoveStone(c.turn, place1.X, place1.Y)
 				return
 			}
@@ -175,7 +171,7 @@ func (c *Connect6) TopMoves(moves *[]Move) {
 				oppVal := c.oppValue()
 				c.board.RemoveStone(c.turn, place2.X, place2.Y)
 
-				move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value + oppVal, isDraw, isDraw}
+				move := Move{place1.X, place1.Y, place2.X, place2.Y, c.value + value + oppVal, isDraw}
 				heap.Add(move, moves, less)
 			}
 			if isDraw {

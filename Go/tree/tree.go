@@ -22,7 +22,6 @@ type Game[move Move[value], value Ordered] interface {
 	ParseMove(move string) (move, error)
 	SameMove(a, b move) bool
 	SetValue(move *move, value value)
-	SetDecisive(move *move, draw bool)
 }
 
 type Move[Value Ordered] interface {
@@ -70,7 +69,6 @@ func (t *Tree[m, v]) Expand() m {
 func (tree *Tree[move, value]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
 	tree.game.SetValue(&toPlay, 0)
-	tree.game.SetDecisive(&toPlay, false)
 	oldRoot := tree.root
 	tree.root = &node[move, value]{
 		move: toPlay,
@@ -157,9 +155,6 @@ func (node *node[move, value]) selectChild(turn Turn, explorationFactor float64)
 	logParentSims := math.Log(float64(node.nSims))
 	maxV := math.Inf(-1)
 	for i, child := range node.children {
-		if child.move.IsDecisive() {
-			continue
-		}
 		v := coeff*float64(child.move.Value()) + explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
 		if v > maxV {
 			maxV = v
@@ -173,22 +168,18 @@ func (node *node[move, value]) selectChild(turn Turn, explorationFactor float64)
 func (t *Tree[m, v]) updateStats(node *node[m, v]) {
 	node.nSims = 0
 	value := node.children[0].move.Value()
-	decisive := true
 	if t.game.Turn() == First {
 		for _, child := range node.children {
 			node.nSims += child.nSims
 			value = max(value, child.move.Value())
-			decisive = decisive && child.move.IsDecisive()
 		}
 	} else {
 		for _, child := range node.children {
 			node.nSims += child.nSims
 			value = min(value, child.move.Value())
-			decisive = decisive && child.move.IsDecisive()
 		}
 	}
 	t.game.SetValue(&node.move, value)
-	t.game.SetDecisive(&node.move, decisive)
 }
 
 func (tree *Tree[move, value]) String() string {

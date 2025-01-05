@@ -29,7 +29,7 @@ func (c *Gomoku) ParseMove(moveStr string) (Move, error) {
 	}
 	value := c.board.Value(c.turn, x, y)
 	terminal := value <= -board.WinValue || value >= board.WinValue
-	return Move{x, y, value, terminal, terminal}, nil
+	return Move{x, y, value, terminal}, nil
 }
 
 func (c *Gomoku) PlayMove(move Move) {
@@ -62,10 +62,6 @@ func (c *Gomoku) SetValue(move *Move, value float32) {
 	move.value = value
 }
 
-func (c *Gomoku) SetDecisive(move *Move, decisive bool) {
-	move.decisive = decisive
-}
-
 func (c *Gomoku) TopMoves(moves *[]Move) {
 	*moves = (*moves)[:0]
 	addedDraw := false
@@ -75,7 +71,7 @@ func (c *Gomoku) TopMoves(moves *[]Move) {
 
 		if value <= -board.WinValue || value >= board.WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = Move{place.X, place.Y, c.value + value, true, true}
+			(*moves)[0] = Move{place.X, place.Y, c.value + value, true}
 			return
 		}
 
@@ -84,7 +80,7 @@ func (c *Gomoku) TopMoves(moves *[]Move) {
 			terminal = true
 		}
 		if !terminal || !addedDraw {
-			move := Move{place.X, place.Y, c.value + value/2, terminal, terminal}
+			move := Move{place.X, place.Y, c.value + value/2, terminal}
 			*moves = append(*moves, move)
 		}
 		if value == 0 {

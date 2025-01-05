@@ -59,7 +59,7 @@ func sim(a, b string, moves []string) (string, error) {
 		engines[1].tree.CommitMove(move)
 	}
 
-	fmt.Println(engines[0].game)
+	// fmt.Println(engines[0].game)
 
 	for i := 1; ; i++ {
 		var bestMove move
@@ -73,7 +73,7 @@ func sim(a, b string, moves []string) (string, error) {
 			}
 		}
 		bestMove, s = engines[0].tree.BestMove()
-		fmt.Printf("%s: Move %d %#v s: %d\n", engines[0].title, i, bestMove, s)
+		fmt.Printf("%s: Move %3d %#v s: %7d\n", engines[0].title, i, bestMove, s)
 		if bestMove.IsTerminal() {
 			if bestMove.Value() == 0 {
 				return "Draw", nil

@@ -8,7 +8,6 @@ import (
 type Move struct {
 	X1, Y1, X2, Y2 int8
 	value          float32
-	decisive       bool
 	terminal       bool
 }
 
@@ -17,7 +16,7 @@ func (m Move) Value() float32 {
 }
 
 func (m Move) IsDecisive() bool {
-	return m.decisive || m.value <= -board.WinValue || m.value >= board.WinValue
+	return m.terminal || m.value <= -board.WinValue || m.value >= board.WinValue
 }
 
 func (m Move) IsTerminal() bool {
@@ -30,10 +29,10 @@ func (m Move) String() string {
 
 func (m Move) GoString() string {
 	state := ""
-	if m.terminal {
+	if m.IsTerminal() {
 		state = " Terminal"
-	} else if m.decisive {
+	} else if m.IsDecisive() {
 		state = " Decisive"
 	}
-	return fmt.Sprintf("%-7s v: %.0f%s", m.String(), m.value, state)
+	return fmt.Sprintf("%-7s v: %4.0f%s", m.String(), m.value, state)
 }
