@@ -12,7 +12,7 @@ import (
 type Connect6 struct {
 	turn      board.Stone
 	board     board.Board
-	value     float32
+	value     int16
 	topPlaces []board.Place
 }
 
@@ -36,7 +36,7 @@ func (c *Connect6) SameMove(a, b Move) bool {
 	return a.P1 == b.P1 && a.P2 == b.P2 || a.P1 == b.P2 && a.P2 == b.P1
 }
 
-func (c *Connect6) SetValue(move *Move, value float32) {
+func (c *Connect6) SetValue(move *Move, value int16) {
 	move.SetValue(value)
 }
 
@@ -62,13 +62,13 @@ func (c *Connect6) ParseMove(moveStr string) (Move, error) {
 	return MakeMove(p1.X, p1.Y, p2.X, p2.Y, value, terminal), nil
 }
 
-func (c *Connect6) oppValue() float32 {
+func (c *Connect6) oppValue() int16 {
 	oppTurn := board.Black
 	if c.turn == board.Black {
 		oppTurn = board.White
 	}
 	if oppTurn == board.White {
-		var oppVal float32 = board.WinValue
+		var oppVal int16 = board.WinValue
 		for y := int8(0); y < board.Size; y++ {
 			for x := int8(0); x < board.Size; x++ {
 				if c.board.Stone(x, y) != board.None {
@@ -82,7 +82,7 @@ func (c *Connect6) oppValue() float32 {
 		}
 		return oppVal
 	} else {
-		var oppVal float32 = -board.WinValue
+		var oppVal int16 = -board.WinValue
 		for y := int8(0); y < board.Size; y++ {
 			for x := int8(0); x < board.Size; x++ {
 				if c.board.Stone(x, y) != board.None {

@@ -1,19 +1,19 @@
 package board
 
 type Move struct {
-	value    float32
+	value    int16
 	terminal bool
 }
 
-func Make(value float32, terminal bool) Move {
+func Make(value int16, terminal bool) Move {
 	return Move{value: value, terminal: terminal}
 }
 
-func (m Move) Value() float32 {
+func (m Move) Value() int16 {
 	return m.value
 }
 
-func (m *Move) SetValue(value float32) {
+func (m *Move) SetValue(value int16) {
 	m.value = value
 }
 

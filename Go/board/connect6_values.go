@@ -9,7 +9,7 @@ const (
 	WinValue  = 5000
 )
 
-func valueStones(stone, stones Stone) (float32, float32) {
+func valueStones(stone, stones Stone) (int16, int16) {
 	if stone == Black {
 		switch stones {
 		case 0x00:

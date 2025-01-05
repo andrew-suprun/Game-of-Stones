@@ -51,8 +51,8 @@ func (b *Board) Validate() {
 	}
 }
 
-func (b *Board) debugBoardValues() *[Size][Size][2]float32 {
-	values := &[Size][Size][2]float32{}
+func (b *Board) debugBoardValues() *[Size][Size][2]int16 {
+	values := &[Size][Size][2]int16{}
 	for y := 0; y < Size; y++ {
 		stones := Stone(0)
 		for x := 0; x < maxStones1; x++ {
@@ -158,8 +158,8 @@ func (b *Board) debugBoardValues() *[Size][Size][2]float32 {
 	return values
 }
 
-func (b *Board) BoardValue() float32 {
-	result := float32(0)
+func (b *Board) BoardValue() int16 {
+	result := int16(0)
 	for y := 0; y < Size; y++ {
 		stones := Stone(0)
 		for x := 0; x < maxStones1; x++ {

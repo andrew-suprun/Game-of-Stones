@@ -9,7 +9,7 @@ import (
 type Gomoku struct {
 	turn      board.Stone
 	board     board.Board
-	value     float32
+	value     int16
 	topPlaces []board.Place
 }
 
@@ -58,7 +58,7 @@ func (c *Gomoku) SameMove(a, b Move) bool {
 	return a == b
 }
 
-func (c *Gomoku) SetValue(move *Move, value float32) {
+func (c *Gomoku) SetValue(move *Move, value int16) {
 	move.SetValue(value)
 }
 

@@ -34,7 +34,7 @@ const maxStones1 = maxStones - 1
 
 type Board struct {
 	stones [Size][Size]Stone
-	values [Size][Size][2]float32
+	values [Size][Size][2]int16
 }
 
 func MakeBoard() Board {
@@ -46,8 +46,8 @@ func MakeBoard() Board {
 			m := 1 + min(x, y, Size-1-x, Size-1-y)
 			t1 := max(0, min(maxStones, m, Size-maxStones1-y+x, Size-maxStones1-x+y))
 			t2 := max(0, min(maxStones, m, 2*Size-1-maxStones1-y-x, x+y-maxStones1+1))
-			total := float32(v + h + t1 + t2)
-			board.values[y][x] = [2]float32{total, -total}
+			total := int16(v + h + t1 + t2)
+			board.values[y][x] = [2]int16{total, -total}
 		}
 	}
 	return board
@@ -87,7 +87,7 @@ func (b *Board) Stone(x, y int8) Stone {
 	return b.stones[y][x]
 }
 
-func (b *Board) Value(stone Stone, place Place) float32 {
+func (b *Board) Value(stone Stone, place Place) int16 {
 	switch stone {
 	case Black:
 		return b.values[place.Y][place.X][0]
@@ -97,7 +97,7 @@ func (b *Board) Value(stone Stone, place Place) float32 {
 	panic("Value")
 }
 
-func (b *Board) placeStone(stone Stone, place Place, coeff float32) {
+func (b *Board) placeStone(stone Stone, place Place, coeff int16) {
 	x, y := place.X, place.Y
 	if coeff == -1 {
 		b.stones[y][x] = None
@@ -145,7 +145,7 @@ func (b *Board) placeStone(stone Stone, place Place, coeff float32) {
 	b.Validate()
 }
 
-func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int8, coeff float32) {
+func (b *Board) updateRow(stone Stone, x, y, dx, dy, n int8, coeff int16) {
 	stones := Stone(0)
 	for i := int8(0); i < maxStones1; i++ {
 		stones += b.stones[y+i*dy][x+i*dx]

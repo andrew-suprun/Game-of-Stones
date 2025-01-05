@@ -8,13 +8,13 @@ import (
 	"math"
 )
 
-type Ordered interface {
+type Numeric interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 |
 		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
 		~float32 | ~float64
 }
 
-type Game[move Move[value], value Ordered] interface {
+type Game[move Move[value], value Numeric] interface {
 	Turn() Turn
 	TopMoves(result *[]move)
 	PlayMove(move move)
@@ -24,15 +24,15 @@ type Game[move Move[value], value Ordered] interface {
 	SetValue(move *move, value value)
 }
 
-type Move[Value Ordered] interface {
+type Move[value Numeric] interface {
 	fmt.GoStringer
 	fmt.Stringer
-	Value() Value
+	Value() value
 	IsDecisive() bool
 	IsTerminal() bool
 }
 
-type Tree[move Move[value], value Ordered] struct {
+type Tree[move Move[value], value Numeric] struct {
 	root              *node[move, value]
 	game              Game[move, value]
 	topMoves          []move
@@ -40,13 +40,13 @@ type Tree[move Move[value], value Ordered] struct {
 	explorationFactor float64
 }
 
-type node[move Move[value], value Ordered] struct {
+type node[move Move[value], value Numeric] struct {
 	move     move
 	nSims    int32
 	children []node[move, value]
 }
 
-func NewTree[move Move[value], value Ordered](
+func NewTree[move Move[value], value Numeric](
 	game Game[move, value],
 	maxChildren int,
 	explorationFactor float64,

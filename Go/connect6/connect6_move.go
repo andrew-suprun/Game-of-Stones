@@ -10,7 +10,7 @@ type Move struct {
 	P1, P2 board.Place
 }
 
-func MakeMove(x1, y1, x2, y2 int8, value float32, terminal bool) Move {
+func MakeMove(x1, y1, x2, y2 int8, value int16, terminal bool) Move {
 	return Move{P1: board.Place{X: x1, Y: y1}, P2: board.Place{X: x2, Y: y2}, Move: board.Make(value, terminal)}
 }
 
@@ -25,5 +25,5 @@ func (m Move) GoString() string {
 	} else if m.IsDecisive() {
 		state = " Decisive"
 	}
-	return fmt.Sprintf("%-7v v: %4.0f%s", m, m.Value(), state)
+	return fmt.Sprintf("%-7v v: %4d%s", m, m.Value(), state)
 }

@@ -4,7 +4,7 @@
 
 package board
 
-func debugStonesValues(stones Stone) (float32, float32) {
+func debugStonesValues(stones Stone) (int16, int16) {
 	switch stones {
 	case 0x00:
 		return 1, -1
@@ -33,7 +33,7 @@ func debugStonesValues(stones Stone) (float32, float32) {
 	return 0, 0
 }
 
-func debugStonesValue(stones Stone) float32 {
+func debugStonesValue(stones Stone) int16 {
 	switch stones {
 	case 0x01:
 		return 1
