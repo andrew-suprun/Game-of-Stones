@@ -8,11 +8,11 @@ import (
 	. "game_of_stones/turn"
 )
 
-func (tree *Tree[move, value]) validate() {
+func (tree *Tree[move]) validate() {
 	tree.root.validate(tree.game.Turn())
 }
 
-func (node *node[move, value]) validate(turn Turn) {
+func (node *node[move]) validate(turn Turn) {
 	if len(node.children) == 0 {
 		// if node.move.IsDecisive() && !node.move.IsTerminal() {
 		// 	log.Panicf("### Validation ### decisive childless node")

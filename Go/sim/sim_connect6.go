@@ -15,7 +15,7 @@ type move = connect6.Move
 type engine struct {
 	title    string
 	game     *connect6.Connect6
-	tree     *tree.Tree[connect6.Move, int16]
+	tree     *tree.Tree[connect6.Move]
 	duration time.Duration
 }
 

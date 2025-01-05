@@ -15,7 +15,7 @@ type engine struct {
 	events   chan any
 	moves    []connect6.Move
 	game     *connect6.Connect6
-	tree     *tree.Tree[connect6.Move, int16]
+	tree     *tree.Tree[connect6.Move]
 }
 
 func runEngine(commands chan any, events chan any) {
