@@ -152,9 +152,9 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 		if keyEvent.State == key.Press {
 			switch keyEvent.Name {
 			case key.NameReturn:
-				fmt.Printf("key: Enter")
+				fmt.Printf("key: Enter\n")
 			case key.NameEscape:
-				fmt.Printf("key: Excape")
+				fmt.Printf("key: Excape\n")
 			default:
 				fmt.Println("key:", keyEvent)
 			}

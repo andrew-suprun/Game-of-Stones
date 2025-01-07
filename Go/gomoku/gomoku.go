@@ -55,7 +55,7 @@ func (c *Gomoku) UndoMove(move Move) {
 }
 
 func (c *Gomoku) SameMove(a, b Move) bool {
-	return a == b
+	return a.Place == b.Place
 }
 
 func (c *Gomoku) SetValue(move *Move, value int16) {

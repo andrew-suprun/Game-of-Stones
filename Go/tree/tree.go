@@ -54,30 +54,42 @@ func NewTree[move Move](
 	}
 }
 
-func (t *Tree[m]) Expand() m {
+func (t *Tree[m]) Expand() (m, int) {
 	t.expand(t.root)
 	t.validate()
-	return t.root.move
+	return t.root.move, int(t.root.nSims)
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) {
+	fmt.Printf(">> root %v sims %d toPlay %v\n", tree.root.move, tree.root.nSims, toPlay)
 	tree.game.PlayMove(toPlay)
 	tree.game.SetValue(&toPlay, 0)
 	oldRoot := tree.root
 	tree.root = &node[move]{
 		move: toPlay,
 	}
+
+	for _, child := range oldRoot.children {
+		fmt.Printf("move %v sims %d %v\n", child.move, child.nSims, tree.game.SameMove(child.move, toPlay))
+	}
+
 	for _, child := range oldRoot.children {
 		if tree.game.SameMove(toPlay, child.move) {
+			fmt.Println("found", toPlay)
 			tree.root.nSims = child.nSims
 			tree.root.children = child.children
+			fmt.Printf("<< root.1 %v sims %d\n", tree.root.move, tree.root.nSims)
 			return
 		}
 	}
+	tree.root = &node[move]{move: toPlay}
+	fmt.Printf("<< root.2 %v sims %d\n", tree.root.move, tree.root.nSims)
 }
 
 func (tree *Tree[move]) BestMove() (move, int) {
+	fmt.Println("BestMove.1", len(tree.root.children))
 	bestNode := tree.root.children[0]
+	fmt.Println("BestMove.2")
 
 	if tree.game.Turn() == First {
 		for _, node := range tree.root.children {
