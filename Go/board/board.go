@@ -8,6 +8,8 @@ import (
 	"game_of_stones/heap"
 )
 
+const Size = 19
+
 type Stone int8
 
 const (
@@ -320,4 +322,8 @@ func ParsePlace(place string) (Place, error) {
 		return Place{}, errors.New("failed to parse place")
 	}
 	return Place{x, y}, nil
+}
+
+func (place Place) String() string {
+	return fmt.Sprintf("%c%d", place.X+'a', Size-place.Y)
 }

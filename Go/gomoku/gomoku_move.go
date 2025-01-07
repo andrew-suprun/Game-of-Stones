@@ -15,7 +15,7 @@ func MakeMove(x, y int8, value int16, terminal bool) Move {
 }
 
 func (m Move) String() string {
-	return fmt.Sprintf("%c%d", m.Place.X+'a', board.Size-m.Place.Y)
+	return m.Place.String()
 }
 
 func (m Move) GoString() string {

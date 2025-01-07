@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"game_of_stones/board"
 	"game_of_stones/connect6"
 	"game_of_stones/tree"
 	"math/rand"
@@ -36,7 +37,7 @@ func moves() []string {
 	// rnd := rand.New(rand.NewSource(1))
 	placeMap := map[string]struct{}{}
 	for len(placeMap) < 5 {
-		place := fmt.Sprintf("%c%d", rnd.Intn(9)+'f', rnd.Intn(9)+6)
+		place := fmt.Sprintf("%c%d", rnd.Intn(9)+board.Size/2-5+'a', rnd.Intn(9)+board.Size/2-4)
 		placeMap[place] = struct{}{}
 	}
 	places := []string{}
