@@ -174,9 +174,6 @@ func input(window *app.Window, stateChan chan *state) {
 			fmt.Println("error: Failed to read from standard input.")
 			os.Exit(1)
 		}
-		if text == "start" {
-			start(stateChan)
-		}
 		if text == "stop" {
 			fmt.Println("info: Stopped.")
 			os.Exit(0)
@@ -186,16 +183,6 @@ func input(window *app.Window, stateChan chan *state) {
 		}
 		window.Invalidate()
 	}
-}
-
-func start(stateChan chan *state) {
-	state := <-stateChan
-	for y := range board.Size {
-		for x := range board.Size {
-			state[y][x] = stateEmpty
-		}
-	}
-	stateChan <- state
 }
 
 func setStone(stateChan chan *state, cmd string) {

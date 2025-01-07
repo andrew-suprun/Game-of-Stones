@@ -1,6 +1,6 @@
 * generalize UI
-* Multithreading
-* Zig, Odin, Swift, Julia, Ocaml, ...?
+* benchmark tree search
+* Julia
 * enrich UI
 
 go run -tags connect6 game_of_stones/ui
