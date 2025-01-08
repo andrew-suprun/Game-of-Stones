@@ -190,12 +190,12 @@ func setStone(stateChan chan *state, cmd string) {
 
 	parts := strings.Fields(cmd)
 	if len(parts) != 3 {
-		fmt.Println("error: Invalid set command")
+		fmt.Printf("error: Invalid set command: %q\n", cmd)
 		os.Exit(1)
 	}
 	place, err := board.ParsePlace(parts[1])
 	if err != nil {
-		fmt.Println("error: Invalid set command")
+		fmt.Printf("error: Invalid set command: %q\n", cmd)
 		os.Exit(1)
 	}
 
@@ -217,7 +217,7 @@ func parseStone(str string) placeState {
 	case "e":
 		return stateEmpty
 	}
-	fmt.Println("error: Invalid set command")
+	fmt.Printf("error: Invalid set command: %q\n", str)
 	os.Exit(1)
 	return stateEmpty
 }

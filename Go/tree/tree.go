@@ -61,16 +61,11 @@ func (t *Tree[m]) Expand() (m, int) {
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) {
-	fmt.Printf(">> root %v sims %d toPlay %v\n", tree.root.move, tree.root.nSims, toPlay)
 	tree.game.PlayMove(toPlay)
 	tree.game.SetValue(&toPlay, 0)
 	oldRoot := tree.root
 	tree.root = &node[move]{
 		move: toPlay,
-	}
-
-	for _, child := range oldRoot.children {
-		fmt.Printf("move %v sims %d %v\n", child.move, child.nSims, tree.game.SameMove(child.move, toPlay))
 	}
 
 	for _, child := range oldRoot.children {
@@ -83,13 +78,10 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 		}
 	}
 	tree.root = &node[move]{move: toPlay}
-	fmt.Printf("<< root.2 %v sims %d\n", tree.root.move, tree.root.nSims)
 }
 
 func (tree *Tree[move]) BestMove() (move, int) {
-	fmt.Println("BestMove.1", len(tree.root.children))
 	bestNode := tree.root.children[0]
-	fmt.Println("BestMove.2")
 
 	if tree.game.Turn() == First {
 		for _, node := range tree.root.children {
