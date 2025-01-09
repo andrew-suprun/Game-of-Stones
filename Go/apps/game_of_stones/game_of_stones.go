@@ -23,6 +23,10 @@ const (
 	gomokuId
 )
 
+type game struct {
+	in, out chan string
+}
+
 var (
 	gameId            int
 	humanPlayerStones turn.Turn
@@ -30,11 +34,51 @@ var (
 	maxMoves          = 22
 	expFactor         = float64(100)
 	msPerMove         = 250 * time.Millisecond
+	games             = [2]game{}
 )
 
 func main() {
 	parseArgs()
-	startGame()
+
+	chIn1 := make(chan string, 1)
+	chOut1 := make(chan string, 1)
+	// chIn2 := make(chan string, 1)
+	// chOut2 := make(chan string, 1)
+	// go newHumanPlayer(gameId, turn.First, chOut1, chIn1)
+	// go newHumanPlayer(gameId, turn.Second, chOut2, chIn2)
+	// running := true
+	// for running {
+	// 	select {
+	// 	case event := <-chIn1:
+	// 		handleEvent(event, chOut2, "[1]")
+	// 	case event := <-chIn2:
+	// 		handleEvent(event, chOut1, "[2]")
+	// 	}
+	// }
+
+	// DEBUG
+	go newHumanPlayer(gameId, turn.First, chOut1, chIn1)
+	running := true
+	n := 1
+	for running {
+		select {
+		case event := <-chIn1:
+			if strings.HasPrefix(event, "error: ") || strings.HasPrefix(event, "info: ") {
+				fmt.Println(event)
+				continue
+			}
+			fmt.Printf("<< read: %q\n", event)
+			switch n {
+			case 1:
+				chOut1 <- "i9-i11"
+			case 2:
+				chOut1 <- "g10-k10"
+			case 3:
+				chOut1 <- "j8-j12"
+			}
+			n++
+		}
+	}
 }
 
 func parseArgs() {
@@ -88,5 +132,14 @@ func parseArgs() {
 	}
 }
 
-func startGame() {
+func handleEvent(event string, out chan string, debug string) bool {
+	fmt.Printf("read from %s: %q\n", debug, event)
+	if event == "stop" {
+		fmt.Println("### stopping")
+		out <- "stop"
+		return false
+	}
+	fmt.Printf("### sending %q\n", event)
+	out <- event
+	return true
 }

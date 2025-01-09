@@ -65,7 +65,7 @@ func newHumanPlayer(gameId int, stones turn.Turn, oppIn, oppOut chan string) *hu
 	}
 	defer uiCmd.Wait()
 
-	go self.humanMoves(uiIn)
+	go self.uiMoves(uiIn)
 	go self.opponentMoves()
 
 	if self.turn == turn.First {
@@ -88,30 +88,25 @@ func (self *humanPlayer) opponentMoves() {
 		if self.turn == self.stones {
 			continue
 		}
-		if self.turn == turn.First {
-			self.turn = turn.Second
-		} else {
-			self.turn = turn.First
-		}
 		if self.gameId == connect6Id {
 			places := strings.Split(move, "-")
 			for _, place := range places {
 				self.played[place] = self.engineStoneSelected
-				fmt.Fprintf(self.uiOut, "set %s %c\n", move, self.engineStoneSelected)
+				fmt.Fprintf(self.uiOut, "set %s %c\n", place, self.engineStoneSelected)
 			}
 		} else {
 			self.played[move] = self.engineStoneSelected
 			fmt.Fprintf(self.uiOut, "set %s %c\n", move, self.engineStoneSelected)
 		}
+		self.turn = self.stones
 	}
 }
 
-func (self *humanPlayer) humanMoves(uiIn io.Reader) {
-	fmt.Println("start reader")
+func (self *humanPlayer) uiMoves(uiIn io.Reader) {
 	reader := bufio.NewReader(uiIn)
 	for {
 		text, err := reader.ReadString('\n')
-		fmt.Println("read", text)
+		text = strings.TrimSpace(text)
 		if err == io.EOF {
 			self.oppOut <- "stop"
 			return
@@ -122,13 +117,7 @@ func (self *humanPlayer) humanMoves(uiIn io.Reader) {
 		if self.turn != self.stones {
 			continue
 		}
-		if self.turn == turn.First {
-			self.turn = turn.Second
-		} else {
-			self.turn = turn.First
-		}
 
-		fmt.Printf("text %q\n", text)
 		if text == "stop" {
 			self.oppOut <- "stop"
 			return
@@ -138,16 +127,22 @@ func (self *humanPlayer) humanMoves(uiIn io.Reader) {
 
 			self.oppOut <- text
 		} else if strings.HasPrefix(text, "click: ") {
-			move := text[7:]
-			if _, ok := self.played[move]; ok {
-				self.played[move] = 'e'
-				fmt.Fprintf(self.uiOut, "set %s %c\n", move, 'e')
-				delete(self.selected, move)
-			} else {
-				self.played[move] = self.humanStoneSelected
-				fmt.Fprintf(self.uiOut, "set %s %c\n", move, self.humanStoneSelected)
-				self.selected[move] = struct{}{}
+			place := text[7:]
+
+			if _, selected := self.selected[place]; selected {
+				fmt.Fprintf(self.uiOut, "set %s %c\n", place, 'e')
+				delete(self.played, place)
+				delete(self.selected, place)
+				continue
 			}
+
+			if _, played := self.played[place]; played || len(self.selected) == 2 {
+				continue
+			}
+
+			self.played[place] = self.humanStoneSelected
+			fmt.Fprintf(self.uiOut, "set %s %c\n", place, self.humanStoneSelected)
+			self.selected[place] = struct{}{}
 		} else if text == "key: Enter" {
 			if self.gameId == gomokuId && len(self.selected) != 1 {
 				continue
@@ -167,15 +162,19 @@ func (self *humanPlayer) humanMoves(uiIn io.Reader) {
 				var places []string
 				for place := range self.selected {
 					places = append(places, place)
-					fmt.Fprintf(self.uiOut, "set %s %c\n", place, self.stones)
 				}
 				move := places[0] + "-" + places[1]
 				self.oppOut <- move
 			} else {
 				for move := range self.selected {
-					fmt.Fprintf(self.uiOut, "set %s %c\n", move, self.stones)
 					self.oppOut <- move
 				}
+			}
+			clear(self.selected)
+			if self.stones == turn.First {
+				self.turn = turn.Second
+			} else {
+				self.turn = turn.First
 			}
 		}
 	}
