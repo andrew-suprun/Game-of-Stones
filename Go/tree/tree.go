@@ -4,18 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"game_of_stones/board"
-	. "game_of_stones/turn"
+	"game_of_stones/turn"
 	"math"
 )
 
 type Game[move Move] interface {
-	Turn() Turn
-	TopMoves(result *[]move)
-	PlayMove(move move)
-	UndoMove(move move)
-	ParseMove(move string) (move, error)
-	SameMove(a, b move) bool
-	SetValue(move *move, value int16)
+	Turn() turn.Turn
+	TopMoves(*[]move)
+	PlayMove(move)
+	UndoMove(move)
+	SameMove(move, move) bool
+	SetValue(*move, int16)
 }
 
 type Move interface {
@@ -83,7 +82,7 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 func (tree *Tree[move]) BestMove() (move, int) {
 	bestNode := tree.root.children[0]
 
-	if tree.game.Turn() == First {
+	if tree.game.Turn() == turn.First {
 		for _, node := range tree.root.children {
 			if bestNode.move.Value() < node.move.Value() {
 				bestNode = node
@@ -144,9 +143,9 @@ func (t *Tree[m]) expand(parent *node[m]) {
 	t.updateStats(parent)
 }
 
-func (node *node[move]) selectChild(turn Turn, explorationFactor float64) *node[move] {
+func (node *node[move]) selectChild(currentTurn turn.Turn, explorationFactor float64) *node[move] {
 	var coeff float64 = 1
-	if turn == Second {
+	if currentTurn == turn.Second {
 		coeff = -1
 	}
 	selectedChild := &node.children[0]
@@ -166,7 +165,7 @@ func (node *node[move]) selectChild(turn Turn, explorationFactor float64) *node[
 func (t *Tree[m]) updateStats(node *node[m]) {
 	node.nSims = 0
 	value := node.children[0].move.Value()
-	if t.game.Turn() == First {
+	if t.game.Turn() == turn.First {
 		for _, child := range node.children {
 			node.nSims += child.nSims
 			value = max(value, child.move.Value())

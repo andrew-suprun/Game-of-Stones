@@ -31,12 +31,16 @@ func TestPlaceStone(t *testing.T) {
 
 func TestTopPlaces(t *testing.T) {
 	b := MakeBoard()
-	b.PlaceStone(Black, Place{9, 9})
-	b.PlaceStone(White, Place{8, 8})
-	b.PlaceStone(White, Place{8, 10})
-	places := make([]Place, 0, 3)
+	p1, _ := ParsePlace("j10")
+	p2, _ := ParsePlace("i9")
+	p3, _ := ParsePlace("i11")
+	p4, _ := ParsePlace("i10")
+	b.PlaceStone(Black, p1)
+	b.PlaceStone(White, p2)
+	b.PlaceStone(White, p3)
+	places := make([]Place, 0, 1)
 	b.TopPlaces(Black, &places)
-	if places[0] != (Place{10, 9}) {
+	if places[0] != p4 {
 		t.Fail()
 	}
 }
