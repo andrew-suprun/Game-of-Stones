@@ -32,7 +32,7 @@ func main() {
 
 	winners := map[string]int{}
 
-	for range 1 {
+	for range 10 {
 		moves := moves()
 		winner := sim(a, b, moves)
 		fmt.Println("winner.1", winner)

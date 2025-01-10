@@ -7,13 +7,14 @@ import (
 )
 
 func TestExpandGomoku(t *testing.T) {
-	game := game.NewGame(game.Gomoku, 28)
-	searchTree := NewTree(game, 28, 50)
+	game := game.NewGame(game.Gomoku, 8)
+	searchTree := NewTree(game, 8, 20)
 
 	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)
 	move, _ = game.ParseMove("i11")
 	searchTree.CommitMove(move)
+	fmt.Printf("%#v\n", game)
 
 	for {
 		for range 10 {

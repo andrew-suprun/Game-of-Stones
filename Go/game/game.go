@@ -72,7 +72,6 @@ func (game *Game) TopMoves(moves *[]Move) {
 
 func (game *Game) PlayMove(move Move) {
 	game.value += game.values[move.P1.Y][move.P1.X][game.turn]
-
 	game.placeStone(move.P1, 1)
 
 	if move.P1 != move.P2 {
@@ -99,13 +98,12 @@ func (game *Game) UndoMove(move Move) {
 		game.turn = turn.First
 	}
 
+	game.placeStone(move.P1, -1)
 	game.value -= game.values[move.P1.Y][move.P1.X][game.turn]
 
-	game.placeStone(move.P1, -1)
-
 	if move.P1 != move.P2 {
-		game.value -= game.values[move.P2.Y][move.P2.X][game.turn]
 		game.placeStone(move.P2, -1)
+		game.value -= game.values[move.P2.Y][move.P2.X][game.turn]
 	}
 	game.validate()
 }
