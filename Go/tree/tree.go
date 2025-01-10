@@ -3,7 +3,7 @@ package tree
 import (
 	"bytes"
 	"fmt"
-	"game_of_stones/board"
+	"game_of_stones/game"
 	"game_of_stones/turn"
 	"math"
 )
@@ -88,7 +88,7 @@ func (tree *Tree[move]) BestMove() (move, int) {
 				bestNode = node
 			}
 		}
-		if float64(bestNode.move.Value()) <= -board.WinValue {
+		if float64(bestNode.move.Value()) <= -game.WinValue {
 			return tree.mostExplored()
 		}
 	} else {
@@ -97,7 +97,7 @@ func (tree *Tree[move]) BestMove() (move, int) {
 				bestNode = node
 			}
 		}
-		if float64(bestNode.move.Value()) >= board.WinValue {
+		if float64(bestNode.move.Value()) >= game.WinValue {
 			return tree.mostExplored()
 		}
 	}

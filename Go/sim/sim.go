@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"game_of_stones/board"
 	"game_of_stones/game"
 	"game_of_stones/tree"
 	"math/rand"
@@ -27,23 +26,20 @@ func main() {
 		}
 	}
 	if a == "" || b == "" {
-		fmt.Println("required params: -a=maxPlaces,maxMoves,expFactor -b=maxPlaces,maxMoves,expFactor")
+		fmt.Println("required params: -a=maxPlaces,maxMoves,expFactor,duration -b=maxPlaces,maxMoves,expFactor,duration")
 		return
 	}
 
 	winners := map[string]int{}
 
-	for range 10 {
+	for range 1 {
 		moves := moves()
-		winner, err := sim(a, b, moves)
-		if err != nil {
-			fmt.Println("required params: -a=maxPlaces,maxMoves,expFactor -b=maxPlaces,maxMoves,expFactor")
-		}
+		winner := sim(a, b, moves)
 		fmt.Println("winner.1", winner)
 		winners[winner] += 1
 		fmt.Println(winners)
 		fmt.Println()
-		winner, _ = sim(b, a, moves)
+		winner = sim(b, a, moves)
 		fmt.Println("winner.2", winner)
 		winners[winner] += 1
 		fmt.Println(winners)
@@ -51,7 +47,7 @@ func main() {
 	}
 }
 
-func sim(a, b string, moves []string) (string, error) {
+func sim(a, b string, moves []string) string {
 	engines := [2]*engine{
 		newEngine(a),
 		newEngine(b),
@@ -80,9 +76,9 @@ func sim(a, b string, moves []string) (string, error) {
 		fmt.Printf("%s: Move %3d %#v s: %7d\n", engines[0].title, i, bestMove, s)
 		if bestMove.IsTerminal() {
 			if bestMove.Value() == 0 {
-				return "Draw", nil
+				return "Draw"
 			}
-			return engines[0].title, nil
+			return engines[0].title
 		}
 		engines[0].tree.CommitMove(bestMove)
 		engines[1].tree.CommitMove(bestMove)
@@ -131,7 +127,7 @@ func moves() []string {
 	// rnd := rand.New(rand.NewSource(1))
 	placeMap := map[string]struct{}{}
 	for len(placeMap) < 5 {
-		place := fmt.Sprintf("%c%d", rnd.Intn(9)+board.Size/2-5+'a', rnd.Intn(9)+board.Size/2-4)
+		place := fmt.Sprintf("%c%d", rnd.Intn(9)+game.Size/2-5+'a', rnd.Intn(9)+game.Size/2-4)
 		placeMap[place] = struct{}{}
 	}
 	places := []string{}

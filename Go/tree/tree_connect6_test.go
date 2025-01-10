@@ -4,12 +4,12 @@ package tree
 
 import (
 	"fmt"
-	"game_of_stones/connect6"
+	"game_of_stones/game"
 	"testing"
 )
 
 func TestExpand(t *testing.T) {
-	game := connect6.NewGame(28)
+	game := game.NewGame(game.Connect6, 28)
 	searchTree := NewTree(game, 64, 50)
 
 	move, _ := game.ParseMove("j10-j10")
