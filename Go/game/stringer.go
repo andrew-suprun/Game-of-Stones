@@ -10,7 +10,10 @@ func (place Place) String() string {
 }
 
 func (m Move) String() string {
-	return fmt.Sprintf("%s-%s", m.P1, m.P2)
+	if m.P1 == m.P2 {
+		return m.P1.String()
+	}
+	return m.P1.String() + "-" + m.P2.String()
 }
 
 func (m Move) GoString() string {

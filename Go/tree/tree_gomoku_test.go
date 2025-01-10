@@ -1,5 +1,3 @@
-//go:build gomoku
-
 package tree
 
 import (
@@ -8,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestExpand(t *testing.T) {
-	game := game.NewGame(Gomoku, 28)
+func TestExpandGomoku(t *testing.T) {
+	game := game.NewGame(game.Gomoku, 28)
 	searchTree := NewTree(game, 28, 50)
 
 	move, _ := game.ParseMove("j10")

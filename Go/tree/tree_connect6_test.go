@@ -1,5 +1,3 @@
-//go:build connect6
-
 package tree
 
 import (
@@ -8,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestExpand(t *testing.T) {
+func TestExpandConnect6(t *testing.T) {
 	game := game.NewGame(game.Connect6, 28)
 	searchTree := NewTree(game, 64, 50)
 

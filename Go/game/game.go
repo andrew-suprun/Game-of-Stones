@@ -283,9 +283,11 @@ func (game *Game) topGomokuMoves(moves *[]Move) {
 		terminal := false
 		if value == 0 {
 			terminal = true
+		} else {
+			value = game.value + value/2
 		}
 		if !terminal || !addedDraw {
-			move := Move{P1: place, P2: place, value: game.value + value/2, terminal: terminal}
+			move := Move{P1: place, P2: place, value: value, terminal: terminal}
 			*moves = append(*moves, move)
 		}
 		if value == 0 {

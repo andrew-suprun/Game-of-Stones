@@ -69,10 +69,8 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 
 	for _, child := range oldRoot.children {
 		if tree.game.SameMove(toPlay, child.move) {
-			fmt.Println("found", toPlay)
 			tree.root.nSims = child.nSims
 			tree.root.children = child.children
-			fmt.Printf("<< root.1 %v sims %d\n", tree.root.move, tree.root.nSims)
 			return
 		}
 	}
