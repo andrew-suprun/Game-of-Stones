@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"game_of_stones/heap"
@@ -17,8 +16,8 @@ type Place struct {
 
 type Move struct {
 	P1, P2   Place
-	Value    int16
-	Terminal bool
+	value    int16
+	terminal bool
 }
 
 type Stone int8
@@ -111,6 +110,14 @@ func (game *Game) UndoMove(move Move) {
 	game.validate()
 }
 
+func (game *Game) SameMove(a, b Move) bool {
+	return a.P1 == b.P1 && a.P2 == b.P2 || a.P1 == b.P2 && a.P2 == b.P1
+}
+
+func (c *Game) SetValue(move *Move, value int16) {
+	move.value = value
+}
+
 func (game *Game) ParseMove(moveStr string) (Move, error) {
 	tokens := strings.Split(moveStr, "-")
 	p1, err := parsePlace(tokens[0])
@@ -123,7 +130,7 @@ func (game *Game) ParseMove(moveStr string) (Move, error) {
 	if len(tokens) == 1 {
 		game.value += value
 		terminal := value <= -WinValue || value >= WinValue
-		return Move{P1: p1, P2: p1, Value: value, Terminal: terminal}, nil
+		return Move{P1: p1, P2: p1, value: value, terminal: terminal}, nil
 	}
 	p2, err := parsePlace(tokens[1])
 	if err != nil {
@@ -138,7 +145,7 @@ func (game *Game) ParseMove(moveStr string) (Move, error) {
 
 	game.value += value
 	terminal := value <= -WinValue || value >= WinValue
-	return Move{P1: p1, P2: p2, Value: value, Terminal: terminal}, nil
+	return Move{P1: p1, P2: p2, value: value, terminal: terminal}, nil
 }
 
 func parsePlace(place string) (Place, error) {
@@ -269,7 +276,7 @@ func (game *Game) topGomokuMoves(moves *[]Move) {
 
 		if value <= -WinValue || value >= WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = Move{P1: place, P2: place, Value: game.value + value, Terminal: true}
+			(*moves)[0] = Move{P1: place, P2: place, value: game.value + value, terminal: true}
 			return
 		}
 
@@ -278,7 +285,7 @@ func (game *Game) topGomokuMoves(moves *[]Move) {
 			terminal = true
 		}
 		if !terminal || !addedDraw {
-			move := Move{P1: place, P2: place, Value: game.value + value/2, Terminal: terminal}
+			move := Move{P1: place, P2: place, value: game.value + value/2, terminal: terminal}
 			*moves = append(*moves, move)
 		}
 		if value == 0 {
@@ -289,11 +296,11 @@ func (game *Game) topGomokuMoves(moves *[]Move) {
 
 func (game *Game) topConnect6Moves(moves *[]Move) {
 	less := func(a, b Move) bool {
-		return a.Value < b.Value
+		return a.value < b.value
 	}
 	if game.stone == White {
 		less = func(a, b Move) bool {
-			return a.Value > b.Value
+			return a.value > b.value
 		}
 	}
 
@@ -304,7 +311,7 @@ func (game *Game) topConnect6Moves(moves *[]Move) {
 
 		if value1 <= -WinValue || value1 >= WinValue {
 			*moves = (*moves)[:1]
-			(*moves)[0] = Move{P1: place1, P2: place1, Value: game.value + value1, Terminal: true}
+			(*moves)[0] = Move{P1: place1, P2: place1, value: game.value + value1, terminal: true}
 			return
 		}
 
@@ -315,7 +322,7 @@ func (game *Game) topConnect6Moves(moves *[]Move) {
 
 			if value2 <= -WinValue || value2 >= WinValue {
 				*moves = (*moves)[:1]
-				(*moves)[0] = Move{P1: place1, P2: place2, Value: game.value + value1 + value2, Terminal: true}
+				(*moves)[0] = Move{P1: place1, P2: place2, value: game.value + value1 + value2, terminal: true}
 				game.placeStone(place1, -1)
 				return
 			}
@@ -327,7 +334,7 @@ func (game *Game) topConnect6Moves(moves *[]Move) {
 				oppVal := game.oppValue()
 				game.placeStone(place2, -1)
 
-				move := Move{P1: place1, P2: place2, Value: game.value + value + oppVal, Terminal: isDraw}
+				move := Move{P1: place1, P2: place2, value: game.value + value + oppVal, terminal: isDraw}
 				heap.Add(move, moves, less)
 			}
 			if isDraw {
@@ -391,27 +398,14 @@ func (game *Game) topPlaces() {
 	}
 }
 
-func (place Place) String() string {
-	return fmt.Sprintf("%c%d", place.X+'a', Size-place.Y)
+func (m Move) Value() int16 {
+	return m.value
 }
 
 func (m Move) IsDecisive() bool {
-	return m.Terminal || m.Value <= -WinValue || m.Value >= WinValue
+	return m.terminal || m.value <= -WinValue || m.value >= WinValue
 }
 
 func (m Move) IsTerminal() bool {
-	return m.Terminal
-}
-func (m Move) String() string {
-	return fmt.Sprintf("%s-%s", m.P1, m.P2)
-}
-
-func (m Move) GoString() string {
-	state := ""
-	if m.IsTerminal() {
-		state = " Terminal"
-	} else if m.IsDecisive() {
-		state = " Decisive"
-	}
-	return fmt.Sprintf("%-7v v: %4d%s", m, m.Value, state)
+	return m.terminal
 }

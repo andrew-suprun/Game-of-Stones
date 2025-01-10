@@ -6,7 +6,7 @@ import (
 )
 
 func TestGoString(t *testing.T) {
-	result := fmt.Sprintf("%[1]v: %#[1]v", Move{P1: Place{1, 2}, P2: Place{3, 4}, Value: 5, Terminal: true})
+	result := fmt.Sprintf("%[1]v: %#[1]v", Move{P1: Place{1, 2}, P2: Place{3, 4}, value: 5, terminal: true})
 	fmt.Println(result)
 	if result != "b17-d15: b17-d15 v:    5 Terminal" {
 		t.Fail()

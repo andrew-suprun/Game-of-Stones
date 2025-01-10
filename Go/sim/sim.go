@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"game_of_stones/board"
+	"game_of_stones/game"
+	"game_of_stones/tree"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -67,7 +71,7 @@ func sim(a, b string, moves []string) (string, error) {
 		_ = s
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
-			m := engines[0].tree.Expand()
+			m, _ := engines[0].tree.Expand()
 			if m.IsDecisive() {
 				break
 			}
@@ -99,4 +103,45 @@ func parseTitle(title string) (int, int, float64, int) {
 	expFactor, _ := strconv.ParseFloat(params[2], 64)
 	duration, _ := strconv.Atoi(params[3])
 	return maxPlaces, maxMoves, expFactor, duration
+}
+
+type move = game.Move
+
+type engine struct {
+	title    string
+	game     *game.Game
+	tree     *tree.Tree[game.Move]
+	duration time.Duration
+}
+
+func newEngine(title string) *engine {
+	maxPlaces, maxMoves, expFactor, duration := parseTitle(title)
+	aGame := game.NewGame(game.Connect6, maxPlaces)
+	aTree := tree.NewTree(aGame, maxMoves, expFactor)
+	return &engine{
+		title:    title,
+		game:     aGame,
+		tree:     aTree,
+		duration: time.Duration(duration) * time.Millisecond,
+	}
+}
+
+func moves() []string {
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// rnd := rand.New(rand.NewSource(1))
+	placeMap := map[string]struct{}{}
+	for len(placeMap) < 5 {
+		place := fmt.Sprintf("%c%d", rnd.Intn(9)+board.Size/2-5+'a', rnd.Intn(9)+board.Size/2-4)
+		placeMap[place] = struct{}{}
+	}
+	places := []string{}
+	for place := range placeMap {
+		places = append(places, place)
+	}
+	moves := [3]string{}
+	moves[0] = places[0] + "-" + places[0]
+	moves[1] = places[1] + "-" + places[2]
+	moves[2] = places[3] + "-" + places[4]
+
+	return moves[:]
 }

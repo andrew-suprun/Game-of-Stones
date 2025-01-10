@@ -5,6 +5,23 @@ import (
 	"fmt"
 )
 
+func (place Place) String() string {
+	return fmt.Sprintf("%c%d", place.X+'a', Size-place.Y)
+}
+
+func (m Move) String() string {
+	return fmt.Sprintf("%s-%s", m.P1, m.P2)
+}
+
+func (m Move) GoString() string {
+	state := ""
+	if m.IsTerminal() {
+		state = " Terminal"
+	} else if m.IsDecisive() {
+		state = " Decisive"
+	}
+	return fmt.Sprintf("%-7v v: %4d%s", m, m.value, state)
+}
 func (game *Game) String() string {
 	buf := &bytes.Buffer{}
 	game.GameString(buf)
