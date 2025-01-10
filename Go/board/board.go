@@ -276,7 +276,7 @@ func (b *Board) ValuesString(buf *bytes.Buffer, valuesIdx int) {
 				} else if value <= -WinValue {
 					fmt.Fprintf(buf, " WinO │")
 				} else {
-					fmt.Fprintf(buf, "%5.0f │", b.values[y][x][valuesIdx])
+					fmt.Fprintf(buf, "%5d │", b.values[y][x][valuesIdx])
 				}
 			case Black:
 				buf.WriteString("    X │")

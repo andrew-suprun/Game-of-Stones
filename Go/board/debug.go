@@ -26,7 +26,7 @@ func (b *Board) Validate() {
 				case White:
 					fmt.Print("     O")
 				case None:
-					fmt.Printf("%6.0f", values[y][x][0])
+					fmt.Printf("%6d", values[y][x][0])
 				}
 			}
 			fmt.Println()
@@ -40,7 +40,7 @@ func (b *Board) Validate() {
 				case White:
 					fmt.Print("     O")
 				case None:
-					fmt.Printf("%6.0f", values[y][x][1])
+					fmt.Printf("%6d", values[y][x][1])
 				}
 			}
 			fmt.Println()
