@@ -5,17 +5,16 @@ import (
 	"math/rand"
 	"time"
 
-	"game_of_stones/board"
-	"game_of_stones/connect6"
+	"game_of_stones/game"
 	"game_of_stones/tree"
 )
 
 type engine struct {
 	commands chan any
 	events   chan any
-	moves    []connect6.Move
-	game     *connect6.Connect6
-	tree     *tree.Tree[connect6.Move]
+	moves    []game.Move
+	game     *game.Game
+	tree     *tree.Tree[game.Move]
 }
 
 func runEngine(commands chan any, events chan any) {
@@ -30,7 +29,7 @@ func (eng *engine) run() {
 	for cmd := range eng.commands {
 		switch cmd := cmd.(type) {
 		case cmdStart:
-			eng.game = connect6.NewGame(32)
+			eng.game = game.NewGame(game.Connect6, 32)
 			eng.tree = tree.NewTree(eng.game, 64, 50)
 
 		case cmdMakeMove:
@@ -50,7 +49,7 @@ func (eng *engine) bestMove() {
 		for j := range 3 {
 			for i := range 3 {
 				if i != 1 || j != 1 {
-					places = append(places, fmt.Sprintf("%c%d", i+8+'a', board.Size-8-j))
+					places = append(places, fmt.Sprintf("%c%d", i+8+'a', game.Size-8-j))
 				}
 			}
 		}
@@ -82,6 +81,6 @@ func (eng *engine) bestMove() {
 }
 
 func (ev evMove) String(x1, y1, x2, y2 int) string {
-	return fmt.Sprintf("%c%d-%c%d", x1+'a', board.Size-y1, x2+'a', board.Size-y2)
+	return fmt.Sprintf("%c%d-%c%d", x1+'a', game.Size-y1, x2+'a', game.Size-y2)
 
 }

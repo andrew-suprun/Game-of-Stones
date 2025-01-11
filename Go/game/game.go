@@ -118,7 +118,7 @@ func (c *Game) SetValue(move *Move, value int16) {
 
 func (game *Game) ParseMove(moveStr string) (Move, error) {
 	tokens := strings.Split(moveStr, "-")
-	p1, err := parsePlace(tokens[0])
+	p1, err := ParsePlace(tokens[0])
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
@@ -130,7 +130,7 @@ func (game *Game) ParseMove(moveStr string) (Move, error) {
 		terminal := value <= -WinValue || value >= WinValue
 		return Move{P1: p1, P2: p1, value: value, terminal: terminal}, nil
 	}
-	p2, err := parsePlace(tokens[1])
+	p2, err := ParsePlace(tokens[1])
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
@@ -146,7 +146,7 @@ func (game *Game) ParseMove(moveStr string) (Move, error) {
 	return Move{P1: p1, P2: p2, value: value, terminal: terminal}, nil
 }
 
-func parsePlace(place string) (Place, error) {
+func ParsePlace(place string) (Place, error) {
 	if len(place) < 2 || len(place) > 3 {
 		return Place{}, errors.New("failed to parse place")
 	}

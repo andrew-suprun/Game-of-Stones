@@ -23,7 +23,7 @@ const (
 	gomokuId
 )
 
-type game struct {
+type gameOfStones struct {
 	in, out chan string
 }
 
@@ -34,7 +34,7 @@ var (
 	maxMoves          = 22
 	expFactor         = float64(100)
 	msPerMove         = 250 * time.Millisecond
-	games             = [2]game{}
+	games             = [2]gameOfStones{}
 )
 
 func main() {

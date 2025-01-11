@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"game_of_stones/board"
+	"game_of_stones/game"
 	"image"
 	"image/color"
 	"log"
@@ -40,7 +40,7 @@ const (
 	stateWhite
 )
 
-type state [board.Size][board.Size]placeState
+type state [game.Size][game.Size]placeState
 
 func main() {
 	go run()
@@ -85,24 +85,24 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 	ops.Reset()
 
 	size := min(ev.Size.X, ev.Size.Y)
-	d := size/board.Size - 1
+	d := size/game.Size - 1
 	r := d / 2
 
 	paint.Fill(ops, colorBg)
 
-	for i := 1; i <= board.Size; i++ {
+	for i := 1; i <= game.Size; i++ {
 		paint.FillShape(ops, colorBlack, clip.Stroke{
-			Path:  clip.Rect{Min: image.Point{X: d, Y: i * d}, Max: image.Point{X: board.Size * d, Y: i * d}}.Path(),
+			Path:  clip.Rect{Min: image.Point{X: d, Y: i * d}, Max: image.Point{X: game.Size * d, Y: i * d}}.Path(),
 			Width: 1,
 		}.Op())
 		paint.FillShape(ops, colorBlack, clip.Stroke{
-			Path:  clip.Rect{Min: image.Point{X: i * d, Y: d}, Max: image.Point{X: i * d, Y: board.Size * d}}.Path(),
+			Path:  clip.Rect{Min: image.Point{X: i * d, Y: d}, Max: image.Point{X: i * d, Y: game.Size * d}}.Path(),
 			Width: 1,
 		}.Op())
 	}
 
-	for y := range board.Size {
-		for x := range board.Size {
+	for y := range game.Size {
+		for x := range game.Size {
 			for {
 				_, ok := ev.Source.Event(pointer.Filter{
 					Target: &state[y][x],
@@ -111,7 +111,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 				if !ok {
 					break
 				}
-				fmt.Printf("click: %s\n", board.Place{X: int8(x), Y: int8(y)})
+				fmt.Printf("click: %s\n", game.Place{X: int8(x), Y: int8(y)})
 			}
 			stack := clip.Rect{Min: image.Point{X: (x+1)*d - r, Y: (y+1)*d - r}, Max: image.Point{X: (x+1)*d + r, Y: (y+1)*d + r}}.Push(ops)
 			event.Op(ops, &state[y][x])
@@ -194,7 +194,7 @@ func setStone(stateChan chan *state, cmd string) {
 		fmt.Printf("error: Invalid set command: %q\n", cmd)
 		os.Exit(1)
 	}
-	place, err := board.ParsePlace(parts[1])
+	place, err := game.ParsePlace(parts[1])
 	if err != nil {
 		fmt.Printf("error: Invalid set command: %q\n", cmd)
 		os.Exit(1)

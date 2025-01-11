@@ -40,10 +40,10 @@ func TestPlaceStone(t *testing.T) {
 
 func TestTopPlaces(t *testing.T) {
 	game := NewGame(Connect6, 1)
-	p1, _ := parsePlace("j10")
-	p2, _ := parsePlace("i9")
-	p3, _ := parsePlace("i11")
-	p4, _ := parsePlace("i10")
+	p1, _ := ParsePlace("j10")
+	p2, _ := ParsePlace("i9")
+	p3, _ := ParsePlace("i11")
+	p4, _ := ParsePlace("i10")
 	game.placeStone(p1, 1)
 	game.stone = White
 	game.turn = turn.Second

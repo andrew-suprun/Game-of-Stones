@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"game_of_stones/board"
+	"game_of_stones/game"
 	"image"
 	"image/color"
 	"log"
@@ -47,7 +47,7 @@ const (
 )
 
 type state struct {
-	cells [board.Size][board.Size]cellState
+	cells [game.Size][game.Size]cellState
 	turn  turn
 }
 
@@ -101,26 +101,26 @@ func frame(ops *op.Ops, ev app.FrameEvent, commands chan any, stateChan chan *st
 
 	for i := 1; i < 20; i++ {
 		paint.FillShape(ops, colorBlack, clip.Stroke{
-			Path:  clip.Rect{Min: image.Point{X: d, Y: i * d}, Max: image.Point{X: board.Size * d, Y: i * d}}.Path(),
+			Path:  clip.Rect{Min: image.Point{X: d, Y: i * d}, Max: image.Point{X: game.Size * d, Y: i * d}}.Path(),
 			Width: 1,
 		}.Op())
 		paint.FillShape(ops, colorBlack, clip.Stroke{
-			Path:  clip.Rect{Min: image.Point{X: i * d, Y: d}, Max: image.Point{X: i * d, Y: board.Size * d}}.Path(),
+			Path:  clip.Rect{Min: image.Point{X: i * d, Y: d}, Max: image.Point{X: i * d, Y: game.Size * d}}.Path(),
 			Width: 1,
 		}.Op())
 	}
 
 	selected := []int{}
-	for y := range board.Size {
-		for x := range board.Size {
+	for y := range game.Size {
+		for x := range game.Size {
 			if state.cells[y][x] == stateBlackSelected {
 				selected = append(selected, x, y)
 			}
 		}
 	}
 
-	for y := range board.Size {
-		for x := range board.Size {
+	for y := range game.Size {
+		for x := range game.Size {
 			for {
 				_, ok := ev.Source.Event(pointer.Filter{
 					Target: &state.cells[y][x],
@@ -178,8 +178,8 @@ func frame(ops *op.Ops, ev app.FrameEvent, commands chan any, stateChan chan *st
 			switch keyEvent.Name {
 			case key.NameReturn:
 				if len(selected) == 4 {
-					for y := range board.Size {
-						for x := range board.Size {
+					for y := range game.Size {
+						for x := range game.Size {
 							if state.cells[y][x] == stateWhiteSelected {
 								state.cells[y][x] = stateWhite
 							}
@@ -189,14 +189,14 @@ func frame(ops *op.Ops, ev app.FrameEvent, commands chan any, stateChan chan *st
 					state.cells[selected[3]][selected[2]] = stateBlack
 					state.turn = engineTurn
 
-					place1 := fmt.Sprintf("%c%d", selected[0]+'a', board.Size-selected[1])
-					place2 := fmt.Sprintf("%c%d", selected[2]+'a', board.Size-selected[3])
+					place1 := fmt.Sprintf("%c%d", selected[0]+'a', game.Size-selected[1])
+					place2 := fmt.Sprintf("%c%d", selected[2]+'a', game.Size-selected[3])
 					moveStr := place1 + "-" + place2
 					commands <- cmdMakeMove(moveStr)
 				}
 			case key.NameEscape:
-				for y := range board.Size {
-					for x := range board.Size {
+				for y := range game.Size {
+					for x := range game.Size {
 						if state.cells[y][x] == stateBlackSelected || state.cells[y][x] == stateWhiteSelected {
 							state.cells[y][x] = stateEmpty
 						}
@@ -228,10 +228,10 @@ func input(window *app.Window, stateChan chan *state, events chan any) {
 
 func ParseMove(moveStr evMove) (int, int, int, int) {
 	tokens := strings.Split(string(moveStr), "-")
-	p1, _ := board.ParsePlace(tokens[0])
+	p1, _ := game.ParsePlace(tokens[0])
 	p2 := p1
 	if len(tokens) > 1 {
-		p2, _ = board.ParsePlace(tokens[1])
+		p2, _ = game.ParsePlace(tokens[1])
 	}
 	return int(p1.X), int(p1.Y), int(p2.X), int(p2.Y)
 }

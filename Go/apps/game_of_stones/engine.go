@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"game_of_stones/board"
+	"game_of_stones/game"
 	"game_of_stones/turn"
 	"math/rand"
 	"time"
@@ -82,7 +82,7 @@ func firstWhiteConnect6Move() string {
 	for j := range 3 {
 		for i := range 3 {
 			if i != 1 || j != 1 {
-				places = append(places, fmt.Sprintf("%c%d", i+8+'a', board.Size-8-j))
+				places = append(places, fmt.Sprintf("%c%d", i+8+'a', game.Size-8-j))
 			}
 		}
 	}
@@ -100,7 +100,7 @@ func firstWhiteGomokuMove() string {
 	for j := range 3 {
 		for i := range 3 {
 			if i != 1 || j != 1 {
-				places = append(places, fmt.Sprintf("%c%d", i+8+'a', board.Size-8-j))
+				places = append(places, fmt.Sprintf("%c%d", i+8+'a', game.Size-8-j))
 			}
 		}
 	}
