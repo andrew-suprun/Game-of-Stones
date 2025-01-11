@@ -42,41 +42,17 @@ func main() {
 
 	chIn1 := make(chan string, 1)
 	chOut1 := make(chan string, 1)
-	// chIn2 := make(chan string, 1)
-	// chOut2 := make(chan string, 1)
-	// go newHumanPlayer(gameId, turn.First, chOut1, chIn1)
-	// go newHumanPlayer(gameId, turn.Second, chOut2, chIn2)
-	// running := true
-	// for running {
-	// 	select {
-	// 	case event := <-chIn1:
-	// 		handleEvent(event, chOut2, "[1]")
-	// 	case event := <-chIn2:
-	// 		handleEvent(event, chOut1, "[2]")
-	// 	}
-	// }
-
-	// DEBUG
+	chIn2 := make(chan string, 1)
+	chOut2 := make(chan string, 1)
 	go newHumanPlayer(gameId, turn.First, chOut1, chIn1)
+	go newHumanPlayer(gameId, turn.Second, chOut2, chIn2)
 	running := true
-	n := 1
 	for running {
 		select {
 		case event := <-chIn1:
-			if strings.HasPrefix(event, "error: ") || strings.HasPrefix(event, "info: ") {
-				fmt.Println(event)
-				continue
-			}
-			fmt.Printf("<< read: %q\n", event)
-			switch n {
-			case 1:
-				chOut1 <- "i9-i11"
-			case 2:
-				chOut1 <- "g10-k10"
-			case 3:
-				chOut1 <- "j8-j12"
-			}
-			n++
+			handleEvent(event, chOut2, "[1]")
+		case event := <-chIn2:
+			handleEvent(event, chOut1, "[2]")
 		}
 	}
 }
@@ -134,6 +110,10 @@ func parseArgs() {
 
 func handleEvent(event string, out chan string, debug string) bool {
 	fmt.Printf("read from %s: %q\n", debug, event)
+	if strings.HasPrefix(event, "info: ") || strings.HasPrefix(event, "error: ") {
+		fmt.Println(event)
+		return true
+	}
 	if event == "stop" {
 		fmt.Println("### stopping")
 		out <- "stop"

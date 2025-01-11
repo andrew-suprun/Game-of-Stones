@@ -82,99 +82,97 @@ func newHumanPlayer(gameId int, stones turn.Turn, oppIn, oppOut chan string) *hu
 	return self
 }
 
-func (self *humanPlayer) opponentMoves() {
+func (player *humanPlayer) opponentMoves() {
 	for {
-		move := <-self.oppIn
-		if self.turn == self.stones {
-			continue
-		}
-		if self.gameId == connect6Id {
+		move := <-player.oppIn
+		fmt.Println("got", move, "stones", player.stones, "turn", player.turn)
+		if player.gameId == connect6Id {
 			places := strings.Split(move, "-")
 			for _, place := range places {
-				self.played[place] = self.engineStoneSelected
-				fmt.Fprintf(self.uiOut, "set %s %c\n", place, self.engineStoneSelected)
+				player.played[place] = player.engineStoneSelected
+				fmt.Fprintf(player.uiOut, "set %s %c\n", place, player.engineStoneSelected)
 			}
 		} else {
-			self.played[move] = self.engineStoneSelected
-			fmt.Fprintf(self.uiOut, "set %s %c\n", move, self.engineStoneSelected)
+			player.played[move] = player.engineStoneSelected
+			fmt.Fprintf(player.uiOut, "set %s %c\n", move, player.engineStoneSelected)
 		}
-		self.turn = self.stones
+		player.turn = player.stones
 	}
 }
 
-func (self *humanPlayer) uiMoves(uiIn io.Reader) {
+func (player *humanPlayer) uiMoves(uiIn io.Reader) {
 	reader := bufio.NewReader(uiIn)
 	for {
 		text, err := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
 		if err == io.EOF {
-			self.oppOut <- "stop"
+			player.oppOut <- "stop"
 			return
 		}
 		if err != nil {
 			panic(err)
 		}
-		if self.turn != self.stones {
+		if player.turn != player.stones {
 			continue
 		}
 
 		if text == "stop" {
-			self.oppOut <- "stop"
+			player.oppOut <- "stop"
 			return
 		}
 		if strings.HasPrefix(text, "error: ") ||
 			strings.HasPrefix(text, "info: ") {
 
-			self.oppOut <- text
+			player.oppOut <- text
 		} else if strings.HasPrefix(text, "click: ") {
 			place := text[7:]
 
-			if _, selected := self.selected[place]; selected {
-				fmt.Fprintf(self.uiOut, "set %s %c\n", place, 'e')
-				delete(self.played, place)
-				delete(self.selected, place)
+			if _, selected := player.selected[place]; selected {
+				fmt.Fprintf(player.uiOut, "set %s %c\n", place, 'e')
+				delete(player.played, place)
+				delete(player.selected, place)
 				continue
 			}
 
-			if _, played := self.played[place]; played || len(self.selected) == 2 {
+			if _, played := player.played[place]; played || len(player.selected) == 2 {
 				continue
 			}
 
-			self.played[place] = self.humanStoneSelected
-			fmt.Fprintf(self.uiOut, "set %s %c\n", place, self.humanStoneSelected)
-			self.selected[place] = struct{}{}
+			player.played[place] = player.humanStoneSelected
+			fmt.Fprintf(player.uiOut, "set %s %c\n", place, player.humanStoneSelected)
+			player.selected[place] = struct{}{}
 		} else if text == "key: Enter" {
-			if self.gameId == gomokuId && len(self.selected) != 1 {
+			if player.gameId == gomokuId && len(player.selected) != 1 {
 				continue
 			}
-			if self.gameId == connect6Id && len(self.selected) != 2 {
+			if player.gameId == connect6Id && len(player.selected) != 2 {
 				continue
 			}
-			for move, stone := range self.played {
+			for move, stone := range player.played {
 				switch stone {
 				case 'B':
-					fmt.Fprintf(self.uiOut, "set %s b\n", move)
+					fmt.Fprintf(player.uiOut, "set %s b\n", move)
 				case 'W':
-					fmt.Fprintf(self.uiOut, "set %s w\n", move)
+					fmt.Fprintf(player.uiOut, "set %s w\n", move)
 				}
 			}
 			if gameId == connect6Id {
 				var places []string
-				for place := range self.selected {
+				for place := range player.selected {
 					places = append(places, place)
 				}
 				move := places[0] + "-" + places[1]
-				self.oppOut <- move
+				player.oppOut <- move
 			} else {
-				for move := range self.selected {
-					self.oppOut <- move
+				for move := range player.selected {
+					player.oppOut <- move
 				}
 			}
-			clear(self.selected)
-			if self.stones == turn.First {
-				self.turn = turn.Second
+			clear(player.selected)
+			if player.stones == turn.First {
+				player.turn = turn.Second
 			} else {
-				self.turn = turn.First
+				player.turn = turn.First
 			}
 		}
 	}
