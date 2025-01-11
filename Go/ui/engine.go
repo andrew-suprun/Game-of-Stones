@@ -29,8 +29,8 @@ func (eng *engine) run() {
 	for cmd := range eng.commands {
 		switch cmd := cmd.(type) {
 		case cmdStart:
-			eng.game = game.NewGame(game.Connect6, 32)
-			eng.tree = tree.NewTree(eng.game, 64, 50)
+			eng.game = game.NewGame(game.Connect6, 20)
+			eng.tree = tree.NewTree(eng.game, 64, 20)
 
 		case cmdMakeMove:
 			move, _ := eng.game.ParseMove(string(cmd))

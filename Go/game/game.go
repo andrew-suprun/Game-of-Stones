@@ -71,11 +71,9 @@ func (game *Game) TopMoves(moves *[]Move) {
 }
 
 func (game *Game) PlayMove(move Move) {
-	game.value += game.values[move.P1.Y][move.P1.X][game.turn]
 	game.placeStone(move.P1, 1)
 
 	if move.P1 != move.P2 {
-		game.value += game.values[move.P2.Y][move.P2.X][game.turn]
 		game.placeStone(move.P2, 1)
 	}
 
@@ -98,13 +96,12 @@ func (game *Game) UndoMove(move Move) {
 		game.turn = turn.First
 	}
 
-	game.placeStone(move.P1, -1)
-	game.value -= game.values[move.P1.Y][move.P1.X][game.turn]
-
 	if move.P1 != move.P2 {
 		game.placeStone(move.P2, -1)
-		game.value -= game.values[move.P2.Y][move.P2.X][game.turn]
 	}
+
+	game.placeStone(move.P1, -1)
+
 	game.validate()
 }
 
@@ -126,7 +123,6 @@ func (game *Game) ParseMove(moveStr string) (Move, error) {
 	value := game.values[p1.Y][p1.X][game.turn]
 
 	if len(tokens) == 1 {
-		game.value += value
 		terminal := value <= -WinValue || value >= WinValue
 		return Move{P1: p1, P2: p1, value: value, terminal: terminal}, nil
 	}
@@ -141,7 +137,6 @@ func (game *Game) ParseMove(moveStr string) (Move, error) {
 
 	game.placeStone(p1, -1)
 
-	game.value += value
 	terminal := value <= -WinValue || value >= WinValue
 	return Move{P1: p1, P2: p2, value: value, terminal: terminal}, nil
 }
@@ -198,7 +193,9 @@ func (game *Game) placeStone(place Place, coeff int16) {
 	}
 	maxStones1 := maxStones - 1
 	x, y := place.X, place.Y
-	if coeff == -1 {
+	if coeff == 1 {
+		game.value += game.values[y][x][game.turn]
+	} else {
 		game.stones[y][x] = None
 	}
 
@@ -240,6 +237,8 @@ func (game *Game) placeStone(place Place, coeff int16) {
 
 	if coeff == 1 {
 		game.stones[y][x] = game.stone
+	} else {
+		game.value -= game.values[y][x][game.turn]
 	}
 	game.validate()
 }
