@@ -38,7 +38,6 @@ var (
 
 func main() {
 	parseArgs()
-	fmt.Println("gameId", gameId)
 
 	chIn1 := make(chan string, 1)
 	chOut1 := make(chan string, 1)
@@ -50,9 +49,9 @@ func main() {
 	for running {
 		select {
 		case event := <-chIn1:
-			handleEvent(event, chOut2, "[1]")
+			handleEvent(event, chOut2)
 		case event := <-chIn2:
-			handleEvent(event, chOut1, "[2]")
+			handleEvent(event, chOut1)
 		}
 	}
 }
@@ -60,7 +59,6 @@ func main() {
 func parseArgs() {
 	for _, arg := range os.Args {
 		if strings.HasPrefix(arg, "-game=") {
-			fmt.Println("arg", arg)
 			if strings.ToLower(arg[6:]) == "connect6" {
 				gameId = connect6Id
 			} else if strings.ToLower(arg[6:]) == "gomoku" {
@@ -84,8 +82,7 @@ func parseArgs() {
 	}
 }
 
-func handleEvent(event string, out chan string, debug string) bool {
-	fmt.Printf("read from %s: %q\n", debug, event)
+func handleEvent(event string, out chan string) bool {
 	if strings.HasPrefix(event, "info: ") || strings.HasPrefix(event, "error: ") {
 		fmt.Println(event)
 		return true
@@ -95,7 +92,6 @@ func handleEvent(event string, out chan string, debug string) bool {
 		out <- "stop"
 		return false
 	}
-	fmt.Printf("### sending %q\n", event)
 	out <- event
 	return true
 }

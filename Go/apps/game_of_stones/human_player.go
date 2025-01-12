@@ -76,14 +76,12 @@ func newHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan s
 		self.turn = turn.Second
 	}
 
-	fmt.Println("human started")
 	return self
 }
 
 func (player *humanPlayer) opponentMoves() {
 	for {
 		move := <-player.oppIn
-		fmt.Println("got", move, "stones", player.stones, "turn", player.turn)
 		if player.gameId == connect6Id {
 			places := strings.Split(move, "-")
 			for _, place := range places {
@@ -132,7 +130,15 @@ func (player *humanPlayer) uiMoves(uiIn io.Reader) {
 				continue
 			}
 
-			if _, played := player.played[place]; played || len(player.selected) == 2 {
+			if _, played := player.played[place]; played {
+				continue
+			}
+
+			if player.gameId == game.Gomoku && len(player.selected) == 1 {
+				continue
+			}
+
+			if player.gameId == game.Connect6 && len(player.selected) == 2 {
 				continue
 			}
 
