@@ -23,7 +23,7 @@ func TestExpandGomoku(t *testing.T) {
 			fmt.Println(game)
 			fmt.Printf("\n---\n%v\n", searchTree)
 		}
-		move, _ = searchTree.BestMove()
+		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
 		fmt.Println("Commit", move)
 		if move.IsTerminal() {

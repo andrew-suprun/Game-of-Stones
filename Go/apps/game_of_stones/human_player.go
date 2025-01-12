@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"game_of_stones/game"
 	"game_of_stones/turn"
 	"io"
 	"os"
@@ -12,7 +13,7 @@ import (
 )
 
 type humanPlayer struct {
-	gameId              int
+	gameId              game.GameName
 	stones              turn.Turn
 	turn                turn.Turn
 	oppIn               chan string
@@ -26,7 +27,7 @@ type humanPlayer struct {
 	engineStoneSelected rune
 }
 
-func newHumanPlayer(gameId int, stones turn.Turn, oppIn, oppOut chan string) *humanPlayer {
+func newHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan string) *humanPlayer {
 	self := &humanPlayer{
 		gameId:   gameId,
 		stones:   stones,
@@ -71,14 +72,11 @@ func newHumanPlayer(gameId int, stones turn.Turn, oppIn, oppOut chan string) *hu
 	if self.turn == turn.First {
 		fmt.Fprintf(self.uiOut, "set j10 b\n")
 		self.played["j10"] = 'b'
-		if self.gameId == connect6Id {
-			oppOut <- "j10-j10"
-		} else {
-			oppOut <- "j10"
-		}
+		oppOut <- "j10"
 		self.turn = turn.Second
 	}
 
+	fmt.Println("human started")
 	return self
 }
 

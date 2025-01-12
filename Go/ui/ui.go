@@ -55,7 +55,7 @@ type move string
 
 func runUi(commands chan any, events chan any) error {
 	commands <- cmdStart{}
-	commands <- cmdMakeMove("j10-j10")
+	commands <- cmdMakeMove("j10")
 	gameState := state{}
 	gameState.cells[9][9] = stateBlack
 	stateChan := make(chan *state, 1)

@@ -77,7 +77,10 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 	tree.root = &node[move]{move: toPlay}
 }
 
-func (tree *Tree[move]) BestMove() (move, int) {
+func (tree *Tree[move]) BestMove() move {
+	if len(tree.root.children) == 0 {
+		tree.Expand()
+	}
 	bestNode := tree.root.children[0]
 
 	if tree.game.Turn() == turn.First {
@@ -100,17 +103,17 @@ func (tree *Tree[move]) BestMove() (move, int) {
 		}
 	}
 
-	return bestNode.move, int(bestNode.nSims)
+	return bestNode.move
 }
 
-func (tree *Tree[move]) mostExplored() (move, int) {
+func (tree *Tree[move]) mostExplored() move {
 	bestNode := tree.root.children[0]
 	for _, node := range tree.root.children {
 		if bestNode.nSims < node.nSims {
 			bestNode = node
 		}
 	}
-	return bestNode.move, int(bestNode.nSims)
+	return bestNode.move
 }
 
 func (t *Tree[m]) expand(parent *node[m]) {

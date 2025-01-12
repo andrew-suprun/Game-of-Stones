@@ -73,8 +73,8 @@ func (eng *engine) bestMove() {
 		}
 	}
 
-	move, s := eng.tree.BestMove()
-	fmt.Printf("%2d: %#v s: %d\n", i, move, s)
+	move := eng.tree.BestMove()
+	fmt.Printf("%2d: %#v\n", i, move)
 	i++
 	eng.tree.CommitMove(move)
 	eng.events <- evMove(move.String())

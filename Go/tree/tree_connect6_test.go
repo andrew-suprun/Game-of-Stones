@@ -10,7 +10,7 @@ func TestExpandConnect6(t *testing.T) {
 	game := game.NewGame(game.Connect6, 28)
 	searchTree := NewTree(game, 64, 50)
 
-	move, _ := game.ParseMove("j10-j10")
+	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)
 	fmt.Println("Move", move)
 	move, _ = game.ParseMove("i11-i9")
@@ -27,7 +27,7 @@ func TestExpandConnect6(t *testing.T) {
 		}
 		// fmt.Printf("\n---\n%v\n", searchTree)
 		// fmt.Println(game)
-		move, _ = searchTree.BestMove()
+		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
 		fmt.Println("Move", move)
 	}
