@@ -59,20 +59,19 @@ func sim(a, b string, moves []string) string {
 		engines[1].tree.CommitMove(move)
 	}
 
-	fmt.Println(engines[0].game)
+	// fmt.Println(engines[0].game)
 
 	for i := 1; ; i++ {
-		var bestMove move
+		var m, bestMove move
 		var s int
-		_ = s
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
-			m, _ := engines[0].tree.Expand()
+			m, s = engines[0].tree.Expand()
 			if m.IsDecisive() {
 				break
 			}
 		}
-		bestMove, s = engines[0].tree.BestMove()
+		bestMove = engines[0].tree.BestMove()
 		fmt.Printf("%s: Move %3d %#v s: %7d\n", engines[0].title, i, bestMove, s)
 		if bestMove.IsTerminal() {
 			if bestMove.Value() == 0 {
@@ -83,7 +82,7 @@ func sim(a, b string, moves []string) string {
 		engines[0].tree.CommitMove(bestMove)
 		engines[1].tree.CommitMove(bestMove)
 
-		fmt.Println(engines[0].game)
+		// fmt.Println(engines[0].game)
 
 		engines[0], engines[1] = engines[1], engines[0]
 	}

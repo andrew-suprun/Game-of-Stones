@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"game_of_stones/game"
-	"game_of_stones/turn"
 	"os"
 	"strings"
-	"time"
+
+	"game_of_stones/game"
+	"game_of_stones/turn"
 )
 
 const usage = `Usage: game_of_stones [params]
@@ -19,21 +19,10 @@ const (
 	connect6Id
 )
 
-type gameOfStones struct {
-	in, out chan string
-}
-
-const (
-	maxSims   = 10_000_000
-	maxMoves  = 22
-	expFactor = float64(100)
-	msPerMove = 250 * time.Millisecond
-)
-
 var (
-	gameId            game.GameName
-	humanPlayerStones turn.Turn
-	games             = [2]gameOfStones{}
+	gameId             game.GameName
+	humanPlayerStones  turn.Turn
+	enginePlayerStones turn.Turn
 )
 
 func main() {
@@ -43,15 +32,22 @@ func main() {
 	chOut1 := make(chan string, 1)
 	chIn2 := make(chan string, 1)
 	chOut2 := make(chan string, 1)
-	go newHumanPlayer(gameId, turn.First, chOut1, chIn1)
-	go newEngine(gameId, turn.Second, chOut2, chIn2)
+
+	go runHumanPlayer(gameId, humanPlayerStones, chOut1, chIn1)
+	go runEngine(gameId, enginePlayerStones, chOut2, chIn2)
 	running := true
 	for running {
+		run := true
 		select {
 		case event := <-chIn1:
-			handleEvent(event, chOut2)
+			run = handleEvent(event, chOut2)
 		case event := <-chIn2:
-			handleEvent(event, chOut1)
+			run = handleEvent(event, chOut1)
+		}
+		if !run {
+			close(chIn1)
+			close(chIn2)
+			break
 		}
 	}
 }
@@ -71,8 +67,10 @@ func parseArgs() {
 		} else if strings.HasPrefix(arg, "-stones=") {
 			if strings.ToLower(arg[8:]) == "black" {
 				humanPlayerStones = turn.First
+				enginePlayerStones = turn.Second
 			} else if strings.ToLower(arg[8:]) == "white" {
 				humanPlayerStones = turn.Second
+				enginePlayerStones = turn.First
 			} else {
 				fmt.Println("Invalid stones parameter.")
 				fmt.Print(usage)
@@ -84,11 +82,9 @@ func parseArgs() {
 
 func handleEvent(event string, out chan string) bool {
 	if strings.HasPrefix(event, "info: ") || strings.HasPrefix(event, "error: ") {
-		fmt.Println(event)
 		return true
 	}
 	if event == "stop" {
-		fmt.Println("### stopping")
 		out <- "stop"
 		return false
 	}

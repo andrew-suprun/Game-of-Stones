@@ -3,13 +3,14 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"game_of_stones/game"
-	"game_of_stones/turn"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"game_of_stones/game"
+	"game_of_stones/turn"
 )
 
 type humanPlayer struct {
@@ -27,7 +28,7 @@ type humanPlayer struct {
 	engineStoneSelected rune
 }
 
-func newHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan string) *humanPlayer {
+func runHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan string) *humanPlayer {
 	self := &humanPlayer{
 		gameId:   gameId,
 		stones:   stones,

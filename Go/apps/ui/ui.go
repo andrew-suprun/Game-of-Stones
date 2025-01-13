@@ -170,7 +170,6 @@ func input(window *app.Window, stateChan chan *state) {
 	for {
 		text, err := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
-		fmt.Printf("info: read %q\n", text)
 		if err != nil {
 			fmt.Println("error: Failed to read from standard input.")
 			os.Exit(1)
