@@ -83,6 +83,9 @@ func runHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan s
 func (player *humanPlayer) opponentMoves() {
 	for {
 		move := <-player.oppIn
+		parts := strings.Split(move, ";")
+		move = parts[0]
+
 		if player.gameId == connect6Id {
 			places := strings.Split(move, "-")
 			for _, place := range places {
@@ -93,7 +96,9 @@ func (player *humanPlayer) opponentMoves() {
 			player.played[move] = player.engineStoneSelected
 			fmt.Fprintf(player.uiOut, "set %s %c\n", move, player.engineStoneSelected)
 		}
-		player.turn = player.stones
+		if len(parts) == 1 || parts[1] != "terminal" {
+			player.turn = player.stones
+		}
 	}
 }
 

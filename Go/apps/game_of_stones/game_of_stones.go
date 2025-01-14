@@ -10,8 +10,8 @@ import (
 )
 
 const usage = `Usage: game_of_stones [params]
-    game=[gomoku|connect6] (connect6)
-    stones=[black|white] (black)
+    -game=[gomoku|connect6] (gomoku)
+    -stones=[black|white] (black)
 `
 
 const (
@@ -20,9 +20,9 @@ const (
 )
 
 var (
-	gameId             game.GameName
-	humanPlayerStones  turn.Turn
-	enginePlayerStones turn.Turn
+	gameId             = game.Gomoku
+	humanPlayerStones  = turn.First
+	enginePlayerStones = turn.Second
 )
 
 func main() {
@@ -66,8 +66,7 @@ func parseArgs() {
 			}
 		} else if strings.HasPrefix(arg, "-stones=") {
 			if strings.ToLower(arg[8:]) == "black" {
-				humanPlayerStones = turn.First
-				enginePlayerStones = turn.Second
+				// default
 			} else if strings.ToLower(arg[8:]) == "white" {
 				humanPlayerStones = turn.Second
 				enginePlayerStones = turn.First

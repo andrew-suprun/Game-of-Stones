@@ -52,7 +52,11 @@ func runEngine(gameId game.GameName, playerStones turn.Turn, in, out chan string
 			fmt.Printf("engine: playing move %#v; sims %d\n", move, nSims)
 			theTree.CommitMove(move)
 			playerTurn = oppPlayerStones
-			out <- move.String()
+			if move.IsTerminal() {
+				out <- move.String() + ";terminal"
+			} else {
+				out <- move.String()
+			}
 		} else {
 			incoming := <-in
 			move, err := theGame.ParseMove(incoming)
