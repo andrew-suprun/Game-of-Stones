@@ -1,15 +1,10 @@
 const debug = Val(true)
 
+const size = 19
+
 abstract type Turn end
 struct First <: Turn end
 struct Second <: Turn end
-
-next(turn::Turn)::Turn =
-    if (turn == First())
-        Second()
-    else
-        First()
-    end
 
 struct MoveValue{Move}
     move::Move

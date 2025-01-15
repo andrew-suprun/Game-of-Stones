@@ -81,19 +81,28 @@ function update_stats(node::Node{Move}, turn::Turn)::Node{Move} where {Move}
     Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, isdecisive=isdecisive, isterminal=false)
 end
 
-function commit_move(tree::Tree)
+function commit_move(tree::Tree{Move}, game, to_play::String) where {Move}
+    move = parse_move(to_play)
+    play_move(game, move)
+    for child in root.children
+        if move == child.move
+            tree.root = child
+            return
+        end
+    end
+    tree.root = Node{Move}(Move(), value=board_value(game))
 end
 
 function best_move(tree::Tree)::Move
-
+    error("TODO: Implement")
 end
 
 function show(io::IO, tree::Tree)
-
+    error("TODO: Implement")
 end
 
 function validate(tree::Tree, debug::Val{true})
-    println("### Validate ###")
+    error("TODO: Implement")
 end
 
 validate(tree::Tree, debug::Val{false}) = nothing
