@@ -45,23 +45,40 @@ function expand(tree::Tree{Move}, node::Node{Move}, game)::Node{Move} where {Mov
 
         children = Vector{Node{Move}}(undef, length(tree.max_moves))
         for (i, child_move) in enumerate(tree.top_moves)
-            node = Node{Move}(child_move.move)
-            children[i] = node
+            children[i] = Node{Move}(
+                child_move.move,
+                value=child_move.value,
+                isterminal=child_move.isterminal,
+            )
         end
-        return update_stats(tree, Node{Move}(node.move, children=children))
+        return update_stats(Node{Move}(node.move, children=children), game.turn)
     else
         selected_child = select_child(node, turn(tree.game), tree.exploration_factor)
         play_move(game, selected_child.move)
         expand(tree, selected_child)
         undo_move(game, selected_child.move)
-        return update_stats(tree, node)
+        return update_stats(node, game.turn)
     end
 end
 
-function update_stats(tree::Tree{Move}, node::Node{Move})::Node{Move} where {Move}
-    dump(tree)
-    dump(node)
-    return node
+function update_stats(node::Node{Move}, turn::Turn)::Node{Move} where {Move}
+    n_sims = Int32(0)
+    value = node.children[begin].value
+    isdecisive = false
+    if turn == First()
+        for child in node.children
+            n_sims += child.n_sims
+            value = max(value, child.value)
+            isdecisive = isdecisive || child.isdecisive && child.value > 0
+        end
+    else
+        for child in node.children
+            n_sims += child.n_sims
+            value = min(value, child.move.Value())
+            isdecisive = isdecisive || child.isdecisive && child.value < 0
+        end
+    end
+    Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, isdecisive=isdecisive, isterminal=false)
 end
 
 function commit_move(tree::Tree)
