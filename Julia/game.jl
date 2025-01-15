@@ -19,16 +19,16 @@ const White = Int8(6)
 
 mutable struct Game
     name::Symbol
-    stone::Int8
     turn::Turn
     turn_idx::Int
-    max_stones::Int
+    stone::Int8
+    max_stones::Int8
 
     function Game(name::Symbol)
         if name == :Gomoku
-            return new(:Gomoku, Black, First(), 1, 5)
+            return new(:Gomoku, First(), 1, Black, 5)
         elseif name == :Connect6
-            return new(:Connect6, Black, First(), 1, 6)
+            return new(:Connect6, First(), 1, Black, 6)
         else
             throw(ArgumentError("Game must be either :Gomoku or :Connect6"))
         end
@@ -124,7 +124,24 @@ function place_stone(game::Game, move::Move, coeff::Int)
 end
 
 function update_row(game::Game, x::Int8, y::Int8, dx::Int8, dy::Int8, n::Int8, coeff::Int)
-    error("TODO: Implement")
+    stones = Int8(0)
+    for i in Int8(1):game.maxStones
+        stones += game.stones[y+i*dy][x+i*dx]
+    end
+    max_stones1 = game.max_stones
+    for _ in 1:n
+        stones += game.stones[y+max_stones1*dy][x+max_stones1*dx]
+        values = value(game.name, game.turn, stones)
+        values = validate .* coeff
+        if blackValue != 0 || whiteValue != 0
+            for j in int8(0):game.maxStones
+                game.values[y+j*dy][x+j*dx] .+= values
+            end
+        end
+        stones -= game.stones[y][x]
+        x += dx
+        y += dy
+    end
 end
 
 
