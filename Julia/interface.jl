@@ -10,3 +10,9 @@ next(turn::Turn)::Turn =
     else
         First()
     end
+
+struct MoveValue{Move}
+    move::Move
+    value::Int16
+    isterminal::Bool
+end

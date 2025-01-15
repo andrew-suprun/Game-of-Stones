@@ -1,7 +1,21 @@
 struct Node{Move}
     children::Vector{Node{Move}}
-    move::Move
     n_sims::Int32
+    value::Int16
+    isdecisive::Bool
+    isterminal::Bool
+    move::Move
+
+    function Node{Move}(
+        move::Move;
+        children::Vector{Node{Move}}=Node{Move}[],
+        value::Int16=Int16(0),
+        n_sims::Int32=Int32(1),
+        isdecisive::Bool=false,
+        isterminal::Bool=false,
+    ) where {Move}
+        new(children, n_sims, value, isdecisive, isterminal, move)
+    end
 end
 
 mutable struct Tree{Move}
@@ -9,10 +23,10 @@ mutable struct Tree{Move}
     exploration_factor::Float64
 
     root::Node{Move}
-    top_moves::Vector{Move}
+    top_moves::Vector{MoveValue{Move}}
 
     Tree{Move}(max_moves::Int, exploration_factor::Float64) where {Move} =
-        new(max_moves, exploration_factor, Node{Move}(Node[], Move(), 0), Move[])
+        new{Move}(max_moves, exploration_factor, Node{Move}(Move()), MoveValue{Move}[])
 end
 
 function expand(tree::Tree{Move}, game) where {Move}
@@ -22,21 +36,19 @@ end
 
 function expand(tree::Tree{Move}, node::Node{Move}, game)::Node{Move} where {Move}
     println("expand: node")
-    if isdecisive(node.move)
-        return Node(Node[], node.move, node.n_sims + tree.max_moves)
-        return
+    if node.isdecisive
+        return Node{Move}(Node{Move}[], node.value, node.n_sims + tree.max_moves, node.move, node.isdecisive, node.isterminal)
     end
-
 
     if isempty(node.children)
         top_moves(game, tree.top_moves, tree.max_moves)
 
         children = Vector{Node{Move}}(undef, length(tree.max_moves))
         for (i, child_move) in enumerate(tree.top_moves)
-            node = Node{Move}(Node[], child_move, Int32(1))
+            node = Node{Move}(child_move.move)
             children[i] = node
         end
-        return update_stats(tree, Node{Move}(children, node.move, 0))
+        return update_stats(tree, Node{Move}(node.move, children=children))
     else
         selected_child = select_child(node, turn(tree.game), tree.exploration_factor)
         play_move(game, selected_child.move)
