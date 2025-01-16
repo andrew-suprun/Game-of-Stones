@@ -1,5 +1,3 @@
-include("interface.jl")
-
 struct Place
     x::Int8
     y::Int8
