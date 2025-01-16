@@ -16,19 +16,23 @@ const None = Int8(0)
 const Black = Int8(1)
 const White = Int8(6)
 
+abstract type GameName end
+struct Gomoku <: GameName end
+struct Connect6 <: GameName end
+
 
 mutable struct Game
-    name::Symbol
+    name::GameName
     turn::Turn
     turn_idx::Int
     stone::Int8
     max_stones::Int8
 
-    function Game(name::Symbol)
-        if name == :Gomoku
-            return new(:Gomoku, First(), 1, Black, 5)
-        elseif name == :Connect6
-            return new(:Connect6, First(), 1, Black, 6)
+    function Game(name::GameName)
+        if name == Gomoku()
+            return new(name, First(), 1, Black, 5)
+        elseif name == Connect6()
+            return new(name, First(), 1, Black, 6)
         else
             throw(ArgumentError("Game must be either :Gomoku or :Connect6"))
         end
