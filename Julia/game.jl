@@ -122,7 +122,7 @@ function place_stone(game::Game, move::Move, coeff::Int)
     else
         game.value -= game.values[y][x][game.turn_idx]
     end
-    game.validate()
+    validate(debug, game)
 end
 
 function update_row(game::Game, x::Int8, y::Int8, dx::Int8, dy::Int8, n::Int8, coeff::Int)
@@ -133,9 +133,8 @@ function update_row(game::Game, x::Int8, y::Int8, dx::Int8, dy::Int8, n::Int8, c
     max_stones1 = game.max_stones
     for _ in 1:n
         stones += game.stones[y+max_stones1*dy][x+max_stones1*dx]
-        values = value(game.name, game.turn, stones)
-        values = validate .* coeff
-        if blackValue != 0 || whiteValue != 0
+        values = value(game.name, game.turn, stones) .* coeff
+        if values != (0, 0)
             for j in int8(0):game.maxStones
                 game.values[y+j*dy][x+j*dx] .+= values
             end
