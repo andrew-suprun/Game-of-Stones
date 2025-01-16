@@ -185,3 +185,14 @@ function parse_place(place)::Place
     end
     Place(x, y)
 end
+
+values(name::Gomoku, turn::First, stones::Int8) = gomoku_first[stones]
+values(name::Gomoku, turn::Second, stones::Int8) = gomoku_second[stones]
+values(name::Connect6, turn::First, stones::Int8) = connect6_first[stones]
+values(name::Connect6, turn::Second, stones::Int8) = connect6_second[stones]
+
+board_values(name::Connect6, stones::Int8) = connect6_values[stones]
+board_values(name::Gomoku, stones::Int8) = gomoku_values[stones]
+
+board_value(name::Connect6, stones::Int8) = connect6_value[stones]
+board_value(name::Gomoku, stones::Int8) = gomoku_value[stones]
