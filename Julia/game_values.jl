@@ -1,5 +1,7 @@
 # Generated. Don't edit.
 
+const win_value = 5000
+
 const connect6_first = Tuple{Int16,Int16}[
 	(3, 0), (11, -4), (25, -15), (20, -40), (9820, -60), (0, 0),
 	(-1, 4), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0),

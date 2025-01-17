@@ -25,40 +25,62 @@ mutable struct Game
     turn_idx::Int
     stone::Int8
     max_stones::Int8
+    stones::Matrix{Int8}
+    values::Matrix{Tuple{Int16,Int16}}
+    value::Int16
 
     function Game(name::GameName)
-        if name == Gomoku()
-            return new(name, First(), 1, Black, 5)
-        elseif name == Connect6()
-            return new(name, First(), 1, Black, 6)
-        else
-            throw(ArgumentError("Game must be either :Gomoku or :Connect6"))
-        end
+        stones = zeros(Int8, size, size)
+        values = init_values(name)
+
+        return name == Gomoku() ? new(name, First(), 1, Black, 5, stones, values, 0) :
+               name == Connect6 ? new(name, First(), 1, Black, 6, stones, values, 0) :
+               throw(ArgumentError("Game must be either :Gomoku or :Connect6"))
     end
 end
 
+function init_values(name::GameName)
+    max_stones = name == Gomoku() ? 5 : 6
+    values = Matrix{Tuple{Int16,Int16}}(undef, size, size)
+    for y in 1:size
+        v = min(max_stones, y, size + 1 - y)
+        for x in 1:size
+            h = min(max_stones, x, size + 1 - x)
+            m = min(x, y, size - x, size - y)
+            t1 = max(0, min(max_stones, m, size - max_stones - y + x, size - max_stones - x + y))
+            t2 = max(0, min(max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones))
+            # h = 0
+            # v = 0
+            # t1 = 0
+            total = Int16(v + h + t1 + t2)
+            values[x, y] = (total, -total)
+        end
+    end
+    values
+end
+
 function play_move(game::Game, move::Move)
-    place_stone(game, move.p1, 1)
+    place_stone(game, move.p1, Int16(1))
 
     if move.p1 != move.p2
-        place_stone(game, move.p2, 1)
+        place_stone(game, move.p2, Int16(1))
     end
 
     next_turn(game)
 
-    validate(debug, game)
+    validate(game, debug)
 end
 
 function undo_move(game::Game, move::Move)
     next_turn(game)
 
     if move.p1 != move.p2
-        place_stone(game, move.p2, -1)
+        place_stone(game, move.p2, Int16(-1))
     end
 
-    place_stone(game, move.p1, -1)
+    place_stone(game, move.p1, Int16(-1))
 
-    validate(debug, game)
+    validate(game, debug)
 end
 
 function next_turn(game::Game)
@@ -73,44 +95,45 @@ function next_turn(game::Game)
     end
 end
 
-function place_stone(game::Game, move::Move, coeff::Int)
+function place_stone(game::Game, place::Place, coeff::Int16)
     x, y = place.x, place.y
     if coeff == 1
         game.value += game.values[x, y][game.turn_idx]
     else
-        game.stones[y][x] = None
+        game.stones[x, y] = None
     end
 
+    max_stones = game.max_stones
     begin
-        start_x = max(1, x - maxStones)
-        end_x = min(x + maxStones, Size) - maxStones
+        start_x = max(Int8(1), x - max_stones)
+        end_x = min(x + max_stones, size) - max_stones
         n = end_x - start_x
         update_row(game, start_x, y, 1, 0, n, coeff)
     end
 
     begin
-        start_y = max(1, y - maxStones)
-        end_y = min(y + maxStones, Size) - maxStones
+        start_y = max(Int8(1), y - max_stones)
+        end_y = min(y + max_stones, size) - max_stones
         n = end_y - start_y
         update_row(game, x, start_y, 0, 1, n, coeff)
     end
 
-    m = 1 + min(x, y, Size - x, Size - y)
+    m = Int8(1) + min(x, y, size - x, size - y)
 
     begin
-        n = min(maxStones, m, Size - maxStones - y + x, Size - maxStones - x + y)
+        n = min(max_stones, m, size - max_stones - y + x, size - max_stones - x + y)
         if n > 0
-            mn = min(x, y, maxStones)
-            xStart = x - mn
-            yStart = y - mn
+            mn = min(x, y, max_stones)
+            xStart = x - mn + Int8(1)
+            yStart = y - mn + Int8(1)
             update_row(game, xStart, yStart, 1, 1, n, coeff)
         end
     end
 
     begin
-        n = min(maxStones, m, 2 * Size - maxStones - y - x, x + y - maxStones)
+        n = min(max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones)
         if n > 0
-            mn = min(Size - x, y, maxStones)
+            mn = min(size - x, y, max_stones)
             xStart = x + mn
             yStart = y - mn
             update_row(game, xStart, yStart, -1, 1, n, coeff)
@@ -118,33 +141,52 @@ function place_stone(game::Game, move::Move, coeff::Int)
     end
 
     if coeff == 1
-        game.stones[y][x] = game.stone
+        game.stones[x, y] = game.stone
     else
-        game.value -= game.values[y][x][game.turn_idx]
+        game.value -= game.values[x, y][game.turn_idx]
     end
-    validate(debug, game)
+    validate(game, debug)
 end
 
-function update_row(game::Game, x::Int8, y::Int8, dx::Int8, dy::Int8, n::Int8, coeff::Int)
-    stones = Int8(0)
-    for i in Int8(1):game.maxStones
-        stones += game.stones[y+i*dy][x+i*dx]
+function update_row(game::Game, x::Int8, y::Int8, dx::Int, dy::Int, n::Int8, coeff::Int16)
+    stones = Int8(1)
+    for i in Int8(1):game.max_stones
+        stones += game.stones[x+i*dx, y+i*dy]
     end
     max_stones1 = game.max_stones
+    @show x y
     for _ in 1:n
-        stones += game.stones[y+max_stones1*dy][x+max_stones1*dx]
-        values = value(game.name, game.turn, stones) .* coeff
+        stones += game.stones[x+max_stones1*dx, y+max_stones1*dy]
+        values = game_values(game.name, game.turn, stones) .* coeff
         if values != (0, 0)
-            for j in int8(0):game.maxStones
-                game.values[y+j*dy][x+j*dx] .+= values
+            for j in Int8(0):game.max_stones
+                old_values = game.values[x+j*dx, y+j*dy]
+                game.values[x+j*dx, y+j*dy] = (old_values[1] + values[1], old_values[2] + values[2])
             end
         end
-        stones -= game.stones[y][x]
+        stones -= game.stones[x, y]
         x += dx
         y += dy
     end
 end
 
+function board_value(game::Game)
+    result = Int16(0)
+    max_stones = game.max_stones
+    max_stones1 = max_stones - 1
+    for y in 1:size
+        stones = Int8(1)
+        for x in 1:max_stones1
+            stones += game.stones[x, y]
+        end
+        for x in 1:size-game.max_stones
+            stones += game.stones[x+max_stones1, y]
+            result += stones_value(game.name, stones)
+            stones -= game.stones[x, y]
+        end
+    end
+    result
+end
 
 function top_moves(game::Game, moves::Vector{MoveValue{Move}}, max_moves::Int)
     error("TODO: Implement")
@@ -186,13 +228,20 @@ function parse_place(place)::Place
     Place(x, y)
 end
 
-values(name::Gomoku, turn::First, stones::Int8) = gomoku_first[stones]
-values(name::Gomoku, turn::Second, stones::Int8) = gomoku_second[stones]
-values(name::Connect6, turn::First, stones::Int8) = connect6_first[stones]
-values(name::Connect6, turn::Second, stones::Int8) = connect6_second[stones]
+game_values(name::Gomoku, turn::First, stones::Int8) = gomoku_first[stones]
+game_values(name::Gomoku, turn::Second, stones::Int8) = gomoku_second[stones]
+game_values(name::Connect6, turn::First, stones::Int8) = connect6_first[stones]
+game_values(name::Connect6, turn::Second, stones::Int8) = connect6_second[stones]
 
-board_values(name::Connect6, stones::Int8) = connect6_values[stones]
-board_values(name::Gomoku, stones::Int8) = gomoku_values[stones]
+stones_values(name::Connect6, stones::Int8) = connect6_values[stones]
+stones_values(name::Gomoku, stones::Int8) = gomoku_values[stones]
 
-board_value(name::Connect6, stones::Int8) = connect6_value[stones]
-board_value(name::Gomoku, stones::Int8) = gomoku_value[stones]
+stones_value(name::Connect6, stones::Int8) = connect6_value[stones]
+stones_value(name::Gomoku, stones::Int8) = gomoku_value[stones]
+
+function validate(game::Game, debug::Val{true})
+    # TODO: Implement
+    # error("TODO: Implement")
+end
+
+validate(game::Game, debug::Val{false}) = nothing
