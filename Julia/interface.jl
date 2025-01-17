@@ -1,6 +1,6 @@
 const debug = Val(true)
 
-const size = Int8(19)
+const size = 19
 
 abstract type Turn end
 struct First <: Turn end
