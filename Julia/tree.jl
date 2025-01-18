@@ -61,11 +61,11 @@ function expand(tree::Tree{Move}, node::Node{Move}, game)::Node{Move} where {Mov
     end
 end
 
-function update_stats(node::Node{Move}, turn::Turn)::Node{Move} where {Move}
+function update_stats(node::Node{Move}, turn::Symbol)::Node{Move} where {Move}
     n_sims = Int32(0)
     value = node.children[begin].value
     isdecisive = false
-    if turn == First()
+    if turn == :First
         for child in node.children
             n_sims += child.n_sims
             value = max(value, child.value)
