@@ -152,21 +152,78 @@ function update_row!(game::Game, name, x, y, dx, dy, n, coeff)
     end
 end
 
-function board_value(game::Game, name)
-    result = 0
+# TODO: Use Unroll.jl?
+# TODO: Use @inbounds?
+function board_value(game::Game, name)::Int16
+    result = Int16(0)
     ms = max_stones(name)
-    ms1 = ms - 1
     for y in 1:size
         stones = 1
-        for x in 1:ms1
+        for x in 1:ms-1
             stones += game.stones[x, y]
         end
-        for x in 1:size-ms
-            stones += game.stones[x+ms1, y]
+        for x in 1:size-ms+1
+            stones += game.stones[x+ms-1, y]
             result += stones_value(name, stones)
             stones -= game.stones[x, y]
         end
     end
+    for x in 1:size
+        stones = 1
+        for y in 1:ms-1
+            stones += game.stones[x, y]
+        end
+        for y in 1:size-ms+1
+            stones += game.stones[x, y+ms-1]
+            result += stones_value(name, stones)
+            stones -= game.stones[x, y]
+        end
+    end
+    for y in 1:size+1-ms
+        stones = 1
+        for x in 1:ms-1
+            stones += game.stones[x, y+x-1]
+        end
+        for x in 1:size+2-ms-y
+            stones += game.stones[x+ms-1, x+y+ms-2]
+            result += stones_value(name, stones)
+            stones -= game.stones[x, x+y-1]
+        end
+    end
+    for x in 2:size+1-ms
+        stones = 1
+        for y in 1:ms-1
+            stones += game.stones[x+y-1, y]
+        end
+        for y in 1:size+2-ms-x
+            stones += game.stones[x+y+ms-2, y+ms-1]
+            result += stones_value(name, stones)
+            stones -= game.stones[x+y-1, y]
+        end
+    end
+    for y in 1:size+1-ms
+        stones = 1
+        for x in 1:ms-1
+            stones += game.stones[size+1-x, y+x-1]
+        end
+        for x in 1:size+2-ms-y
+            stones += game.stones[size+2-x-ms, x+y+ms-2]
+            result += stones_value(name, stones)
+            stones -= game.stones[size+1-x, x+y-1]
+        end
+    end
+    for x in 2:size+1-ms
+        stones = 1
+        for y in 1:ms-1
+            stones += game.stones[size+2-x-y, y]
+        end
+        for y in 1:size+2-ms-x
+            stones += game.stones[size+3-x-y-ms, y+ms-1]
+            result += stones_value(name, stones)
+            stones -= game.stones[size+2-x-y, y]
+        end
+    end
+
     result
 end
 
