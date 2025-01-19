@@ -31,6 +31,13 @@ function bench_init()
     end
 end
 
+function bench_board_values()
+    game = Game(Val(:Connect6))
+    for _ in 1:10_000
+        _ = board_values(game, Val(:Connect6))
+    end
+end
+
 function test_board_values()
     game = Game(Val(:Connect6))
     v = board_values(game, Val(:Connect6))
