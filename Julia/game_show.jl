@@ -1,26 +1,84 @@
 using Printf
 
-function Base.show(io::IO, values::Matrix{Tuple{Int16,Int16}})
-    print_values(io, values, 1, true)
-    print_values(io, values, 2, false)
-
+function Base.show(io::IO, stones::Matrix{Int8})::Nothing
+    print(io, "  ")
+    for i in 0:board_size-1
+        @printf io " %c" i + 'a'
+    end
+    println(io)
+    for y in 1:board_size
+        @printf io "%2d" board_size + 1 - y
+        for x in 1:board_size
+            stone = stones[x, y]
+            if stone == Black
+                if x == 1
+                    print(io, " X")
+                else
+                    print(io, "─X")
+                end
+            elseif stone == White
+                if x == 1
+                    print(io, " O")
+                else
+                    print(io, "─O")
+                end
+            else
+                if y == 1
+                    if x == 1
+                        print(io, " ┌")
+                    elseif x == board_size
+                        print(io, "─┐")
+                    else
+                        print(io, "─┬")
+                    end
+                elseif y == board_size
+                    if x == 1
+                        print(io, " └")
+                    elseif x == board_size
+                        print(io, "─┘")
+                    else
+                        print(io, "─┴")
+                    end
+                else
+                    if x == 1
+                        print(io, " ├")
+                    elseif x == board_size
+                        print(io, "─┤")
+                    else
+                        print(io, "─┼")
+                    end
+                end
+            end
+        end
+        @printf io "%2d\n" board_size + 1 - y
+    end
+    print(io, "  ")
+    for i in 0:board_size-1
+        @printf io " %c" i + 'a'
+    end
 end
 
-function print_values(io::IO, values::Array{Int16,3}, idx::Int, header::Bool)
-    if header
-        print(io, "      │")
-        for i in 0:size-1
-            @printf io " %c %2d │" i + 'a' i + 1
-        end
+function Base.show(io::IO, game::Game)
+    println(game.stones)
+    println()
+    print_values(io, game, 1, false)
+    print_values(io, game, 2, true)
+end
+
+function print_values(io::IO, game::Game, idx::Int, footer::Bool)
+    values = game.values
+    print(io, "      │")
+    for i in 0:board_size-1
+        @printf io " %c %2d │" i + 'a' i + 1
     end
     println(io, "\n", "──────┼"^20, "──────")
 
-    for y in 1:size
-        @printf(io, "%2d %2d │", size + 1 - y, y)
-        for x in 1:size
-            if values[x, y] == Black
+    for y in 1:board_size
+        @printf(io, "%2d %2d │", board_size + 1 - y, y)
+        for x in 1:board_size
+            if game.stones[x, y] == Black
                 print(io, "    X │")
-            elseif values[x, y] == White
+            elseif game.stones[x, y] == White
                 print(io, "    O │")
             else
                 value = values[idx, x, y]
@@ -31,21 +89,51 @@ function print_values(io::IO, values::Array{Int16,3}, idx::Int, header::Bool)
                 elseif value <= -win_value
                     print(io, " WinO │")
                 else
-                    @printf(io, "%5d │", values[ix, x, y])
+                    @printf(io, "%5d │", values[idx, x, y])
                 end
             end
         end
 
-        @printf(io, " %2d %2d", size + 1 - y, y)
+        @printf(io, " %2d %2d", board_size + 1 - y, y)
         println(io)
     end
     println(io, "──────┼"^20, "──────")
 
-    print(io, "      │")
-    for i in 0:size-1
-        @printf io " %c %2d │" i + 'a' i + 1
+    if footer
+        print(io, "      │")
+        for i in 0:board_size-1
+            @printf io " %c %2d │" i + 'a' i + 1
+        end
     end
 end
 
-function Base.show(io::IO, m::Matrix{Int8})
+function Base.show(io::IO, values::Array{Int16,3})
+    print_values(io, values, 1, false)
+    print_values(io, values, 2, true)
+end
+
+function print_values(io::IO, values::Array{Int16,3}, idx::Int, footer::Bool)
+    print(io, "      │")
+    for i in 0:board_size-1
+        @printf io " %c %2d │" i + 'a' i + 1
+    end
+    println(io, "\n", "──────┼"^20, "──────")
+
+    for y in 1:board_size
+        @printf(io, "%2d %2d │", board_size + 1 - y, y)
+        for x in 1:board_size
+            @printf(io, "%5d │", values[idx, x, y])
+        end
+
+        @printf(io, " %2d %2d", board_size + 1 - y, y)
+        println(io)
+    end
+    println(io, "──────┼"^20, "──────")
+
+    if footer
+        print(io, "      │")
+        for i in 0:board_size-1
+            @printf io " %c %2d │" i + 'a' i + 1
+        end
+    end
 end

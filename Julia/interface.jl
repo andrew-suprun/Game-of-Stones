@@ -1,6 +1,4 @@
-const debug = Val(true)
-
-const size = 19
+const board_size = 19
 
 struct MoveValue{Move}
     move::Move

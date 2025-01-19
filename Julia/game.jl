@@ -10,9 +10,9 @@ end
 
 Move() = Move(Place(0, 0), Place(0, 0))
 
-const None = 0
-const Black = 1
-const White = 6
+const None::Int8 = 0
+const Black::Int8 = 1
+const White::Int8 = 8
 
 mutable struct Game
     stones::Matrix{Int8}
@@ -21,22 +21,22 @@ mutable struct Game
     stone::Int8
 
     function Game(name)
-        stones = zeros(Int8, size, size)
+        stones = zeros(Int8, board_size, board_size)
         values = init_values(name)
-        return new(stones, values, 0, Black)
+        new(stones, values, 0, Black)
     end
 end
 
 function init_values(name)
     ms = max_stones(name)
-    values = Array{Int16,3}(undef, 2, size, size)
-    for y in 1:size
-        v = min(ms, y, size + 1 - y)
-        for x in 1:size
-            h = min(ms, x, size + 1 - x)
-            m = min(x, y, size + 1 - x, size + 1 - y)
-            t1 = max(0, min(ms, m, size + 1 - ms - y + x, size + 1 - ms - x + y))
-            t2 = max(0, min(ms, m, 2 * size - ms - y - x, x + y - ms))
+    values = Array{Int16,3}(undef, 2, board_size, board_size)
+    for y in 1:board_size
+        v = min(ms, y, board_size + 1 - y)
+        for x in 1:board_size
+            h = min(ms, x, board_size + 1 - x)
+            m = min(x, y, board_size + 1 - x, board_size + 1 - y)
+            t1 = max(0, min(ms, m, board_size + 1 - ms - y + x, board_size + 1 - ms - x + y))
+            t2 = max(0, min(ms, m, 2 * board_size - ms - y - x, x + y - ms))
             total = v + h + t1 + t2
             values[1, x, y] = total
             values[2, x, y] = -total
@@ -56,8 +56,6 @@ function play_move!(game::Game, name, move::Move)
     end
 
     next_turn!(game)
-
-    validate(game, debug)
 end
 
 function undo_move!(game::Game, move::Move)
@@ -68,11 +66,9 @@ function undo_move!(game::Game, move::Move)
     end
 
     place_stone!(game, name, move.p1, -1)
-
-    validate(game, debug)
 end
 
-next_turn!(game::Game) = game.stone = 7 - game.stone
+next_turn!(game::Game) = game.stone = 9 - game.stone
 
 function place_stone!(game::Game, name, place::Place, coeff)
     turn_idx = game.stone == Black ? 1 : 2
@@ -86,22 +82,22 @@ function place_stone!(game::Game, name, place::Place, coeff)
     ms = max_stones(name)
     begin
         start_x = max(1, x - ms)
-        end_x = min(x + ms, size) - ms
+        end_x = min(x + ms, board_size) - ms
         n = end_x - start_x
         update_row!(game, name, start_x, y, 1, 0, n, coeff)
     end
 
     begin
         start_y = max(1, y - ms)
-        end_y = min(y + ms, size) - ms
+        end_y = min(y + ms, board_size) - ms
         n = end_y - start_y
         update_row!(game, name, x, start_y, 0, 1, n, coeff)
     end
 
-    m = 1 + min(x, y, size - x, size - y)
+    m = 1 + min(x, y, board_size - x, board_size - y)
 
     begin
-        n = min(ms, m, size - ms - y + x, size - ms - x + y)
+        n = min(ms, m, board_size - ms - y + x, board_size - ms - x + y)
         if n > 0
             mn = min(x, y, ms)
             xStart = x - mn + 1
@@ -111,9 +107,9 @@ function place_stone!(game::Game, name, place::Place, coeff)
     end
 
     begin
-        n = min(ms, m, 2 * size - ms - y - x, x + y - ms)
+        n = min(ms, m, 2 * board_size - ms - y - x, x + y - ms)
         if n > 0
-            mn = min(size - x, y, ms)
+            mn = min(board_size - x, y, ms)
             xStart = x + mn
             yStart = y - mn
             update_row!(game, name, xStart, yStart, -1, 1, n, coeff)
@@ -125,7 +121,6 @@ function place_stone!(game::Game, name, place::Place, coeff)
     else
         game.value -= game.values[turn_idx, x, y]
     end
-    validate(game, debug)
 end
 
 function update_row!(game::Game, name, x, y, dx, dy, n, coeff::Int16)
@@ -153,70 +148,70 @@ end
 function board_value(game::Game, name)::Int16
     result = Int16(0)
     ms = max_stones(name)
-    for y in 1:size
+    for y in 1:board_size
         stones = 1
         for x in 1:ms-1
             stones += game.stones[x, y]
         end
-        for x in 1:size-ms+1
+        for x in 1:board_size-ms+1
             stones += game.stones[x+ms-1, y]
             result += stones_value(name, stones)
             stones -= game.stones[x, y]
         end
     end
-    for x in 1:size
+    for x in 1:board_size
         stones = 1
         for y in 1:ms-1
             stones += game.stones[x, y]
         end
-        for y in 1:size-ms+1
+        for y in 1:board_size-ms+1
             stones += game.stones[x, y+ms-1]
             result += stones_value(name, stones)
             stones -= game.stones[x, y]
         end
     end
-    for y in 1:size+1-ms
+    for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
             stones += game.stones[x, y+x-1]
         end
-        for x in 1:size+2-ms-y
+        for x in 1:board_size+2-ms-y
             stones += game.stones[x+ms-1, x+y+ms-2]
             result += stones_value(name, stones)
             stones -= game.stones[x, x+y-1]
         end
     end
-    for x in 2:size+1-ms
+    for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
             stones += game.stones[x+y-1, y]
         end
-        for y in 1:size+2-ms-x
+        for y in 1:board_size+2-ms-x
             stones += game.stones[x+y+ms-2, y+ms-1]
             result += stones_value(name, stones)
             stones -= game.stones[x+y-1, y]
         end
     end
-    for y in 1:size+1-ms
+    for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[size+1-x, y+x-1]
+            stones += game.stones[board_size+1-x, y+x-1]
         end
-        for x in 1:size+2-ms-y
-            stones += game.stones[size+2-x-ms, x+y+ms-2]
+        for x in 1:board_size+2-ms-y
+            stones += game.stones[board_size+2-x-ms, x+y+ms-2]
             result += stones_value(name, stones)
-            stones -= game.stones[size+1-x, x+y-1]
+            stones -= game.stones[board_size+1-x, x+y-1]
         end
     end
-    for x in 2:size+1-ms
+    for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[size+2-x-y, y]
+            stones += game.stones[board_size+2-x-y, y]
         end
-        for y in 1:size+2-ms-x
-            stones += game.stones[size+3-x-y-ms, y+ms-1]
+        for y in 1:board_size+2-ms-x
+            stones += game.stones[board_size+3-x-y-ms, y+ms-1]
             result += stones_value(name, stones)
-            stones -= game.stones[size+2-x-y, y]
+            stones -= game.stones[board_size+2-x-y, y]
         end
     end
 
@@ -226,14 +221,14 @@ end
 # TODO: Use Unroll.jl?
 # TODO: Use @inbounds?
 function board_values(game::Game, name)::Array{Int16,3}
-    result = zeros(Int16, 2, size, size)
+    result = zeros(Int16, 2, board_size, board_size)
     ms = max_stones(name)
-    for y in 1:size
+    for y in 1:board_size
         stones = 1
         for x in 1:ms-1
             stones += game.stones[x, y]
         end
-        for x in 1:size-ms+1
+        for x in 1:board_size+1-ms
             stones += game.stones[x+ms-1, y]
             for i in 0:ms-1
                 b_value, w_value = stones_values(name, stones)
@@ -243,12 +238,12 @@ function board_values(game::Game, name)::Array{Int16,3}
             stones -= game.stones[x, y]
         end
     end
-    for x in 1:size
+    for x in 1:board_size
         stones = 1
         for y in 1:ms-1
             stones += game.stones[x, y]
         end
-        for y in 1:size-ms+1
+        for y in 1:board_size-ms+1
             stones += game.stones[x, y+ms-1]
             for i in 0:ms-1
                 b_value, w_value = stones_values(name, stones)
@@ -258,12 +253,12 @@ function board_values(game::Game, name)::Array{Int16,3}
             stones -= game.stones[x, y]
         end
     end
-    for y in 1:size+1-ms
+    for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
             stones += game.stones[x, y+x-1]
         end
-        for x in 1:size+2-ms-y
+        for x in 1:board_size+2-ms-y
             stones += game.stones[x+ms-1, x+y+ms-2]
             for i in 0:ms-1
                 b_value, w_value = stones_values(name, stones)
@@ -273,12 +268,12 @@ function board_values(game::Game, name)::Array{Int16,3}
             stones -= game.stones[x, x+y-1]
         end
     end
-    for x in 2:size+1-ms
+    for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
             stones += game.stones[x+y-1, y]
         end
-        for y in 1:size+2-ms-x
+        for y in 1:board_size+2-ms-x
             stones += game.stones[x+y+ms-2, y+ms-1]
             for i in 0:ms-1
                 b_value, w_value = stones_values(name, stones)
@@ -288,34 +283,34 @@ function board_values(game::Game, name)::Array{Int16,3}
             stones -= game.stones[x+y-1, y]
         end
     end
-    for y in 1:size+1-ms
+    for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[size+1-x, y+x-1]
+            stones += game.stones[board_size+1-x, y+x-1]
         end
-        for x in 1:size+2-ms-y
-            stones += game.stones[size+2-x-ms, x+y+ms-2]
+        for x in 1:board_size+2-ms-y
+            stones += game.stones[board_size+2-x-ms, x+y+ms-2]
             for i in 0:ms-1
                 b_value, w_value = stones_values(name, stones)
-                result[1, size-x-i+1, x+y+i-1] += b_value
-                result[2, size-x-i+1, x+y+i-1] += w_value
+                result[1, board_size-x-i+1, x+y+i-1] += b_value
+                result[2, board_size-x-i+1, x+y+i-1] += w_value
             end
-            stones -= game.stones[size+1-x, x+y-1]
+            stones -= game.stones[board_size+1-x, x+y-1]
         end
     end
-    for x in 2:size+1-ms
+    for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[size+2-x-y, y]
+            stones += game.stones[board_size+2-x-y, y]
         end
-        for y in 1:size+2-ms-x
-            stones += game.stones[size+3-x-y-ms, y+ms-1]
+        for y in 1:board_size+2-ms-x
+            stones += game.stones[board_size+3-x-y-ms, y+ms-1]
             for i in 0:ms-1
                 b_value, w_value = stones_values(name, stones)
-                result[1, size+2-x-y-i, y+i] += b_value
-                result[2, size+2-x-y-i, y+i] += w_value
+                result[1, board_size+2-x-y-i, y+i] += b_value
+                result[2, board_size+2-x-y-i, y+i] += w_value
             end
-            stones -= game.stones[size+2-x-y, y]
+            stones -= game.stones[board_size+2-x-y, y]
         end
     end
     result
@@ -354,8 +349,8 @@ function parse_place(place)::Place
         end
         y = 10 * y + place[3] - '0'
     end
-    y = size + 1 - y
-    if x > size || y > size
+    y = board_size + 1 - y
+    if x > board_size || y > board_size
         throw(ArgumentError("Invalid Place"))
     end
     Place(x, y)
@@ -372,10 +367,3 @@ stones_values(::Val{:Gomoku}, stones) = gomoku_values[stones]
 
 stones_value(::Val{:Connect6}, stones) = connect6_value[stones]
 stones_value(::Val{:Gomoku}, stones) = gomoku_value[stones]
-
-function validate(game::Game, debug::Val{true})
-    # TODO: Implement
-    # error("TODO: Implement")
-end
-
-validate(game::Game, debug::Val{false}) = nothing
