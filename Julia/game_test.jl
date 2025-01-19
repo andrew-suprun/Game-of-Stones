@@ -5,7 +5,7 @@ using Printf
 include("interface.jl")
 include("game.jl")
 include("game_values.jl")
-include("game_show.jl")
+include("game_printer.jl")
 
 const Gomoku = Val(:Gomoku)
 const Connect6 = Val(:Connect6)
