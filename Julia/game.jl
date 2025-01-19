@@ -16,7 +16,7 @@ const White = 6
 
 mutable struct Game
     stones::Matrix{Int8}
-    values::Matrix{Tuple{Int16,Int16}}
+    values::Array{Int16,3}
     value::Int16
     stone::Int8
 
@@ -29,7 +29,7 @@ end
 
 function init_values(name)
     ms = max_stones(name)
-    values = Matrix{Tuple{Int16,Int16}}(undef, size, size)
+    values = Array{Int16,3}(undef, 2, size, size)
     for y in 1:size
         v = min(ms, y, size + 1 - y)
         for x in 1:size
@@ -38,7 +38,8 @@ function init_values(name)
             t1 = max(0, min(ms, m, size + 1 - ms - y + x, size + 1 - ms - x + y))
             t2 = max(0, min(ms, m, 2 * size - ms - y - x, x + y - ms))
             total = v + h + t1 + t2
-            values[x, y] = (total, -total)
+            values[1, x, y] = total
+            values[2, x, y] = -total
         end
     end
     values
@@ -132,15 +133,15 @@ function update_row!(game::Game, name, x, y, dx, dy, n, coeff::Int16)
     for i in 1:max_stones(name)
         stones += game.stones[x+i*dx, y+i*dy]
     end
-    max_stones1 = max_stones(name)
-    @show x y
+    ms1 = max_stones(name) - 1
     for _ in 1:n
-        stones += game.stones[x+max_stones1*dx, y+max_stones1*dy]
-        values = game_values(name, game.stone, stones) .* coeff
-        if values != (0, 0)
-            for j in 0:max_stones(name)
-                old_values = game.values[x+j*dx, y+j*dy]
-                game.values[x+j*dx, y+j*dy] = (old_values[1] + values[1], old_values[2] + values[2])
+        stones += game.stones[x+ms1*dx, y+ms1*dy]
+        b_value, w_value = game_values(name, game.stone, stones)
+        if b_value != 0 || w_value != 0
+            b_value, w_value = b_value * coeff, w_value * coeff
+            for j in 0:ms1 # TODO manually unroll?
+                game.values[1, x+j*dx, y+j*dy] += b_value
+                game.values[2, x+j*dx, y+j*dy] += w_value
             end
         end
         stones -= game.stones[x, y]
@@ -222,12 +223,10 @@ function board_value(game::Game, name)::Int16
     result
 end
 
-Base.zero(::Type{Tuple{Int16,Int16}}) = (Int16(0), Int16(0))
-
 # TODO: Use Unroll.jl?
 # TODO: Use @inbounds?
-function board_values(game::Game, name)::Matrix{Tuple{Int16,Int16}}
-    result = zeros(Tuple{Int16,Int16}, size, size)
+function board_values(game::Game, name)::Array{Int16,3}
+    result = zeros(Int16, 2, size, size)
     ms = max_stones(name)
     for y in 1:size
         stones = 1
@@ -237,9 +236,9 @@ function board_values(game::Game, name)::Matrix{Tuple{Int16,Int16}}
         for x in 1:size-ms+1
             stones += game.stones[x+ms-1, y]
             for i in 0:ms-1
-                values = stones_values(name, stones)
-                old_values = result[x+i, y]
-                result[x+i, y] = (old_values[1] + values[1], old_values[2] + values[2])
+                b_value, w_value = stones_values(name, stones)
+                result[1, x+i, y] += b_value
+                result[2, x+i, y] += w_value
             end
             stones -= game.stones[x, y]
         end
@@ -252,9 +251,9 @@ function board_values(game::Game, name)::Matrix{Tuple{Int16,Int16}}
         for y in 1:size-ms+1
             stones += game.stones[x, y+ms-1]
             for i in 0:ms-1
-                values = stones_values(name, stones)
-                old_values = result[x, y+i]
-                result[x, y+i] = (old_values[1] + values[1], old_values[2] + values[2])
+                b_value, w_value = stones_values(name, stones)
+                result[1, x, y+i] += b_value
+                result[2, x, y+i] += w_value
             end
             stones -= game.stones[x, y]
         end
@@ -267,9 +266,9 @@ function board_values(game::Game, name)::Matrix{Tuple{Int16,Int16}}
         for x in 1:size+2-ms-y
             stones += game.stones[x+ms-1, x+y+ms-2]
             for i in 0:ms-1
-                values = stones_values(name, stones)
-                old_values = result[x+i, x+y+i-1]
-                result[x+i, x+y+i-1] = (old_values[1] + values[1], old_values[2] + values[2])
+                b_value, w_value = stones_values(name, stones)
+                result[1, x+i, x+y+i-1] += b_value
+                result[2, x+i, x+y+i-1] += w_value
             end
             stones -= game.stones[x, x+y-1]
         end
@@ -282,9 +281,9 @@ function board_values(game::Game, name)::Matrix{Tuple{Int16,Int16}}
         for y in 1:size+2-ms-x
             stones += game.stones[x+y+ms-2, y+ms-1]
             for i in 0:ms-1
-                values = stones_values(name, stones)
-                old_values = result[x+y+i-1, y+i]
-                result[x+y+i-1, y+i] = (old_values[1] + values[1], old_values[2] + values[2])
+                b_value, w_value = stones_values(name, stones)
+                result[1, x+y+i-1, y+i] += b_value
+                result[2, x+y+i-1, y+i] += w_value
             end
             stones -= game.stones[x+y-1, y]
         end
@@ -297,9 +296,9 @@ function board_values(game::Game, name)::Matrix{Tuple{Int16,Int16}}
         for x in 1:size+2-ms-y
             stones += game.stones[size+2-x-ms, x+y+ms-2]
             for i in 0:ms-1
-                values = stones_values(name, stones)
-                old_values = result[size-x-i+1, x+y+i-1]
-                result[size-x-i+1, x+y+i-1] = (old_values[1] + values[1], old_values[2] + values[2])
+                b_value, w_value = stones_values(name, stones)
+                result[1, size-x-i+1, x+y+i-1] += b_value
+                result[2, size-x-i+1, x+y+i-1] += w_value
             end
             stones -= game.stones[size+1-x, x+y-1]
         end
@@ -312,9 +311,9 @@ function board_values(game::Game, name)::Matrix{Tuple{Int16,Int16}}
         for y in 1:size+2-ms-x
             stones += game.stones[size+3-x-y-ms, y+ms-1]
             for i in 0:ms-1
-                values = stones_values(name, stones)
-                old_values = result[size+2-x-y-i, y+i]
-                result[size+2-x-y-i, y+i] = (old_values[1] + values[1], old_values[2] + values[2])
+                b_value, w_value = stones_values(name, stones)
+                result[1, size+2-x-y-i, y+i] += b_value
+                result[2, size+2-x-y-i, y+i] += w_value
             end
             stones -= game.stones[size+2-x-y, y]
         end

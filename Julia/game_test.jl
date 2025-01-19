@@ -36,7 +36,7 @@ function bench_board_values()
     game = Game(Val(:Connect6))
     for _ in 1:100_000
         v = board_values(game, Val(:Connect6))
-        r += v[10, 10][1]
+        r += v[1, 10, 10]
     end
     println(r)
 end
@@ -47,11 +47,11 @@ function test_board_values()
     for y in 1:size
         for x in 1:size
             game.stones[x, y] = 1
-            if v[x, y][1] != board_value(game, Val(:Connect6))
+            if v[1, x, y] != board_value(game, Val(:Connect6))
                 return false
             end
             game.stones[x, y] = 6
-            if v[x, y][2] != board_value(game, Val(:Connect6))
+            if v[2, x, y] != board_value(game, Val(:Connect6))
                 return false
             end
             game.stones[x, y] = 0

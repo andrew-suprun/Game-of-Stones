@@ -19,7 +19,7 @@ function gen_first(file, name, values)
         v[1, i] = (-values[i], values[i+1] - values[i])
         v[i, 1] = (values[i] + values[i+2] - 2 * values[i+1], values[i] - values[i+1])
     end
-    v[1, 1] = (v[1, 1][1], 0)
+    v[1, 1] = (v[1, 1, 1], 0)
     s = conv.(v)
     for y in 1:6
         println(file, "\t", join(s[:, y], " "))
@@ -35,7 +35,7 @@ function gen_second(file, name, values)
         v[i, 1] = (values[i] - values[i+1], values[i])
         v[1, i] = (values[i+1] - values[i], 2 * values[i+1] - values[i] - values[i+2])
     end
-    v[1, 1] = (0, v[1, 1][2])
+    v[1, 1] = (0, v[2, 1, 1])
     s = conv.(v)
     for y in 1:6
         println(file, "\t", join(s[:, y], " "))

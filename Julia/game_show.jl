@@ -6,7 +6,7 @@ function Base.show(io::IO, values::Matrix{Tuple{Int16,Int16}})
 
 end
 
-function print_values(io::IO, values::Matrix{Tuple{Int16,Int16}}, idx::Int, header::Bool)
+function print_values(io::IO, values::Array{Int16,3}, idx::Int, header::Bool)
     if header
         print(io, "      │")
         for i in 0:size-1
@@ -23,7 +23,7 @@ function print_values(io::IO, values::Matrix{Tuple{Int16,Int16}}, idx::Int, head
             elseif values[x, y] == White
                 print(io, "    O │")
             else
-                value = values[x, y][idx]
+                value = values[idx, x, y]
                 if value == 0
                     print(io, " Draw │")
                 elseif value >= win_value
@@ -31,7 +31,7 @@ function print_values(io::IO, values::Matrix{Tuple{Int16,Int16}}, idx::Int, head
                 elseif value <= -win_value
                     print(io, " WinO │")
                 else
-                    @printf(io, "%5d │", values[x, y][idx])
+                    @printf(io, "%5d │", values[ix, x, y])
                 end
             end
         end
