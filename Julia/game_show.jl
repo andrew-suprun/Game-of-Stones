@@ -112,7 +112,7 @@ function Base.show(io::IO, values::Array{Int16,3})
     print_values(io, values, 2, true)
 end
 
-function print_values(io::IO, values::Array{Int16,3}, idx::Int, footer::Bool)
+function print_values(io, values, idx, footer)
     print(io, "      │")
     for i in 0:board_size-1
         @printf io " %c %2d │" i + 'a' i + 1

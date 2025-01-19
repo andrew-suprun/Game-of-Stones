@@ -6,13 +6,8 @@ struct Node{Move}
     isterminal::Bool
     move::Move
 
-    function Node{Move}(
-        move::Move;
-        children::Vector{Node{Move}}=Node{Move}[],
-        value::Int16=Int16(0),
-        n_sims::Int32=Int32(1),
-        isdecisive::Bool=false,
-        isterminal::Bool=false,
+    function Node{Move}(move; children=Node{Move}[], value=Int16(0), n_sims=Int32(1),
+        isdecisive=false, isterminal=false,
     ) where {Move}
         new(children, n_sims, value, isdecisive, isterminal, move)
     end
@@ -25,16 +20,16 @@ mutable struct Tree{Move}
     root::Node{Move}
     top_moves::Vector{MoveValue{Move}}
 
-    Tree{Move}(max_moves::Int, exploration_factor::Float64) where {Move} =
+    Tree{Move}(max_moves, exploration_factor) where {Move} =
         new{Move}(max_moves, exploration_factor, Node{Move}(Move()), MoveValue{Move}[])
 end
 
-function expand(tree::Tree{Move}, game) where {Move}
+function expand(tree, game) where {Move}
     expand(tree, tree.root, game)
     validate(tree, debug)
 end
 
-function expand(tree::Tree{Move}, node::Node{Move}, game)::Node{Move} where {Move}
+function expand(tree, node, game)
     println("expand: node")
     if node.isdecisive
         return Node{Move}(Node{Move}[], node.value, node.n_sims + tree.max_moves, node.move, node.isdecisive, node.isterminal)
@@ -61,7 +56,7 @@ function expand(tree::Tree{Move}, node::Node{Move}, game)::Node{Move} where {Mov
     end
 end
 
-function update_stats(node::Node{Move}, turn::Symbol)::Node{Move} where {Move}
+function update_stats(node, turn) where {Move}
     n_sims = Int32(0)
     value = node.children[begin].value
     isdecisive = false
@@ -81,7 +76,7 @@ function update_stats(node::Node{Move}, turn::Symbol)::Node{Move} where {Move}
     Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, isdecisive=isdecisive, isterminal=false)
 end
 
-function commit_move(tree::Tree{Move}, game, to_play::String) where {Move}
+function commit_move(tree, game, name, to_play) where {Move}
     move = parse_move(to_play)
     play_move(game, move)
     for child in root.children
@@ -90,10 +85,10 @@ function commit_move(tree::Tree{Move}, game, to_play::String) where {Move}
             return
         end
     end
-    tree.root = Node{Move}(Move(), value=board_value(game))
+    tree.root = Node{Move}(Move(), value=board_value(game, name))
 end
 
-function best_move(tree::Tree)::Move
+function best_move(tree)
     error("TODO: Implement")
 end
 

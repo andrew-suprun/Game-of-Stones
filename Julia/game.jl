@@ -48,7 +48,7 @@ end
 max_stones(::Val{:Gomoku}) = 5
 max_stones(::Val{:Connect6}) = 6
 
-function play_move!(game::Game, name, move::Move)
+function play_move!(game, name, move)
     place_stone!(game, name, move.p1, 1)
 
     if move.p1 != move.p2
@@ -58,7 +58,7 @@ function play_move!(game::Game, name, move::Move)
     next_turn!(game)
 end
 
-function undo_move!(game::Game, move::Move)
+function undo_move!(game, move)
     next_turn!(game)
 
     if move.p1 != move.p2
@@ -70,7 +70,7 @@ end
 
 next_turn!(game::Game) = game.stone = 9 - game.stone
 
-function place_stone!(game::Game, name, place::Place, coeff)
+function place_stone!(game, name, place, coeff)
     turn_idx = game.stone == Black ? 1 : 2
     x, y = place.x, place.y
     if coeff == 1
@@ -123,7 +123,7 @@ function place_stone!(game::Game, name, place::Place, coeff)
     end
 end
 
-function update_row!(game::Game, name, x, y, dx, dy, n, coeff::Int16)
+function update_row!(game, name, x, y, dx, dy, n, coeff)
     stones = 1
     for i in 1:max_stones(name)
         stones += game.stones[x+i*dx, y+i*dy]
@@ -145,7 +145,7 @@ function update_row!(game::Game, name, x, y, dx, dy, n, coeff::Int16)
     end
 end
 
-function board_value(game::Game, name)::Int16
+function board_value(game, name)::Int16
     result = Int16(0)
     ms = max_stones(name)
     for y in 1:board_size
@@ -220,7 +220,7 @@ end
 
 # TODO: Use Unroll.jl?
 # TODO: Use @inbounds?
-function board_values(game::Game, name)::Array{Int16,3}
+function board_values(game, name)
     result = zeros(Int16, 2, board_size, board_size)
     ms = max_stones(name)
     for y in 1:board_size
@@ -316,11 +316,11 @@ function board_values(game::Game, name)::Array{Int16,3}
     result
 end
 
-function top_moves(game::Game, moves::Vector{MoveValue{Move}}, max_moves::Int)
+function top_moves(game, moves, max_moves)
     error("TODO: Implement")
 end
 
-function parse_move(move::String)::Move
+function parse_move(move)
     tokens = split(move, '-')
     p1 = parse_place(tokens[begin])
 
@@ -331,7 +331,7 @@ function parse_move(move::String)::Move
     Move(p1, p2)
 end
 
-function parse_place(place)::Place
+function parse_place(place)
     if length(place) < 2 || length(place) > 3
         throw(ArgumentError("Invalid Place"))
     end
