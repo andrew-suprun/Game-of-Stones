@@ -57,7 +57,17 @@ func TestTopPlaces(t *testing.T) {
 	}
 }
 
-func BenchmarkTime(b *testing.B) {
+func BenchmarkPlayMove(b *testing.B) {
+	board := NewGame(Connect6, 10)
+
+	b.ResetTimer()
+	for range b.N {
+		board.PlayMove(Move{Place{9, 9}, Place{10, 10}, 0, false})
+		board.UndoMove(Move{Place{9, 9}, Place{10, 10}, 0, false})
+	}
+}
+
+func BenchmarkPlaceStone(b *testing.B) {
 	board := NewGame(Connect6, 10)
 
 	b.ResetTimer()

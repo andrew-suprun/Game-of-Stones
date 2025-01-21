@@ -17,7 +17,7 @@ function gen_first(file, name, values)
 
     for i in 1:length(values)-2
         v[1, i] = (-values[i], values[i+1] - values[i])
-        v[i, 1] = (values[i] + values[i+2] - 2 * values[i+1], values[i] - values[i+1])
+        v[i, 1] = (values[i] + values[i+2] - 2values[i+1], values[i] - values[i+1])
     end
     v[1, 1] = (v[1, 1][1], 0)
     s = conv.(v)
@@ -33,7 +33,7 @@ function gen_second(file, name, values)
 
     for i in 1:length(values)-2
         v[i, 1] = (values[i] - values[i+1], values[i])
-        v[1, i] = (values[i+1] - values[i], 2 * values[i+1] - values[i] - values[i+2])
+        v[1, i] = (values[i+1] - values[i], 2values[i+1] - values[i] - values[i+2])
     end
     v[1, 1] = (0, v[1, 1][2])
     s = conv.(v)

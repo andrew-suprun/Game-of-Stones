@@ -1,3 +1,6 @@
+const n_places::Int = 20
+const n_moves::Int = 64
+
 struct Place
     x::Int8
     y::Int8
@@ -17,13 +20,14 @@ const White::Int8 = 8
 mutable struct Game
     stones::Matrix{Int8}
     values::Array{Int16,3}
+    moves::Vector{Move}
     value::Int16
     stone::Int8
 
     function Game(name)
         stones = zeros(Int8, board_size, board_size)
         values = init_values(name)
-        new(stones, values, 0, Black)
+        new(stones, values, Vector{Move}(), 0, Black)
     end
 end
 
@@ -36,7 +40,7 @@ function init_values(name)
             h = min(ms, x, board_size + 1 - x)
             m = min(x, y, board_size + 1 - x, board_size + 1 - y)
             t1 = max(0, min(ms, m, board_size + 1 - ms - y + x, board_size + 1 - ms - x + y))
-            t2 = max(0, min(ms, m, 2 * board_size + 2 - ms - y - x, x + y - ms))
+            t2 = max(0, min(ms, m, 2board_size + 2 - ms - y - x, x + y - ms))
             total = v + h + t1 + t2
             values[1, x, y] = total
             values[2, x, y] = -total
@@ -58,7 +62,7 @@ function play_move!(game, name, move)
     next_turn!(game)
 end
 
-function undo_move!(game, move)
+function undo_move!(game, name, move)
     next_turn!(game)
 
     if move.p1 != move.p2
@@ -107,7 +111,7 @@ function place_stone!(game, name, place, coeff)
     end
 
     begin
-        n = min(ms, m, 2 * board_size + 2 - ms - y - x, x + y - ms)
+        n = min(ms, m, 2board_size + 2 - ms - y - x, x + y - ms)
         if n > 0
             mn = min(board_size + 1 - x, y, ms)
             xStart = x + mn - 1
@@ -143,6 +147,10 @@ function update_row!(game, name, x, y, dx, dy, n, coeff)
         x += dx
         y += dy
     end
+end
+
+function top_moves(game, ::Val{:Gomoku}, moves)
+    empty!(moves)
 end
 
 function board_value(game, name)::Int16
@@ -347,7 +355,7 @@ function parse_place(place)
         if place[3] < '0' || place[3] > '9'
             throw(ArgumentError("Invalid Place"))
         end
-        y = 10 * y + place[3] - '0'
+        y = 10y + place[3] - '0'
     end
     y = board_size + 1 - y
     if x > board_size || y > board_size
