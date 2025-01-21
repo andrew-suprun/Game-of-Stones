@@ -36,7 +36,7 @@ function init_values(name)
             h = min(ms, x, board_size + 1 - x)
             m = min(x, y, board_size + 1 - x, board_size + 1 - y)
             t1 = max(0, min(ms, m, board_size + 1 - ms - y + x, board_size + 1 - ms - x + y))
-            t2 = max(0, min(ms, m, 2 * board_size - ms - y - x, x + y - ms))
+            t2 = max(0, min(ms, m, 2 * board_size + 2 - ms - y - x, x + y - ms))
             total = v + h + t1 + t2
             values[1, x, y] = total
             values[2, x, y] = -total
@@ -81,23 +81,23 @@ function place_stone!(game, name, place, coeff)
 
     ms = max_stones(name)
     begin
-        start_x = max(1, x - ms)
-        end_x = min(x + ms, board_size) - ms
-        n = end_x - start_x
+        start_x = max(1, x - ms + 1)
+        end_x = min(board_size - ms + 1, x)
+        n = end_x - start_x + 1
         update_row!(game, name, start_x, y, 1, 0, n, coeff)
     end
 
     begin
-        start_y = max(1, y - ms)
-        end_y = min(y + ms, board_size) - ms
-        n = end_y - start_y
+        start_y = max(1, y - ms + 1)
+        end_y = min(board_size - ms + 1, y)
+        n = end_y - start_y + 1
         update_row!(game, name, x, start_y, 0, 1, n, coeff)
     end
 
-    m = 1 + min(x, y, board_size - x, board_size - y)
+    m = min(x, y, board_size + 1 - x, board_size + 1 - y)
 
     begin
-        n = min(ms, m, board_size - ms - y + x, board_size - ms - x + y)
+        n = min(ms, m, board_size + 1 - ms - y + x, board_size + 1 - ms - x + y)
         if n > 0
             mn = min(x, y, ms)
             xStart = x - mn + 1
@@ -107,11 +107,11 @@ function place_stone!(game, name, place, coeff)
     end
 
     begin
-        n = min(ms, m, 2 * board_size - ms - y - x, x + y - ms)
+        n = min(ms, m, 2 * board_size + 2 - ms - y - x, x + y - ms)
         if n > 0
-            mn = min(board_size - x, y, ms)
-            xStart = x + mn
-            yStart = y - mn
+            mn = min(board_size + 1 - x, y, ms)
+            xStart = x + mn - 1
+            yStart = y - mn + 1
             update_row!(game, name, xStart, yStart, -1, 1, n, coeff)
         end
     end
@@ -124,11 +124,11 @@ function place_stone!(game, name, place, coeff)
 end
 
 function update_row!(game, name, x, y, dx, dy, n, coeff)
+    ms1 = max_stones(name) - 1
     stones = 1
-    for i in 1:max_stones(name)
+    for i in 0:max_stones(name)-2
         stones += game.stones[x+i*dx, y+i*dy]
     end
-    ms1 = max_stones(name) - 1
     for _ in 1:n
         stones += game.stones[x+ms1*dx, y+ms1*dy]
         b_value, w_value = game_values(name, game.stone, stones)
