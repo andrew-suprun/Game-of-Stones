@@ -1,5 +1,3 @@
-using Printf
-
 function gen(file, name, values...)
     gen_first(file, name, values)
     gen_second(file, name, values)
@@ -9,10 +7,10 @@ end
 
 Base.zero(::Type{Tuple{Int64,Int64}}) = (0, 0)
 
-conv(v) = @sprintf "(%d, %d)," v[1] v[2]
+conv(v) = "($(v[1]), $(v[2])),"
 
 function gen_first(file, name, values)
-    @printf file "const %s_first = Tuple{Int16,Int16}[\n" name
+    println(file, "const $(name)_first = Tuple{Int16,Int16}[")
     v = zeros(Tuple{Int,Int}, 8, 8)
 
     for i in 1:length(values)-2
@@ -28,7 +26,7 @@ function gen_first(file, name, values)
 end
 
 function gen_second(file, name, values)
-    @printf file "const %s_second = Tuple{Int16,Int16}[\n" name
+    println(file, "const $(name)_second = Tuple{Int16,Int16}[")
     v = zeros(Tuple{Int,Int}, 8, 8)
 
     for i in 1:length(values)-2
@@ -44,7 +42,7 @@ function gen_second(file, name, values)
 end
 
 function gen_values(file, name, values)
-    @printf file "const %s_values = Tuple{Int16,Int16}[\n" name
+    println(file, "const $(name)_values = Tuple{Int16,Int16}[")
     v = zeros(Tuple{Int,Int}, 8, 8)
 
     v[1, 1] = (1, -1)
@@ -60,7 +58,7 @@ function gen_values(file, name, values)
 end
 
 function gen_value(file, name, values)
-    @printf file "const %s_value = Int16[\n" name
+    println(file, "const $(name)_value = Int16[")
     v = zeros(Int, 8, 8)
 
     for i in 2:8
