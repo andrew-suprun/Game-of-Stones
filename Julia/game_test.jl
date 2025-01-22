@@ -44,10 +44,6 @@ end
 function test_place_stone(name)
     game = Game(name)
 
-    # next_turn!(game)
-    # place_stone!(game, name, Place(1, 1), 1)
-    # check_values(game, name) || return false
-
     Random.seed!(1)
     places = Vector{Place}()
     j = 1
