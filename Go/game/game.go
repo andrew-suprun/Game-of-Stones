@@ -314,6 +314,7 @@ func (game *Game) topConnect6Moves(moves *[]Move) {
 			return
 		}
 
+		game_value := game.value
 		game.placeStone(place1, 1)
 
 		for _, place2 := range game.places[i+1:] {
@@ -321,7 +322,7 @@ func (game *Game) topConnect6Moves(moves *[]Move) {
 
 			if value2 <= -WinValue || value2 >= WinValue {
 				*moves = (*moves)[:1]
-				(*moves)[0] = Move{P1: place1, P2: place2, value: game.value + value1 + value2, terminal: true}
+				(*moves)[0] = Move{P1: place1, P2: place2, value: game_value + value1 + value2, terminal: true}
 				game.placeStone(place1, -1)
 				return
 			}
@@ -333,7 +334,7 @@ func (game *Game) topConnect6Moves(moves *[]Move) {
 				oppVal := game.oppValue()
 				game.placeStone(place2, -1)
 
-				move := Move{P1: place1, P2: place2, value: game.value + value + oppVal, terminal: isDraw}
+				move := Move{P1: place1, P2: place2, value: game_value + value + oppVal, terminal: isDraw}
 				heap.Add(move, moves, less)
 			}
 			if isDraw {
