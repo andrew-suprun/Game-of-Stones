@@ -77,7 +77,6 @@ end
 next_turn!(game::Game) = game.stone = 9 - game.stone
 
 function place_stone!(game, name, place, coeff)
-    @show place, coeff
     turn_idx = game.stone == Black ? 1 : 2
     x, y = place.x, place.y
     if coeff == 1
