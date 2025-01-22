@@ -15,7 +15,7 @@ function test_board_values(name)
         game.stones[x, y] = rand(stones)
     end
 
-    v = board_values(game, name)
+    v = board_values(game)
     # println(game.stones)
     # println(v)
 
@@ -23,15 +23,15 @@ function test_board_values(name)
         if game.stones[x, y] != 0
             continue
         end
-        orig = board_value(game, name)
+        orig = board_value(game)
         game.stones[x, y] = Black
-        vb = board_value(game, name)
+        vb = board_value(game)
         if v[1, x, y] != vb - orig
             println("Failed:X $x:$y expected  $(vb - orig)  got $(v[1, x, y])")
             return false
         end
         game.stones[x, y] = White
-        vw = board_value(game, name)
+        vw = board_value(game)
         if v[2, x, y] != vw - orig
             println("Failed:Y $x:$y expected  $(vb - orig)  got $(v[2, x, y])")
             return false
@@ -52,8 +52,8 @@ function test_place_stone(name)
         if place in places
             continue
         end
-        place_stone!(game, name, place, 1)
-        check_values(game, name) || return false
+        place_stone!(game, place, 1)
+        check_values(game) || return false
         push!(places, place)
         next_turn!(game)
         j += 1
@@ -62,15 +62,15 @@ function test_place_stone(name)
         j -= 1
         place = pop!(places)
         next_turn!(game)
-        place_stone!(game, name, place, -1)
-        check_values(game, name) || return false
+        place_stone!(game, place, -1)
+        check_values(game) || return false
     end
     return true
 end
 
-function check_values(game, name)
+function check_values(game)
     success = true
-    v = board_values(game, name)
+    v = board_values(game)
     for y in 1:board_size, x = 1:board_size, c = 1:2
         if game.stones[x, y] == None && v[c, x, y] != game.values[c, x, y]
             println("Failure [$c, $x, $y] expected $(v[c,x,y]) got $(game.values[c,x,y])")
@@ -84,9 +84,9 @@ function check_values(game, name)
 end
 
 @testset begin
-    @test test_board_values(Val(:Gomoku))
-    @test test_board_values(Val(:Connect6))
+    @test test_board_values(gomoku)
+    @test test_board_values(connect6)
 
-    @test test_place_stone(Val(:Gomoku))
-    @test test_place_stone(Val(:Connect6))
+    @test test_place_stone(gomoku)
+    @test test_place_stone(connect6)
 end

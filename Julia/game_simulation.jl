@@ -6,11 +6,11 @@ include("game_printer.jl")
 function run_simulation(name)
     println("\n--- $name")
     game = Game(name)
-    play_move!(game, name, Move(Place(10, 10), Place(10, 10)))
-    if name == Val(:Gomoku)
-        play_move!(game, name, Move(Place(9, 9), Place(9, 9)))
+    play_move!(game, Move(Place(10, 10), Place(10, 10)))
+    if name == gomoku
+        play_move!(game, Move(Place(9, 9), Place(9, 9)))
     else
-        play_move!(game, name, Move(Place(9, 9), Place(9, 10)))
+        play_move!(game, Move(Place(9, 9), Place(9, 10)))
     end
     println(game.stones)
     moves = Vector{MoveValue}()
@@ -23,7 +23,7 @@ function run_simulation(name)
             end
         end
         @show move
-        play_move!(game, name, move.move)
+        play_move!(game, move.move)
         println(game.stones)
         if move.isterminal
             break
@@ -31,5 +31,5 @@ function run_simulation(name)
     end
 end
 
-run_simulation(Val(:Gomoku))
-run_simulation(Val(:Connect6))
+run_simulation(gomoku)
+run_simulation(connect6)
