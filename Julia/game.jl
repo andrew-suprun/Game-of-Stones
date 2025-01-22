@@ -77,6 +77,7 @@ end
 next_turn!(game::Game) = game.stone = 9 - game.stone
 
 function place_stone!(game, name, place, coeff)
+    @show place, coeff
     turn_idx = game.stone == Black ? 1 : 2
     x, y = place.x, place.y
     if coeff == 1
@@ -177,6 +178,7 @@ function top_moves(game, name::Val{:Connect6}, moves)
 
     empty!(moves)
     top_places(game)
+    game_value = game.value
 
     has_draw = false
     turn_idx = game.stone == Black ? 1 : 2
@@ -193,14 +195,15 @@ function top_moves(game, name::Val{:Connect6}, moves)
         for place2 in game.places[i+1:end]
             value2 = game.values[turn_idx, place2.x, place2.y]
             if value2 < -win_value || value2 > win_value
-                heap_push!(moves, MoveValue(Move(place1, place2), game.value + (value1 + value2) ÷ Int16(2), true), n_moves, less)
+                heap_push!(moves, MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), true), n_moves, less)
                 place_stone!(game, name, place1, -1)
                 return
             end
 
             is_draw = value1 + value2 == 0
             if !is_draw || !has_draw
-                heap_push!(moves, MoveValue(Move(place1, place2), game.value + (value1 + value2) ÷ Int16(2), is_draw), n_moves, less)
+                mv = MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), is_draw)
+                heap_push!(moves, mv, n_moves, less)
             end
             has_draw = has_draw || is_draw
 
@@ -218,7 +221,9 @@ function top_places(game)
     empty!(game.places)
 
     for y in 1:board_size, x in 1:board_size
-        heap_push!(game.places, Place(x, y), n_places, less)
+        if game.stones[x, y] == None
+            heap_push!(game.places, Place(x, y), n_places, less)
+        end
     end
 end
 

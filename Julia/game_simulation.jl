@@ -4,13 +4,27 @@ include("game_values.jl")
 include("game_printer.jl")
 
 function run_simulation(name)
+    println("--- $name")
     game = Game(name)
     play_move!(game, name, Move(Place(10, 10), Place(10, 10)))
+    if name == Val(:Gomoku)
+        play_move!(game, name, Move(Place(9, 9), Place(9, 9)))
+    else
+        play_move!(game, name, Move(Place(9, 9), Place(9, 10)))
+    end
+    println(game.stones)
     moves = Vector{MoveValue}()
     top_moves(game, name, moves)
-    println(game.stones)
-    for move in moves
-        println(move)
+    move = moves[1]
+    for m in moves
+        if move.value < m.value && game.stone == Black || move.value > m.value && game.stone == White
+            move = m
+        end
+        play_move!(game, name, move.move)
+        println(game.stones)
+        if move.isterminal
+            break
+        end
     end
 end
 
