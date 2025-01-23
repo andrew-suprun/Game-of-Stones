@@ -30,7 +30,12 @@ end
 
 function expand!(tree, node, game)
     if node.isdecisive
-        return Node{Move}(Node{Move}[], node.value, node.n_sims + n_moves, node.move, node.isdecisive, node.isterminal)
+        return Node{Move}(node.move,
+            children=node.children,
+            n_sims=node.n_sims + n_moves,
+            value=node.value,
+            isdecisive=true,
+            isterminal=node.isterminal)
     end
 
     if isempty(node.children)
@@ -41,6 +46,7 @@ function expand!(tree, node, game)
             children[i] = Node{Move}(
                 child_move.move,
                 value=child_move.value,
+                isdecisive=child_move.isterminal,
                 isterminal=child_move.isterminal,
             )
         end
@@ -97,16 +103,18 @@ function commit_move!(tree, game, to_play)
     for child in tree.root.children
         if move == child.move
             tree.root = child
+            tree.root.isdecisive && println("### decisive ###")
+            expand!(tree, game)
             return
         end
     end
     tree.root = Node{Move}(Move(), value=board_value(game))
+    expand!(tree, game)
 end
 
 function best_move(tree)
     best_child = tree.root.children[1]
     for child in tree.root.children
-        println("$(child.move):  |  $(child.value)  |  $(child.n_sims)")
         if best_child.n_sims < child.n_sims
             best_child = child
         end

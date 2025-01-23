@@ -2,9 +2,11 @@ include("interface.jl")
 include("game.jl")
 include("game_values.jl")
 include("game_printer.jl")
+include("tree.jl")
 
 function run_simulation(name)
     println("\n--- $name")
+    tree = Tree{Move}(100.0)
     game = Game(name)
     play_move!(game, Move(Place(10, 10), Place(10, 10)))
     if name == gomoku
@@ -13,23 +15,18 @@ function run_simulation(name)
         play_move!(game, Move(Place(9, 9), Place(9, 10)))
     end
     println(game.stones)
-    moves = Vector{MoveValue}()
     while true
-        top_moves(game, name, moves)
-        move = moves[1]
-        for m in moves
-            if move.value < m.value && game.stone == Black || move.value > m.value && game.stone == White
-                move = m
-            end
+        for _ in 1:10_000
+            expand!(tree, game)
+            tree.root.isdecisive && break
         end
-        @show move
-        play_move!(game, move.move)
+        move = best_move(tree)
+        println(move)
+        commit_move!(tree, game, "$move")
         println(game.stones)
-        if move.isterminal
-            break
-        end
+        tree.root.isterminal && break
     end
 end
 
 run_simulation(gomoku)
-run_simulation(connect6)
+# run_simulation(connect6)

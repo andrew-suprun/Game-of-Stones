@@ -1,7 +1,7 @@
 include("heap.jl")
 
-const n_places::Int = 20
-const n_moves::Int = 64
+const n_places::Int32 = 20
+const n_moves::Int32 = 64
 
 struct Place
     x::Int8
@@ -149,7 +149,7 @@ function update_row!(game, x, y, dx, dy, n, coeff)
         b_value, w_value = game_values(game.name, game.stone, stones)
         if b_value != 0 || w_value != 0
             b_value, w_value = b_value * coeff, w_value * coeff
-            for j in 0:ms1 # TODO manually unroll?
+            for j in 0:ms1
                 game.values[1, x+j*dx, y+j*dy] += b_value
                 game.values[2, x+j*dx, y+j*dy] += w_value
             end
@@ -428,14 +428,7 @@ function parse_place(place)
         throw(ArgumentError("Invalid Place"))
     end
     x = place[1] + 1 - 'a'
-    y = place[2] - '0'
-    if length(place) == 3
-        if place[3] < '0' || place[3] > '9'
-            throw(ArgumentError("Invalid Place"))
-        end
-        y = 10y + place[3] - '0'
-    end
-    y = board_size + 1 - y
+    y = parse(Int8, place[2:end])
     if x > board_size || y > board_size
         throw(ArgumentError("Invalid Place"))
     end
