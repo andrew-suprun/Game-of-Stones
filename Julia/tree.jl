@@ -104,7 +104,14 @@ function commit_move!(tree, game, to_play)
 end
 
 function best_move(tree)
-    error("TODO: Implement")
+    best_child = tree.root.children[1]
+    for child in tree.root.children
+        println("$(child.move):  |  $(child.value)  |  $(child.n_sims)")
+        if best_child.n_sims < child.n_sims
+            best_child = child
+        end
+    end
+    return best_child.move
 end
 
 Base.show(io::IO, tree::Tree{Move}) where {Move} = Base.show(io, tree.root)
