@@ -25,7 +25,6 @@ end
 
 function expand!(tree, game)
     tree.root = expand!(tree, tree.root, game)
-    println("tree.root = $(tree.root)")
     validate(tree, debug)
 end
 
@@ -57,20 +56,15 @@ function expand!(tree, node, game)
 end
 
 function select_child(node, turn_idx, exploration_factor)
-    println("--- selecting for $(node.move)")
     coeff = turn_idx == 1 ? 1 : -1
     selected_child_idx = 1
     log_parent_sims = log(node.n_sims)
     max_value = -Inf
     for (idx, child) in enumerate(node.children)
         value = coeff * child.value + exploration_factor * sqrt(log_parent_sims / child.n_sims)
-        print("selected $(child.move) | child value: $(coeff * child.value) | sims: $(child.n_sims) | exp factor: $(exploration_factor * sqrt(log_parent_sims / child.n_sims)) | value $value")
         if max_value < value
             max_value = value
             selected_child_idx = idx
-            println(" selected")
-        else
-            println()
         end
     end
     child = node.children[selected_child_idx]
@@ -110,10 +104,6 @@ function commit_move!(tree, game, to_play)
 end
 
 function best_move(tree)
-    error("TODO: Implement")
-end
-
-function show(io::IO, tree::Tree)
     error("TODO: Implement")
 end
 
