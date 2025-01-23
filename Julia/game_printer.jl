@@ -1,5 +1,8 @@
 using Printf
 
+Base.show(io::IO, place::Place) = print(io, "$(place.x+'a'-1)$(place.y)")
+Base.show(io::IO, move::Move) = print(io, move.p1 == move.p2 ? "$(move.p1)" : "$(move.p1)-$(move.p2)")
+
 function Base.show(io::IO, stones::Matrix{Int8})
     print(io, "  ")
     for i in 0:board_size-1

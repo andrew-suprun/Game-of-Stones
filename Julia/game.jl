@@ -13,7 +13,7 @@ struct Move
     p2::Place
 end
 
-Move() = Move(Place(0, 0), Place(0, 0))
+Move(place=Place(1, 1)) = Move(place, place)
 
 const None::Int8 = 0
 const Black::Int8 = 1
@@ -159,6 +159,8 @@ function update_row!(game, x, y, dx, dy, n, coeff)
         y += dy
     end
 end
+
+top_moves(game, moves) = top_moves(game, game.name, moves)
 
 function top_moves(game, ::Name{:Gomoku}, moves)
     empty!(moves)

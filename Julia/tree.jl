@@ -23,19 +23,19 @@ mutable struct Tree{Move}
         new{Move}(exploration_factor, Node{Move}(Move()), MoveValue{Move}[])
 end
 
-function expand(tree, game)
-    expand(tree, tree.root, game)
+function expand!(tree, game)
+    tree.root = expand!(tree, tree.root, game)
+    println("tree.root = $(tree.root)")
     validate(tree, debug)
 end
 
-function expand(tree, node, game)
-    println("expand: node")
+function expand!(tree, node, game)
     if node.isdecisive
         return Node{Move}(Node{Move}[], node.value, node.n_sims + n_moves, node.move, node.isdecisive, node.isterminal)
     end
 
     if isempty(node.children)
-        top_moves(game, game.name, tree.top_moves)
+        top_moves(game, tree.top_moves)
 
         children = Vector{Node{Move}}(undef, length(tree.top_moves))
         for (i, child_move) in enumerate(tree.top_moves)
@@ -47,19 +47,41 @@ function expand(tree, node, game)
         end
         return update_stats(Node{Move}(node.move, children=children), game.turn_idx)
     else
-        selected_child = select_child(node, turn(tree.game), tree.exploration_factor)
-        play_move(game, selected_child.move)
-        expand(tree, selected_child)
-        undo_move(game, selected_child.move)
-        return update_stats(node, game.turn)
+        idx = select_child(node, game.turn_idx, tree.exploration_factor)
+        move = node.children[idx].move
+        play_move!(game, move)
+        node.children[idx] = expand!(tree, node.children[idx], game)
+        undo_move!(game, move)
+        return update_stats(node, game.turn_idx)
     end
 end
 
-function update_stats(node, turn)
+function select_child(node, turn_idx, exploration_factor)
+    println("--- selecting for $(node.move)")
+    coeff = turn_idx == 1 ? 1 : -1
+    selected_child_idx = 1
+    log_parent_sims = log(node.n_sims)
+    max_value = -Inf
+    for (idx, child) in enumerate(node.children)
+        value = coeff * child.value + exploration_factor * sqrt(log_parent_sims / child.n_sims)
+        print("selected $(child.move) | child value: $(coeff * child.value) | sims: $(child.n_sims) | exp factor: $(exploration_factor * sqrt(log_parent_sims / child.n_sims)) | value $value")
+        if max_value < value
+            max_value = value
+            selected_child_idx = idx
+            println(" selected")
+        else
+            println()
+        end
+    end
+    child = node.children[selected_child_idx]
+    return selected_child_idx
+end
+
+function update_stats(node, turn_idx)
     n_sims = Int32(0)
     value = node.children[begin].value
     isdecisive = false
-    if turn == :First
+    if turn_idx == 1
         for child in node.children
             n_sims += child.n_sims
             value = max(value, child.value)
@@ -93,6 +115,23 @@ end
 
 function show(io::IO, tree::Tree)
     error("TODO: Implement")
+end
+
+Base.show(io::IO, tree::Tree{Move}) where {Move} = Base.show(io, tree.root)
+Base.show(io::IO, node::Node{Move}) where {Move} = print_node(io, node, 0)
+
+function print_node(io::IO, node::Node{Move}, depth) where {Move}
+    print(io, "|   "^depth, "$(node.move) v:$(node.value) sims:$(node.n_sims)")
+    if node.isterminal
+        println(io, " terminal")
+    elseif node.isdecisive
+        println(io, " decisive")
+    else
+        println(io)
+    end
+    for child in node.children
+        print_node(io, child, depth + 1)
+    end
 end
 
 function validate(tree::Tree, debug::Debug{true})
