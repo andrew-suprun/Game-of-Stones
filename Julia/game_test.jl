@@ -10,7 +10,7 @@ function test_board_values(name)
     Random.seed!(1)
     game = Game(name)
 
-    stones = [None, None, None, None, Black, White]
+    stones = [none, none, none, none, black, white]
     for y in 1:board_size, x in 1:board_size
         game.stones[x, y] = rand(stones)
     end
@@ -24,19 +24,19 @@ function test_board_values(name)
             continue
         end
         orig = board_value(game)
-        game.stones[x, y] = Black
+        game.stones[x, y] = black
         vb = board_value(game)
         if v[1, x, y] != vb - orig
             println("Failed:X $x:$y expected  $(vb - orig)  got $(v[1, x, y])")
             return false
         end
-        game.stones[x, y] = White
+        game.stones[x, y] = white
         vw = board_value(game)
         if v[2, x, y] != vw - orig
             println("Failed:Y $x:$y expected  $(vb - orig)  got $(v[2, x, y])")
             return false
         end
-        game.stones[x, y] = None
+        game.stones[x, y] = none
     end
     return true
 end
@@ -72,7 +72,7 @@ function check_values(game)
     success = true
     v = board_values(game)
     for y in 1:board_size, x = 1:board_size, c = 1:2
-        if game.stones[x, y] == None && v[c, x, y] != game.values[c, x, y]
+        if game.stones[x, y] == none && v[c, x, y] != game.values[c, x, y]
             println("Failure [$c, $x, $y] expected $(v[c,x,y]) got $(game.values[c,x,y])")
             success = false
         end

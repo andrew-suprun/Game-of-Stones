@@ -3,7 +3,7 @@ using Printf
 Base.show(io::IO, place::Place) = print(io, "$(place.x+'a'-1)$(place.y)")
 Base.show(io::IO, move::Move) = print(io, move.p1 == move.p2 ? "$(move.p1)" : "$(move.p1)-$(move.p2)")
 
-function Base.show(io::IO, stones::Matrix{Int8})
+function Base.show(io::IO, stones::Matrix{Stone})
     print(io, "  ")
     for i in 0:board_size-1
         @printf io " %c" i + 'a'
@@ -13,13 +13,13 @@ function Base.show(io::IO, stones::Matrix{Int8})
         @printf io "%2d" y
         for x in 1:board_size
             stone = stones[x, y]
-            if stone == Black
+            if stone == black
                 if x == 1
                     print(io, " X")
                 else
                     print(io, "─X")
                 end
-            elseif stone == White
+            elseif stone == white
                 if x == 1
                     print(io, " O")
                 else
@@ -79,9 +79,9 @@ function print_game_values(io, game, idx, footer)
     for y in 1:board_size
         @printf(io, "%2d │", y)
         for x in 1:board_size
-            if game.stones[x, y] == Black
+            if game.stones[x, y] == black
                 print(io, "    X │")
-            elseif game.stones[x, y] == White
+            elseif game.stones[x, y] == white
                 print(io, "    O │")
             else
                 value = values[idx, x, y]
@@ -120,21 +120,21 @@ function print_values(io, values, idx, footer)
     for i in 0:board_size-1
         @printf io " %c %2d │" i + 'a' i + 1
     end
-    println(io, "───┼", "──────┼"^19, "───")
+    println(io, "\n───┼", "──────┼"^19, "───")
 
     for y in 1:board_size
-        @printf(io, "%2d %2d │", board_size + 1 - y, y)
+        @printf(io, "%2d │", y)
         for x in 1:board_size
             @printf(io, "%5d │", values[idx, x, y])
         end
 
-        @printf(io, " %2d %2d", board_size + 1 - y, y)
+        @printf(io, " %2d", y)
         println(io)
     end
     println(io, "───┼", "──────┼"^19, "───")
 
     if footer
-        print(io, "      │")
+        print(io, "   │")
         for i in 0:board_size-1
             @printf io " %c %2d │" i + 'a' i + 1
         end

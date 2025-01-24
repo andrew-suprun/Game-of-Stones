@@ -15,23 +15,23 @@ end
 
 Move(place=Place(1, 1)) = Move(place, place)
 
-const None::Int8 = 0
-const Black::Int8 = 1
-const White::Int8 = 8
+@enum Stone::Int8 none = 0 black = 1 white = 8
+
+Base.zero(::Type{Stone}) = none
 
 mutable struct Game
     name::Union{Name{:Gomoku},Name{:Connect6}}
-    stones::Matrix{Int8}
+    stones::Matrix{Stone}
     values::Array{Int16,3}
     places::Vector{Place}
     value::Int16
-    stone::Int8
+    stone::Stone
     turn_idx::Int8
 
     function Game(name)
-        stones = zeros(Int8, board_size, board_size)
+        stones = zeros(Stone, board_size, board_size)
         values = init_values(name)
-        new(name, stones, values, Vector{Place}(), 0, Black, 1)
+        new(name, stones, values, Vector{Place}(), 0, black, 1)
     end
 end
 
@@ -77,11 +77,11 @@ function undo_move!(game, move)
 end
 
 function next_turn!(game::Game)
-    if game.stone == Black
-        game.stone = White
+    if game.stone == black
+        game.stone = white
         game.turn_idx = 2
     else
-        game.stone = Black
+        game.stone = black
         game.turn_idx = 1
     end
 end
@@ -91,7 +91,7 @@ function place_stone!(game, place, coeff)
     if coeff == 1
         game.value += game.values[game.turn_idx, x, y]
     else
-        game.stones[x, y] = None
+        game.stones[x, y] = none
     end
 
     ms = max_stones(game.name)
@@ -142,19 +142,23 @@ function update_row!(game, x, y, dx, dy, n, coeff)
     ms1 = max_stones(game.name) - 1
     stones = 1
     for i in 0:max_stones(game.name)-2
-        stones += game.stones[x+i*dx, y+i*dy]
+        stones += Int(game.stones[x+i*dx, y+i*dy])
     end
     for _ in 1:n
-        stones += game.stones[x+ms1*dx, y+ms1*dy]
+        stones += Int(game.stones[x+ms1*dx, y+ms1*dy])
         b_value, w_value = game_values(game.name, game.stone, stones)
         if b_value != 0 || w_value != 0
             b_value, w_value = b_value * coeff, w_value * coeff
             for j in 0:ms1
+                # if b_value < -5000 || b_value > 5000
+                #     println("### [$(x+j*dx):$(y+j*dy)] v: $(game.values[1, x+j*dx, y+j*dy]) b_value: $b_value stones: $stones")
+                # end
+
                 game.values[1, x+j*dx, y+j*dy] += b_value
                 game.values[2, x+j*dx, y+j*dy] += w_value
             end
         end
-        stones -= game.stones[x, y]
+        stones -= Int(game.stones[x, y])
         x += dx
         y += dy
     end
@@ -169,13 +173,15 @@ function top_moves(game, ::Name{:Gomoku}, moves)
     has_draw = false
     for place in game.places
         value = game.values[game.turn_idx, place.x, place.y]
-        if value < -win_value || value > win_value
-            push!(moves, MoveValue(Move(place, place), value, true))
+        if value <= -win_value
+            push!(moves, MoveValue(Move(place, place), Int16(-20_000), white_win))
             return
+        elseif value >= win_value
+            push!(moves, MoveValue(Move(place, place), Int16(20_000), black_win))
         end
 
         if value != 0 || has_draw
-            move = MoveValue(Move(place, place), game.value + value ÷ Int16(2), value == 0)
+            move = MoveValue(Move(place, place), game.value + value ÷ Int16(2), value == 0 ? draw : no_decision)
             push!(moves, move)
         end
         has_draw = has_draw || value == 0
@@ -183,7 +189,7 @@ function top_moves(game, ::Name{:Gomoku}, moves)
 end
 
 function top_moves(game, ::Name{:Connect6}, moves)
-    less = game.stone == Black ? (a, b) -> a.value < b.value : (a, b) -> b.value < a.value
+    less = game.stone == black ? (a, b) -> a.value < b.value : (a, b) -> b.value < a.value
 
     empty!(moves)
     top_places(game)
@@ -193,8 +199,11 @@ function top_moves(game, ::Name{:Connect6}, moves)
 
     for (i, place1) in enumerate(game.places)
         value1 = game.values[game.turn_idx, place1.x, place1.y]
-        if value1 < -win_value || value1 > win_value
-            heap_push!(moves, MoveValue(Move(place1, place1), game.value + value1, true), n_moves, less)
+        if value1 <= -win_value
+            heap_push!(moves, MoveValue(Move(place1, place1), game.value + value1, white_win), n_moves, less)
+            return
+        elseif value1 >= win_value
+            heap_push!(moves, MoveValue(Move(place1, place1), game.value + value1, black_win), n_moves, less)
             return
         end
 
@@ -202,15 +211,21 @@ function top_moves(game, ::Name{:Connect6}, moves)
 
         for place2 in game.places[i+1:end]
             value2 = game.values[game.turn_idx, place2.x, place2.y]
-            if value2 < -win_value || value2 > win_value
-                heap_push!(moves, MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), true), n_moves, less)
+            if value2 <= -win_value
+                mv = MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), white_win)
+                heap_push!(moves, mv, n_moves, less)
+                place_stone!(game, place1, -1)
+                return
+            elseif value2 >= win_value
+                mv = MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), black_win)
+                heap_push!(moves, mv, n_moves, less)
                 place_stone!(game, place1, -1)
                 return
             end
 
             is_draw = value1 + value2 == 0
             if !is_draw || !has_draw
-                mv = MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), is_draw)
+                mv = MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), is_draw ? draw : no_decision)
                 heap_push!(moves, mv, n_moves, less)
             end
             has_draw = has_draw || is_draw
@@ -223,13 +238,13 @@ function top_moves(game, ::Name{:Connect6}, moves)
 end
 
 function top_places(game)
-    less = game.stone == Black ? (a, b) -> game.values[1, a.x, a.y] < game.values[1, b.x, b.y] :
+    less = game.stone == black ? (a, b) -> game.values[1, a.x, a.y] < game.values[1, b.x, b.y] :
            (a, b) -> game.values[2, b.x, b.y] < game.values[2, a.x, a.y]
 
     empty!(game.places)
 
     for y in 1:board_size, x in 1:board_size
-        if game.stones[x, y] == None
+        if game.stones[x, y] == none
             heap_push!(game.places, Place(x, y), n_places, less)
         end
     end
@@ -436,10 +451,10 @@ function parse_place(place)
 end
 
 game_values(::Name{:Gomoku}, stone, stones) =
-    stone == Black ? gomoku_first[stones] : gomoku_second[stones]
+    stone == black ? gomoku_first[stones] : gomoku_second[stones]
 
 game_values(::Name{:Connect6}, stone, stones) =
-    stone == Black ? connect6_first[stones] : connect6_second[stones]
+    stone == black ? connect6_first[stones] : connect6_second[stones]
 
 stones_values(::Name{:Connect6}, stones) = connect6_values[stones]
 stones_values(::Name{:Gomoku}, stones) = gomoku_values[stones]

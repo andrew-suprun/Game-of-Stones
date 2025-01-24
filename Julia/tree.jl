@@ -2,14 +2,14 @@ struct Node{Move}
     children::Vector{Node{Move}}
     n_sims::Int32
     value::Int16
-    isdecisive::Bool
-    isterminal::Bool
+    decision::Decision
+    terminal::Decision
     move::Move
 
     function Node{Move}(move; children=Node{Move}[], value=Int16(0), n_sims=Int32(1),
-        isdecisive=false, isterminal=false,
+        decision=no_decision, terminal=no_decision,
     ) where {Move}
-        new(children, n_sims, value, isdecisive, isterminal, move)
+        new(children, n_sims, value, decision, terminal, move)
     end
 end
 
@@ -29,13 +29,13 @@ function expand!(tree, game)
 end
 
 function expand!(tree, node, game)
-    if node.isdecisive
+    if node.decision != no_decision
         return Node{Move}(node.move,
             children=node.children,
             n_sims=node.n_sims + n_moves,
             value=node.value,
-            isdecisive=true,
-            isterminal=node.isterminal)
+            decision=node.decision,
+            terminal=node.terminal)
     end
 
     if isempty(node.children)
@@ -46,8 +46,8 @@ function expand!(tree, node, game)
             children[i] = Node{Move}(
                 child_move.move,
                 value=child_move.value,
-                isdecisive=child_move.isterminal,
-                isterminal=child_move.isterminal,
+                decision=child_move.terminal,
+                terminal=child_move.terminal,
             )
         end
         return update_stats(Node{Move}(node.move, children=children), game.turn_idx)
@@ -80,21 +80,33 @@ end
 function update_stats(node, turn_idx)
     n_sims = Int32(0)
     value = node.children[begin].value
-    isdecisive = false
+    decision = no_decision
     if turn_idx == 1
+        b_win = false
+        w_win = true
+        all_draws = true
         for child in node.children
             n_sims += child.n_sims
             value = max(value, child.value)
-            isdecisive = isdecisive || child.isdecisive && child.value > 0
+            b_win = b_win || child.decision == black_win
+            w_win = w_win && child.decision == white_win
+            all_draws = all_draws && child.decision == draw
         end
+        decision = b_win ? black_win : all_draws ? draw : w_win ? white_win : no_decision
     else
+        b_win = true
+        w_win = false
+        all_draws = true
         for child in node.children
             n_sims += child.n_sims
             value = min(value, child.value)
-            isdecisive = isdecisive || child.isdecisive && child.value < 0
+            b_win = b_win && child.decision == black_win
+            w_win = w_win || child.decision == white_win
+            all_draws = all_draws && child.decision == draw
+            decision = w_win ? white_win : all_draws ? draw : b_win ? black_win : no_decision
         end
     end
-    Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, isdecisive=isdecisive, isterminal=false)
+    return Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, decision=decision, terminal=no_decision)
 end
 
 function commit_move!(tree, game, to_play)
@@ -103,7 +115,7 @@ function commit_move!(tree, game, to_play)
     for child in tree.root.children
         if move == child.move
             tree.root = child
-            tree.root.isdecisive && println("### decisive ###")
+            tree.root.decision != no_decision && println("### decision $(tree.root.decision) ###")
             expand!(tree, game)
             return
         end
@@ -113,6 +125,10 @@ function commit_move!(tree, game, to_play)
 end
 
 function best_move(tree)
+    for child in tree.root.children
+        println("$(child.move) | v: $(child.value) | s: $(child.n_sims)")
+    end
+
     best_child = tree.root.children[1]
     for child in tree.root.children
         if best_child.n_sims < child.n_sims
@@ -127,9 +143,9 @@ Base.show(io::IO, node::Node{Move}) where {Move} = print_node(io, node, 0)
 
 function print_node(io::IO, node::Node{Move}, depth) where {Move}
     print(io, "|   "^depth, "$(node.move) v:$(node.value) sims:$(node.n_sims)")
-    if node.isterminal
+    if node.terminal != no_decision
         println(io, " terminal")
-    elseif node.isdecisive
+    elseif node.decision != no_decision
         println(io, " decisive")
     else
         println(io)

@@ -1,9 +1,11 @@
 const board_size = 19
 
+@enum Decision::Int8 no_decision draw black_win white_win
+
 struct MoveValue{Move}
     move::Move
     value::Int16
-    isterminal::Bool
+    terminal::Decision
 end
 
 struct Name{x} end
