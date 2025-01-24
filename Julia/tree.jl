@@ -113,12 +113,6 @@ function update_stats(node, turn_idx)
             decision = w_win ? white_win : all_draws ? draw : b_win ? black_win : no_decision
         end
     end
-    # if decision == black_win && value != win_value || decision == white_win && value != -win_value || decision == draw && value != 0
-    #     println("!!! $decision $value")
-    #     for child in node.children
-    #         println("  $(child.move) v: $(child.value) d: $(child.decision)")
-    #     end
-    # end
     return Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, decision=decision, terminal=no_decision)
 end
 
@@ -130,7 +124,6 @@ function commit_move!(tree, game, to_play)
     for child in tree.root.children
         if move == child.move
             tree.root = child
-            # expand!(tree, game)
             return
         end
     end

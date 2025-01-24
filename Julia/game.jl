@@ -150,10 +150,6 @@ function update_row!(game, x, y, dx, dy, n, coeff)
         if b_value != 0 || w_value != 0
             b_value, w_value = b_value * coeff, w_value * coeff
             for j in 0:ms1
-                # if b_value < -5000 || b_value > 5000
-                #     println("### [$(x+j*dx):$(y+j*dy)] v: $(game.values[1, x+j*dx, y+j*dy]) b_value: $b_value stones: $stones")
-                # end
-
                 game.values[1, x+j*dx, y+j*dy] += b_value
                 game.values[2, x+j*dx, y+j*dy] += w_value
             end
@@ -420,8 +416,6 @@ function isterminal(game)
     nothing
 end
 
-# TODO: Use Unroll.jl?
-# TODO: Use @inbounds?
 function board_values(game)
     result = zeros(Int16, 2, board_size, board_size)
     ms = max_stones(game.name)
