@@ -75,9 +75,9 @@ end
 file = open("game_values.jl", "w")
 
 println(file, "# Generated. Don't edit.\n")
-println(file, "const win_value = 3000\n")
-gen(file, "connect6", 0, 1, 5, 20, 60, 120, 10_000, 10_000)
-gen(file, "gomoku", 0, 1, 4, 12, 24, 10_000, 10_000, 10_000)
+println(file, "const win_value::Int16 = 500\n")
+gen(file, "connect6", 0, 1, 5, 20, 60, 120, 1000, 1000)
+gen(file, "gomoku", 0, 1, 4, 12, 24, 1000, 1000, 1000)
 
 close(file)
 

@@ -25,7 +25,12 @@ end
 
 function expand!(tree, game)
     tree.root = expand!(tree, tree.root, game)
-    validate(tree, debug)
+    if tree.root.decision != no_decision
+        println("tree.root.decision = $(tree.root.decision)")
+        return false
+    end
+    undecided = count(c -> c.decision == no_decision, tree.root.children)
+    undecided != 1
 end
 
 function expand!(tree, node, game)
@@ -40,6 +45,9 @@ function expand!(tree, node, game)
 
     if isempty(node.children)
         top_moves(game, tree.top_moves)
+        if empty(tree.top_moves) == 0
+            println("*** no moves")
+        end
 
         children = Vector{Node{Move}}(undef, length(tree.top_moves))
         for (i, child_move) in enumerate(tree.top_moves)
@@ -73,7 +81,6 @@ function select_child(node, turn_idx, exploration_factor)
             selected_child_idx = idx
         end
     end
-    child = node.children[selected_child_idx]
     return selected_child_idx
 end
 
@@ -106,28 +113,31 @@ function update_stats(node, turn_idx)
             decision = w_win ? white_win : all_draws ? draw : b_win ? black_win : no_decision
         end
     end
+    # if decision == black_win && value != win_value || decision == white_win && value != -win_value || decision == draw && value != 0
+    #     println("!!! $decision $value")
+    #     for child in node.children
+    #         println("  $(child.move) v: $(child.value) d: $(child.decision)")
+    #     end
+    # end
     return Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, decision=decision, terminal=no_decision)
 end
 
 function commit_move!(tree, game, to_play)
     move = parse_move(to_play)
     play_move!(game, move)
+    isempty(tree.root.children) && expand!(tree, game)
+
     for child in tree.root.children
         if move == child.move
             tree.root = child
-            expand!(tree, game)
+            # expand!(tree, game)
             return
         end
     end
     tree.root = Node{Move}(Move(), value=board_value(game))
-    expand!(tree, game)
 end
 
 function best_move(tree, game)
-    for child in tree.root.children
-        println("$(child.move) | v: $(child.value) | s: $(child.n_sims) d: $(child.decision)")
-    end
-
     best_child = tree.root.children[1]
     if game.stone == black
         for child in tree.root.children
@@ -142,6 +152,7 @@ function best_move(tree, game)
             end
         end
     end
+
     return best_child.move
 end
 
@@ -161,9 +172,3 @@ function print_node(io::IO, node::Node{Move}, depth) where {Move}
         print_node(io, child, depth + 1)
     end
 end
-
-function validate(tree::Tree, debug::Debug{true})
-    error("TODO: Implement")
-end
-
-validate(tree::Tree, debug::Debug{false}) = nothing

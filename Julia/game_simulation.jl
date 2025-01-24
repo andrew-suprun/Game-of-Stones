@@ -18,32 +18,31 @@ function run_simulation(name)
     end
     println(game.stones)
     while true
-        for _ in 1:10_000
-            expand!(tree, game)
+        for i in 1:10_000
+            cont = expand!(tree, game)
             if game.stone == black && tree.root.decision == black_win
-                println("decision: Black win")
+                println("decision: Black win after $i expands")
                 break
             elseif game.stone == white && tree.root.decision == white_win
-                println("decision: White win")
+                println("decision: White win after $i expands")
+                break
+            end
+            if !cont
+                println("decision: single undecided after $i expands")
                 break
             end
         end
         move = best_move(tree, game)
-        println(move)
+        println("move: $move, turn: $(game.stone) dec: $(tree.root.decision) term: $(tree.root.terminal)")
         commit_move!(tree, game, "$move")
         println(game.stones)
-        tree.root.terminal != no_decision && break
+        term = isterminal(game)
+        if !isnothing(term)
+            println(term)
+            break
+        end
     end
 end
 
-run_simulation(gomoku)
-# run_simulation(connect6)
-
-# tree = Tree{Move}(20.0)
-# game = Game(gomoku)
-# play_move!(game, Move(Place(10, 10)))
-# play_move!(game, Move(Place(9, 9)))
-# println(game.values)
-# for _ in 1:20_000
-#     expand!(tree, game)
-# end
+# run_simulation(gomoku)
+run_simulation(connect6)

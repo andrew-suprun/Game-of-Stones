@@ -174,10 +174,10 @@ function top_moves(game, ::Name{:Gomoku}, moves)
     for place in game.places
         value = game.values[game.turn_idx, place.x, place.y]
         if value >= win_value
-            push!(moves, MoveValue(Move(place, place), Int16(10_000), black_win))
+            push!(moves, MoveValue(Move(place, place), win_value, black_win))
             return
         elseif value <= -win_value
-            push!(moves, MoveValue(Move(place, place), Int16(-10_000), white_win))
+            push!(moves, MoveValue(Move(place, place), -win_value, white_win))
             return
         end
 
@@ -257,71 +257,167 @@ function board_value(game)
     for y in 1:board_size
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[x, y]
+            stones += Int(game.stones[x, y])
         end
         for x in 1:board_size-ms+1
-            stones += game.stones[x+ms-1, y]
+            stones += Int(game.stones[x+ms-1, y])
             result += stones_value(game.name, stones)
-            stones -= game.stones[x, y]
+            stones -= Int(game.stones[x, y])
         end
     end
     for x in 1:board_size
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[x, y]
+            stones += Int(game.stones[x, y])
         end
         for y in 1:board_size-ms+1
-            stones += game.stones[x, y+ms-1]
+            stones += Int(game.stones[x, y+ms-1])
             result += stones_value(game.name, stones)
-            stones -= game.stones[x, y]
+            stones -= Int(game.stones[x, y])
         end
     end
     for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[x, y+x-1]
+            stones += Int(game.stones[x, y+x-1])
         end
         for x in 1:board_size+2-ms-y
-            stones += game.stones[x+ms-1, x+y+ms-2]
+            stones += Int(game.stones[x+ms-1, x+y+ms-2])
             result += stones_value(game.name, stones)
-            stones -= game.stones[x, x+y-1]
+            stones -= Int(game.stones[x, x+y-1])
         end
     end
     for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[x+y-1, y]
+            stones += Int(game.stones[x+y-1, y])
         end
         for y in 1:board_size+2-ms-x
-            stones += game.stones[x+y+ms-2, y+ms-1]
+            stones += Int(game.stones[x+y+ms-2, y+ms-1])
             result += stones_value(game.name, stones)
-            stones -= game.stones[x+y-1, y]
+            stones -= Int(game.stones[x+y-1, y])
         end
     end
     for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[board_size+1-x, y+x-1]
+            stones += Int(game.stones[board_size+1-x, y+x-1])
         end
         for x in 1:board_size+2-ms-y
-            stones += game.stones[board_size+2-x-ms, x+y+ms-2]
+            stones += Int(game.stones[board_size+2-x-ms, x+y+ms-2])
             result += stones_value(game.name, stones)
-            stones -= game.stones[board_size+1-x, x+y-1]
+            stones -= Int(game.stones[board_size+1-x, x+y-1])
         end
     end
     for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[board_size+2-x-y, y]
+            stones += Int(game.stones[board_size+2-x-y, y])
         end
         for y in 1:board_size+2-ms-x
-            stones += game.stones[board_size+3-x-y-ms, y+ms-1]
+            stones += Int(game.stones[board_size+3-x-y-ms, y+ms-1])
             result += stones_value(game.name, stones)
-            stones -= game.stones[board_size+2-x-y, y]
+            stones -= Int(game.stones[board_size+2-x-y, y])
         end
     end
 
     result
+end
+
+function isterminal(game)
+    ms = max_stones(game.name)
+    for y in 1:board_size
+        stones = 0
+        for x in 1:ms-1
+            stones += Int(game.stones[x, y])
+        end
+        for x in 1:board_size-ms+1
+            stones += Int(game.stones[x+ms-1, y])
+            if stones == ms
+                return black, Place(x, y), 1, 0
+            elseif stones == ms * Int(white)
+                return white, Place(x, y), 1, 0
+            end
+            stones -= Int(game.stones[x, y])
+        end
+    end
+    for x in 1:board_size
+        stones = 0
+        for y in 1:ms-1
+            stones += Int(game.stones[x, y])
+        end
+        for y in 1:board_size-ms+1
+            stones += Int(game.stones[x, y+ms-1])
+            if stones == ms
+                return black, Place(x, y), 0, 1
+            elseif stones == ms * Int(white)
+                return white, Place(x, y), 0, 1
+            end
+            stones -= Int(game.stones[x, y])
+        end
+    end
+    for y in 1:board_size+1-ms
+        stones = 0
+        for x in 1:ms-1
+            stones += Int(game.stones[x, y+x-1])
+        end
+        for x in 1:board_size+2-ms-y
+            stones += Int(game.stones[x+ms-1, x+y+ms-2])
+            if stones == ms
+                return black, Place(x, x + y - 1), 1, 1
+            elseif stones == ms * Int(white)
+                return white, Place(x, x + y - 1), 1, 1
+            end
+            stones -= Int(game.stones[x, x+y-1])
+        end
+    end
+    for x in 2:board_size+1-ms
+        stones = 0
+        for y in 1:ms-1
+            stones += Int(game.stones[x+y-1, y])
+        end
+        for y in 1:board_size+2-ms-x
+            stones += Int(game.stones[x+y+ms-2, y+ms-1])
+            if stones == ms
+                return black, Place(x + y - 1, y), 1, 1
+            elseif stones == ms * Int(white)
+                return white, Place(x + y - 1, y), 1, 1
+            end
+            stones -= Int(game.stones[x+y-1, y])
+        end
+    end
+    for y in 1:board_size+1-ms
+        stones = 0
+        for x in 1:ms-1
+            stones += Int(game.stones[board_size+1-x, y+x-1])
+        end
+        for x in 1:board_size+2-ms-y
+            stones += Int(game.stones[board_size+2-x-ms, x+y+ms-2])
+            if stones == ms
+                return black, Place(board_size + 1 - x, x + y - 1), -1, 1
+            elseif stones == ms * Int(white)
+                return white, Place(board_size + 1 - x, x + y - 1), -1, 1
+            end
+            stones -= Int(game.stones[board_size+1-x, x+y-1])
+        end
+    end
+    for x in 2:board_size+1-ms
+        stones = 0
+        for y in 1:ms-1
+            stones += Int(game.stones[board_size+2-x-y, y])
+        end
+        for y in 1:board_size+2-ms-x
+            stones += Int(game.stones[board_size+3-x-y-ms, y+ms-1])
+            if stones == ms
+                return black, Place(board_size + 2 - x - y, y), -1, 1
+            elseif stones == ms * Int(white)
+                return white, Place(board_size + 2 - x - y, y), -1, 1
+            end
+            stones -= Int(game.stones[board_size+2-x-y, y])
+        end
+    end
+
+    nothing
 end
 
 # TODO: Use Unroll.jl?
