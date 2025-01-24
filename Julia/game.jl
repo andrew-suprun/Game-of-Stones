@@ -173,11 +173,12 @@ function top_moves(game, ::Name{:Gomoku}, moves)
     has_draw = false
     for place in game.places
         value = game.values[game.turn_idx, place.x, place.y]
-        if value <= -win_value
-            push!(moves, MoveValue(Move(place, place), Int16(-20_000), white_win))
+        if value >= win_value
+            push!(moves, MoveValue(Move(place, place), Int16(10_000), black_win))
             return
-        elseif value >= win_value
-            push!(moves, MoveValue(Move(place, place), Int16(20_000), black_win))
+        elseif value <= -win_value
+            push!(moves, MoveValue(Move(place, place), Int16(-10_000), white_win))
+            return
         end
 
         if value != 0 || has_draw

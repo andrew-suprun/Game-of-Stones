@@ -20,12 +20,15 @@ function run_simulation(name)
     while true
         for _ in 1:10_000
             expand!(tree, game)
-            if tree.root.decision != no_decision
-                println("decision: $(tree.root.decision)")
+            if game.stone == black && tree.root.decision == black_win
+                println("decision: Black win")
+                break
+            elseif game.stone == white && tree.root.decision == white_win
+                println("decision: White win")
                 break
             end
         end
-        move = best_move(tree)
+        move = best_move(tree, game)
         println(move)
         commit_move!(tree, game, "$move")
         println(game.stones)

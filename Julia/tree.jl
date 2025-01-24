@@ -115,7 +115,6 @@ function commit_move!(tree, game, to_play)
     for child in tree.root.children
         if move == child.move
             tree.root = child
-            tree.root.decision != no_decision && println("### decision $(tree.root.decision) ###")
             expand!(tree, game)
             return
         end
@@ -124,15 +123,23 @@ function commit_move!(tree, game, to_play)
     expand!(tree, game)
 end
 
-function best_move(tree)
+function best_move(tree, game)
     for child in tree.root.children
-        println("$(child.move) | v: $(child.value) | s: $(child.n_sims)")
+        println("$(child.move) | v: $(child.value) | s: $(child.n_sims) d: $(child.decision)")
     end
 
     best_child = tree.root.children[1]
-    for child in tree.root.children
-        if best_child.n_sims < child.n_sims
-            best_child = child
+    if game.stone == black
+        for child in tree.root.children
+            if best_child.value < child.value
+                best_child = child
+            end
+        end
+    else
+        for child in tree.root.children
+            if best_child.value > child.value
+                best_child = child
+            end
         end
     end
     return best_child.move
