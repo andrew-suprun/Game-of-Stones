@@ -177,11 +177,12 @@ function top_moves(game, ::Name{:Gomoku}, moves)
             return
         end
 
-        if value != 0 || has_draw
-            move = MoveValue(Move(place, place), game.value + value ÷ Int16(2), value == 0 ? draw : no_decision)
-            push!(moves, move)
+        if value != 0
+            push!(moves, MoveValue(Move(place, place), game.value + value ÷ Int16(2), no_decision))
+        elseif !has_draw
+            push!(moves, MoveValue(Move(place, place), Int16(0), draw))
+            has_draw = true
         end
-        has_draw = has_draw || value == 0
     end
 end
 
