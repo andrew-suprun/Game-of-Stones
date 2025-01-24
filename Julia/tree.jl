@@ -3,13 +3,12 @@ struct Node{Move}
     n_sims::Int32
     value::Int16
     decision::Decision
-    terminal::Decision
     move::Move
 
     function Node{Move}(move; children=Node{Move}[], value=Int16(0), n_sims=Int32(1),
-        decision=no_decision, terminal=no_decision,
+        decision=no_decision
     ) where {Move}
-        new(children, n_sims, value, decision, terminal, move)
+        new(children, n_sims, value, decision, move)
     end
 end
 
@@ -26,7 +25,6 @@ end
 function expand!(tree, game)
     tree.root = expand!(tree, tree.root, game)
     if tree.root.decision != no_decision
-        println("tree.root.decision = $(tree.root.decision)")
         return false
     end
     undecided = count(c -> c.decision == no_decision, tree.root.children)
@@ -39,8 +37,7 @@ function expand!(tree, node, game)
             children=node.children,
             n_sims=node.n_sims + n_moves,
             value=node.value,
-            decision=node.decision,
-            terminal=node.terminal)
+            decision=node.decision)
     end
 
     if isempty(node.children)
@@ -55,7 +52,6 @@ function expand!(tree, node, game)
                 child_move.move,
                 value=child_move.value,
                 decision=child_move.terminal,
-                terminal=child_move.terminal,
             )
         end
         return update_stats(Node{Move}(node.move, children=children), game.turn_idx)
@@ -113,7 +109,7 @@ function update_stats(node, turn_idx)
             decision = w_win ? white_win : all_draws ? draw : b_win ? black_win : no_decision
         end
     end
-    return Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, decision=decision, terminal=no_decision)
+    return Node{Move}(node.move, children=node.children, value=value, n_sims=n_sims, decision=decision)
 end
 
 function commit_move!(tree, game, to_play)
@@ -154,9 +150,7 @@ Base.show(io::IO, node::Node{Move}) where {Move} = print_node(io, node, 0)
 
 function print_node(io::IO, node::Node{Move}, depth) where {Move}
     print(io, "|   "^depth, "$(node.move) v:$(node.value) sims:$(node.n_sims)")
-    if node.terminal != no_decision
-        println(io, " terminal")
-    elseif node.decision != no_decision
+    if node.decision != no_decision
         println(io, " decisive")
     else
         println(io)

@@ -33,7 +33,7 @@ function run_simulation(name)
             end
         end
         move = best_move(tree, game)
-        println("move: $move, turn: $(game.stone) dec: $(tree.root.decision) term: $(tree.root.terminal)")
+        println("move: $move, turn: $(game.stone) dec: $(tree.root.decision)")
         commit_move!(tree, game, "$move")
         println(game.stones)
         term = isterminal(game)
