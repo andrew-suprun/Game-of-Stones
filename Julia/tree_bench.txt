@@ -1,0 +1,23 @@
+julia> @benchmark bench_expand_gomoku()
+BenchmarkTools.Trial: 10000 samples with 7 evaluations per sample.
+ Range (min … max):   6.298 μs … 26.881 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     10.649 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   10.800 μs ±  1.818 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+                  ▁ ▁▂▄▆██▇▄▅▆▇▆▂                              
+  ▁▁▁▁▁▁▂▃▄▅▆▇▇▇▇▇██████████████████▇▇▆▄▄▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁ ▄
+  6.3 μs          Histogram: frequency by time        16.6 μs <
+
+ Memory estimate: 1.36 KiB, allocs estimate: 41.
+
+julia> @benchmark bench_expand_connect6()
+BenchmarkTools.Trial: 10000 samples with 7 evaluations per sample.
+ Range (min … max):   6.786 μs … 24.423 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     10.179 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   10.486 μs ±  1.787 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+           ▂▃▅▆█▇▇▇▆▇▆▇▆▇▆▄▄▄▃▃▂▂▁                             
+  ▁▁▁▁▂▂▄▆██████████████████████████▇▆▆▅▅▅▅▄▄▃▃▃▃▃▃▂▂▂▂▂▂▂▂▁▁ ▅
+  6.79 μs         Histogram: frequency by time          16 μs <
+
+ Memory estimate: 1.52 KiB, allocs estimate: 45.
