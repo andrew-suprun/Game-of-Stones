@@ -1,4 +1,5 @@
-function run_server(name)
+using Dates
+function run_engine(name)
     tree = Tree{Move}(20.0)
     game = Game(name)
     println(stderr, game.stones)
@@ -9,12 +10,15 @@ function run_server(name)
             commit_move!(tree, game, terms[2])
             println(stderr, game.stones)
         elseif terms[1] == "respond"
-            for i in 1:10_000
+            expand!(tree, game)
+            millis = parse(Int, terms[2])
+            deadline = now() + Millisecond(millis)
+            while now() < deadline
                 cont = expand!(tree, game)
-                if game.stone == black && tree.root.decision == black_win
+                if game.stone == black && tree.nodes[1].decision == black_win
                     println(stderr, "decision: Black win after $i expands")
                     break
-                elseif game.stone == white && tree.root.decision == white_win
+                elseif game.stone == white && tree.nodes[1].decision == white_win
                     println(stderr, "decision: White win after $i expands")
                     break
                 end
@@ -24,12 +28,12 @@ function run_server(name)
                 end
             end
             move = best_move(tree, game)
-            println(stderr, "move: $move, turn: $(game.stone) dec: $(tree.root.decision)")
+            println(stderr, "move: $move, turn: $(game.stone) dec: $(tree.nodes[1].decision)")
             commit_move!(tree, game, "$move")
             println(stderr, game.stones)
             println("move $move")
-            term = isterminal(game)
-            if !isnothing(term)
+            dec = decision(game)
+            if dec[1] != no_decision
                 println(stderr, term)
                 # println("terminal $(term[1]) $(term[2]) $(term[3]) $(term[4])")
                 println("terminal $(join(term, " "))")

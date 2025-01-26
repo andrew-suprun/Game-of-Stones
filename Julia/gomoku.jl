@@ -5,6 +5,6 @@ include("game.jl")
 include("game_values.jl")
 include("game_printer.jl")
 include("tree.jl")
-include("server.jl")
+include("engine.jl")
 
-run_server(gomoku)
+run_engine(gomoku)

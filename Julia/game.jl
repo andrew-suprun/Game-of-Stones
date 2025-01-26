@@ -200,7 +200,6 @@ function top_moves(game, ::Name{:Connect6}, moves)
     end
 
     game_value = game.value
-
     has_draw = false
 
     for (i, place1) in enumerate(game.places)
