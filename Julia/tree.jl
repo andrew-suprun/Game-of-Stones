@@ -66,21 +66,21 @@ function expand!(tree, game, parent_idx)
             push!(tree.moves, child_move_value.move)
         end
     else
-        idx = select_child(tree, parent, game.turn_idx, tree.exploration_factor)
+        idx = select_child(tree, parent, game.stone, tree.exploration_factor)
         parent = tree.nodes[idx]
         move = tree.moves[idx]
         play_move!(game, move)
         expand!(tree, game, idx)
         undo_move!(game, move)
     end
-    tree.nodes[parent_idx] = update_stats(tree, tree.nodes[parent_idx], game.turn_idx)
+    tree.nodes[parent_idx] = update_stats(tree, tree.nodes[parent_idx], game.stone)
 end
 
-function update_stats(tree, node, turn_idx)
+function update_stats(tree, node, stone)
     n_sims = Int32(0)
     value = tree.nodes[node.first_child].value
     decision = no_decision
-    if turn_idx == 1
+    if stone == black
         w_win = true
         all_draws = true
         for i in node.first_child:node.first_child+node.n_children-1
@@ -115,8 +115,8 @@ function update_stats(tree, node, turn_idx)
     return Node(first_child=node.first_child, n_children=node.n_children, n_sims=n_sims, value=value, decision=decision)
 end
 
-function select_child(tree, node, turn_idx, exploration_factor)
-    coeff = turn_idx == 1 ? 1 : -1
+function select_child(tree, node, stone, exploration_factor)
+    coeff = stone == black ? 1 : -1
     selected_child_idx = 1
     log_parent_sims = log(node.n_sims)
     max_value = -Inf
@@ -146,15 +146,41 @@ end
 function best_move(tree, game)
     root = tree.nodes[1]
     best_child_idx = root.first_child
+
     if game.stone == black
         for i in root.first_child:root.first_child+root.n_children-1
-            if tree.nodes[best_child_idx].value < tree.nodes[i].value
+            best = tree.nodes[best_child_idx]
+            node = tree.nodes[i]
+            if best.decision == black_win
+                if node.decision == black_win && best.n_sims < node.n_sims
+                    best_child_idx = i
+                end
+            elseif best.decision == white_win
+                if node.decision != white_win
+                    best_child_idx = i
+                elseif best.n_sims < node.n_sims
+                    best_child_idx = i
+                end
+            elseif node.decision == black_win || best.value < node.value
                 best_child_idx = i
+            else
             end
         end
     else
         for i in root.first_child:root.first_child+root.n_children-1
-            if tree.nodes[best_child_idx].value > tree.nodes[i].value
+            best = tree.nodes[best_child_idx]
+            node = tree.nodes[i]
+            if best.decision == white_win
+                if node.decision == white_win && best.n_sims < node.n_sims
+                    best_child_idx = i
+                end
+            elseif best.decision == black_win
+                if node.decision != black_win
+                    best_child_idx = i
+                elseif best.n_sims < node.n_sims
+                    best_child_idx = i
+                end
+            elseif node.decision == white_win || best.value > node.value
                 best_child_idx = i
             end
         end
