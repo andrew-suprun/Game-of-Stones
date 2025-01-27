@@ -38,7 +38,7 @@ function expand!(tree, game)
             undecided += 1
         end
     end
-    undecided != 1
+    undecided > 1
 end
 
 function expand!(tree, game, parent_idx)

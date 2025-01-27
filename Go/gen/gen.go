@@ -58,10 +58,10 @@ func debugStonesValue(stones Stone) int16 {
 }
 `
 
-func main() {
-	gen("gomoku", 0, 1, 4, 12, 24, 10_000)
-	gen("connect6", 0, 1, 5, 20, 60, 120, 10_000)
-}
+// func main() {
+// 	gen("gomoku", 0, 1, 4, 12, 24, 10_000)
+// 	gen("connect6", 0, 1, 5, 20, 60, 120, 10_000)
+// }
 
 func gen(game string, values ...int) {
 	fmt.Println("Generating", game)

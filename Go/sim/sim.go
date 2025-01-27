@@ -55,26 +55,25 @@ func sim(a, b string, moves []string) string {
 	}
 
 	for _, moveStr := range moves {
-		move, _ := engines[0].game.ParseMove(moveStr)
+		move, _ := game.ParseMove(moveStr)
 		engines[0].tree.CommitMove(move)
 		engines[1].tree.CommitMove(move)
 	}
 
-	// fmt.Println(engines[0].game)
+	fmt.Println(engines[0].game)
 
 	for i := 1; ; i++ {
 		var bestMove move
-		var s int
+		s := 0
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
-			_, s = engines[0].tree.Expand()
-			dec, _, _, _, _ := engines[0].game.Decision()
-			if dec != common.NoDecision {
+			s += 1
+			if !engines[0].tree.Expand() {
 				break
 			}
 		}
 		bestMove = engines[0].tree.BestMove()
-		fmt.Printf("%s: Move %3d %#v s: %7d\n", engines[0].title, i, bestMove, s)
+		fmt.Printf("%s: Move %3d %v s: %7d\n", engines[0].title, i, bestMove, s)
 		dec, _, _, _, _ := engines[0].game.Decision()
 		if dec != common.NoDecision {
 			if dec == common.Draw {
@@ -85,7 +84,7 @@ func sim(a, b string, moves []string) string {
 		engines[0].tree.CommitMove(bestMove)
 		engines[1].tree.CommitMove(bestMove)
 
-		// fmt.Println(engines[0].game)
+		fmt.Println(engines[0].game)
 
 		engines[0], engines[1] = engines[1], engines[0]
 	}

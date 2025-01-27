@@ -3,7 +3,7 @@
     "go.buildFlags": [
         "-v"
     ],
-    "go.testTags": "connect6",
+    "go.testTags": "debug,connect6",
     "go.testTimeout": "30s",
     "go.testFlags": [
         "-v"

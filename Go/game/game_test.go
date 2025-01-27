@@ -19,9 +19,9 @@ func TestString(t *testing.T) {
 
 func TestMove(t *testing.T) {
 	c6 := NewGame(Connect6, 10)
-	m1, _ := c6.ParseMove("j10")
+	m1, _ := ParseMove("j10")
 	c6.PlayMove(m1)
-	m2, _ := c6.ParseMove("i9-i11")
+	m2, _ := ParseMove("i9-i11")
 	c6.PlayMove(m2)
 	fmt.Printf("%#v\nopp V: %v\n", c6, c6.oppValue())
 }
@@ -29,9 +29,9 @@ func TestMove(t *testing.T) {
 func TestTopMoves(t *testing.T) {
 	c6 := NewGame(Connect6, 10)
 	originalBoard := c6.values
-	m1, _ := c6.ParseMove("j10")
+	m1, _ := ParseMove("j10")
 	c6.PlayMove(m1)
-	m2, _ := c6.ParseMove("i9-i11")
+	m2, _ := ParseMove("i9-i11")
 	fmt.Println(m2)
 	c6.PlayMove(m2)
 	fmt.Println(c6)
@@ -42,14 +42,8 @@ func TestTopMoves(t *testing.T) {
 
 	for {
 		c6.TopMoves(&moves)
-		for _, move := range moves {
-			c6.PlayMove(move.Move)
-			// fmt.Printf("Move %d: %#v\n%v\n", i+1, move, c6)
-			c6.UndoMove(move.Move)
-		}
-
 		c6.PlayMove(moves[0].Move)
-		fmt.Printf("%#v\n%v\n", moves[0], c6)
+		fmt.Printf("played %v\n%v\n", moves[0], c6)
 		played = append(played, moves[0].Move)
 		if moves[0].Decision != NoDecision {
 			break
@@ -61,8 +55,9 @@ func TestTopMoves(t *testing.T) {
 
 	c6.UndoMove(m2)
 	c6.UndoMove(m1)
+	fmt.Printf("%#v\n", c6)
 
 	if originalBoard != c6.values {
-		t.Fail()
+		t.Error("Fail")
 	}
 }

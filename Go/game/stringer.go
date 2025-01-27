@@ -6,7 +6,7 @@ import (
 )
 
 func (place Place) String() string {
-	return fmt.Sprintf("%c%d", place.X+'a', Size-place.Y)
+	return fmt.Sprintf("%c%d", place.X+'a', place.Y+1)
 }
 
 func (m Move) String() string {
@@ -39,7 +39,7 @@ func (game *Game) GameString(buf *bytes.Buffer) {
 	buf.WriteByte('\n')
 
 	for y := range Size {
-		fmt.Fprintf(buf, "%2d", Size-y)
+		fmt.Fprintf(buf, "%2d", y+1)
 		for x := range Size {
 			switch game.stones[y][x] {
 			case Black:
@@ -86,7 +86,7 @@ func (game *Game) GameString(buf *bytes.Buffer) {
 				}
 			}
 		}
-		fmt.Fprintf(buf, "%2d\n", Size-y)
+		fmt.Fprintf(buf, "%2d\n", y+1)
 	}
 
 	buf.WriteString("  ")
@@ -98,19 +98,20 @@ func (game *Game) GameString(buf *bytes.Buffer) {
 }
 
 func (game *Game) ValuesString(buf *bytes.Buffer, valuesIdx int) {
-	buf.WriteString("\n      │")
+	buf.WriteString("\n   │")
 
 	for i := range Size {
-		fmt.Fprintf(buf, " %c %2d │", i+'a', i)
+		fmt.Fprintf(buf, "  %c   │", i+'a')
 	}
 	buf.WriteString("\n")
 
-	for range Size {
+	fmt.Fprintf(buf, "───┼")
+	for range Size - 1 {
 		fmt.Fprintf(buf, "──────┼")
 	}
 	fmt.Fprintln(buf, "──────┤")
 	for y := 0; y < Size; y++ {
-		fmt.Fprintf(buf, "%2d %2d │", Size-y, y)
+		fmt.Fprintf(buf, "%2d │", y+1)
 
 		for x := 0; x < Size; x++ {
 			switch game.stones[y][x] {
@@ -134,14 +135,15 @@ func (game *Game) ValuesString(buf *bytes.Buffer, valuesIdx int) {
 
 		buf.WriteByte('\n')
 	}
-	for range Size {
+	fmt.Fprintf(buf, "───┼")
+	for range Size - 1 {
 		fmt.Fprintf(buf, "──────┼")
 	}
 	fmt.Fprintln(buf, "──────┤")
-	buf.WriteString("      │")
+	buf.WriteString("   │")
 
 	for i := range Size {
-		fmt.Fprintf(buf, " %c %2d │", i+'a', i)
+		fmt.Fprintf(buf, "  %c   │", i+'a')
 	}
 	buf.WriteString("\n")
 }

@@ -50,7 +50,7 @@ func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
 					}
 				}
 			}
-			fmt.Printf("engine: playing move %#v; sims %d\n", move, nSims)
+			fmt.Printf("engine: playing move %v; sims %d\n", move, nSims)
 			theTree.CommitMove(move)
 			playerTurn = oppPlayerStones
 			dec, _, _, _, _ := theGame.Decision()

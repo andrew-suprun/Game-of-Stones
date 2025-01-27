@@ -4,7 +4,7 @@ include("game_values.jl")
 
 using BenchmarkTools
 
-game = Game(connect6)
+game = Game(gomoku)
 
 function bench_place_stone()
     place_stone!(game, Place(10, 10), 1)

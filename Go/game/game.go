@@ -107,14 +107,12 @@ func (game *Game) UndoMove(move Move) {
 	game.validate()
 }
 
-func (game *Game) ParseMove(moveStr string) (Move, error) {
+func ParseMove(moveStr string) (Move, error) {
 	tokens := strings.Split(moveStr, "-")
 	p1, err := ParsePlace(tokens[0])
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-
-	value := game.values[p1.Y][p1.X][game.turn]
 
 	if len(tokens) == 1 {
 		return Move{P1: p1, P2: p1}, nil
@@ -123,12 +121,6 @@ func (game *Game) ParseMove(moveStr string) (Move, error) {
 	if err != nil {
 		return Move{}, errors.New("failed to parse move")
 	}
-
-	game.placeStone(p1, 1)
-
-	value += game.values[p2.Y][p2.X][game.turn]
-
-	game.placeStone(p1, -1)
 
 	return Move{P1: p1, P2: p2}, nil
 }
@@ -151,7 +143,7 @@ func ParsePlace(place string) (Place, error) {
 		}
 		y = 10*y + int8(place[2]-'0')
 	}
-	y = Size - y
+	y -= 1
 	if x > Size || y > Size {
 		return Place{}, errors.New("failed to parse place")
 	}
@@ -348,6 +340,7 @@ func (game *Game) topConnect6Moves(moves *[]MoveValue[Move]) {
 					Move:     Move{P1: place1, P2: place2},
 					Value:    WinValue,
 					Decision: BlackWin}
+				game.placeStone(place1, -1)
 				return
 			} else if value2 < -WinValue {
 				*moves = (*moves)[:1]
@@ -355,6 +348,7 @@ func (game *Game) topConnect6Moves(moves *[]MoveValue[Move]) {
 					Move:     Move{P1: place1, P2: place2},
 					Value:    -WinValue,
 					Decision: WhiteWin}
+				game.placeStone(place1, -1)
 				return
 			}
 
@@ -375,7 +369,7 @@ func (game *Game) topConnect6Moves(moves *[]MoveValue[Move]) {
 				// game.placeStone(place2, 1)
 				// oppVal := game.oppValue()
 				// game.placeStone(place2, -1)
-				// value = gameValue + value +oppVal
+				// value = gameValue + value + oppVal
 
 				move := MoveValue[Move]{
 					Move:     Move{place1, place2},
@@ -547,4 +541,20 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 	}
 
 	return NoDecision, 0, 0, 0, 0
+}
+
+func stoneValues(stone, stones Stone) [2]int16 {
+	if stone == Black {
+		return gameValuesFirst[stones]
+	} else {
+		return gameValuesSecond[stones]
+	}
+}
+
+func debugStoneValues(stones Stone) [2]int16 {
+	return gameValues[stones]
+}
+
+func debugStoneValue(stones Stone) int16 {
+	return gameValue[stones]
 }

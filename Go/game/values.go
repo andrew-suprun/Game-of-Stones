@@ -1,7 +1,5 @@
 package game
 
-const WinValue = 5000
-
 func (game *Game) valueStones(stones Stone) [2]int16 {
 	if game.name == Gomoku {
 		if game.stone == Black {

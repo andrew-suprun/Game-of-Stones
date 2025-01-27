@@ -66,7 +66,7 @@ func TestTopPlaces(t *testing.T) {
 }
 
 func BenchmarkPlayMove(b *testing.B) {
-	board := NewGame(Connect6, 10)
+	board := NewGame(Gomoku, 10)
 
 	b.ResetTimer()
 	for range b.N {
@@ -76,7 +76,7 @@ func BenchmarkPlayMove(b *testing.B) {
 }
 
 func BenchmarkPlaceStone(b *testing.B) {
-	board := NewGame(Connect6, 10)
+	board := NewGame(Gomoku, 10)
 
 	b.ResetTimer()
 	for range b.N {

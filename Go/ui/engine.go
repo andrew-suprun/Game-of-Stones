@@ -34,7 +34,7 @@ func (eng *engine) run() {
 			eng.tree = tree.NewTree(eng.game, 64, 20)
 
 		case cmdMakeMove:
-			move, _ := eng.game.ParseMove(string(cmd))
+			move, _ := game.ParseMove(string(cmd))
 			eng.tree.CommitMove(move)
 			eng.moves = append(eng.moves, move)
 			eng.bestMove()
@@ -60,7 +60,7 @@ func (eng *engine) bestMove() {
 		places[idx] = places[len(places)-1]
 		place2 := places[rand.Intn(7)]
 		moveStr := place1 + "-" + place2
-		gameMove, _ := eng.game.ParseMove(moveStr)
+		gameMove, _ := game.ParseMove(moveStr)
 		eng.tree.CommitMove(gameMove)
 		eng.events <- evMove(moveStr)
 		return

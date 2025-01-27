@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"game_of_stones/game"
 	"image"
 	"image/color"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"gioui.org/app"
@@ -17,6 +17,9 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+
+	. "game_of_stones/common"
+	"game_of_stones/game"
 )
 
 const (
@@ -40,7 +43,15 @@ const (
 	stateWhite
 )
 
-type state [game.Size][game.Size]placeState
+var gameName string = "gomoku"
+var maxSelected int = 1
+
+type state struct {
+	places     [game.Size][game.Size]placeState
+	respond    bool
+	turn       Turn
+	n_selected int
+}
 
 func main() {
 	go run()
@@ -48,6 +59,10 @@ func main() {
 }
 
 func run() {
+	if len(os.Args) > 1 && os.Args[1] == "connect6" {
+		gameName = "connect6"
+		maxSelected = 2
+	}
 	gameState := state{}
 	stateChan := make(chan *state, 1)
 	stateChan <- &gameState
@@ -55,8 +70,8 @@ func run() {
 	var ops op.Ops
 
 	window := new(app.Window)
-	window.Option(app.Title("Connect6"), app.Size(windowSize, windowSize))
-	window.Option(app.Decorated(false))
+	window.Option(app.Title(gameName), app.Size(windowSize, windowSize))
+	// window.Option(app.Decorated(false))
 
 	go input(window, stateChan)
 
@@ -85,7 +100,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 	ops.Reset()
 
 	size := min(ev.Size.X, ev.Size.Y)
-	d := size/game.Size - 1
+	d := size / (game.Size + 1)
 	r := d / 2
 
 	paint.Fill(ops, colorBg)
@@ -105,20 +120,39 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 		for x := range game.Size {
 			for {
 				_, ok := ev.Source.Event(pointer.Filter{
-					Target: &state[y][x],
+					Target: &state.places[y][x],
 					Kinds:  pointer.Press,
 				})
 				if !ok {
 					break
 				}
-				fmt.Printf("click: %s\n", game.Place{X: int8(x), Y: int8(y)})
+				place := state.places[y][x]
+				if state.respond {
+					if state.turn == First {
+						if place == stateBlackSelected {
+							state.places[y][x] = stateEmpty
+							state.n_selected--
+						} else if place == stateEmpty && state.n_selected < maxSelected {
+							state.places[y][x] = stateBlackSelected
+							state.n_selected++
+						}
+					} else {
+						if place == stateWhiteSelected {
+							state.places[y][x] = stateEmpty
+							state.n_selected--
+						} else if place == stateEmpty && state.n_selected < maxSelected {
+							state.places[y][x] = stateWhiteSelected
+							state.n_selected++
+						}
+					}
+				}
 			}
 			stack := clip.Rect{Min: image.Point{X: (x+1)*d - r, Y: (y+1)*d - r}, Max: image.Point{X: (x+1)*d + r, Y: (y+1)*d + r}}.Push(ops)
-			event.Op(ops, &state[y][x])
+			event.Op(ops, &state.places[y][x])
 			stack.Pop()
 
 			var stoneColor color.NRGBA
-			switch state[y][x] {
+			switch state.places[y][x] {
 			case stateEmpty:
 				continue
 			case stateBlack, stateBlackSelected:
@@ -134,7 +168,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 			paint.PaintOp{}.Add(ops)
 			stack.Pop()
 
-			if state[y][x] == stateBlackSelected || state[y][x] == stateWhiteSelected {
+			if state.places[y][x] == stateBlackSelected || state.places[y][x] == stateWhiteSelected {
 				rr := r / 6
 				stack = clip.Ellipse{
 					Min: image.Point{X: (x+1)*d - rr, Y: (y+1)*d - rr},
@@ -152,9 +186,37 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 		if keyEvent.State == key.Press {
 			switch keyEvent.Name {
 			case key.NameReturn:
-				fmt.Printf("key: Enter\n")
-			case key.NameEscape:
-				fmt.Printf("key: Excape\n")
+				if state.respond && state.n_selected == maxSelected {
+					selected := []game.Place{}
+					for x := range game.Size {
+						for y := range game.Size {
+							switch state.places[y][x] {
+							case stateBlackSelected:
+								state.places[y][x] = stateBlack
+								if state.turn == First {
+									selected = append(selected, game.Place{X: int8(x), Y: int8(y)})
+								}
+							case stateWhiteSelected:
+								state.places[y][x] = stateWhite
+								if state.turn == Second {
+									selected = append(selected, game.Place{X: int8(x), Y: int8(y)})
+								}
+							}
+						}
+					}
+					move := game.Move{P1: selected[0], P2: selected[0]}
+					if maxSelected == 2 {
+						move = game.Move{P1: selected[0], P2: selected[1]}
+					}
+					state.respond = false
+					state.n_selected = 0
+					if state.turn == First {
+						state.turn = Second
+					} else {
+						state.turn = First
+					}
+					fmt.Printf("move %s\n", move)
+				}
 			default:
 				fmt.Println("key:", keyEvent)
 			}
@@ -178,46 +240,92 @@ func input(window *app.Window, stateChan chan *state) {
 			fmt.Println("info: Stopped.")
 			os.Exit(0)
 		}
-		if strings.HasPrefix(text, "set ") {
-			setStone(stateChan, text)
+		if text == "game-name" {
+			fmt.Println(gameName)
+		}
+		if strings.HasPrefix(text, "move ") {
+			playMove(stateChan, text)
+		}
+		if strings.HasPrefix(text, "respond") {
+			state := <-stateChan
+			state.respond = true
+			stateChan <- state
+		}
+		if strings.HasPrefix(text, "terminal ") {
+			state := <-stateChan
+			terms := strings.Fields(text)
+			if len(terms) != 5 {
+				fmt.Println("error: Invalid syntax for terminal command.")
+				os.Exit(1)
+			}
+			numbers := parseNumbers(terms[1:])
+			stones := 5
+			if gameName == "connect6" {
+				stones = 6
+			}
+			for i := range stones {
+				x := numbers[0] + int8(i)*numbers[2]
+				y := numbers[1] + int8(i)*numbers[3]
+				switch state.places[y][x] {
+				case stateBlack:
+					state.places[y][x] = stateBlackSelected
+				case stateWhite:
+					state.places[y][x] = stateWhiteSelected
+				}
+			}
+			state.respond = false
+			stateChan <- state
 		}
 		window.Invalidate()
 	}
 }
 
-func setStone(stateChan chan *state, cmd string) {
-	state := <-stateChan
-
-	parts := strings.Fields(cmd)
-	if len(parts) != 3 {
-		fmt.Printf("error: Invalid set command: %q\n", cmd)
-		os.Exit(1)
+func parseNumbers(texts []string) []int8 {
+	result := make([]int8, 0, 4)
+	for _, text := range texts {
+		num, err := strconv.ParseInt(text, 10, 64)
+		if err != nil {
+			fmt.Println("error: Invalid syntax for terminal command.")
+			os.Exit(1)
+		}
+		result = append(result, int8(num))
 	}
-	place, err := game.ParsePlace(parts[1])
-	if err != nil {
-		fmt.Printf("error: Invalid set command: %q\n", cmd)
-		os.Exit(1)
-	}
-
-	state[place.Y][place.X] = parseStone(parts[2])
-
-	stateChan <- state
+	return result
 }
 
-func parseStone(str string) placeState {
-	switch str {
-	case "b":
-		return stateBlack
-	case "B":
-		return stateBlackSelected
-	case "w":
-		return stateWhite
-	case "W":
-		return stateWhiteSelected
-	case "e":
-		return stateEmpty
+func playMove(stateChan chan *state, cmd string) {
+
+	parts := strings.Fields(cmd)
+	if len(parts) != 2 {
+		fmt.Printf("error: Invalid move command: %q\n", cmd)
+		os.Exit(1)
 	}
-	fmt.Printf("error: Invalid set command: %q\n", str)
-	os.Exit(1)
-	return stateEmpty
+	move, err := game.ParseMove(parts[1])
+	if err != nil {
+		fmt.Printf("error: Invalid move command: %q\n", cmd)
+		os.Exit(1)
+	}
+
+	state := <-stateChan
+	for y := range game.Size {
+		for x := range game.Size {
+			switch state.places[y][x] {
+			case stateBlackSelected:
+				state.places[y][x] = stateBlack
+			case stateWhiteSelected:
+				state.places[y][x] = stateWhite
+			}
+		}
+	}
+	if state.turn == First {
+		state.places[move.P1.Y][move.P1.X] = stateBlackSelected
+		state.places[move.P2.Y][move.P2.X] = stateBlackSelected
+		state.turn = Second
+	} else {
+		state.places[move.P1.Y][move.P1.X] = stateWhiteSelected
+		state.places[move.P2.Y][move.P2.X] = stateWhiteSelected
+		state.turn = First
+	}
+
+	stateChan <- state
 }
