@@ -234,7 +234,8 @@ func (game *Game) updateRow(x, y, dx, dy, n int8, coeff int16) {
 	}
 	for range n {
 		stones += game.stones[y+game.maxStones1*dy][x+game.maxStones1*dx]
-		values := game.valueStones(stones)
+		// values := game.valueStones(stones)
+		values := gameValues[game.turn][stones]
 		blackValue, whiteValue := values[0]*coeff, values[1]*coeff
 		if blackValue != 0 || whiteValue != 0 {
 			for j := int8(0); j < game.maxStones; j++ {
@@ -541,20 +542,4 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 	}
 
 	return NoDecision, 0, 0, 0, 0
-}
-
-func stoneValues(stone, stones Stone) [2]int16 {
-	if stone == Black {
-		return gameValuesFirst[stones]
-	} else {
-		return gameValuesSecond[stones]
-	}
-}
-
-func debugStoneValues(stones Stone) [2]int16 {
-	return gameValues[stones]
-}
-
-func debugStoneValue(stones Stone) int16 {
-	return gameValue[stones]
 }

@@ -553,6 +553,7 @@ function parse_place(place)
     Place(x, y)
 end
 
+# TODO: join gomoku_first and gomoku_second into Matrix [2, 64, 2]
 game_values(::Name{:Gomoku}, stone, stones) =
     stone == black ? gomoku_first[stones] : gomoku_second[stones]
 
