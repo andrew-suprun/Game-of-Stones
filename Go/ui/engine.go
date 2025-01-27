@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	"game_of_stones/common"
 	"game_of_stones/game"
 	"game_of_stones/tree"
 )
@@ -67,8 +68,9 @@ func (eng *engine) bestMove() {
 
 	start := time.Now()
 	for time.Since(start) < 2000*time.Millisecond {
-		m, _ := eng.tree.Expand()
-		if m.IsDecisive() {
+		eng.tree.Expand()
+		dec, _, _, _, _ := eng.game.Decision()
+		if dec != common.NoDecision {
 			break
 		}
 	}

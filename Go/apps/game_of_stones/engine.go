@@ -5,25 +5,25 @@ import (
 	"math/rand"
 	"time"
 
+	. "game_of_stones/common"
 	"game_of_stones/game"
 	"game_of_stones/tree"
-	"game_of_stones/turn"
 )
 
-func runEngine(gameId game.GameName, playerStones turn.Turn, in, out chan string) {
+func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
 	var (
-		playerTurn      = turn.First
-		oppPlayerStones turn.Turn
+		playerTurn      = First
+		oppPlayerStones Turn
 		theGame         *game.Game
 		theTree         *tree.Tree[game.Move]
 	)
 
 	theGame = game.NewGame(gameId, 22)
 	theTree = tree.NewTree[game.Move](theGame, 64, 20)
-	if playerStones == turn.First {
-		oppPlayerStones = turn.Second
+	if playerStones == First {
+		oppPlayerStones = Second
 	} else {
-		oppPlayerStones = turn.First
+		oppPlayerStones = First
 	}
 
 	firstMove := true
@@ -34,7 +34,7 @@ func runEngine(gameId game.GameName, playerStones turn.Turn, in, out chan string
 			nSims := 0
 			if firstMove {
 				firstMove = false
-				if playerTurn == turn.First {
+				if playerTurn == First {
 					move, _ = theGame.ParseMove("j10")
 				} else {
 					move, _ = theGame.ParseMove(firstWhiteMove(gameId))
@@ -43,7 +43,8 @@ func runEngine(gameId game.GameName, playerStones turn.Turn, in, out chan string
 				timestamp := time.Now()
 				for {
 					move, nSims = theTree.Expand()
-					if move.IsDecisive() || time.Since(timestamp) > time.Second {
+					dec, _, _, _, _ := theGame.Decision()
+					if dec != NoDecision || time.Since(timestamp) > time.Second {
 						move = theTree.BestMove()
 						break
 					}
@@ -52,7 +53,8 @@ func runEngine(gameId game.GameName, playerStones turn.Turn, in, out chan string
 			fmt.Printf("engine: playing move %#v; sims %d\n", move, nSims)
 			theTree.CommitMove(move)
 			playerTurn = oppPlayerStones
-			if move.IsTerminal() {
+			dec, _, _, _, _ := theGame.Decision()
+			if dec != NoDecision {
 				out <- move.String() + ";terminal"
 			} else {
 				out <- move.String()

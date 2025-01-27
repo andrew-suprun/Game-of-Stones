@@ -3,14 +3,16 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"game_of_stones/game"
-	"game_of_stones/tree"
 	"io"
 	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"game_of_stones/common"
+	"game_of_stones/game"
+	"game_of_stones/tree"
 )
 
 const usage = `Usage: game_of_stones [params]
@@ -60,7 +62,8 @@ loop:
 			dur := time.Duration(millis) * time.Millisecond
 			for {
 				move, _ := theTree.Expand()
-				if move.IsDecisive() || time.Since(timestamp) > dur {
+				dec, _, _, _, _ := theGame.Decision()
+				if dec != common.NoDecision || time.Since(timestamp) > dur {
 					move = theTree.BestMove()
 					theTree.CommitMove(move)
 					fmt.Printf("move %s\n", move)

@@ -9,14 +9,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	. "game_of_stones/common"
 	"game_of_stones/game"
-	"game_of_stones/turn"
 )
 
 type humanPlayer struct {
 	gameId              game.GameName
-	stones              turn.Turn
-	turn                turn.Turn
+	stones              Turn
+	turn                Turn
 	oppIn               chan string
 	oppOut              chan string
 	uiOut               io.Writer
@@ -28,7 +28,7 @@ type humanPlayer struct {
 	engineStoneSelected rune
 }
 
-func runHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan string) *humanPlayer {
+func runHumanPlayer(gameId game.GameName, stones Turn, oppIn, oppOut chan string) *humanPlayer {
 	self := &humanPlayer{
 		gameId:   gameId,
 		stones:   stones,
@@ -38,7 +38,7 @@ func runHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan s
 		played:   map[string]rune{},
 		selected: map[string]struct{}{},
 	}
-	if stones == turn.First {
+	if stones == First {
 		self.humanStone = 'b'
 		self.humanStoneSelected = 'B'
 		self.engineStone = 'w'
@@ -70,11 +70,11 @@ func runHumanPlayer(gameId game.GameName, stones turn.Turn, oppIn, oppOut chan s
 	go self.uiMoves(uiIn)
 	go self.opponentMoves()
 
-	if self.turn == turn.First {
+	if self.turn == First {
 		fmt.Fprintf(self.uiOut, "set j10 b\n")
 		self.played["j10"] = 'b'
 		oppOut <- "j10"
-		self.turn = turn.Second
+		self.turn = Second
 	}
 
 	return self
@@ -179,10 +179,10 @@ func (player *humanPlayer) uiMoves(uiIn io.Reader) {
 				}
 			}
 			clear(player.selected)
-			if player.stones == turn.First {
-				player.turn = turn.Second
+			if player.stones == First {
+				player.turn = Second
 			} else {
-				player.turn = turn.First
+				player.turn = First
 			}
 		}
 	}

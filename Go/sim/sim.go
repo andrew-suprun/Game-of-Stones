@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"game_of_stones/common"
 	"game_of_stones/game"
 	"game_of_stones/tree"
 	"math/rand"
@@ -62,19 +63,21 @@ func sim(a, b string, moves []string) string {
 	// fmt.Println(engines[0].game)
 
 	for i := 1; ; i++ {
-		var m, bestMove move
+		var bestMove move
 		var s int
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
-			m, s = engines[0].tree.Expand()
-			if m.IsDecisive() {
+			_, s = engines[0].tree.Expand()
+			dec, _, _, _, _ := engines[0].game.Decision()
+			if dec != common.NoDecision {
 				break
 			}
 		}
 		bestMove = engines[0].tree.BestMove()
 		fmt.Printf("%s: Move %3d %#v s: %7d\n", engines[0].title, i, bestMove, s)
-		if bestMove.IsTerminal() {
-			if bestMove.Value() == 0 {
+		dec, _, _, _, _ := engines[0].game.Decision()
+		if dec != common.NoDecision {
+			if dec == common.Draw {
 				return "Draw"
 			}
 			return engines[0].title

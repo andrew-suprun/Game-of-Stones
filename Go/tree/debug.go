@@ -5,7 +5,7 @@ package tree
 import (
 	"log"
 
-	. "game_of_stones/turn"
+	. "game_of_stones/common"
 )
 
 func (tree *Tree[move]) validate() {
@@ -19,19 +19,19 @@ func (node *node[move]) validate(turn Turn) {
 		// }
 		return
 	}
-	expected := node.children[0].move.Value()
+	expected := node.children[0].value
 	if turn == First {
 		for _, child := range node.children {
-			expected = max(expected, child.move.Value())
+			expected = max(expected, child.value)
 			child.validate(Second)
 		}
 	} else {
 		for _, child := range node.children {
-			expected = min(expected, child.move.Value())
+			expected = min(expected, child.value)
 			child.validate(First)
 		}
 	}
-	if expected != node.move.Value() {
+	if expected != node.value {
 		log.Panicf("### Validation ### move: %#v expected %v", node.move, expected)
 	}
 }

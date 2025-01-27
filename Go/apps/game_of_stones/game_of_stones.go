@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
+	. "game_of_stones/common"
 	"game_of_stones/game"
-	"game_of_stones/turn"
 )
 
 const usage = `Usage: game_of_stones [params]
@@ -21,8 +21,8 @@ const (
 
 var (
 	gameId             = game.Gomoku
-	humanPlayerStones  = turn.First
-	enginePlayerStones = turn.Second
+	humanPlayerStones  = First
+	enginePlayerStones = Second
 )
 
 func main() {
@@ -68,8 +68,8 @@ func parseArgs() {
 			if strings.ToLower(arg[8:]) == "black" {
 				// default
 			} else if strings.ToLower(arg[8:]) == "white" {
-				humanPlayerStones = turn.Second
-				enginePlayerStones = turn.First
+				humanPlayerStones = Second
+				enginePlayerStones = First
 			} else {
 				fmt.Println("Invalid stones parameter.")
 				fmt.Print(usage)

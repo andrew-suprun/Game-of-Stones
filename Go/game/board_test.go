@@ -2,7 +2,7 @@ package game
 
 import (
 	"fmt"
-	"game_of_stones/turn"
+	. "game_of_stones/common"
 	"math/rand"
 	"testing"
 )
@@ -20,16 +20,24 @@ func TestPlaceStone(t *testing.T) {
 			continue
 		}
 		stone := Black
+		turn := First
 		if rnd.Intn(2) == 0 {
 			stone = White
+			turn = Second
 		}
 		moves = append(moves, testMove{Place{x, y}, stone})
 		game.stone = stone
+		game.turn = turn
 		game.placeStone(Place{x, y}, 1)
 	}
 	t.Logf("%#v\n", game)
 	for i := len(moves) - 1; i >= 0; i-- {
 		game.stone = moves[i].stone
+		if game.stone == Black {
+			game.turn = First
+		} else {
+			game.turn = Second
+		}
 		game.placeStone(moves[i].place, -1)
 	}
 	t.Logf("%#v\n", game)
@@ -46,7 +54,7 @@ func TestTopPlaces(t *testing.T) {
 	p4, _ := ParsePlace("i10")
 	game.placeStone(p1, 1)
 	game.stone = White
-	game.turn = turn.Second
+	game.turn = Second
 	game.placeStone(p2, 1)
 	game.placeStone(p3, 1)
 	game.stone = Black
@@ -62,8 +70,8 @@ func BenchmarkPlayMove(b *testing.B) {
 
 	b.ResetTimer()
 	for range b.N {
-		board.PlayMove(Move{Place{9, 9}, Place{10, 10}, 0, false})
-		board.UndoMove(Move{Place{9, 9}, Place{10, 10}, 0, false})
+		board.PlayMove(Move{Place{9, 9}, Place{10, 10}})
+		board.UndoMove(Move{Place{9, 9}, Place{10, 10}})
 	}
 }
 

@@ -2,8 +2,10 @@ package tree
 
 import (
 	"fmt"
-	"game_of_stones/game"
 	"testing"
+
+	. "game_of_stones/common"
+	"game_of_stones/game"
 )
 
 func TestExpandGomoku(t *testing.T) {
@@ -26,7 +28,8 @@ func TestExpandGomoku(t *testing.T) {
 		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
 		fmt.Println("Commit", move)
-		if move.IsTerminal() {
+		dec, _, _, _, _ := game.Decision()
+		if dec != NoDecision {
 			break
 		}
 	}

@@ -16,15 +16,6 @@ func (m Move) String() string {
 	return m.P1.String() + "-" + m.P2.String()
 }
 
-func (m Move) GoString() string {
-	state := ""
-	if m.IsTerminal() {
-		state = " Terminal"
-	} else if m.IsDecisive() {
-		state = " Decisive"
-	}
-	return fmt.Sprintf("%-7v v: %4d%s", m, m.value, state)
-}
 func (game *Game) String() string {
 	buf := &bytes.Buffer{}
 	game.GameString(buf)

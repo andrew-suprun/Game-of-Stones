@@ -228,14 +228,15 @@ function top_moves(game, ::Name{:Connect6}, moves)
                 return
             end
 
-            if value1 + value2 == 0
+            value = value1 + value2
+            if value == 0
                 if !has_draw
                     mv = MoveValue(Move(place1, place2), Int16(0), draw)
                     heap_push!(moves, mv, n_moves, less)
                     has_draw = true
                 end
             else
-                mv = MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), no_decision)
+                mv = MoveValue(Move(place1, place2), game_value + value ÷ Int16(2), no_decision)
                 heap_push!(moves, mv, n_moves, less)
             end
         end

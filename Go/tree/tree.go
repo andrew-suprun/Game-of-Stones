@@ -3,43 +3,36 @@ package tree
 import (
 	"bytes"
 	"fmt"
+	. "game_of_stones/common"
 	"game_of_stones/game"
-	"game_of_stones/turn"
 	"math"
 )
 
-type Game[move Move] interface {
-	Turn() turn.Turn
-	TopMoves(*[]move)
+type Game[move Equatable[move]] interface {
+	Turn() Turn
+	TopMoves(*[]MoveValue[move])
 	PlayMove(move)
 	UndoMove(move)
-	SameMove(move, move) bool
-	SetValue(*move, int16)
+	Decision() (Decision, int8, int8, int8, int8)
 }
 
-type Move interface {
-	fmt.GoStringer
-	fmt.Stringer
-	Value() int16
-	IsDecisive() bool
-	IsTerminal() bool
-}
-
-type Tree[move Move] struct {
+type Tree[move Equatable[move]] struct {
 	root              *node[move]
 	game              Game[move]
-	topMoves          []move
+	topMoves          []MoveValue[move]
 	maxChildren       int32
 	explorationFactor float64
 }
 
-type node[move Move] struct {
+type node[move Equatable[move]] struct {
 	move     move
+	value    int16
+	decision Decision
 	nSims    int32
 	children []node[move]
 }
 
-func NewTree[move Move](
+func NewTree[move Equatable[move]](
 	game Game[move],
 	maxChildren int,
 	explorationFactor float64,
@@ -47,7 +40,7 @@ func NewTree[move Move](
 	return &Tree[move]{
 		root:              &node[move]{},
 		game:              game,
-		topMoves:          make([]move, 0, maxChildren),
+		topMoves:          make([]MoveValue[move], 0, maxChildren),
 		maxChildren:       int32(maxChildren),
 		explorationFactor: explorationFactor,
 	}
@@ -61,14 +54,13 @@ func (t *Tree[m]) Expand() (m, int) {
 
 func (tree *Tree[move]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
-	tree.game.SetValue(&toPlay, 0)
 	oldRoot := tree.root
 	tree.root = &node[move]{
 		move: toPlay,
 	}
 
 	for _, child := range oldRoot.children {
-		if tree.game.SameMove(toPlay, child.move) {
+		if toPlay.Equal(child.move) {
 			tree.root.nSims = child.nSims
 			tree.root.children = child.children
 			return
@@ -83,22 +75,22 @@ func (tree *Tree[move]) BestMove() move {
 	}
 	bestNode := tree.root.children[0]
 
-	if tree.game.Turn() == turn.First {
+	if tree.game.Turn() == First {
 		for _, node := range tree.root.children {
-			if bestNode.move.Value() < node.move.Value() {
+			if bestNode.value < node.value {
 				bestNode = node
 			}
 		}
-		if float64(bestNode.move.Value()) <= -game.WinValue {
+		if float64(bestNode.value) <= -game.WinValue {
 			return tree.mostExplored()
 		}
 	} else {
 		for _, node := range tree.root.children {
-			if bestNode.move.Value() > node.move.Value() {
+			if bestNode.value > node.value {
 				bestNode = node
 			}
 		}
-		if float64(bestNode.move.Value()) >= game.WinValue {
+		if float64(bestNode.value) >= game.WinValue {
 			return tree.mostExplored()
 		}
 	}
@@ -117,7 +109,7 @@ func (tree *Tree[move]) mostExplored() move {
 }
 
 func (t *Tree[m]) expand(parent *node[m]) {
-	if parent.move.IsDecisive() {
+	if parent.decision != NoDecision {
 		parent.nSims += int32(cap(t.topMoves))
 		if len(parent.children) > 0 {
 			t.updateStats(parent)
@@ -130,8 +122,10 @@ func (t *Tree[m]) expand(parent *node[m]) {
 		parent.children = make([]node[m], len(t.topMoves))
 		for i, childMove := range t.topMoves {
 			parent.children[i] = node[m]{
-				move:  childMove,
-				nSims: 1,
+				move:     childMove.Move,
+				value:    childMove.Value,
+				decision: childMove.Decision,
+				nSims:    1,
 			}
 		}
 	} else {
@@ -144,16 +138,16 @@ func (t *Tree[m]) expand(parent *node[m]) {
 	t.updateStats(parent)
 }
 
-func (node *node[move]) selectChild(currentTurn turn.Turn, explorationFactor float64) *node[move] {
+func (node *node[move]) selectChild(currentTurn Turn, explorationFactor float64) *node[move] {
 	var coeff float64 = 1
-	if currentTurn == turn.Second {
+	if currentTurn == Second {
 		coeff = -1
 	}
 	selectedChild := &node.children[0]
 	logParentSims := math.Log(float64(node.nSims))
 	maxV := math.Inf(-1)
 	for i, child := range node.children {
-		v := coeff*float64(child.move.Value()) + explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
+		v := coeff*float64(child.value) + explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
 		if v > maxV {
 			maxV = v
 			selectedChild = &node.children[i]
@@ -165,19 +159,19 @@ func (node *node[move]) selectChild(currentTurn turn.Turn, explorationFactor flo
 
 func (t *Tree[m]) updateStats(node *node[m]) {
 	node.nSims = 0
-	value := node.children[0].move.Value()
-	if t.game.Turn() == turn.First {
+	value := node.children[0].value
+	if t.game.Turn() == First {
 		for _, child := range node.children {
 			node.nSims += child.nSims
-			value = max(value, child.move.Value())
+			value = max(value, child.value)
 		}
 	} else {
 		for _, child := range node.children {
 			node.nSims += child.nSims
-			value = min(value, child.move.Value())
+			value = min(value, child.value)
 		}
 	}
-	t.game.SetValue(&node.move, value)
+	node.value = value
 }
 
 func (tree *Tree[move]) String() string {

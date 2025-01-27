@@ -2,6 +2,7 @@ package tree
 
 import (
 	"fmt"
+	"game_of_stones/common"
 	"game_of_stones/game"
 	"testing"
 )
@@ -19,7 +20,8 @@ func TestExpandConnect6(t *testing.T) {
 	for {
 		for range 10 {
 			move, _ = searchTree.Expand()
-			if move.IsTerminal() {
+			dec, _, _, _, _ := game.Decision()
+			if dec != common.NoDecision {
 				fmt.Printf("\n---\n%v\n", searchTree)
 				fmt.Println(game)
 				return
