@@ -13,7 +13,7 @@ function run_simulation(tree, game)
             root = tree.nodes[1]
             if root.decision != no_decision
                 println("decision: $(root.decision) $(root.n_sims)")
-                # for i in root.first_child:root.first_child+root.n_children-1
+                # for i in root.first_child:root.last_child
                 #     println("  $(tree.moves[i]): $(tree.nodes[i])")
                 # end
                 break

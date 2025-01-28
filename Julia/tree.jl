@@ -1,17 +1,17 @@
 struct Node
     first_child::UInt32
-    n_sims::Int32
+    last_child::Int32
+    n_sims::UInt32
     value::Int16
-    n_children::UInt8
     decision::Decision
 
     Node(;
         first_child=UInt32(0),
-        n_children=UInt8(0),
+        last_child=UInt32(0),
         n_sims=Int32(1),
         value=Int16(0),
         decision=no_decision,
-    ) = new(first_child, n_sims, value, n_children, decision)
+    ) = new(first_child, last_child, n_sims, value, decision)
 end
 
 mutable struct Tree{Move}
@@ -31,9 +31,8 @@ function expand!(tree, game)
         return false
     end
     undecided = 0
-    first_child = tree.nodes[1].first_child
-    last_child = first_child + tree.nodes[1].n_children - 1
-    for i in first_child:last_child
+    root = tree.nodes[1]
+    for i in root.first_child:root.last_child
         if tree.nodes[i].decision == no_decision
             undecided += 1
         end
@@ -46,20 +45,22 @@ function expand!(tree, game, parent_idx)
     if parent.decision != no_decision
         tree.nodes[parent_idx] = Node(
             first_child=parent.first_child,
-            n_children=parent.n_children,
+            last_child=parent.last_child,
             n_sims=parent.n_sims + n_moves,
             value=parent.value,
             decision=parent.decision)
         return
     end
 
-    if parent.n_children == 0
+    if parent.first_child == 0
         top_moves(game, tree.top_moves)
         if isempty(tree.top_moves)
             error("Function top_moves(game, ...) returns empty result.")
         end
 
-        tree.nodes[parent_idx] = Node(first_child=length(tree.nodes) + 1, n_children=length(tree.top_moves))
+        first_child = length(tree.nodes) + 1
+        last_child = first_child + length(tree.top_moves) - 1
+        tree.nodes[parent_idx] = Node(first_child=first_child, last_child=last_child)
         for child_move_value in tree.top_moves
             child_node = Node(value=child_move_value.value, decision=child_move_value.terminal)
             push!(tree.nodes, child_node)
@@ -81,38 +82,38 @@ function update_stats(tree, node, stone)
     value = tree.nodes[node.first_child].value
     decision = no_decision
     if stone == black
+        b_win = false
         w_win = true
         all_draws = true
-        for i in node.first_child:node.first_child+node.n_children-1
+        for i in node.first_child:node.last_child
             child = tree.nodes[i]
             n_sims += child.n_sims
             value = max(value, child.value)
             if child.decision == black_win
-                decision = black_win
-                return Node(first_child=node.first_child, n_children=node.n_children, n_sims=n_sims, value=value, decision=black_win)
+                b_win = true
             end
             w_win = w_win && child.decision == white_win
             all_draws = all_draws && child.decision == draw
         end
-        decision = w_win ? white_win : all_draws ? draw : no_decision
+        decision = b_win ? black_win : w_win ? white_win : all_draws ? draw : no_decision
     else
+        w_win = false
         b_win = true
         all_draws = true
-        for i in node.first_child:node.first_child+node.n_children-1
+        for i in node.first_child:node.last_child
             child = tree.nodes[i]
             n_sims += child.n_sims
             value = min(value, child.value)
             if child.decision == white_win
-                decision = white_win
-                return Node(first_child=node.first_child, n_children=node.n_children, n_sims=n_sims, value=value, decision=white_win)
+                w_win = true
             end
             b_win = b_win && child.decision == black_win
             all_draws = all_draws && child.decision == draw
         end
-        decision = b_win ? black_win : all_draws ? draw : no_decision
+        decision = w_win ? white_win : b_win ? black_win : all_draws ? draw : no_decision
     end
 
-    return Node(first_child=node.first_child, n_children=node.n_children, n_sims=n_sims, value=value, decision=decision)
+    return Node(first_child=node.first_child, last_child=node.last_child, n_sims=n_sims, value=value, decision=decision)
 end
 
 function select_child(tree, node, stone, exploration_factor)
@@ -120,7 +121,7 @@ function select_child(tree, node, stone, exploration_factor)
     selected_child_idx = 1
     log_parent_sims = log(node.n_sims)
     max_value = -Inf
-    for idx in node.first_child:node.first_child+node.n_children-1
+    for idx in node.first_child:node.last_child
         child = tree.nodes[idx]
         if child.decision == no_decision
             value = coeff * child.value + exploration_factor * sqrt(log_parent_sims / child.n_sims)
@@ -148,7 +149,7 @@ function best_move(tree, game)
     best_child_idx = root.first_child
 
     if game.stone == black
-        for i in root.first_child:root.first_child+root.n_children-1
+        for i in root.first_child:root.last_child
             best = tree.nodes[best_child_idx]
             node = tree.nodes[i]
             if best.decision == black_win
@@ -167,7 +168,7 @@ function best_move(tree, game)
             end
         end
     else
-        for i in root.first_child:root.first_child+root.n_children-1
+        for i in root.first_child:root.last_child
             best = tree.nodes[best_child_idx]
             node = tree.nodes[i]
             if best.decision == white_win
@@ -190,7 +191,7 @@ function best_move(tree, game)
 end
 
 Base.show(io::IO, tree::Tree{Move}) where {Move} = print_node(io, tree, 1, 0)
-Base.show(io::IO, node::Node) = print(io, "first_child=$(node.first_child) n_children=$(node.n_children) value=$(node.value) decision=$(node.decision) n_sims=$(node.n_sims)")
+Base.show(io::IO, node::Node) = print(io, "first_child=$(node.first_child) n_children=$(node.last_child-node.first_child+1) value=$(node.value) decision=$(node.decision) n_sims=$(node.n_sims)")
 
 function print_node(io::IO, tree, node_idx, depth)
     node = tree.nodes[node_idx]
@@ -201,7 +202,7 @@ function print_node(io::IO, tree, node_idx, depth)
     else
         println(io)
     end
-    for child_idx in node.first_child:node.first_child+node.n_children-1
+    for child_idx in node.first_child:node.last_child
         print_node(io, tree, child_idx, depth + 1)
     end
 end
