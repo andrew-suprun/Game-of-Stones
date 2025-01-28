@@ -15,10 +15,10 @@ function run_engine(name)
             deadline = now() + Millisecond(millis)
             while now() < deadline
                 cont = expand!(tree, game)
-                if game.stone == black && tree.nodes[1].decision == black_win
+                if game.stone == black && tree.nodes[1].decision == first_win
                     println(stderr, "decision: Black win after $i expands")
                     break
-                elseif game.stone == white && tree.nodes[1].decision == white_win
+                elseif game.stone == white && tree.nodes[1].decision == second_win
                     println(stderr, "decision: White win after $i expands")
                     break
                 end

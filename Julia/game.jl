@@ -171,11 +171,11 @@ function top_moves(game, ::Name{:Gomoku}, moves)
         value = game.values[game.turn_idx, place.x, place.y]
         if value >= win_value
             empty!(moves)
-            push!(moves, MoveValue(Move(place, place), win_value, black_win))
+            push!(moves, MoveValue(Move(place, place), win_value, first_win))
             return
         elseif value <= -win_value
             empty!(moves)
-            push!(moves, MoveValue(Move(place, place), -win_value, white_win))
+            push!(moves, MoveValue(Move(place, place), -win_value, second_win))
             return
         end
 
@@ -206,11 +206,11 @@ function top_moves(game, ::Name{:Connect6}, moves)
         value1 = game.values[game.turn_idx, place1.x, place1.y]
         if value1 <= -win_value
             empty!(moves)
-            push!(moves, MoveValue(Move(place1, place1), game.value + value1, white_win))
+            push!(moves, MoveValue(Move(place1, place1), game.value + value1, second_win))
             return
         elseif value1 >= win_value
             empty!(moves)
-            push!(moves, MoveValue(Move(place1, place1), game.value + value1, black_win))
+            push!(moves, MoveValue(Move(place1, place1), game.value + value1, first_win))
             return
         end
 
@@ -219,11 +219,11 @@ function top_moves(game, ::Name{:Connect6}, moves)
         for place2 in game.places[i+1:end]
             value2 = game.values[game.turn_idx, place2.x, place2.y]
             if value2 <= -win_value
-                push!(moves, MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), white_win))
+                push!(moves, MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), second_win))
                 place_stone!(game, place1, -1)
                 return
             elseif value2 >= win_value
-                push!(moves, MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), black_win))
+                push!(moves, MoveValue(Move(place1, place2), game_value + (value1 + value2) ÷ Int16(2), first_win))
                 place_stone!(game, place1, -1)
                 return
             end
@@ -342,9 +342,9 @@ function decision(game)
         for x in 1:board_size-ms+1
             stones += Int(game.stones[x+ms-1, y])
             if stones == ms
-                return black_win, Place(x, y), 1, 0
+                return first_win, Place(x, y), 1, 0
             elseif stones == ms * Int(white)
-                return white_win, Place(x, y), 1, 0
+                return second_win, Place(x, y), 1, 0
             end
             stones -= Int(game.stones[x, y])
         end
@@ -357,9 +357,9 @@ function decision(game)
         for y in 1:board_size-ms+1
             stones += Int(game.stones[x, y+ms-1])
             if stones == ms
-                return black_win, Place(x, y), 0, 1
+                return first_win, Place(x, y), 0, 1
             elseif stones == ms * Int(white)
-                return white_win, Place(x, y), 0, 1
+                return second_win, Place(x, y), 0, 1
             end
             stones -= Int(game.stones[x, y])
         end
@@ -372,9 +372,9 @@ function decision(game)
         for x in 1:board_size+2-ms-y
             stones += Int(game.stones[x+ms-1, x+y+ms-2])
             if stones == ms
-                return black_win, Place(x, x + y - 1), 1, 1
+                return first_win, Place(x, x + y - 1), 1, 1
             elseif stones == ms * Int(white)
-                return white_win, Place(x, x + y - 1), 1, 1
+                return second_win, Place(x, x + y - 1), 1, 1
             end
             stones -= Int(game.stones[x, x+y-1])
         end
@@ -387,9 +387,9 @@ function decision(game)
         for y in 1:board_size+2-ms-x
             stones += Int(game.stones[x+y+ms-2, y+ms-1])
             if stones == ms
-                return black_win, Place(x + y - 1, y), 1, 1
+                return first_win, Place(x + y - 1, y), 1, 1
             elseif stones == ms * Int(white)
-                return white_win, Place(x + y - 1, y), 1, 1
+                return second_win, Place(x + y - 1, y), 1, 1
             end
             stones -= Int(game.stones[x+y-1, y])
         end
@@ -402,9 +402,9 @@ function decision(game)
         for x in 1:board_size+2-ms-y
             stones += Int(game.stones[board_size+2-x-ms, x+y+ms-2])
             if stones == ms
-                return black_win, Place(board_size + 1 - x, x + y - 1), -1, 1
+                return first_win, Place(board_size + 1 - x, x + y - 1), -1, 1
             elseif stones == ms * Int(white)
-                return white_win, Place(board_size + 1 - x, x + y - 1), -1, 1
+                return second_win, Place(board_size + 1 - x, x + y - 1), -1, 1
             end
             stones -= Int(game.stones[board_size+1-x, x+y-1])
         end
@@ -417,9 +417,9 @@ function decision(game)
         for y in 1:board_size+2-ms-x
             stones += Int(game.stones[board_size+3-x-y-ms, y+ms-1])
             if stones == ms
-                return black_win, Place(board_size + 2 - x - y, y), -1, 1
+                return first_win, Place(board_size + 2 - x - y, y), -1, 1
             elseif stones == ms * Int(white)
-                return white_win, Place(board_size + 2 - x - y, y), -1, 1
+                return second_win, Place(board_size + 2 - x - y, y), -1, 1
             end
             stones -= Int(game.stones[board_size+2-x-y, y])
         end

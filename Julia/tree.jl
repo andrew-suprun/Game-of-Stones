@@ -89,13 +89,13 @@ function update_stats(tree, node, stone)
             child = tree.nodes[i]
             n_sims += child.n_sims
             value = max(value, child.value)
-            if child.decision == black_win
+            if child.decision == first_win
                 b_win = true
             end
-            w_win = w_win && child.decision == white_win
+            w_win = w_win && child.decision == second_win
             all_draws = all_draws && child.decision == draw
         end
-        decision = b_win ? black_win : w_win ? white_win : all_draws ? draw : no_decision
+        decision = b_win ? first_win : w_win ? second_win : all_draws ? draw : no_decision
     else
         w_win = false
         b_win = true
@@ -104,13 +104,13 @@ function update_stats(tree, node, stone)
             child = tree.nodes[i]
             n_sims += child.n_sims
             value = min(value, child.value)
-            if child.decision == white_win
+            if child.decision == second_win
                 w_win = true
             end
-            b_win = b_win && child.decision == black_win
+            b_win = b_win && child.decision == first_win
             all_draws = all_draws && child.decision == draw
         end
-        decision = w_win ? white_win : b_win ? black_win : all_draws ? draw : no_decision
+        decision = w_win ? second_win : b_win ? first_win : all_draws ? draw : no_decision
     end
 
     return Node(first_child=node.first_child, last_child=node.last_child, n_sims=n_sims, value=value, decision=decision)
@@ -152,17 +152,15 @@ function best_move(tree, game)
         for i in root.first_child:root.last_child
             best = tree.nodes[best_child_idx]
             node = tree.nodes[i]
-            if best.decision == black_win
-                if node.decision == black_win && best.n_sims < node.n_sims
+            if best.decision == first_win
+                if node.decision == first_win && best.n_sims < node.n_sims
                     best_child_idx = i
                 end
-            elseif best.decision == white_win
-                if node.decision != white_win
-                    best_child_idx = i
-                elseif best.n_sims < node.n_sims
+            elseif best.decision == second_win
+                if node.decision != second_win || best.n_sims < node.n_sims
                     best_child_idx = i
                 end
-            elseif node.decision == black_win || best.value < node.value
+            elseif node.decision == first_win || best.value < node.value
                 best_child_idx = i
             else
             end
@@ -171,17 +169,15 @@ function best_move(tree, game)
         for i in root.first_child:root.last_child
             best = tree.nodes[best_child_idx]
             node = tree.nodes[i]
-            if best.decision == white_win
-                if node.decision == white_win && best.n_sims < node.n_sims
+            if best.decision == second_win
+                if node.decision == second_win && best.n_sims < node.n_sims
                     best_child_idx = i
                 end
-            elseif best.decision == black_win
-                if node.decision != black_win
-                    best_child_idx = i
-                elseif best.n_sims < node.n_sims
+            elseif best.decision == first_win
+                if node.decision != first_win || best.n_sims < node.n_sims
                     best_child_idx = i
                 end
-            elseif node.decision == white_win || best.value > node.value
+            elseif node.decision == second_win || best.value > node.value
                 best_child_idx = i
             end
         end

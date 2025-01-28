@@ -1,6 +1,6 @@
 const board_size = 19
 
-@enum Decision::Int8 no_decision draw black_win white_win
+@enum Decision::Int8 no_decision draw first_win second_win
 
 struct MoveValue{Move}
     move::Move
