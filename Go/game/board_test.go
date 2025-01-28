@@ -21,21 +21,21 @@ func TestBoardValues(t *testing.T) {
 		game.stones[y][x] = stone
 	}
 
-	values := game.debugBoardValues()
+	values := game.BoardValues()
 	for y := range Size {
 		for x := range Size {
 			if game.stones[y][x] != None {
 				continue
 			}
-			v0 := game.debugBoardValue()
+			v0 := game.BoardValue()
 			game.stones[y][x] = Black
-			v1 := game.debugBoardValue()
+			v1 := game.BoardValue()
 			if values[y][x][0] != v1-v0 {
 				fmt.Printf("Failure:1: [%d:%d] expected %d got %d\n", x, y, v1-v0, values[y][x][0])
 				t.FailNow()
 			}
 			game.stones[y][x] = White
-			v2 := game.debugBoardValue()
+			v2 := game.BoardValue()
 			if values[y][x][1] != v2-v0 {
 				fmt.Printf("Failure:2: [%d:%d] expected %d got %d\n", x, y, v2-v0, values[y][x][1])
 				t.FailNow()

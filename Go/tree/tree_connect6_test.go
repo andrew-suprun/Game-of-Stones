@@ -19,13 +19,15 @@ func TestExpandConnect6(t *testing.T) {
 	fmt.Println("Move", move)
 	for {
 		for range 10 {
-			move, _ = searchTree.Expand()
-			dec, _, _, _, _ := connect6.Decision()
-			if dec != common.NoDecision {
-				fmt.Printf("\n---\n%v\n", searchTree)
-				fmt.Println(connect6)
-				return
+			if !searchTree.Expand() {
+				break
 			}
+		}
+		dec, _, _, _, _ := searchTree.game.Decision()
+		if dec != common.NoDecision {
+			fmt.Printf("\n---\n%v\n", searchTree)
+			fmt.Println(connect6)
+			return
 		}
 		// fmt.Printf("\n---\n%v\n", searchTree)
 		// fmt.Println(game)

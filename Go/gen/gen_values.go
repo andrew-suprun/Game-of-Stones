@@ -78,7 +78,7 @@ func genValues(file *os.File, values []int16) {
 }
 
 func genDebugValues(file *os.File, values []int16) {
-	fmt.Fprintln(file, `var debugStoneValues = [64][2]int16{`)
+	fmt.Fprintln(file, `var stoneValues = [64][2]int16{`)
 	var v [8][8][2]int16
 
 	for i := range values[1:] {
@@ -90,7 +90,7 @@ func genDebugValues(file *os.File, values []int16) {
 }
 
 func genDebugValue(file *os.File, values []int16) {
-	fmt.Fprintln(file, `var debugStoneValue = [64]int16{`)
+	fmt.Fprintln(file, `var stoneValue = [64]int16{`)
 	var v [8][8]int16
 
 	for i := range values[1:] {

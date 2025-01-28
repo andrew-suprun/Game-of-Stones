@@ -9,29 +9,29 @@ import (
 )
 
 func (tree *Tree[move]) validate() {
-	tree.root.validate(tree.game.Turn())
+	tree.validateNode(0, tree.game.Turn())
 }
 
-func (node *node[move]) validate(turn Turn) {
-	if len(node.children) == 0 {
-		// if node.move.IsDecisive() && !node.move.IsTerminal() {
-		// 	log.Panicf("### Validation ### decisive childless node")
-		// }
+func (tree *Tree[move]) validateNode(idx int32, turn Turn) {
+	node := tree.nodes[idx]
+	if node.firstChild == 0 {
 		return
 	}
-	expected := node.children[0].value
+	expected := tree.nodes[node.firstChild].value
 	if turn == First {
-		for _, child := range node.children {
+		for childIdx := node.firstChild; childIdx < node.lastChild; childIdx++ {
+			child := tree.nodes[childIdx]
 			expected = max(expected, child.value)
-			child.validate(Second)
+			tree.validateNode(childIdx, Second)
 		}
 	} else {
-		for _, child := range node.children {
+		for childIdx := node.firstChild; childIdx < node.lastChild; childIdx++ {
+			child := tree.nodes[childIdx]
 			expected = min(expected, child.value)
-			child.validate(First)
+			tree.validateNode(childIdx, First)
 		}
 	}
 	if expected != node.value {
-		log.Panicf("### Validation ### move: %#v expected %v", node.move, expected)
+		log.Panicf("### Validation ### move: %#v expected %v", tree.moves[idx], expected)
 	}
 }

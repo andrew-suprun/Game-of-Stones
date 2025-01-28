@@ -38,8 +38,8 @@ type Decision int8
 const (
 	NoDecision Decision = iota
 	Draw
-	BlackWin
-	WhiteWin
+	FirstWin
+	SecondWin
 )
 
 func (d Decision) String() string {
@@ -48,9 +48,9 @@ func (d Decision) String() string {
 		return "NoDecision"
 	case Draw:
 		return "Draw"
-	case BlackWin:
+	case FirstWin:
 		return "BlackWin"
-	case WhiteWin:
+	case SecondWin:
 		return "WhiteWin"
 	}
 	return ""

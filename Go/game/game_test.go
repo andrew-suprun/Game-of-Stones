@@ -9,7 +9,7 @@ import (
 
 func TestString(t *testing.T) {
 	move := Move{P1: Place{1, 2}, P2: Place{3, 4}}
-	moveValue := MoveValue[Move]{Move: move, Value: 5, Decision: BlackWin}
+	moveValue := MoveValue[Move]{Move: move, Value: 5, Decision: FirstWin}
 	result := fmt.Sprintf("%v", moveValue)
 	fmt.Println(result)
 	if result != "b3-d5   v:    5 BlackWin" {

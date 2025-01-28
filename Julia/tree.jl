@@ -43,13 +43,14 @@ end
 function expand!(tree, game, parent_idx)
     parent = tree.nodes[parent_idx]
     if parent.decision != no_decision
-        tree.nodes[parent_idx] = Node(
-            first_child=parent.first_child,
-            last_child=parent.last_child,
-            n_sims=parent.n_sims + n_moves,
-            value=parent.value,
-            decision=parent.decision)
-        return
+        error("Trying to expand decisive node.")
+        # tree.nodes[parent_idx] = Node(
+        #     first_child=parent.first_child,
+        #     last_child=parent.last_child,
+        #     n_sims=parent.n_sims + n_moves,
+        #     value=parent.value,
+        #     decision=parent.decision)
+        # return
     end
 
     if parent.first_child == 0
@@ -68,7 +69,6 @@ function expand!(tree, game, parent_idx)
         end
     else
         idx = select_child(tree, parent, game.stone, tree.exploration_factor)
-        parent = tree.nodes[idx]
         move = tree.moves[idx]
         play_move!(game, move)
         expand!(tree, game, idx)
@@ -118,7 +118,7 @@ end
 
 function select_child(tree, node, stone, exploration_factor)
     coeff = stone == black ? 1 : -1
-    selected_child_idx = 1
+    selected_child_idx = node.first_child
     log_parent_sims = log(node.n_sims)
     max_value = -Inf
     for idx in node.first_child:node.last_child
