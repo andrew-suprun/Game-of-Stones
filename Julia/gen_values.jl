@@ -1,8 +1,6 @@
 function gen(file, name, values...)
 
     gen_game_values(file, name, values)
-    # gen_first(file, name, values)
-    # gen_second(file, name, values)
     gen_values(file, name, values)
     gen_value(file, name, values)
 end
@@ -71,7 +69,6 @@ function gen_value(file, name, values)
         v[i, 1] = values[i]
         v[1, i] = -values[i]
     end
-    # s = conv.(v)
     for y in 1:8
         println(file, "\t", join(v[:, y], ", ",), ",")
     end
@@ -86,4 +83,3 @@ gen(file, "connect6", 0, 1, 5, 20, 60, 120, 1000, 1000)
 gen(file, "gomoku", 0, 1, 4, 12, 24, 1000, 1000, 1000)
 
 close(file)
-
