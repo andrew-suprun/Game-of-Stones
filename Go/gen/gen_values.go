@@ -77,27 +77,15 @@ func genValues(file *os.File, values []int16) {
 	fmt.Fprint(file, "}\n\n")
 }
 
-func genSecond(file *os.File, values []int16) {
-	fmt.Fprintln(file, `var gameValuesSecond = [64][2]int16{`)
-	var vSecond [8][8][2]int16
-
-	for i := range len(values) - 2 {
-		vSecond[0][i] = [2]int16{values[i] - values[i+1], values[i]}
-		vSecond[i][0] = [2]int16{values[i+1] - values[i], 2*values[i+1] - values[i] - values[i+2]}
-	}
-	vSecond[0][0][0] = 0
-	printTable(file, vSecond)
-}
-
 func genDebugValues(file *os.File, values []int16) {
 	fmt.Fprintln(file, `var debugStoneValues = [64][2]int16{`)
 	var v [8][8][2]int16
 
-	v[0][0] = [2]int16{1, -1}
 	for i := range values[1:] {
 		v[0][i] = [2]int16{values[i+1] - values[i], -values[i]}
 		v[i][0] = [2]int16{values[i], values[i] - values[i+1]}
 	}
+	v[0][0] = [2]int16{1, -1}
 	printTable(file, v)
 }
 

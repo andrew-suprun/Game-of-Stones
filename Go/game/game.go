@@ -25,9 +25,9 @@ func (m Move) Equal(other Move) bool {
 type Stone int8
 
 const (
-	None  Stone = 0x00
-	Black Stone = 0x01
-	White Stone = 0x10
+	None  Stone = 0
+	Black Stone = 1
+	White Stone = 8
 )
 
 type GameName int

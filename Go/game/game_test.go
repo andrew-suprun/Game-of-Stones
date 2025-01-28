@@ -12,7 +12,7 @@ func TestString(t *testing.T) {
 	moveValue := MoveValue[Move]{Move: move, Value: 5, Decision: BlackWin}
 	result := fmt.Sprintf("%v", moveValue)
 	fmt.Println(result)
-	if result != "b17-d15 v:    5 BlackWin" {
+	if result != "b3-d5   v:    5 BlackWin" {
 		t.Fail()
 	}
 }

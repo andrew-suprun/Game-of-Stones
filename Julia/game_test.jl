@@ -20,7 +20,7 @@ function test_board_values(name)
     # println(v)
 
     for y in 1:board_size, x in 1:board_size
-        if game.stones[x, y] != 0
+        if game.stones[x, y] != none
             continue
         end
         orig = board_value(game)

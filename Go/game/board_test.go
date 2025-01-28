@@ -2,10 +2,48 @@ package game
 
 import (
 	"fmt"
-	. "game_of_stones/common"
 	"math/rand"
 	"testing"
+
+	. "game_of_stones/common"
 )
+
+func TestBoardValues(t *testing.T) {
+	game := NewGame(Gomoku, 10)
+
+	rnd := rand.New(rand.NewSource(1))
+	for range 100 {
+		stone := Black
+		if rnd.Intn(2) == 0 {
+			stone = White
+		}
+		x, y := rnd.Intn(Size), rnd.Intn(Size)
+		game.stones[y][x] = stone
+	}
+
+	values := game.debugBoardValues()
+	for y := range Size {
+		for x := range Size {
+			if game.stones[y][x] != None {
+				continue
+			}
+			v0 := game.debugBoardValue()
+			game.stones[y][x] = Black
+			v1 := game.debugBoardValue()
+			if values[y][x][0] != v1-v0 {
+				fmt.Printf("Failure:1: [%d:%d] expected %d got %d\n", x, y, v1-v0, values[y][x][0])
+				t.FailNow()
+			}
+			game.stones[y][x] = White
+			v2 := game.debugBoardValue()
+			if values[y][x][1] != v2-v0 {
+				fmt.Printf("Failure:2: [%d:%d] expected %d got %d\n", x, y, v2-v0, values[y][x][1])
+				t.FailNow()
+			}
+			game.stones[y][x] = None
+		}
+	}
+}
 
 func TestPlaceStone(t *testing.T) {
 	rnd := rand.New(rand.NewSource(3))
@@ -30,7 +68,7 @@ func TestPlaceStone(t *testing.T) {
 		game.turn = turn
 		game.placeStone(Place{x, y}, 1)
 	}
-	t.Logf("%#v\n", game)
+	// t.Logf("%#v\n", game)
 	for i := len(moves) - 1; i >= 0; i-- {
 		game.stone = moves[i].stone
 		if game.stone == Black {
@@ -40,8 +78,8 @@ func TestPlaceStone(t *testing.T) {
 		}
 		game.placeStone(moves[i].place, -1)
 	}
-	t.Logf("%#v\n", game)
 	if originalStones != game.stones || originalValues != game.values {
+		t.Logf("%#v\n", game)
 		t.Fail()
 	}
 }
