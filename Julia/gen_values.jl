@@ -1,16 +1,18 @@
 function gen(file, name, values...)
-    gen_first(file, name, values)
-    gen_second(file, name, values)
+
+    gen_game_values(file, name, values)
+    # gen_first(file, name, values)
+    # gen_second(file, name, values)
     gen_values(file, name, values)
     gen_value(file, name, values)
 end
 
 Base.zero(::Type{Tuple{Int64,Int64}}) = (0, 0)
 
-conv(v) = "($(v[1]), $(v[2])),"
+conv(v) = "($(v[1]), $(v[2]))"
 
-function gen_first(file, name, values)
-    println(file, "const $(name)_first = Tuple{Int16,Int16}[")
+function gen_game_values(file, name, values)
+    println(file, "const $(name)_stone_values = Tuple{Int16,Int16}[")
     v = zeros(Tuple{Int,Int}, 8, 8)
 
     for i in 1:length(values)-2
@@ -20,13 +22,14 @@ function gen_first(file, name, values)
     v[1, 1] = (v[1, 1][1], 0)
     s = conv.(v)
     for y in 1:8
-        println(file, "\t", join(s[:, y], " "))
+        print(file, "\t", join(s[:, y], "; "))
+        print(file, ";")
+        if y < 8
+            println(file)
+        end
     end
-    println(file, "]\n")
-end
+    println(file, ";")
 
-function gen_second(file, name, values)
-    println(file, "const $(name)_second = Tuple{Int16,Int16}[")
     v = zeros(Tuple{Int,Int}, 8, 8)
 
     for i in 1:length(values)-2
@@ -36,9 +39,12 @@ function gen_second(file, name, values)
     v[1, 1] = (0, v[1, 1][2])
     s = conv.(v)
     for y in 1:8
-        println(file, "\t", join(s[:, y], " "))
+        print(file, "\t", join(s[:, y], "; "))
+        if y < 8
+            println(file, ";")
+        end
     end
-    println(file, "]\n")
+    println(file, "\n]\n")
 end
 
 function gen_values(file, name, values)
@@ -52,7 +58,7 @@ function gen_values(file, name, values)
     end
     s = conv.(v)
     for y in 1:8
-        println(file, "\t", join(s[:, y], " "))
+        println(file, "\t", join(s[:, y], ", "), ",")
     end
     println(file, "]\n")
 end

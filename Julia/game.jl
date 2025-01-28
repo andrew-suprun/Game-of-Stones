@@ -146,7 +146,7 @@ function update_row!(game, x, y, dx, dy, n, coeff)
     end
     for _ in 1:n
         stones += Int(game.stones[x+ms1*dx, y+ms1*dy])
-        b_value, w_value = game_values(game.name, game.stone, stones)
+        b_value, w_value = game_values(game.name, game.turn_idx, stones)
         if b_value != 0 || w_value != 0
             b_value, w_value = b_value * coeff, w_value * coeff
             for j in 0:ms1
@@ -434,91 +434,91 @@ function board_values(game)
     for y in 1:board_size
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[x, y]
+            stones += Int(game.stones[x, y])
         end
         for x in 1:board_size+1-ms
-            stones += game.stones[x+ms-1, y]
+            stones += Int(game.stones[x+ms-1, y])
+            b_value, w_value = stones_values(game.name, stones)
             for i in 0:ms-1
-                b_value, w_value = stones_values(game.name, stones)
                 result[1, x+i, y] += b_value
                 result[2, x+i, y] += w_value
             end
-            stones -= game.stones[x, y]
+            stones -= Int(game.stones[x, y])
         end
     end
     for x in 1:board_size
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[x, y]
+            stones += Int(game.stones[x, y])
         end
         for y in 1:board_size-ms+1
-            stones += game.stones[x, y+ms-1]
+            stones += Int(game.stones[x, y+ms-1])
+            b_value, w_value = stones_values(game.name, stones)
             for i in 0:ms-1
-                b_value, w_value = stones_values(game.name, stones)
                 result[1, x, y+i] += b_value
                 result[2, x, y+i] += w_value
             end
-            stones -= game.stones[x, y]
+            stones -= Int(game.stones[x, y])
         end
     end
     for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[x, y+x-1]
+            stones += Int(game.stones[x, y+x-1])
         end
         for x in 1:board_size+2-ms-y
-            stones += game.stones[x+ms-1, x+y+ms-2]
+            stones += Int(game.stones[x+ms-1, x+y+ms-2])
+            b_value, w_value = stones_values(game.name, stones)
             for i in 0:ms-1
-                b_value, w_value = stones_values(game.name, stones)
                 result[1, x+i, x+y+i-1] += b_value
                 result[2, x+i, x+y+i-1] += w_value
             end
-            stones -= game.stones[x, x+y-1]
+            stones -= Int(game.stones[x, x+y-1])
         end
     end
     for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[x+y-1, y]
+            stones += Int(game.stones[x+y-1, y])
         end
         for y in 1:board_size+2-ms-x
-            stones += game.stones[x+y+ms-2, y+ms-1]
+            stones += Int(game.stones[x+y+ms-2, y+ms-1])
+            b_value, w_value = stones_values(game.name, stones)
             for i in 0:ms-1
-                b_value, w_value = stones_values(game.name, stones)
                 result[1, x+y+i-1, y+i] += b_value
                 result[2, x+y+i-1, y+i] += w_value
             end
-            stones -= game.stones[x+y-1, y]
+            stones -= Int(game.stones[x+y-1, y])
         end
     end
     for y in 1:board_size+1-ms
         stones = 1
         for x in 1:ms-1
-            stones += game.stones[board_size+1-x, y+x-1]
+            stones += Int(game.stones[board_size+1-x, y+x-1])
         end
         for x in 1:board_size+2-ms-y
-            stones += game.stones[board_size+2-x-ms, x+y+ms-2]
+            stones += Int(game.stones[board_size+2-x-ms, x+y+ms-2])
+            b_value, w_value = stones_values(game.name, stones)
             for i in 0:ms-1
-                b_value, w_value = stones_values(game.name, stones)
                 result[1, board_size-x-i+1, x+y+i-1] += b_value
                 result[2, board_size-x-i+1, x+y+i-1] += w_value
             end
-            stones -= game.stones[board_size+1-x, x+y-1]
+            stones -= Int(game.stones[board_size+1-x, x+y-1])
         end
     end
     for x in 2:board_size+1-ms
         stones = 1
         for y in 1:ms-1
-            stones += game.stones[board_size+2-x-y, y]
+            stones += Int(game.stones[board_size+2-x-y, y])
         end
         for y in 1:board_size+2-ms-x
-            stones += game.stones[board_size+3-x-y-ms, y+ms-1]
+            stones += Int(game.stones[board_size+3-x-y-ms, y+ms-1])
+            b_value, w_value = stones_values(game.name, stones)
             for i in 0:ms-1
-                b_value, w_value = stones_values(game.name, stones)
                 result[1, board_size+2-x-y-i, y+i] += b_value
                 result[2, board_size+2-x-y-i, y+i] += w_value
             end
-            stones -= game.stones[board_size+2-x-y, y]
+            stones -= Int(game.stones[board_size+2-x-y, y])
         end
     end
     result
@@ -553,12 +553,8 @@ function parse_place(place)
     Place(x, y)
 end
 
-# TODO: join gomoku_first and gomoku_second into Matrix [2, 64, 2]
-game_values(::Name{:Gomoku}, stone, stones) =
-    stone == black ? gomoku_first[stones] : gomoku_second[stones]
-
-game_values(::Name{:Connect6}, stone, stones) =
-    stone == black ? connect6_first[stones] : connect6_second[stones]
+game_values(::Name{:Connect6}, turn_idx, stones) = connect6_stone_values[stones, turn_idx]
+game_values(::Name{:Gomoku}, turn_idx, stones) = gomoku_stone_values[stones, turn_idx]
 
 stones_values(::Name{:Connect6}, stones) = connect6_values[stones]
 stones_values(::Name{:Gomoku}, stones) = gomoku_values[stones]
