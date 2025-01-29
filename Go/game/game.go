@@ -334,5 +334,13 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 		}
 	}
 
-	return NoDecision, 0, 0, 0, 0
+	for y := range Size {
+		for x := range Size {
+			if game.values[y][x][0] != 0 {
+				return NoDecision, 0, 0, 0, 0
+			}
+		}
+	}
+
+	return Draw, 0, 0, 0, 0
 }

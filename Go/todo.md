@@ -1,5 +1,4 @@
 * handle stderr outputs in sim
-* handle draws
 * sim julia engine
 * run multiple sims
 
