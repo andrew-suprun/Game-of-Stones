@@ -146,11 +146,14 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 		if tree.game.Turn() == Second {
 			coeff = -1
 		}
-		selectedChildIdx := parent.firstChild
+		selectedChildIdx := int32(-1)
 		logParentSims := math.Log(float64(parent.nSims))
 		maxV := math.Inf(-1)
 		for idx := parent.firstChild; idx < parent.lastChild; idx++ {
 			child := tree.nodes[idx]
+			if child.decision != NoDecision {
+				continue
+			}
 			v := coeff*float64(child.value) + tree.explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
 			if v > maxV {
 				maxV = v
@@ -159,6 +162,7 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 		}
 
 		tree.game.PlayMove(tree.moves[selectedChildIdx])
+
 		tree.expand(selectedChildIdx)
 		parent = &tree.nodes[parentIdx]
 		tree.game.UndoMove(tree.moves[selectedChildIdx])

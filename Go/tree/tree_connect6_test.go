@@ -1,10 +1,10 @@
 package tree
 
 import (
-	"fmt"
+	"testing"
+
 	"game_of_stones/common"
 	"game_of_stones/game"
-	"testing"
 )
 
 func TestExpandConnect6(t *testing.T) {
@@ -13,26 +13,20 @@ func TestExpandConnect6(t *testing.T) {
 
 	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)
-	fmt.Println("Move", move)
 	move, _ = game.ParseMove("i11-i9")
 	searchTree.CommitMove(move)
-	fmt.Println("Move", move)
+
 	for {
-		for range 10 {
+		for range 100 {
 			if !searchTree.Expand() {
 				break
 			}
 		}
-		dec, _, _, _, _ := searchTree.game.Decision()
-		if dec != common.NoDecision {
-			fmt.Printf("\n---\n%v\n", searchTree)
-			fmt.Println(connect6)
-			return
-		}
-		// fmt.Printf("\n---\n%v\n", searchTree)
-		// fmt.Println(game)
 		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
-		fmt.Println("Move", move)
+		dec, _, _, _, _ := connect6.Decision()
+		if dec != common.NoDecision {
+			break
+		}
 	}
 }

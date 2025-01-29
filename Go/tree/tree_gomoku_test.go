@@ -3,7 +3,7 @@ package tree
 import (
 	"testing"
 
-	. "game_of_stones/common"
+	"game_of_stones/common"
 	"game_of_stones/game"
 )
 
@@ -26,7 +26,7 @@ func TestExpandGomoku(t *testing.T) {
 		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
 		dec, _, _, _, _ := gomoku.Decision()
-		if dec != NoDecision {
+		if dec != common.NoDecision {
 			break
 		}
 	}
