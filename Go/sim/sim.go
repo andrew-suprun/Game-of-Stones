@@ -117,7 +117,7 @@ type engine struct {
 
 func newEngine(title string) *engine {
 	maxPlaces, maxMoves, expFactor, duration := parseTitle(title)
-	aGame := game.NewGame(game.Connect6, maxPlaces)
+	aGame := game.NewGame(maxPlaces)
 	aTree := tree.NewTree(aGame, maxMoves, expFactor)
 	return &engine{
 		title:    title,

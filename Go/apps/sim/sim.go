@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"game_of_stones/game"
 	"io"
 	"math/rand"
 	"os"
@@ -55,22 +54,22 @@ func main() {
 func play(name string, black, white, ui *Cmd) string {
 	fmt.Fprintf(black.out, "move j10\n")
 	fmt.Fprintf(white.out, "move j10\n")
-	uiOut(ui, "j10", "b")
+	uiOut(ui, "move j10")
 	whiteMove := ""
 	if name == "gomoku" {
-		whiteMove = firstWhiteGomokuMove()
+		whiteMove = fmt.Sprintf("move %s\n", firstWhiteGomokuMove())
 	} else {
-		whiteMove = firstWhiteConnect6Move()
+		whiteMove = fmt.Sprintf("move %s\n", firstWhiteConnect6Move())
 	}
-	fmt.Fprintf(black.out, "move %s\n", whiteMove)
-	fmt.Fprintf(white.out, "move %s\n", whiteMove)
-	uiOut(ui, whiteMove, "w")
+	fmt.Fprint(black.out, whiteMove)
+	fmt.Fprint(white.out, whiteMove)
+	uiOut(ui, whiteMove)
 	for {
-		if result := makeMove(black, white, ui, "b"); result != "" {
+		if result := makeMove(black, white, ui); result != "" {
 			fmt.Printf("black %q\n", result)
 			return result
 		}
-		if result := makeMove(white, black, ui, "w"); result != "" {
+		if result := makeMove(white, black, ui); result != "" {
 			fmt.Printf("white %q\n", result)
 			return result
 		}
@@ -78,16 +77,14 @@ func play(name string, black, white, ui *Cmd) string {
 
 }
 
-func uiOut(ui *Cmd, move, color string) {
-	parts := strings.Split(move, "-")
-	for _, part := range parts {
-		fmt.Fprintf(ui.out, "set %s %s\n", part, color)
-	}
+func uiOut(ui *Cmd, msg string) {
+	fmt.Fprintln(ui.out, msg)
 }
 
-func makeMove(maker, taker, ui *Cmd, color string) string {
+func makeMove(maker, taker, ui *Cmd) string {
 	fmt.Fprintln(maker.out, "respond 1000")
 	response, _ := maker.in.ReadString('\n')
+	uiOut(ui, response)
 	response = strings.TrimSpace(response)
 	parts := strings.Split(response, " ")
 
@@ -95,11 +92,7 @@ func makeMove(maker, taker, ui *Cmd, color string) string {
 		return "stop"
 	}
 
-	uiOut(ui, parts[1], color)
 	fmt.Fprintf(taker.out, "move %s\n", parts[1])
-	if len(parts) > 2 {
-		return parts[2]
-	}
 	return ""
 }
 
@@ -146,7 +139,7 @@ func firstWhiteGomokuMove() string {
 	for j := range 3 {
 		for i := range 3 {
 			if i != 1 || j != 1 {
-				places = append(places, fmt.Sprintf("%c%d", i+8+'a', game.Size-8-j))
+				places = append(places, fmt.Sprintf("%c%d", i+8+'a', j+8))
 			}
 		}
 	}
@@ -159,7 +152,7 @@ func firstWhiteConnect6Move() string {
 	for j := range 3 {
 		for i := range 3 {
 			if i != 1 || j != 1 {
-				places = append(places, fmt.Sprintf("%c%d", i+8+'a', game.Size-8-j))
+				places = append(places, fmt.Sprintf("%c%d", i+'i', j+9))
 			}
 		}
 	}

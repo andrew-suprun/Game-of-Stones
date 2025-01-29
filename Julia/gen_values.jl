@@ -1,5 +1,4 @@
 function gen(file, name, values...)
-
     gen_game_values(file, name, values)
     gen_values(file, name, values)
     gen_value(file, name, values)

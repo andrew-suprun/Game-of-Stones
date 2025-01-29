@@ -1,33 +1,43 @@
+//go:build connect6
+
 package tree
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"game_of_stones/common"
 	"game_of_stones/game"
 )
 
 func TestExpandConnect6(t *testing.T) {
-	connect6 := game.NewGame(game.Connect6, 28)
+	connect6 := game.NewGame(28)
 	searchTree := NewTree(connect6, 64, 50)
 
 	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)
-	move, _ = game.ParseMove("i11-i9")
+	move, _ = game.ParseMove("k9-i9")
+	searchTree.CommitMove(move)
+	move, _ = game.ParseMove("i8-l7")
+	searchTree.CommitMove(move)
+	move, _ = game.ParseMove("k8-m7")
 	searchTree.CommitMove(move)
 
-	for {
-		for range 100 {
-			dec, undec := searchTree.Expand()
-			if dec != common.NoDecision || undec < 2 {
-				break
-			}
-		}
-		move = searchTree.BestMove()
-		searchTree.CommitMove(move)
-		dec, _, _, _, _ := connect6.Decision()
-		if dec != common.NoDecision {
+	timestamp := time.Now()
+	dur := time.Second
+	for range 100_000 {
+		dec, undec := searchTree.Expand()
+		if dec != common.NoDecision || undec < 2 || time.Since(timestamp) > dur {
 			break
 		}
+	}
+	move = searchTree.BestMove()
+	searchTree.CommitMove(move)
+	dec, x, y, dx, dy := connect6.Decision()
+	if dec != common.NoDecision {
+		fmt.Printf("move %s %v %d %d %d %d\n", move, dec, x, y, dx, dy)
+	} else {
+		fmt.Printf("move %s\n", move)
 	}
 }

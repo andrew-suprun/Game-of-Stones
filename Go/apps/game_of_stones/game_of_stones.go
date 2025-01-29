@@ -6,21 +6,13 @@ import (
 	"strings"
 
 	. "game_of_stones/common"
-	"game_of_stones/game"
 )
 
 const usage = `Usage: game_of_stones [params]
-    -game=[gomoku|connect6] (gomoku)
     -stones=[black|white] (black)
 `
 
-const (
-	gomokuId game.GameName = iota
-	connect6Id
-)
-
 var (
-	gameId             = game.Gomoku
 	humanPlayerStones  = First
 	enginePlayerStones = Second
 )
@@ -33,8 +25,8 @@ func main() {
 	chIn2 := make(chan string, 1)
 	chOut2 := make(chan string, 1)
 
-	go runHumanPlayer(gameId, humanPlayerStones, chOut1, chIn1)
-	go runEngine(gameId, enginePlayerStones, chOut2, chIn2)
+	go runHumanPlayer(humanPlayerStones, chOut1, chIn1)
+	go runEngine(enginePlayerStones, chOut2, chIn2)
 	running := true
 	for running {
 		run := true
@@ -54,17 +46,7 @@ func main() {
 
 func parseArgs() {
 	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, "-game=") {
-			if strings.ToLower(arg[6:]) == "connect6" {
-				gameId = connect6Id
-			} else if strings.ToLower(arg[6:]) == "gomoku" {
-				gameId = gomokuId
-			} else {
-				fmt.Println("Invalid game parameter.")
-				fmt.Print(usage)
-				os.Exit(1)
-			}
-		} else if strings.HasPrefix(arg, "-stones=") {
+		if strings.HasPrefix(arg, "-stones=") {
 			if strings.ToLower(arg[8:]) == "black" {
 				// default
 			} else if strings.ToLower(arg[8:]) == "white" {

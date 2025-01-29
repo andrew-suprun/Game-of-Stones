@@ -14,7 +14,6 @@ import (
 )
 
 type humanPlayer struct {
-	gameId              game.GameName
 	stones              Turn
 	turn                Turn
 	oppIn               chan string
@@ -28,9 +27,8 @@ type humanPlayer struct {
 	engineStoneSelected rune
 }
 
-func runHumanPlayer(gameId game.GameName, stones Turn, oppIn, oppOut chan string) *humanPlayer {
+func runHumanPlayer(stones Turn, oppIn, oppOut chan string) *humanPlayer {
 	self := &humanPlayer{
-		gameId:   gameId,
 		stones:   stones,
 		turn:     stones,
 		oppIn:    oppIn,
@@ -86,7 +84,7 @@ func (player *humanPlayer) opponentMoves() {
 		parts := strings.Split(move, ";")
 		move = parts[0]
 
-		if player.gameId == connect6Id {
+		if game.GameName == "connect6" {
 			places := strings.Split(move, "-")
 			for _, place := range places {
 				player.played[place] = player.engineStoneSelected
@@ -140,11 +138,11 @@ func (player *humanPlayer) uiMoves(uiIn io.Reader) {
 				continue
 			}
 
-			if player.gameId == game.Gomoku && len(player.selected) == 1 {
+			if game.GameName == "gomoku" && len(player.selected) == 1 {
 				continue
 			}
 
-			if player.gameId == game.Connect6 && len(player.selected) == 2 {
+			if game.GameName == "connect6" && len(player.selected) == 2 {
 				continue
 			}
 
@@ -152,10 +150,10 @@ func (player *humanPlayer) uiMoves(uiIn io.Reader) {
 			fmt.Fprintf(player.uiOut, "set %s %c\n", place, player.humanStoneSelected)
 			player.selected[place] = struct{}{}
 		} else if text == "key: Enter" {
-			if player.gameId == gomokuId && len(player.selected) != 1 {
+			if game.GameName == "gomoku" && len(player.selected) != 1 {
 				continue
 			}
-			if player.gameId == connect6Id && len(player.selected) != 2 {
+			if game.GameName == "connect6" && len(player.selected) != 2 {
 				continue
 			}
 			for move, stone := range player.played {
@@ -166,7 +164,7 @@ func (player *humanPlayer) uiMoves(uiIn io.Reader) {
 					fmt.Fprintf(player.uiOut, "set %s w\n", move)
 				}
 			}
-			if gameId == connect6Id {
+			if game.GameName == "connect6" {
 				var places []string
 				for place := range player.selected {
 					places = append(places, place)

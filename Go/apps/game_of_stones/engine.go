@@ -10,7 +10,7 @@ import (
 	"game_of_stones/tree"
 )
 
-func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
+func runEngine(playerStones Turn, in, out chan string) {
 	var (
 		playerTurn      = First
 		oppPlayerStones Turn
@@ -18,7 +18,7 @@ func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
 		theTree         *tree.Tree[game.Move]
 	)
 
-	theGame = game.NewGame(gameId, 22)
+	theGame = game.NewGame(22)
 	theTree = tree.NewTree[game.Move](theGame, 64, 20)
 	if playerStones == First {
 		oppPlayerStones = Second
@@ -37,18 +37,20 @@ func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
 				if playerTurn == First {
 					move, _ = game.ParseMove("j10")
 				} else {
-					move, _ = game.ParseMove(firstWhiteMove(gameId))
+					move, _ = game.ParseMove(firstWhiteMove())
 				}
 			} else {
 				timestamp := time.Now()
 				for {
-					if theTree.Expand() {
-						dec, _, _, _, _ := theGame.Decision()
-						if dec != NoDecision || time.Since(timestamp) > time.Second {
-							move = theTree.BestMove()
-							break
-						}
+					dec, undec := theTree.Expand()
+					if dec != NoDecision || undec < 2 || time.Since(timestamp) > time.Second {
+						break
 					}
+				}
+				dec, _, _, _, _ := theGame.Decision()
+				if dec != NoDecision {
+					move = theTree.BestMove()
+					return
 				}
 			}
 			fmt.Printf("engine: playing move %v; sims %d\n", move, nSims)
@@ -73,8 +75,8 @@ func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
 	}
 }
 
-func firstWhiteMove(gameId game.GameName) string {
-	if gameId == gomokuId {
+func firstWhiteMove() string {
+	if game.GameName == "gomoku" {
 		return firstWhiteGomokuMove()
 	}
 	return firstWhiteConnect6Move()

@@ -27,7 +27,7 @@ const (
 `
 
 func genValuesForGame(game string, maxStones int16, values ...int16) {
-	file, err := os.Create("../game/" + game + "_values.go")
+	file, err := os.Create("../game/value_tables_" + game + ".go")
 	if err != nil {
 		panic(err)
 	}

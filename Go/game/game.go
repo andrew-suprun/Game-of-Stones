@@ -30,28 +30,17 @@ const (
 	White Stone = 8
 )
 
-type GameName int
-
-const (
-	Gomoku GameName = iota
-	Connect6
-)
-
 type Game struct {
-	name       GameName
-	stone      Stone
-	turn       Turn
-	stones     [Size][Size]Stone
-	values     [Size][Size][2]int16
-	value      int16
-	places     []Place
-	maxStones  int8
-	maxStones1 int8
+	stone  Stone
+	turn   Turn
+	stones [Size][Size]Stone
+	values [Size][Size][2]int16
+	value  int16
+	places []Place
 }
 
-func NewGame(name GameName, maxPlaces int) *Game {
+func NewGame(maxPlaces int) *Game {
 	game := &Game{
-		name:   name,
 		stone:  Black,
 		places: make([]Place, 0, maxPlaces),
 	}
@@ -61,15 +50,6 @@ func NewGame(name GameName, maxPlaces int) *Game {
 
 func (game *Game) Turn() Turn {
 	return game.turn
-}
-
-func (game *Game) TopMoves(moves *[]MoveValue[Move]) {
-	*moves = (*moves)[:0]
-	if game.name == Gomoku {
-		game.topGomokuMoves(moves)
-	} else {
-		game.topConnect6Moves(moves)
-	}
 }
 
 func (game *Game) PlayMove(move Move) {
@@ -148,12 +128,6 @@ func ParsePlace(place string) (Place, error) {
 }
 
 func (game *Game) initValues() {
-	game.maxStones = 5
-	if game.name == Connect6 {
-		game.maxStones = 6
-	}
-	game.maxStones1 = game.maxStones - 1
-	maxStones, maxStones1 := int(game.maxStones), int(game.maxStones1)
 	for y := 0; y < Size; y++ {
 		v := 1 + min(maxStones1, y, Size-1-y)
 		for x := 0; x < Size; x++ {
@@ -168,11 +142,6 @@ func (game *Game) initValues() {
 }
 
 func (game *Game) placeStone(place Place, coeff int16) {
-	maxStones := int8(5)
-	if game.name == Connect6 {
-		maxStones = 6
-	}
-	maxStones1 := maxStones - 1
 	x, y := place.X, place.Y
 	if coeff == 1 {
 		game.value += game.values[y][x][game.turn]
@@ -226,15 +195,15 @@ func (game *Game) placeStone(place Place, coeff int16) {
 
 func (game *Game) updateRow(x, y, dx, dy, n int8, coeff int16) {
 	stones := Stone(0)
-	for i := int8(0); i < game.maxStones1; i++ {
+	for i := int8(0); i < maxStones1; i++ {
 		stones += game.stones[y+i*dy][x+i*dx]
 	}
 	for range n {
-		stones += game.stones[y+game.maxStones1*dy][x+game.maxStones1*dx]
+		stones += game.stones[y+maxStones1*dy][x+maxStones1*dx]
 		values := gameValues[game.turn][stones]
 		blackValue, whiteValue := values[0]*coeff, values[1]*coeff
 		if blackValue != 0 || whiteValue != 0 {
-			for j := int8(0); j < game.maxStones; j++ {
+			for j := int8(0); j < maxStones; j++ {
 				s := &game.values[y+j*dy][x+j*dx]
 				s[0] += blackValue
 				s[1] += whiteValue
@@ -243,173 +212,6 @@ func (game *Game) updateRow(x, y, dx, dy, n int8, coeff int16) {
 		stones -= game.stones[y][x]
 		x += dx
 		y += dy
-	}
-}
-
-func (game *Game) topGomokuMoves(moves *[]MoveValue[Move]) {
-	game.topPlaces()
-	hasDraw := false
-	for _, place := range game.places {
-		value := game.values[place.Y][place.X][game.turn]
-		if value >= WinValue {
-			*moves = (*moves)[:1]
-			(*moves)[0] = MoveValue[Move]{
-				Move:     Move{P1: place, P2: place},
-				Value:    WinValue,
-				Decision: FirstWin}
-			return
-		} else if value <= -WinValue {
-			*moves = (*moves)[:1]
-			(*moves)[0] = MoveValue[Move]{
-				Move:     Move{place, place},
-				Value:    -WinValue,
-				Decision: SecondWin}
-			return
-		}
-
-		if value != 0 {
-			*moves = append(*moves, MoveValue[Move]{
-				Move:     Move{place, place},
-				Value:    game.value + value/2,
-				Decision: NoDecision,
-			})
-		} else if !hasDraw {
-			*moves = append(*moves, MoveValue[Move]{
-				Move:     Move{place, place},
-				Value:    0,
-				Decision: Draw,
-			})
-			hasDraw = true
-		}
-	}
-}
-
-func (game *Game) topConnect6Moves(moves *[]MoveValue[Move]) {
-	less := func(a, b MoveValue[Move]) bool {
-		return a.Value < b.Value
-	}
-	if game.stone == White {
-		less = func(a, b MoveValue[Move]) bool {
-			return a.Value > b.Value
-		}
-	}
-
-	game.topPlaces()
-
-	if len(game.places) < 2 {
-		*moves = append(*moves, MoveValue[Move]{
-			Move:     Move{Place{0, 0}, Place{0, 0}},
-			Value:    0,
-			Decision: Draw,
-		})
-		return
-	}
-	gameValue := game.value
-	hasDraw := false
-
-	for i, place1 := range game.places {
-		value1 := game.values[place1.Y][place1.X][game.turn]
-
-		if value1 >= WinValue {
-			*moves = (*moves)[:1]
-			(*moves)[0] = MoveValue[Move]{
-				Move:     Move{P1: place1, P2: place1},
-				Value:    WinValue,
-				Decision: FirstWin}
-			return
-		} else if value1 < -WinValue {
-			*moves = (*moves)[:1]
-			(*moves)[0] = MoveValue[Move]{
-				Move:     Move{P1: place1, P2: place1},
-				Value:    -WinValue,
-				Decision: SecondWin}
-			return
-		}
-
-		game.placeStone(place1, 1)
-
-		for _, place2 := range game.places[i+1:] {
-			value2 := game.values[place2.Y][place2.X][game.turn]
-
-			if value2 >= WinValue {
-				*moves = (*moves)[:1]
-				(*moves)[0] = MoveValue[Move]{
-					Move:     Move{P1: place1, P2: place2},
-					Value:    WinValue,
-					Decision: FirstWin}
-				game.placeStone(place1, -1)
-				return
-			} else if value2 < -WinValue {
-				*moves = (*moves)[:1]
-				(*moves)[0] = MoveValue[Move]{
-					Move:     Move{P1: place1, P2: place2},
-					Value:    -WinValue,
-					Decision: SecondWin}
-				game.placeStone(place1, -1)
-				return
-			}
-
-			value := value1 + value2
-
-			if value == 0 {
-				if !hasDraw {
-					*moves = append(*moves, MoveValue[Move]{
-						Move:     Move{place1, place2},
-						Value:    0,
-						Decision: Draw,
-					})
-					hasDraw = true
-				}
-			} else {
-				value = gameValue + value/2 //TODO: Check alternative scoring below:
-
-				// game.placeStone(place2, 1)
-				// oppVal := game.oppValue()
-				// game.placeStone(place2, -1)
-				// value = gameValue + value + oppVal
-
-				move := MoveValue[Move]{
-					Move:     Move{place1, place2},
-					Value:    value,
-					Decision: NoDecision,
-				}
-				heap.Add(move, moves, less)
-			}
-		}
-
-		game.placeStone(place1, -1)
-	}
-}
-
-func (game *Game) oppValue() int16 {
-	oppTurn := First
-	if game.stone == Black {
-		oppTurn = Second
-	}
-	if oppTurn == Second {
-		var oppVal int16 = WinValue
-		for y := int8(0); y < Size; y++ {
-			for x := int8(0); x < Size; x++ {
-				if game.stones[y][x] != None {
-					continue
-				}
-				v := game.values[y][x][1]
-				oppVal = min(oppVal, v)
-			}
-		}
-		return oppVal
-	} else {
-		var oppVal int16 = -WinValue
-		for y := int8(0); y < Size; y++ {
-			for x := int8(0); x < Size; x++ {
-				if game.stones[y][x] != None {
-					continue
-				}
-				v := game.values[y][x][0]
-				oppVal = max(oppVal, v)
-			}
-		}
-		return oppVal
 	}
 }
 
@@ -425,29 +227,24 @@ func (game *Game) topPlaces() {
 	game.places = game.places[:0]
 	for y := int8(0); y < Size; y++ {
 		for x := int8(0); x < Size; x++ {
-			if game.stones[y][x] != None {
-				continue
+			if game.stones[y][x] == None {
+				heap.Add(Place{X: x, Y: y}, &game.places, less)
 			}
-			heap.Add(Place{X: x, Y: y}, &game.places, less)
 		}
 	}
 }
 
 func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
-	blackStones := Stone(5)
-	whiteStones := Stone(5 * White)
-	if game.name == Connect6 {
-		blackStones = Stone(6)
-		whiteStones = Stone(6 * White)
-	}
+	blackStones := Stone(maxStones)
+	whiteStones := Stone(maxStones * White)
 
 	for y := int8(0); y < Size; y++ {
 		stones := Stone(0)
-		for x := int8(0); x < game.maxStones1; x++ {
+		for x := int8(0); x < maxStones1; x++ {
 			stones += game.stones[y][x]
 		}
-		for x := int8(0); x < Size-game.maxStones1; x++ {
-			stones += game.stones[y][x+game.maxStones1]
+		for x := int8(0); x < Size-maxStones1; x++ {
+			stones += game.stones[y][x+maxStones1]
 			if stones == blackStones {
 				return FirstWin, x, y, 1, 0
 			} else if stones == whiteStones {
@@ -459,11 +256,11 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 
 	for x := int8(0); x < Size; x++ {
 		stones := Stone(0)
-		for y := int8(0); y < game.maxStones1; y++ {
+		for y := int8(0); y < maxStones1; y++ {
 			stones += game.stones[y][x]
 		}
-		for y := int8(0); y < Size-game.maxStones1; y++ {
-			stones += game.stones[y+game.maxStones1][x]
+		for y := int8(0); y < Size-maxStones1; y++ {
+			stones += game.stones[y+maxStones1][x]
 			if stones == blackStones {
 				return FirstWin, x, y, 1, 0
 			} else if stones == whiteStones {
@@ -473,13 +270,13 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 		}
 	}
 
-	for y := int8(0); y < Size-game.maxStones1; y++ {
+	for y := int8(0); y < Size-maxStones1; y++ {
 		stones := Stone(0)
-		for x := int8(0); x < game.maxStones1; x++ {
+		for x := int8(0); x < maxStones1; x++ {
 			stones += game.stones[y+x][x]
 		}
-		for x := int8(0); x < Size-game.maxStones1-y; x++ {
-			stones += game.stones[x+y+game.maxStones1][x+game.maxStones1]
+		for x := int8(0); x < Size-maxStones1-y; x++ {
+			stones += game.stones[x+y+maxStones1][x+maxStones1]
 			if stones == blackStones {
 				return FirstWin, x, x + y, 1, 0
 			} else if stones == whiteStones {
@@ -489,13 +286,13 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 		}
 	}
 
-	for x := int8(1); x < Size-game.maxStones1; x++ {
+	for x := int8(1); x < Size-maxStones1; x++ {
 		stones := Stone(0)
-		for y := int8(0); y < game.maxStones1; y++ {
+		for y := int8(0); y < maxStones1; y++ {
 			stones += game.stones[y][x+y]
 		}
-		for y := int8(0); y < Size-game.maxStones1-x; y++ {
-			stones += game.stones[y+game.maxStones1][x+y+game.maxStones1]
+		for y := int8(0); y < Size-maxStones1-x; y++ {
+			stones += game.stones[y+maxStones1][x+y+maxStones1]
 			if stones == blackStones {
 				return FirstWin, x, x + y, 1, 0
 			} else if stones == whiteStones {
@@ -505,13 +302,13 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 		}
 	}
 
-	for y := int8(0); y < Size-game.maxStones1; y++ {
+	for y := int8(0); y < Size-maxStones1; y++ {
 		stones := Stone(0)
-		for x := int8(0); x < game.maxStones1; x++ {
+		for x := int8(0); x < maxStones1; x++ {
 			stones += game.stones[x+y][Size-1-x]
 		}
-		for x := int8(0); x < Size-game.maxStones1-y; x++ {
-			stones += game.stones[x+y+game.maxStones1][Size-1-x-game.maxStones1]
+		for x := int8(0); x < Size-maxStones1-y; x++ {
+			stones += game.stones[x+y+maxStones1][Size-1-x-maxStones1]
 			if stones == blackStones {
 				return FirstWin, Size - 1 - x, x + y, 1, 0
 			} else if stones == whiteStones {
@@ -521,13 +318,13 @@ func (game *Game) Decision() (Decision, int8, int8, int8, int8) {
 		}
 	}
 
-	for x := int8(1); x < Size-game.maxStones1; x++ {
+	for x := int8(1); x < Size-maxStones1; x++ {
 		stones := Stone(0)
-		for y := int8(0); y < game.maxStones1; y++ {
+		for y := int8(0); y < maxStones1; y++ {
 			stones += game.stones[y][Size-1-x-y]
 		}
-		for y := int8(0); y < Size-game.maxStones1-x; y++ {
-			stones += game.stones[y+game.maxStones1][Size-1-game.maxStones1-x-y]
+		for y := int8(0); y < Size-maxStones1-x; y++ {
+			stones += game.stones[y+maxStones1][Size-1-maxStones1-x-y]
 			if stones == blackStones {
 				return FirstWin, Size - 1 - x - y, y, 1, 0
 			} else if stones == whiteStones {

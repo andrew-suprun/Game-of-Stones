@@ -43,7 +43,7 @@ const (
 	stateWhite
 )
 
-var gameName string = "gomoku"
+var gameName string = "connect6"
 var maxSelected int = 1
 
 type state struct {
@@ -59,8 +59,8 @@ func main() {
 }
 
 func run() {
-	if len(os.Args) > 1 && os.Args[1] == "connect6" {
-		gameName = "connect6"
+	if len(os.Args) > 1 && os.Args[1] == "gomoku" {
+		gameName = "gomoku"
 		maxSelected = 2
 	}
 	gameState := state{}
@@ -232,6 +232,7 @@ func input(window *app.Window, stateChan chan *state) {
 	for {
 		text, err := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
+		fmt.Printf("read: %q\n", text)
 		if err != nil {
 			fmt.Println("error: Failed to read from standard input.")
 			os.Exit(1)
@@ -249,31 +250,6 @@ func input(window *app.Window, stateChan chan *state) {
 		if strings.HasPrefix(text, "respond") {
 			state := <-stateChan
 			state.respond = true
-			stateChan <- state
-		}
-		if strings.HasPrefix(text, "terminal ") {
-			state := <-stateChan
-			terms := strings.Fields(text)
-			if len(terms) != 5 {
-				fmt.Println("error: Invalid syntax for terminal command.")
-				os.Exit(1)
-			}
-			numbers := parseNumbers(terms[1:])
-			stones := 5
-			if gameName == "connect6" {
-				stones = 6
-			}
-			for i := range stones {
-				x := numbers[0] + int8(i)*numbers[2]
-				y := numbers[1] + int8(i)*numbers[3]
-				switch state.places[y][x] {
-				case stateBlack:
-					state.places[y][x] = stateBlackSelected
-				case stateWhite:
-					state.places[y][x] = stateWhiteSelected
-				}
-			}
-			state.respond = false
 			stateChan <- state
 		}
 		window.Invalidate()
@@ -294,13 +270,12 @@ func parseNumbers(texts []string) []int8 {
 }
 
 func playMove(stateChan chan *state, cmd string) {
-
-	parts := strings.Fields(cmd)
-	if len(parts) != 2 {
+	terms := strings.Fields(cmd)
+	if len(terms) < 2 {
 		fmt.Printf("error: Invalid move command: %q\n", cmd)
 		os.Exit(1)
 	}
-	move, err := game.ParseMove(parts[1])
+	move, err := game.ParseMove(terms[1])
 	if err != nil {
 		fmt.Printf("error: Invalid move command: %q\n", cmd)
 		os.Exit(1)
@@ -317,6 +292,7 @@ func playMove(stateChan chan *state, cmd string) {
 			}
 		}
 	}
+	fmt.Fprintf(os.Stderr, "Ui> setting move %v\n", move)
 	if state.turn == First {
 		state.places[move.P1.Y][move.P1.X] = stateBlackSelected
 		state.places[move.P2.Y][move.P2.X] = stateBlackSelected
@@ -326,6 +302,27 @@ func playMove(stateChan chan *state, cmd string) {
 		state.places[move.P2.Y][move.P2.X] = stateWhiteSelected
 		state.turn = First
 	}
+
+	if len(terms) < 7 {
+		stateChan <- state
+		return
+	}
+	numbers := parseNumbers(terms[2:])
+	stones := 5
+	if gameName == "connect6" {
+		stones = 6
+	}
+	for i := range stones {
+		x := numbers[0] + int8(i)*numbers[2]
+		y := numbers[1] + int8(i)*numbers[3]
+		switch state.places[y][x] {
+		case stateBlack:
+			state.places[y][x] = stateBlackSelected
+		case stateWhite:
+			state.places[y][x] = stateWhiteSelected
+		}
+	}
+	state.respond = false
 
 	stateChan <- state
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestBoardValues(t *testing.T) {
-	game := NewGame(Gomoku, 10)
+	game := NewGame(10)
 
 	rnd := rand.New(rand.NewSource(1))
 	for range 100 {
@@ -48,7 +48,7 @@ func TestBoardValues(t *testing.T) {
 func TestPlaceStone(t *testing.T) {
 	rnd := rand.New(rand.NewSource(3))
 	moves := []testMove{}
-	game := NewGame(Gomoku, 10)
+	game := NewGame(10)
 	originalStones := game.stones
 	originalValues := game.values
 	for range 300 {
@@ -85,7 +85,7 @@ func TestPlaceStone(t *testing.T) {
 }
 
 func TestTopPlaces(t *testing.T) {
-	game := NewGame(Connect6, 1)
+	game := NewGame(1)
 	p1, _ := ParsePlace("j10")
 	p2, _ := ParsePlace("i9")
 	p3, _ := ParsePlace("i11")
@@ -104,7 +104,7 @@ func TestTopPlaces(t *testing.T) {
 }
 
 func BenchmarkPlayMove(b *testing.B) {
-	board := NewGame(Gomoku, 10)
+	board := NewGame(10)
 
 	b.ResetTimer()
 	for range b.N {
@@ -114,7 +114,7 @@ func BenchmarkPlayMove(b *testing.B) {
 }
 
 func BenchmarkPlaceStone(b *testing.B) {
-	board := NewGame(Gomoku, 10)
+	board := NewGame(10)
 
 	b.ResetTimer()
 	for range b.N {

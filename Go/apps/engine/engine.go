@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"math/rand"
@@ -15,19 +16,14 @@ import (
 	"game_of_stones/tree"
 )
 
-const usage = `Usage: game_of_stones [params]
-    -game=[gomoku|connect6] (gomoku)
-`
-
-var gameId = game.Gomoku
 var name string
 
 func main() {
-	parseArgs()
+	flag.Parse()
 	randomName()
 	reader := bufio.NewReader(os.Stdin)
-	theGame := game.NewGame(gameId, 22)
-	theTree := tree.NewTree[game.Move](theGame, 64, 20)
+	theGame := game.NewGame(22)
+	theTree := tree.NewTree(theGame, 64, 20)
 loop:
 	for {
 		line, err := reader.ReadString('\n')
@@ -41,18 +37,14 @@ loop:
 		terms := strings.Split(line, " ")
 		switch terms[0] {
 		case "game-name":
-			switch gameId {
-			case game.Gomoku:
-				fmt.Println("gomoku")
-			case game.Connect6:
-				fmt.Println("connect6")
-			}
+			fmt.Println(game.GameName)
 		case "move":
 			move, err := game.ParseMove(terms[1])
 			if err != nil {
 				panic(err)
 			}
 			theTree.CommitMove(move)
+			log("committed move %s\n", move)
 		case "respond":
 			millis, err := strconv.ParseInt(terms[1], 10, 64)
 			if err != nil {
@@ -61,16 +53,19 @@ loop:
 			timestamp := time.Now()
 			dur := time.Duration(millis) * time.Millisecond
 			for {
-				if theTree.Expand() {
-					dec, _, _, _, _ := theGame.Decision()
-					if dec != common.NoDecision || time.Since(timestamp) > dur {
-						move := theTree.BestMove()
-						theTree.CommitMove(move)
-						fmt.Printf("move %s\n", move)
-						log("move %s\n", move)
-						break
-					}
+				dec, undec := theTree.Expand()
+				if dec != common.NoDecision || undec < 2 || time.Since(timestamp) > dur {
+					break
 				}
+			}
+			move := theTree.BestMove()
+			theTree.CommitMove(move)
+			dec, x, y, dx, dy := theGame.Decision()
+			if dec != common.NoDecision {
+				fmt.Printf("move %s %v %d %d %d %d\n", move, dec, x, y, dx, dy)
+				return
+			} else {
+				fmt.Printf("move %s\n", move)
 			}
 		case "stop":
 			break loop
@@ -78,25 +73,13 @@ loop:
 	}
 }
 
-func parseArgs() {
-	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, "-game=") {
-			if strings.ToLower(arg[6:]) == "connect6" {
-				gameId = game.Connect6
-			} else if strings.ToLower(arg[6:]) == "gomoku" {
-				gameId = game.Gomoku
-			} else {
-				fmt.Println("Invalid game parameter.")
-				fmt.Print(usage)
-				os.Exit(1)
-			}
-		}
-	}
-}
+var maxPlaces = flag.Int("places", 20, "number of places to consider")
+var maxMoves = flag.Int("moves", 64, "number of moves to consider")
+var explorationCoeff = flag.Float64("C", 100, "exploration coeffitient")
 
 func randomName() {
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-	name = fmt.Sprintf("%c> ", 'A'+rnd.Intn(26))
+	name = fmt.Sprintf("%c%c> ", 'A'+rnd.Intn(26), 'a'+rnd.Intn(26))
 }
 
 func log(format string, args ...any) {

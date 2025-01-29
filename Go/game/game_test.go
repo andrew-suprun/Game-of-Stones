@@ -18,16 +18,15 @@ func TestString(t *testing.T) {
 }
 
 func TestMove(t *testing.T) {
-	c6 := NewGame(Connect6, 10)
+	c6 := NewGame(10)
 	m1, _ := ParseMove("j10")
 	c6.PlayMove(m1)
 	m2, _ := ParseMove("i9-i11")
 	c6.PlayMove(m2)
-	fmt.Printf("%#v\nopp V: %v\n", c6, c6.oppValue())
 }
 
 func TestTopMoves(t *testing.T) {
-	c6 := NewGame(Connect6, 10)
+	c6 := NewGame(10)
 	originalBoard := c6.values
 	m1, _ := ParseMove("j10")
 	c6.PlayMove(m1)
