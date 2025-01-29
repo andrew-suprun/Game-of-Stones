@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Cmd struct {
@@ -23,38 +24,25 @@ func main() {
 		fmt.Println(os.Args)
 		panic("Expected 2 arguments.")
 	}
-	cmd1 := startEngine(os.Args[1])
-	cmd2 := startEngine(os.Args[2])
-	fmt.Fprintf(cmd1.out, "game-name\n")
-	fmt.Fprintf(cmd2.out, "game-name\n")
-	name1, _ := cmd1.in.ReadString('\n')
-	name1 = strings.TrimSpace(name1)
-	name2, _ := cmd2.in.ReadString('\n')
+	black := startEngine(os.Args[1])
+	white := startEngine(os.Args[2])
+	fmt.Fprintf(black.out, "game-name\n")
+	fmt.Fprintf(white.out, "game-name\n")
+	name, _ := black.in.ReadString('\n')
+	name = strings.TrimSpace(name)
+	name2, _ := white.in.ReadString('\n')
 	name2 = strings.TrimSpace(name2)
-	if name1 != name2 {
-		panic(fmt.Sprintf("engings are playing different games: %q and %q", name1, name2))
+	if name != name2 {
+		panic(fmt.Sprintf("engings are playing different games: %q and %q", name, name2))
 	}
-	if name1 != "gomoku" && name1 != "connect6" {
-		panic(fmt.Sprintf("unknown game: %q", name1))
+	if name != "gomoku" && name != "connect6" {
+		panic(fmt.Sprintf("unknown game: %q", name))
 	}
 	ui := startEngine("ui")
 
-	results := make(map[string]int)
-	for range 10 {
-		results[play(name1, cmd1, cmd2, ui)] += 1
-		results[play(name2, cmd2, cmd1, ui)] += 1
-		if _, ok := results["stop"]; ok {
-			break
-		}
-	}
-
-	fmt.Println(results)
-}
-
-func play(name string, black, white, ui *Cmd) string {
 	fmt.Fprintf(black.out, "move j10\n")
 	fmt.Fprintf(white.out, "move j10\n")
-	uiOut(ui, "move j10")
+	uiOut(ui, "move j10\n")
 	whiteMove := ""
 	if name == "gomoku" {
 		whiteMove = fmt.Sprintf("move %s\n", firstWhiteGomokuMove())
@@ -63,36 +51,40 @@ func play(name string, black, white, ui *Cmd) string {
 	}
 	fmt.Fprint(black.out, whiteMove)
 	fmt.Fprint(white.out, whiteMove)
-	uiOut(ui, whiteMove)
+	uiOut(ui, "%s", whiteMove)
 	for {
 		if result := makeMove(black, white, ui); result != "" {
 			fmt.Printf("black %q\n", result)
-			return result
+			break
 		}
 		if result := makeMove(white, black, ui); result != "" {
 			fmt.Printf("white %q\n", result)
-			return result
+			break
 		}
 	}
 
+	fmt.Println("stopping")
+	<-time.After(4 * time.Second)
+	fmt.Println("stopped")
 }
 
-func uiOut(ui *Cmd, msg string) {
-	fmt.Fprintln(ui.out, msg)
+func uiOut(ui *Cmd, format string, args ...any) {
+	fmt.Fprintf(ui.out, format, args...)
 }
 
 func makeMove(maker, taker, ui *Cmd) string {
 	fmt.Fprintln(maker.out, "respond 1000")
 	response, _ := maker.in.ReadString('\n')
-	uiOut(ui, response)
+	uiOut(ui, "%s", response)
+	fmt.Fprint(taker.out, response)
 	response = strings.TrimSpace(response)
-	parts := strings.Split(response, " ")
-
-	if parts[0] == "stop" {
+	if response == "stop" {
 		return "stop"
 	}
-
-	fmt.Fprintf(taker.out, "move %s\n", parts[1])
+	terms := strings.Fields(response)
+	if len(terms) > 2 {
+		return terms[2]
+	}
 	return ""
 }
 

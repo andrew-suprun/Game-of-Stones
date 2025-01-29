@@ -44,7 +44,6 @@ loop:
 				panic(err)
 			}
 			theTree.CommitMove(move)
-			log("committed move %s\n", move)
 		case "respond":
 			millis, err := strconv.ParseInt(terms[1], 10, 64)
 			if err != nil {

@@ -81,6 +81,7 @@ func run() {
 			if e.Err != nil {
 				log.Fatal(e.Err)
 			}
+			fmt.Fprintln(os.Stderr, "Ui> DestroyEvent")
 			os.Exit(0)
 		case app.FrameEvent:
 			frame(&ops, e, stateChan)
@@ -232,13 +233,15 @@ func input(window *app.Window, stateChan chan *state) {
 	for {
 		text, err := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
-		fmt.Printf("read: %q\n", text)
+		fmt.Fprintf(os.Stderr, "Ui> read: %q\n", text)
 		if err != nil {
 			fmt.Println("error: Failed to read from standard input.")
+			fmt.Fprintf(os.Stderr, "Ui> error\n")
 			os.Exit(1)
 		}
 		if text == "stop" {
 			fmt.Println("info: Stopped.")
+			fmt.Fprintf(os.Stderr, "Ui> stopped\n")
 			os.Exit(0)
 		}
 		if text == "game-name" {
@@ -292,7 +295,7 @@ func playMove(stateChan chan *state, cmd string) {
 			}
 		}
 	}
-	fmt.Fprintf(os.Stderr, "Ui> setting move %v\n", move)
+	fmt.Fprintf(os.Stderr, "Ui> move %v\n", move)
 	if state.turn == First {
 		state.places[move.P1.Y][move.P1.X] = stateBlackSelected
 		state.places[move.P2.Y][move.P2.X] = stateBlackSelected
@@ -307,7 +310,10 @@ func playMove(stateChan chan *state, cmd string) {
 		stateChan <- state
 		return
 	}
-	numbers := parseNumbers(terms[2:])
+
+	fmt.Fprintf(os.Stderr, "Ui> parsing parameters\n")
+	numbers := parseNumbers(terms[3:])
+	fmt.Fprintf(os.Stderr, "Ui> parsed parameters: %v\n", numbers)
 	stones := 5
 	if gameName == "connect6" {
 		stones = 6
