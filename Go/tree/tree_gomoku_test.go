@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"fmt"
 	"testing"
 
 	. "game_of_stones/common"
@@ -16,19 +15,16 @@ func TestExpandGomoku(t *testing.T) {
 	searchTree.CommitMove(move)
 	move, _ = game.ParseMove("i11")
 	searchTree.CommitMove(move)
-	fmt.Println(gomoku)
+	// fmt.Println(gomoku)
 
 	for {
-		for i := range 100 {
-			fmt.Println(i)
+		for range 100 {
 			if !searchTree.Expand() {
 				break
 			}
 		}
 		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
-		fmt.Println("Commit", move)
-		fmt.Println(gomoku)
 		dec, _, _, _, _ := gomoku.Decision()
 		if dec != NoDecision {
 			break

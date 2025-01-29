@@ -86,7 +86,6 @@ func (game *Game) PlayMove(move Move) {
 		game.stone = Black
 		game.turn = First
 	}
-	game.validate()
 }
 
 func (game *Game) UndoMove(move Move) {
@@ -103,8 +102,6 @@ func (game *Game) UndoMove(move Move) {
 	}
 
 	game.placeStone(move.P1, -1)
-
-	game.validate()
 }
 
 func ParseMove(moveStr string) (Move, error) {
@@ -273,7 +270,7 @@ func (game *Game) topGomokuMoves(moves *[]MoveValue[Move]) {
 		if value != 0 {
 			*moves = append(*moves, MoveValue[Move]{
 				Move:     Move{place, place},
-				Value:    value,
+				Value:    game.value + value/2,
 				Decision: NoDecision,
 			})
 		} else if !hasDraw {

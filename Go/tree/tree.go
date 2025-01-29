@@ -160,6 +160,7 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 
 		tree.game.PlayMove(tree.moves[selectedChildIdx])
 		tree.expand(selectedChildIdx)
+		parent = &tree.nodes[parentIdx]
 		tree.game.UndoMove(tree.moves[selectedChildIdx])
 	}
 
@@ -230,7 +231,7 @@ func (tree *Tree[move]) string(buf *bytes.Buffer, idx int32, depth int) {
 	}
 
 	fmt.Fprint(buf, tree.moves[idx])
-	buf.WriteRune(' ')
+	fmt.Fprintf(buf, " [%d] ", idx)
 	node := tree.nodes[idx]
 	node.string(buf)
 	for childIdx := node.firstChild; childIdx < node.lastChild; childIdx++ {
