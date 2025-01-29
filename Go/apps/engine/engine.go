@@ -48,7 +48,7 @@ loop:
 				fmt.Println("connect6")
 			}
 		case "move":
-			move, err := theGame.ParseMove(terms[1])
+			move, err := game.ParseMove(terms[1])
 			if err != nil {
 				panic(err)
 			}
@@ -61,14 +61,15 @@ loop:
 			timestamp := time.Now()
 			dur := time.Duration(millis) * time.Millisecond
 			for {
-				move, _ := theTree.Expand()
-				dec, _, _, _, _ := theGame.Decision()
-				if dec != common.NoDecision || time.Since(timestamp) > dur {
-					move = theTree.BestMove()
-					theTree.CommitMove(move)
-					fmt.Printf("move %s\n", move)
-					log("move %s\n", move)
-					break
+				if theTree.Expand() {
+					dec, _, _, _, _ := theGame.Decision()
+					if dec != common.NoDecision || time.Since(timestamp) > dur {
+						move := theTree.BestMove()
+						theTree.CommitMove(move)
+						fmt.Printf("move %s\n", move)
+						log("move %s\n", move)
+						break
+					}
 				}
 			}
 		case "stop":

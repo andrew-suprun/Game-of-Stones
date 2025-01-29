@@ -35,18 +35,19 @@ func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
 			if firstMove {
 				firstMove = false
 				if playerTurn == First {
-					move, _ = theGame.ParseMove("j10")
+					move, _ = game.ParseMove("j10")
 				} else {
-					move, _ = theGame.ParseMove(firstWhiteMove(gameId))
+					move, _ = game.ParseMove(firstWhiteMove(gameId))
 				}
 			} else {
 				timestamp := time.Now()
 				for {
-					move, nSims = theTree.Expand()
-					dec, _, _, _, _ := theGame.Decision()
-					if dec != NoDecision || time.Since(timestamp) > time.Second {
-						move = theTree.BestMove()
-						break
+					if theTree.Expand() {
+						dec, _, _, _, _ := theGame.Decision()
+						if dec != NoDecision || time.Since(timestamp) > time.Second {
+							move = theTree.BestMove()
+							break
+						}
 					}
 				}
 			}
@@ -61,7 +62,7 @@ func runEngine(gameId game.GameName, playerStones Turn, in, out chan string) {
 			}
 		} else {
 			incoming := <-in
-			move, err := theGame.ParseMove(incoming)
+			move, err := game.ParseMove(incoming)
 			if err != nil {
 				out <- fmt.Sprintf("engine: received invalid move %q, ignored", incoming)
 			} else {

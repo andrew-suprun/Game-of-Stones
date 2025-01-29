@@ -16,18 +16,19 @@ func TestExpandGomoku(t *testing.T) {
 	searchTree.CommitMove(move)
 	move, _ = game.ParseMove("i11")
 	searchTree.CommitMove(move)
-	fmt.Printf("%#v\n", gomoku)
+	fmt.Println(gomoku)
 
 	for {
-		for range 10 {
-			searchTree.Expand()
-
-			fmt.Println(gomoku)
-			fmt.Printf("\n---\n%v\n", searchTree)
+		for i := range 100 {
+			fmt.Println(i)
+			if !searchTree.Expand() {
+				break
+			}
 		}
 		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
 		fmt.Println("Commit", move)
+		fmt.Println(gomoku)
 		dec, _, _, _, _ := gomoku.Decision()
 		if dec != NoDecision {
 			break

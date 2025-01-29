@@ -140,6 +140,7 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 			})
 			tree.moves = append(tree.moves, childMoveValue.Move)
 		}
+		parent = &tree.nodes[parentIdx]
 	} else {
 		var coeff float64 = 1
 		if tree.game.Turn() == Second {
@@ -162,8 +163,8 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 		tree.game.UndoMove(tree.moves[selectedChildIdx])
 	}
 
-	nSims := int32(0)
-	value := tree.nodes[parent.firstChild].value
+	parent.nSims = int32(0)
+	parent.value = tree.nodes[parent.firstChild].value
 	decision := NoDecision
 	if tree.game.Turn() == First {
 		b_win := false
@@ -171,8 +172,8 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 		all_draws := true
 		for i := parent.firstChild; i < parent.lastChild; i++ {
 			child := tree.nodes[i]
-			nSims += child.nSims
-			value = max(value, child.value)
+			parent.nSims += child.nSims
+			parent.value = max(parent.value, child.value)
 			if child.decision == FirstWin {
 				b_win = true
 			}
@@ -194,8 +195,8 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 		all_draws := true
 		for i := parent.firstChild; i < parent.lastChild; i++ {
 			child := tree.nodes[i]
-			nSims += child.nSims
-			value = min(value, child.value)
+			parent.nSims += child.nSims
+			parent.value = min(parent.value, child.value)
 			if child.decision == SecondWin {
 				w_win = true
 			}
@@ -213,7 +214,6 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 		}
 	}
 
-	parent.value = value
 	parent.decision = decision
 }
 
@@ -223,13 +223,8 @@ func (tree *Tree[move]) String() string {
 	return buf.String()
 }
 
-func (node *node) String() string {
-	buf := &bytes.Buffer{}
-	node.string(buf)
-	return buf.String()
-}
-
 func (tree *Tree[move]) string(buf *bytes.Buffer, idx int32, depth int) {
+	buf.WriteRune('\n')
 	for range depth {
 		buf.WriteString("|   ")
 	}
@@ -243,6 +238,12 @@ func (tree *Tree[move]) string(buf *bytes.Buffer, idx int32, depth int) {
 	}
 }
 
+func (node *node) String() string {
+	buf := &bytes.Buffer{}
+	node.string(buf)
+	return buf.String()
+}
+
 func (node *node) string(buf *bytes.Buffer) {
-	fmt.Fprintf(buf, "%v s: %d d: %v", node.value, node.nSims, node.decision)
+	fmt.Fprintf(buf, "v: %d s: %d d: %v", node.value, node.nSims, node.decision)
 }

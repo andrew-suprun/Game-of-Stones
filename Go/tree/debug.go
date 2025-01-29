@@ -13,7 +13,7 @@ func (tree *Tree[move]) validate() {
 }
 
 func (tree *Tree[move]) validateNode(idx int32, turn Turn) {
-	node := tree.nodes[idx]
+	node := &tree.nodes[idx]
 	if node.firstChild == 0 {
 		return
 	}
@@ -32,6 +32,6 @@ func (tree *Tree[move]) validateNode(idx int32, turn Turn) {
 		}
 	}
 	if expected != node.value {
-		log.Panicf("### Validation ### move: %#v expected %v", tree.moves[idx], expected)
+		log.Panicf("### Validation ### move: %#v expected %d got %d", tree.moves[idx], expected, node.value)
 	}
 }
