@@ -65,27 +65,30 @@ func sim(a, b string, moves []string) string {
 	for i := 1; ; i++ {
 		var bestMove move
 		s := 0
+		undec := 0
+		dec := common.NoDecision
 		start := time.Now()
 		for time.Since(start) < engines[0].duration {
 			s += 1
-			if !engines[0].tree.Expand() {
+			dec, undec = engines[0].tree.Expand()
+			if dec != common.NoDecision || undec < 2 {
 				break
 			}
 		}
 		bestMove = engines[0].tree.BestMove()
-		decision := engines[0].tree.Decision()
-		fmt.Printf("%v %s: Move %3d %v s: %7d d: %v\n", time.Since(start), engines[0].title, i, bestMove, s, decision)
-		dec, _, _, _, _ := engines[0].game.Decision()
+		fmt.Printf("%v %s: Move %3d %v s: %7d d: %v undec: %d\n", time.Since(start), engines[0].title, i, bestMove, s, dec, undec)
+		engines[0].tree.CommitMove(bestMove)
+		engines[1].tree.CommitMove(bestMove)
+
+		fmt.Println(engines[0].game)
+
+		dec, _, _, _, _ = engines[0].game.Decision()
 		if dec != common.NoDecision {
 			if dec == common.Draw {
 				return "Draw"
 			}
 			return engines[0].title
 		}
-		engines[0].tree.CommitMove(bestMove)
-		engines[1].tree.CommitMove(bestMove)
-
-		fmt.Println(engines[0].game)
 
 		engines[0], engines[1] = engines[1], engines[0]
 	}

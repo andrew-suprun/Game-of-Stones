@@ -47,24 +47,21 @@ func NewTree[move Equatable[move]](
 	}
 }
 
-func (tree *Tree[m]) Expand() bool {
+func (tree *Tree[m]) Expand() (Decision, int) {
 	root := &tree.nodes[0]
-	if root.decision != NoDecision {
-		return false
-	}
 	tree.expand(0)
 	tree.validate()
 
 	if root.decision != NoDecision {
-		return false
+		return root.decision, 0
 	}
-	undecided := 0
+	nUndecided := 0
 	for _, child := range tree.nodes[root.firstChild:root.lastChild] {
 		if child.decision == NoDecision {
-			undecided += 1
+			nUndecided += 1
 		}
 	}
-	return undecided > 1
+	return root.decision, nUndecided
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) error {
@@ -119,10 +116,6 @@ func (tree *Tree[move]) BestMove() move {
 	}
 
 	return tree.moves[bestChildIdx]
-}
-
-func (tree *Tree[m]) Decision() Decision {
-	return tree.nodes[0].decision
 }
 
 func (tree *Tree[m]) expand(parentIdx int32) {
