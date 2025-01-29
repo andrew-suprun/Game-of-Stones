@@ -48,10 +48,13 @@ func NewTree[move Equatable[move]](
 }
 
 func (tree *Tree[m]) Expand() bool {
+	root := &tree.nodes[0]
+	if root.decision != NoDecision {
+		return false
+	}
 	tree.expand(0)
 	tree.validate()
 
-	root := tree.nodes[0]
 	if root.decision != NoDecision {
 		return false
 	}
@@ -118,11 +121,12 @@ func (tree *Tree[move]) BestMove() move {
 	return tree.moves[bestChildIdx]
 }
 
+func (tree *Tree[m]) Decision() Decision {
+	return tree.nodes[0].decision
+}
+
 func (tree *Tree[m]) expand(parentIdx int32) {
 	parent := &tree.nodes[parentIdx]
-	if parent.decision != NoDecision {
-		panic("Trying to expand decisive node.")
-	}
 
 	if parent.firstChild == 0 {
 		tree.game.TopMoves(&tree.topMoves)
@@ -140,7 +144,6 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 			})
 			tree.moves = append(tree.moves, childMoveValue.Move)
 		}
-		parent = &tree.nodes[parentIdx]
 	} else {
 		var coeff float64 = 1
 		if tree.game.Turn() == Second {
@@ -162,12 +165,11 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 		}
 
 		tree.game.PlayMove(tree.moves[selectedChildIdx])
-
 		tree.expand(selectedChildIdx)
-		parent = &tree.nodes[parentIdx]
 		tree.game.UndoMove(tree.moves[selectedChildIdx])
 	}
 
+	parent = &tree.nodes[parentIdx]
 	parent.nSims = int32(0)
 	parent.value = tree.nodes[parent.firstChild].value
 	decision := NoDecision

@@ -33,7 +33,7 @@ func main() {
 
 	winners := map[string]int{}
 
-	for range 10 {
+	for range 1 {
 		moves := moves()
 		winner := sim(a, b, moves)
 		fmt.Println("winner.1", winner)
@@ -73,7 +73,8 @@ func sim(a, b string, moves []string) string {
 			}
 		}
 		bestMove = engines[0].tree.BestMove()
-		fmt.Printf("%s: Move %3d %v s: %7d\n", engines[0].title, i, bestMove, s)
+		decision := engines[0].tree.Decision()
+		fmt.Printf("%v %s: Move %3d %v s: %7d d: %v\n", time.Since(start), engines[0].title, i, bestMove, s, decision)
 		dec, _, _, _, _ := engines[0].game.Decision()
 		if dec != common.NoDecision {
 			if dec == common.Draw {
