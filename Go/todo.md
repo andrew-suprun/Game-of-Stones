@@ -11,7 +11,7 @@ go test game_of_stones/...
 go build -o out/game_of_stones apps/game_of_stones/*.go && out/game_of_stones -game=connect6 -stones=black
 
 go build -o out/sim apps/sim/*.go
-go build -o out/ui -tags=gomoku apps/ui/ui.go
+go build -o out/ui apps/ui/ui.go
 
 go build -o out/gomoku -tags=gomoku apps/engine/*.go
 out/sim gomoku gomoku
