@@ -45,13 +45,13 @@ const (
 func (d Decision) String() string {
 	switch d {
 	case NoDecision:
-		return "NoDecision"
+		return "no-decision"
 	case Draw:
-		return "Draw"
+		return "draw"
 	case FirstWin:
-		return "BlackWin"
+		return "first-win"
 	case SecondWin:
-		return "WhiteWin"
+		return "second-win"
 	}
-	return ""
+	return "invalid-decision"
 }

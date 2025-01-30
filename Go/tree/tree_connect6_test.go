@@ -34,10 +34,5 @@ func TestExpandConnect6(t *testing.T) {
 	}
 	move = searchTree.BestMove()
 	searchTree.CommitMove(move)
-	dec, x, y, dx, dy := connect6.Decision()
-	if dec != common.NoDecision {
-		fmt.Printf("move %s %v %d %d %d %d\n", move, dec, x, y, dx, dy)
-	} else {
-		fmt.Printf("move %s\n", move)
-	}
+	fmt.Printf("move %s\n", move)
 }

@@ -47,7 +47,7 @@ func runEngine(playerStones Turn, in, out chan string) {
 						break
 					}
 				}
-				dec, _, _, _, _ := theGame.Decision()
+				dec := theGame.Decision()
 				if dec != NoDecision {
 					move = theTree.BestMove()
 					return
@@ -56,7 +56,7 @@ func runEngine(playerStones Turn, in, out chan string) {
 			fmt.Printf("engine: playing move %v; sims %d\n", move, nSims)
 			theTree.CommitMove(move)
 			playerTurn = oppPlayerStones
-			dec, _, _, _, _ := theGame.Decision()
+			dec := theGame.Decision()
 			if dec != NoDecision {
 				out <- move.String() + ";terminal"
 			} else {

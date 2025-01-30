@@ -13,7 +13,7 @@ type Game[move Equatable[move]] interface {
 	TopMoves(*[]MoveValue[move])
 	PlayMove(move)
 	UndoMove(move)
-	Decision() (Decision, int8, int8, int8, int8)
+	Decision() Decision
 	BoardValue() int16
 }
 
@@ -64,17 +64,16 @@ func (tree *Tree[m]) Expand() (Decision, int) {
 	return root.decision, nUndecided
 }
 
-func (tree *Tree[move]) CommitMove(toPlay move) error {
+func (tree *Tree[move]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
 	tree.nodes = tree.nodes[:0]
-	decision, _, _, _, _ := tree.game.Decision()
+	decision := tree.game.Decision()
 	tree.nodes = append(tree.nodes, node{
 		value:    tree.game.BoardValue(),
 		decision: decision,
 	})
 	tree.moves = tree.moves[:0]
 	tree.moves = append(tree.moves, toPlay)
-	return nil
 }
 
 func (tree *Tree[move]) BestMove() move {

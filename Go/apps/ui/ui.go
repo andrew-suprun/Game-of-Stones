@@ -81,7 +81,7 @@ func run() {
 			if e.Err != nil {
 				log.Fatal(e.Err)
 			}
-			fmt.Fprintln(os.Stderr, "Ui> DestroyEvent")
+			fmt.Fprintln(os.Stderr, "DestroyEvent")
 			os.Exit(0)
 		case app.FrameEvent:
 			frame(&ops, e, stateChan)
@@ -233,15 +233,15 @@ func input(window *app.Window, stateChan chan *state) {
 	for {
 		text, err := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
-		fmt.Fprintf(os.Stderr, "Ui> read: %q\n", text)
+		fmt.Fprintf(os.Stderr, "read: %q\n", text)
 		if err != nil {
 			fmt.Println("error: Failed to read from standard input.")
-			fmt.Fprintf(os.Stderr, "Ui> error\n")
+			fmt.Fprintf(os.Stderr, "error\n")
 			os.Exit(1)
 		}
 		if text == "stop" {
 			fmt.Println("info: Stopped.")
-			fmt.Fprintf(os.Stderr, "Ui> stopped\n")
+			fmt.Fprintf(os.Stderr, "stopped\n")
 			os.Exit(0)
 		}
 		if text == "game-name" {
@@ -295,7 +295,100 @@ func playMove(stateChan chan *state, cmd string) {
 			}
 		}
 	}
-	fmt.Fprintf(os.Stderr, "Ui> move %v\n", move)
+
+	maxStones := 5
+	if gameName == "connect6" {
+		maxStones = 6
+	}
+	if state.turn == First {
+		state.places[move.P1.Y][move.P1.X] = stateBlack
+		state.places[move.P2.Y][move.P2.X] = stateBlack
+	} else {
+		state.places[move.P1.Y][move.P1.X] = stateWhite
+		state.places[move.P2.Y][move.P2.X] = stateWhite
+	}
+
+	for y := range game.Size {
+		for x := range game.Size {
+			if x < game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y][x+i] == stateBlack {
+						b++
+					} else if state.places[y][x+i] == stateWhite {
+						w++
+					}
+				}
+				if b == maxStones {
+					for i := range maxStones {
+						state.places[y][x+i] = stateBlackSelected
+					}
+				} else if w == maxStones {
+					for i := range maxStones {
+						state.places[y][x+i] = stateWhiteSelected
+					}
+				}
+			}
+			if y < game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y+i][x] == stateBlack {
+						b++
+					} else if state.places[y+i][x] == stateWhite {
+						w++
+					}
+				}
+				if b == maxStones {
+					for i := range maxStones {
+						state.places[y+i][x] = stateBlackSelected
+					}
+				} else if w == maxStones {
+					for i := range maxStones {
+						state.places[y+i][x] = stateWhiteSelected
+					}
+				}
+			}
+			if x < game.Size-maxStones && y < game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y+i][x+i] == stateBlack {
+						b++
+					} else if state.places[y+i][x+i] == stateWhite {
+						w++
+					}
+				}
+				if b == maxStones {
+					for i := range maxStones {
+						state.places[y+i][x+i] = stateBlackSelected
+					}
+				} else if w == maxStones {
+					for i := range maxStones {
+						state.places[y+i][x+i] = stateWhiteSelected
+					}
+				}
+			}
+			if x >= maxStones && y < game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y+i][x-i] == stateBlack {
+						b++
+					} else if state.places[y+i][x-i] == stateWhite {
+						w++
+					}
+				}
+				if b == maxStones {
+					for i := range maxStones {
+						state.places[y+i][x-i] = stateBlackSelected
+					}
+				} else if w == maxStones {
+					for i := range maxStones {
+						state.places[y+i][x-i] = stateWhiteSelected
+					}
+				}
+			}
+		}
+	}
+
 	if state.turn == First {
 		state.places[move.P1.Y][move.P1.X] = stateBlackSelected
 		state.places[move.P2.Y][move.P2.X] = stateBlackSelected
@@ -306,40 +399,6 @@ func playMove(stateChan chan *state, cmd string) {
 		state.turn = First
 	}
 
-	if len(terms) < 7 {
-		stateChan <- state
-		return
-	}
-
-	fmt.Fprintf(os.Stderr, "Ui> parsing parameters\n")
-	numbers := parseNumbers(terms[3:])
-	fmt.Fprintf(os.Stderr, "Ui> parsed parameters: %v\n", numbers)
-	stones := 5
-	if gameName == "connect6" {
-		stones = 6
-	}
-	for y := range game.Size {
-		for x := range game.Size {
-			switch state.places[y][x] {
-			case stateBlackSelected:
-				state.places[y][x] = stateBlack
-			case stateWhiteSelected:
-				state.places[y][x] = stateWhite
-			}
-		}
-	}
-
-	for i := range stones {
-		x := numbers[0] + int8(i)*numbers[2]
-		y := numbers[1] + int8(i)*numbers[3]
-		switch state.places[y][x] {
-		case stateBlack:
-			state.places[y][x] = stateBlackSelected
-		case stateWhite:
-			state.places[y][x] = stateWhiteSelected
-		}
-	}
 	state.respond = false
-
 	stateChan <- state
 }

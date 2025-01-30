@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"game_of_stones/common"
 	"io"
 	"math/rand"
 	"os"
@@ -24,8 +25,10 @@ func main() {
 		fmt.Println(os.Args)
 		panic("Expected 2 arguments.")
 	}
-	black := startEngine(os.Args[1])
-	white := startEngine(os.Args[2])
+	logChan := make(chan string, 1)
+	go logPrinter(logChan)
+	black := startEngine(os.Args[1], logChan, "X")
+	white := startEngine(os.Args[2], logChan, "O")
 	fmt.Fprintf(black.out, "game-name\n")
 	fmt.Fprintf(white.out, "game-name\n")
 	name, _ := black.in.ReadString('\n')
@@ -38,7 +41,7 @@ func main() {
 	if name != "gomoku" && name != "connect6" {
 		panic(fmt.Sprintf("unknown game: %q", name))
 	}
-	ui := startEngine("ui")
+	ui := startEngine("ui", logChan, "Ui")
 
 	fmt.Fprintf(black.out, "move j10\n")
 	fmt.Fprintf(white.out, "move j10\n")
@@ -53,14 +56,17 @@ func main() {
 	fmt.Fprint(white.out, whiteMove)
 	uiOut(ui, "%s", whiteMove)
 	for {
-		if result := makeMove(black, white, ui); result != "" {
-			fmt.Printf("black %q\n", result)
+		makeMove(black, white, ui)
+		if isTerminal(black) {
+			logChan <- "break.1"
 			break
 		}
-		if result := makeMove(white, black, ui); result != "" {
-			fmt.Printf("white %q\n", result)
+		makeMove(white, black, ui)
+		if isTerminal(white) {
+			logChan <- "break.2"
 			break
 		}
+		logChan <- "no break"
 	}
 
 	fmt.Println("stopping")
@@ -73,7 +79,7 @@ func uiOut(ui *Cmd, format string, args ...any) {
 }
 
 func makeMove(maker, taker, ui *Cmd) string {
-	fmt.Fprintln(maker.out, "respond 200")
+	fmt.Fprintln(maker.out, "respond 500")
 	response, _ := maker.in.ReadString('\n')
 	uiOut(ui, "%s", response)
 	fmt.Fprint(taker.out, response)
@@ -88,7 +94,14 @@ func makeMove(maker, taker, ui *Cmd) string {
 	return ""
 }
 
-func startEngine(path string) *Cmd {
+func isTerminal(cmd *Cmd) bool {
+	fmt.Fprintln(cmd.out, "decision")
+	response, _ := cmd.in.ReadString('\n')
+	terms := strings.Fields(response)
+	return len(terms) == 2 && terms[1] != common.NoDecision.String()
+}
+
+func startEngine(path string, logChan chan string, name string) *Cmd {
 	path = filepath.Join(filepath.Dir(os.Args[0]), path)
 	parts := strings.Split(path, " ")
 	cmd := exec.Command(parts[0], parts[1:]...)
@@ -101,7 +114,7 @@ func startEngine(path string) *Cmd {
 	if err != nil {
 		panic(err)
 	}
-	go runLogger(bufio.NewReader(log))
+	go runLogger(bufio.NewReader(log), logChan, name)
 	out, err := cmd.StdinPipe()
 	if err != nil {
 		panic(err)
@@ -113,7 +126,7 @@ func startEngine(path string) *Cmd {
 	return &Cmd{path, cmd, bufio.NewReader(in), out}
 }
 
-func runLogger(log *bufio.Reader) {
+func runLogger(log *bufio.Reader, logChan chan string, name string) {
 	for {
 		line, err := log.ReadString('\n')
 		if err == io.EOF {
@@ -122,7 +135,15 @@ func runLogger(log *bufio.Reader) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Print(line)
+		logChan <- name + ": " + line
+	}
+}
+
+func logPrinter(logChan chan string) {
+	for {
+		line := <-logChan
+		line = strings.TrimSpace(line)
+		fmt.Fprintln(os.Stderr, line)
 	}
 }
 

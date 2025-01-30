@@ -82,7 +82,7 @@ func sim(a, b string, moves []string) string {
 
 		fmt.Println(engines[0].game)
 
-		dec, _, _, _, _ = engines[0].game.Decision()
+		dec = engines[0].game.Decision()
 		if dec != common.NoDecision {
 			if dec == common.Draw {
 				return "Draw"
