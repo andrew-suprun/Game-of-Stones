@@ -1,3 +1,4 @@
+* handle quitting UI
 * handle stderr outputs in sim
 * sim julia engine
 * run multiple sims

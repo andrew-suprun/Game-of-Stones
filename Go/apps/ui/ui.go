@@ -318,6 +318,17 @@ func playMove(stateChan chan *state, cmd string) {
 	if gameName == "connect6" {
 		stones = 6
 	}
+	for y := range game.Size {
+		for x := range game.Size {
+			switch state.places[y][x] {
+			case stateBlackSelected:
+				state.places[y][x] = stateBlack
+			case stateWhiteSelected:
+				state.places[y][x] = stateWhite
+			}
+		}
+	}
+
 	for i := range stones {
 		x := numbers[0] + int8(i)*numbers[2]
 		y := numbers[1] + int8(i)*numbers[3]
