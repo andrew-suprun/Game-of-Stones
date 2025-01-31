@@ -15,16 +15,29 @@ import (
 	"game_of_stones/tree"
 )
 
+var maxPlaces = flag.Int("places", 20, "number of places to consider")
+var maxMoves = flag.Int("moves", 64, "number of moves to consider")
+var explorationCoeff = flag.Float64("C", 100, "exploration coeffitient")
+var logFileName = flag.String("log", "", "log file name")
+var logFile *os.File
+
 func main() {
 	flag.Parse()
+	if *logFileName != "" {
+		var err error
+		logFile, err = os.Create(*logFileName)
+		if err != nil {
+			fmt.Printf("Failed to open file %q: %#v\n", *logFileName, err)
+		}
+		defer logFile.Close()
+	}
 	reader := bufio.NewReader(os.Stdin)
-	theGame := game.NewGame(22)
-	theTree := tree.NewTree(theGame, 64, 20)
+	theGame := game.NewGame(*maxPlaces)
+	theTree := tree.NewTree(theGame, *maxMoves, *explorationCoeff)
 loop:
 	for {
 		line, err := reader.ReadString('\n')
 		line = strings.TrimSpace(line)
-		log("got %q", line)
 		if err == io.EOF {
 			return
 		} else if err != nil {
@@ -40,25 +53,31 @@ loop:
 				panic(err)
 			}
 			theTree.CommitMove(move)
+			log("got %q", line)
+			log("%s", theGame)
 		case "respond":
 			millis, err := strconv.ParseInt(terms[1], 10, 64)
 			if err != nil {
 				panic(err)
 			}
 			timestamp := time.Now()
-			dur := time.Duration(millis) * time.Millisecond
+			maxDuration := time.Duration(millis) * time.Millisecond
+			expanstions := 0
 			for {
 				dec, undec := theTree.Expand()
-				if dec != common.NoDecision || undec < 2 || time.Since(timestamp) > dur {
+				expanstions++
+				duration := time.Since(timestamp)
+				if dec != common.NoDecision || undec < 2 || duration > maxDuration {
+					log("expanded: %s; value %d; expansions %d; undecided %d; time %v\n", dec, theTree.Value(), expanstions, undec, duration)
 					break
 				}
 			}
 			move := theTree.BestMove()
 			theTree.CommitMove(move)
-			fmt.Fprintf(os.Stderr, "move %s\n", move)
 			fmt.Printf("move %s\n", move)
+			log("move %s\n", move)
+			log("%s", theGame)
 		case "decision":
-			fmt.Fprintf(os.Stderr, "decision %s\n", theGame.Decision())
 			fmt.Printf("decision %s\n", theGame.Decision())
 		case "stop":
 			break loop
@@ -66,12 +85,8 @@ loop:
 	}
 }
 
-var maxPlaces = flag.Int("places", 20, "number of places to consider")
-var maxMoves = flag.Int("moves", 64, "number of moves to consider")
-var explorationCoeff = flag.Float64("C", 100, "exploration coeffitient")
-
 func log(format string, args ...any) {
-	line := fmt.Sprintf(format, args...)
-	line = strings.TrimSpace(line)
-	fmt.Fprintln(os.Stderr, line)
+	if logFile != nil {
+		logFile.WriteString(fmt.Sprintf(format, args...))
+	}
 }

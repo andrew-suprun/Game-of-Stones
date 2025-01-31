@@ -117,6 +117,10 @@ func (tree *Tree[move]) BestMove() move {
 	return tree.moves[bestChildIdx]
 }
 
+func (tree *Tree[m]) Value() int16 {
+	return tree.nodes[0].value
+}
+
 func (tree *Tree[m]) expand(parentIdx int32) {
 	parent := &tree.nodes[parentIdx]
 

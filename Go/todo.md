@@ -1,3 +1,4 @@
+* refresh Game of Stones
 * sim: alternative ui (text)
 * sim: julia engine
 * run multiple sims
@@ -13,7 +14,7 @@ go build -o out/sim apps/sim/*.go
 go build -o out/ui apps/ui/ui.go
 
 go build -o out/gomoku -tags=gomoku apps/engine/*.go
-out/sim gomoku gomoku
+out/sim "gomoku -log=black.log" "gomoku -log=white.log"
 
 go build -o out/connect6 -tags=connect6 apps/engine/*.go
 out/sim connect6 connect6
