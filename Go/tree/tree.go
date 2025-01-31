@@ -47,21 +47,12 @@ func NewTree[move Equatable[move]](
 	}
 }
 
-func (tree *Tree[m]) Expand() (Decision, int) {
+func (tree *Tree[m]) Expand() Decision {
 	root := &tree.nodes[0]
 	tree.expand(0)
 	tree.validate()
 
-	if root.decision != NoDecision {
-		return root.decision, 0
-	}
-	nUndecided := 0
-	for _, child := range tree.nodes[root.firstChild:root.lastChild] {
-		if child.decision == NoDecision {
-			nUndecided += 1
-		}
-	}
-	return root.decision, nUndecided
+	return root.decision
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) {
@@ -177,18 +168,16 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 			child := tree.nodes[i]
 			parent.nSims += child.nSims
 			parent.value = max(parent.value, child.value)
-			if child.decision == FirstWin {
-				b_win = true
-			}
+			b_win = b_win || child.decision == FirstWin
 			w_win = w_win && child.decision == SecondWin
 			all_draws = all_draws && (child.decision == Draw || child.decision == SecondWin)
 		}
 		if b_win {
 			decision = FirstWin
-		} else if all_draws {
-			decision = Draw
 		} else if w_win {
 			decision = SecondWin
+		} else if all_draws {
+			decision = Draw
 		}
 	} else {
 		w_win := false
@@ -198,18 +187,16 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 			child := tree.nodes[i]
 			parent.nSims += child.nSims
 			parent.value = min(parent.value, child.value)
-			if child.decision == SecondWin {
-				w_win = true
-			}
+			w_win = w_win || child.decision == SecondWin
 			b_win = b_win && child.decision == FirstWin
 			all_draws = all_draws && (child.decision == Draw || child.decision == FirstWin)
 		}
 		if w_win {
 			decision = SecondWin
-		} else if all_draws {
-			decision = Draw
 		} else if b_win {
 			decision = FirstWin
+		} else if all_draws {
+			decision = Draw
 		}
 	}
 

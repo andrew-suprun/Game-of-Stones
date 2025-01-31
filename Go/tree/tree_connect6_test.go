@@ -27,8 +27,8 @@ func TestExpandConnect6(t *testing.T) {
 	timestamp := time.Now()
 	dur := time.Second
 	for range 100_000 {
-		dec, undec := searchTree.Expand()
-		if dec != common.NoDecision || undec < 2 || time.Since(timestamp) > dur {
+		dec := searchTree.Expand()
+		if dec != common.NoDecision || time.Since(timestamp) > dur {
 			break
 		}
 	}

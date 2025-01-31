@@ -64,11 +64,11 @@ loop:
 			maxDuration := time.Duration(millis) * time.Millisecond
 			expanstions := 0
 			for {
-				dec, undec := theTree.Expand()
+				dec := theTree.Expand()
 				expanstions++
 				duration := time.Since(timestamp)
-				if dec != common.NoDecision || undec < 2 || duration > maxDuration {
-					log("expanded: %s; value %d; expansions %d; undecided %d; time %v\n", dec, theTree.Value(), expanstions, undec, duration)
+				if dec != common.NoDecision || duration > maxDuration {
+					log("expanded: %s; value %d; expansions %d; time %v\n", dec, theTree.Value(), expanstions, duration)
 					break
 				}
 			}

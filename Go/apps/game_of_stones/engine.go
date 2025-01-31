@@ -42,8 +42,8 @@ func runEngine(playerStones Turn, in, out chan string) {
 			} else {
 				timestamp := time.Now()
 				for {
-					dec, undec := theTree.Expand()
-					if dec != NoDecision || undec < 2 || time.Since(timestamp) > time.Second {
+					dec := theTree.Expand()
+					if dec != NoDecision || time.Since(timestamp) > time.Second {
 						break
 					}
 				}
