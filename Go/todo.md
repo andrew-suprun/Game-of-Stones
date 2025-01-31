@@ -1,4 +1,5 @@
-* sim julia engine
+* sim: alternative ui (text)
+* sim: julia engine
 * run multiple sims
 
 

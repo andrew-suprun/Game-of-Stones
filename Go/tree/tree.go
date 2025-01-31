@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"os"
 
 	. "game_of_stones/common"
 )
@@ -177,16 +178,14 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 				b_win = true
 			}
 			w_win = w_win && child.decision == SecondWin
-			all_draws = all_draws && child.decision == Draw
+			all_draws = all_draws && (child.decision == Draw || child.decision == SecondWin)
 		}
 		if b_win {
 			decision = FirstWin
-		} else if w_win {
-			decision = SecondWin
 		} else if all_draws {
 			decision = Draw
-		} else {
-			decision = NoDecision
+		} else if w_win {
+			decision = SecondWin
 		}
 	} else {
 		w_win := false
@@ -200,16 +199,14 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 				w_win = true
 			}
 			b_win = b_win && child.decision == FirstWin
-			all_draws = all_draws && child.decision == Draw
+			all_draws = all_draws && (child.decision == Draw || child.decision == FirstWin)
 		}
 		if w_win {
 			decision = SecondWin
-		} else if b_win {
-			decision = FirstWin
 		} else if all_draws {
 			decision = Draw
-		} else {
-			decision = NoDecision
+		} else if b_win {
+			decision = FirstWin
 		}
 	}
 
