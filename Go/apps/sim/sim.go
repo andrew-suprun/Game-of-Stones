@@ -86,7 +86,7 @@ func uiOut(ui *Cmd, format string, args ...any) {
 }
 
 func makeMove(maker, taker, ui *Cmd) string {
-	fmt.Fprintln(maker.out, "respond 500")
+	fmt.Fprintln(maker.out, "respond 1000")
 	response, _ := maker.in.ReadString('\n')
 	uiOut(ui, "%s", response)
 	fmt.Fprint(taker.out, response)
@@ -156,31 +156,30 @@ func logPrinter(logChan chan string) {
 
 func firstWhiteGomokuMove() string {
 	places := []string{}
-	for j := range 3 {
-		for i := range 3 {
-			if i != 1 || j != 1 {
-				places = append(places, fmt.Sprintf("%c%d", i+8+'a', j+8))
+	for j := range 5 {
+		for i := range 5 {
+			if i != 2 || j != 2 {
+				places = append(places, fmt.Sprintf("%c%d", i+'h', j+8))
 			}
 		}
 	}
-
-	return places[rand.Intn(8)]
+	return places[rand.Intn(len(places))]
 }
 
 func firstWhiteConnect6Move() string {
 	places := []string{}
-	for j := range 3 {
-		for i := range 3 {
-			if i != 1 || j != 1 {
-				places = append(places, fmt.Sprintf("%c%d", i+'i', j+9))
+	for j := range 5 {
+		for i := range 5 {
+			if i != 2 || j != 2 {
+				places = append(places, fmt.Sprintf("%c%d", i+'h', j+8))
 			}
 		}
 	}
 
-	idx1 := rand.Intn(8)
+	idx1 := rand.Intn(len(places))
 	idx2 := idx1
 	for idx1 == idx2 {
-		idx2 = rand.Intn(8)
+		idx2 = rand.Intn(len(places))
 	}
 	return places[idx1] + "-" + places[idx2]
 }

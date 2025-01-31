@@ -1,4 +1,3 @@
-* handle quitting UI
 * sim julia engine
 * run multiple sims
 
