@@ -55,6 +55,7 @@ loop:
 			}
 			move := theTree.BestMove()
 			theTree.CommitMove(move)
+			fmt.Fprintf(os.Stderr, "move %s\n", move)
 			fmt.Printf("move %s\n", move)
 		case "decision":
 			fmt.Fprintf(os.Stderr, "decision %s\n", theGame.Decision())

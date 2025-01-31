@@ -7,7 +7,6 @@ import (
 	"image/color"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	"gioui.org/app"
@@ -28,7 +27,7 @@ const (
 
 var (
 	colorBg       = color.NRGBA{127, 106, 79, 255}
-	colorSelected = color.NRGBA{127, 127, 127, 255}
+	colorSelected = color.NRGBA{255, 127, 127, 255}
 	colorBlack    = color.NRGBA{0, 0, 0, 255}
 	colorWhite    = color.NRGBA{255, 255, 255, 255}
 )
@@ -81,7 +80,6 @@ func run() {
 			if e.Err != nil {
 				log.Fatal(e.Err)
 			}
-			fmt.Fprintln(os.Stderr, "DestroyEvent")
 			os.Exit(0)
 		case app.FrameEvent:
 			frame(&ops, e, stateChan)
@@ -233,19 +231,16 @@ func input(window *app.Window, stateChan chan *state) {
 	for {
 		text, err := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
-		fmt.Fprintf(os.Stderr, "read: %q\n", text)
 		if err != nil {
 			fmt.Println("error: Failed to read from standard input.")
-			fmt.Fprintf(os.Stderr, "error\n")
 			os.Exit(1)
 		}
 		if text == "stop" {
 			fmt.Println("info: Stopped.")
-			fmt.Fprintf(os.Stderr, "stopped\n")
 			os.Exit(0)
 		}
-		if text == "game-name" {
-			fmt.Println(gameName)
+		if strings.HasPrefix(text, "game-name") {
+			gameName = strings.Fields(text)[1]
 		}
 		if strings.HasPrefix(text, "move ") {
 			playMove(stateChan, text)
@@ -257,19 +252,6 @@ func input(window *app.Window, stateChan chan *state) {
 		}
 		window.Invalidate()
 	}
-}
-
-func parseNumbers(texts []string) []int8 {
-	result := make([]int8, 0, 4)
-	for _, text := range texts {
-		num, err := strconv.ParseInt(text, 10, 64)
-		if err != nil {
-			fmt.Println("error: Invalid syntax for terminal command.")
-			os.Exit(1)
-		}
-		result = append(result, int8(num))
-	}
-	return result
 }
 
 func playMove(stateChan chan *state, cmd string) {
@@ -308,6 +290,8 @@ func playMove(stateChan chan *state, cmd string) {
 		state.places[move.P2.Y][move.P2.X] = stateWhite
 	}
 
+	xx, yy, dx, dy := 0, 0, 0, 0
+
 	for y := range game.Size {
 		for x := range game.Size {
 			if x < game.Size-maxStones {
@@ -315,17 +299,14 @@ func playMove(stateChan chan *state, cmd string) {
 				for i := range maxStones {
 					if state.places[y][x+i] == stateBlack {
 						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, 1, 0
+						}
 					} else if state.places[y][x+i] == stateWhite {
 						w++
-					}
-				}
-				if b == maxStones {
-					for i := range maxStones {
-						state.places[y][x+i] = stateBlackSelected
-					}
-				} else if w == maxStones {
-					for i := range maxStones {
-						state.places[y][x+i] = stateWhiteSelected
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, 1, 0
+						}
 					}
 				}
 			}
@@ -334,17 +315,14 @@ func playMove(stateChan chan *state, cmd string) {
 				for i := range maxStones {
 					if state.places[y+i][x] == stateBlack {
 						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, 0, 1
+						}
 					} else if state.places[y+i][x] == stateWhite {
 						w++
-					}
-				}
-				if b == maxStones {
-					for i := range maxStones {
-						state.places[y+i][x] = stateBlackSelected
-					}
-				} else if w == maxStones {
-					for i := range maxStones {
-						state.places[y+i][x] = stateWhiteSelected
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, 0, 1
+						}
 					}
 				}
 			}
@@ -353,17 +331,14 @@ func playMove(stateChan chan *state, cmd string) {
 				for i := range maxStones {
 					if state.places[y+i][x+i] == stateBlack {
 						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, 1, 1
+						}
 					} else if state.places[y+i][x+i] == stateWhite {
 						w++
-					}
-				}
-				if b == maxStones {
-					for i := range maxStones {
-						state.places[y+i][x+i] = stateBlackSelected
-					}
-				} else if w == maxStones {
-					for i := range maxStones {
-						state.places[y+i][x+i] = stateWhiteSelected
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, 1, 1
+						}
 					}
 				}
 			}
@@ -372,19 +347,27 @@ func playMove(stateChan chan *state, cmd string) {
 				for i := range maxStones {
 					if state.places[y+i][x-i] == stateBlack {
 						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, -1, 1
+						}
 					} else if state.places[y+i][x-i] == stateWhite {
 						w++
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, -1, 1
+						}
 					}
 				}
-				if b == maxStones {
-					for i := range maxStones {
-						state.places[y+i][x-i] = stateBlackSelected
-					}
-				} else if w == maxStones {
-					for i := range maxStones {
-						state.places[y+i][x-i] = stateWhiteSelected
-					}
-				}
+			}
+		}
+	}
+
+	if dx != 0 || dy != 0 {
+		for i := range maxStones {
+			switch state.places[yy+dy*i][xx+dx*i] {
+			case stateBlack:
+				state.places[yy+dy*i][xx+dx*i] = stateBlackSelected
+			case stateWhite:
+				state.places[yy+dy*i][xx+dx*i] = stateWhiteSelected
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import . "game_of_stones/common"
 const GameName = "gomoku"
 
 func (game *Game) TopMoves(moves *[]MoveValue[Move]) {
+	*moves = (*moves)[:0]
 	game.topPlaces()
 	hasDraw := false
 	for _, place := range game.places {

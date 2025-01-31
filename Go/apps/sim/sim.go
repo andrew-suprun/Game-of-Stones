@@ -27,6 +27,10 @@ func main() {
 	}
 	logChan := make(chan string, 1)
 	go logPrinter(logChan)
+
+	ui := startEngine("ui", logChan, "Ui")
+	go waitForUi(ui)
+
 	black := startEngine(os.Args[1], logChan, "X")
 	white := startEngine(os.Args[2], logChan, "O")
 	fmt.Fprintf(black.out, "game-name\n")
@@ -41,7 +45,8 @@ func main() {
 	if name != "gomoku" && name != "connect6" {
 		panic(fmt.Sprintf("unknown game: %q", name))
 	}
-	ui := startEngine("ui", logChan, "Ui")
+
+	uiOut(ui, "game-name %s\n", name)
 
 	fmt.Fprintf(black.out, "move j10\n")
 	fmt.Fprintf(white.out, "move j10\n")
@@ -58,20 +63,22 @@ func main() {
 	for {
 		makeMove(black, white, ui)
 		if isTerminal(black) {
-			logChan <- "break.1"
 			break
 		}
 		makeMove(white, black, ui)
 		if isTerminal(white) {
-			logChan <- "break.2"
 			break
 		}
-		logChan <- "no break"
 	}
 
 	fmt.Println("stopping")
-	<-time.After(10 * time.Second)
+	<-time.After(10 * time.Minute)
 	fmt.Println("stopped")
+}
+
+func waitForUi(cmd *Cmd) {
+	cmd.cmd.Wait()
+	os.Exit(0)
 }
 
 func uiOut(ui *Cmd, format string, args ...any) {
