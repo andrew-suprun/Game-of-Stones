@@ -69,6 +69,18 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 
 func (tree *Tree[move]) BestMove() move {
 	root := tree.nodes[0]
+
+	if tree.game.Turn() == First && root.decision == SecondWin ||
+		tree.game.Turn() == Second && root.decision == FirstWin {
+
+		for idx := root.firstChild; idx < root.lastChild; idx++ {
+			node := tree.nodes[idx]
+			if node.lastChild-node.firstChild == 1 {
+				return tree.moves[node.firstChild]
+			}
+		}
+	}
+
 	bestChildIdx := root.firstChild
 
 	if tree.game.Turn() == First {
