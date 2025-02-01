@@ -294,7 +294,7 @@ func playMove(stateChan chan *state, cmd string) {
 
 	for y := range game.Size {
 		for x := range game.Size {
-			if x < game.Size-maxStones {
+			if x <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
 					if state.places[y][x+i] == stateBlack {
@@ -310,7 +310,7 @@ func playMove(stateChan chan *state, cmd string) {
 					}
 				}
 			}
-			if y < game.Size-maxStones {
+			if y <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
 					if state.places[y+i][x] == stateBlack {
@@ -326,7 +326,7 @@ func playMove(stateChan chan *state, cmd string) {
 					}
 				}
 			}
-			if x < game.Size-maxStones && y < game.Size-maxStones {
+			if x <= game.Size-maxStones && y <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
 					if state.places[y+i][x+i] == stateBlack {
@@ -342,7 +342,7 @@ func playMove(stateChan chan *state, cmd string) {
 					}
 				}
 			}
-			if x >= maxStones && y < game.Size-maxStones {
+			if x >= maxStones-1 && y <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
 					if state.places[y+i][x-i] == stateBlack {

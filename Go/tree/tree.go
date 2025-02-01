@@ -97,6 +97,7 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 			}
 		}
 
+		fmt.Fprintf(os.Stderr, "old nodes %d new nodes %d\n", len(tree.nodes), len(newNodes))
 		tree.nodes = newNodes
 		tree.moves = newMoves
 

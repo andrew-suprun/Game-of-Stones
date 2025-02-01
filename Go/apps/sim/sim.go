@@ -86,7 +86,7 @@ func uiOut(ui *Cmd, format string, args ...any) {
 }
 
 func makeMove(maker, taker, ui *Cmd) string {
-	fmt.Fprintln(maker.out, "respond 1000")
+	fmt.Fprintln(maker.out, "respond 250")
 	response, _ := maker.in.ReadString('\n')
 	uiOut(ui, "%s", response)
 	fmt.Fprint(taker.out, response)

@@ -1,3 +1,5 @@
+* Julia: keep subtree if possible in tree.CommitMove()
+* rework gomoku opening moves
 * refresh Game of Stones
 * sim: julia engine
 * run multiple sims
