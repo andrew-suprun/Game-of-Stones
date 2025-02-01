@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"os"
 
 	. "game_of_stones/common"
 )
@@ -49,19 +50,63 @@ func NewTree[move Equatable[move]](
 
 func (tree *Tree[m]) Expand() Decision {
 	root := &tree.nodes[0]
-	tree.expand(0)
-	tree.validate()
-
+	if root.decision == NoDecision {
+		tree.expand(0)
+		tree.validate()
+	}
 	return root.decision
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
+
+	idx := int32(-1)
+	if len(tree.nodes) > 0 {
+		root := tree.nodes[0]
+		for childIdx := root.firstChild; childIdx < root.lastChild; childIdx++ {
+			if tree.moves[childIdx].Equal(toPlay) {
+				idx = childIdx
+				break
+			}
+		}
+	}
+
+	if idx != -1 {
+		newNodes := []node{}
+		newMoves := []move{}
+		newNodes = append(newNodes, tree.nodes[idx])
+		newMoves = append(newMoves, tree.moves[idx])
+		newIdx := 0
+		for newIdx < len(newNodes) {
+			oldFirstChild := newNodes[newIdx].firstChild
+			oldLastChild := newNodes[newIdx].lastChild
+			if oldFirstChild == 0 && oldLastChild == 0 {
+				newIdx++
+				continue
+			}
+			newNodes[newIdx].firstChild = int32(len(newNodes))
+			newNodes = append(newNodes, tree.nodes[oldFirstChild:oldLastChild]...)
+			newMoves = append(newMoves, tree.moves[oldFirstChild:oldLastChild]...)
+			newNodes[newIdx].lastChild = int32(len(newNodes))
+			newIdx++
+		}
+		for i, node := range newNodes {
+			if node.firstChild > node.lastChild || node.lastChild > int32(len(newNodes)) {
+				fmt.Fprintf(os.Stderr, "###:2 i %d first %d last %d len %d\n", i, node.firstChild, node.lastChild, len(newNodes))
+				panic("###2###")
+			}
+		}
+
+		tree.nodes = newNodes
+		tree.moves = newMoves
+
+		return
+	}
+
 	tree.nodes = tree.nodes[:0]
-	decision := tree.game.Decision()
 	tree.nodes = append(tree.nodes, node{
 		value:    tree.game.BoardValue(),
-		decision: decision,
+		decision: tree.game.Decision(),
 	})
 	tree.moves = tree.moves[:0]
 	tree.moves = append(tree.moves, toPlay)
