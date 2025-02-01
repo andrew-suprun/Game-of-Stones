@@ -48,24 +48,29 @@ func main() {
 
 	uiOut(ui, "game-name %s\n", name)
 
-	fmt.Fprintf(black.out, "move j10\n")
-	fmt.Fprintf(white.out, "move j10\n")
-	uiOut(ui, "move j10\n")
-	whiteMove := ""
+	openingMoves := []string{}
 	if name == "gomoku" {
-		whiteMove = fmt.Sprintf("move %s\n", firstWhiteGomokuMove())
+		openingMoves = gomokuOpeningMoves()
 	} else {
-		whiteMove = fmt.Sprintf("move %s\n", firstWhiteConnect6Move())
+		openingMoves = connect6OpeningMoves()
 	}
-	fmt.Fprint(black.out, whiteMove)
-	fmt.Fprint(white.out, whiteMove)
-	uiOut(ui, "%s", whiteMove)
+
+	for _, move := range openingMoves {
+		fmt.Fprint(black.out, move)
+		fmt.Fprint(white.out, move)
+		uiOut(ui, "%s", move)
+	}
+
+	if len(openingMoves)%2 == 1 {
+		playMove(white, black, ui)
+	}
+
 	for {
-		makeMove(black, white, ui)
+		playMove(black, white, ui)
 		if isTerminal(black) {
 			break
 		}
-		makeMove(white, black, ui)
+		playMove(white, black, ui)
 		if isTerminal(white) {
 			break
 		}
@@ -74,6 +79,57 @@ func main() {
 	fmt.Println("stopping")
 	<-time.After(10 * time.Minute)
 	fmt.Println("stopped")
+}
+
+func gomokuOpeningMoves() []string {
+	return []string{"move j10\n", openingWhiteGomokuMove(), openingBlackGomokuMove()}
+}
+
+func connect6OpeningMoves() []string {
+	return []string{"move j10\n", openingWhiteConnect6Move()}
+}
+
+func openingWhiteGomokuMove() string {
+	places := []string{}
+	for j := range 3 {
+		for i := range 3 {
+			if i != 1 || j != 1 {
+				places = append(places, fmt.Sprintf("move %c%d\n", i+'i', j+9))
+			}
+		}
+	}
+	return places[rand.Intn(len(places))]
+}
+
+func openingBlackGomokuMove() string {
+	places := []string{}
+	for i := range 5 {
+		places = append(places, fmt.Sprintf("move h%d\n", i+8))
+		places = append(places, fmt.Sprintf("move l%d\n", i+8))
+	}
+	for i := range 4 {
+		places = append(places, fmt.Sprintf("move %c%d\n", i+'h', 8))
+		places = append(places, fmt.Sprintf("move %c%d\n", i+'h', 12))
+	}
+	return places[rand.Intn(len(places))]
+}
+
+func openingWhiteConnect6Move() string {
+	places := []string{}
+	for j := range 5 {
+		for i := range 5 {
+			if i != 2 || j != 2 {
+				places = append(places, fmt.Sprintf("%c%d", i+'h', j+7))
+			}
+		}
+	}
+
+	idx1 := rand.Intn(len(places))
+	idx2 := idx1
+	for idx1 == idx2 {
+		idx2 = rand.Intn(len(places))
+	}
+	return "move " + places[idx1] + "-" + places[idx2] + "\n"
 }
 
 func waitForUi(cmd *Cmd) {
@@ -85,8 +141,8 @@ func uiOut(ui *Cmd, format string, args ...any) {
 	fmt.Fprintf(ui.out, format, args...)
 }
 
-func makeMove(maker, taker, ui *Cmd) string {
-	fmt.Fprintln(maker.out, "respond 250")
+func playMove(maker, taker, ui *Cmd) string {
+	fmt.Fprintln(maker.out, "respond 500")
 	response, _ := maker.in.ReadString('\n')
 	uiOut(ui, "%s", response)
 	fmt.Fprint(taker.out, response)
@@ -152,34 +208,4 @@ func logPrinter(logChan chan string) {
 		line = strings.TrimSpace(line)
 		fmt.Fprintln(os.Stderr, line)
 	}
-}
-
-func firstWhiteGomokuMove() string {
-	places := []string{}
-	for j := range 5 {
-		for i := range 5 {
-			if i != 2 || j != 2 {
-				places = append(places, fmt.Sprintf("%c%d", i+'h', j+8))
-			}
-		}
-	}
-	return places[rand.Intn(len(places))]
-}
-
-func firstWhiteConnect6Move() string {
-	places := []string{}
-	for j := range 5 {
-		for i := range 5 {
-			if i != 2 || j != 2 {
-				places = append(places, fmt.Sprintf("%c%d", i+'h', j+8))
-			}
-		}
-	}
-
-	idx1 := rand.Intn(len(places))
-	idx2 := idx1
-	for idx1 == idx2 {
-		idx2 = rand.Intn(len(places))
-	}
-	return places[idx1] + "-" + places[idx2]
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-	"os"
 
 	. "game_of_stones/common"
 )
@@ -90,14 +89,6 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 			newNodes[newIdx].lastChild = int32(len(newNodes))
 			newIdx++
 		}
-		for i, node := range newNodes {
-			if node.firstChild > node.lastChild || node.lastChild > int32(len(newNodes)) {
-				fmt.Fprintf(os.Stderr, "###:2 i %d first %d last %d len %d\n", i, node.firstChild, node.lastChild, len(newNodes))
-				panic("###2###")
-			}
-		}
-
-		fmt.Fprintf(os.Stderr, "old nodes %d new nodes %d\n", len(tree.nodes), len(newNodes))
 		tree.nodes = newNodes
 		tree.moves = newMoves
 

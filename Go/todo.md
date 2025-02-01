@@ -1,8 +1,11 @@
-* Julia: keep subtree if possible in tree.CommitMove()
+Go:
 * rework gomoku opening moves
 * refresh Game of Stones
-* sim: julia engine
 * run multiple sims
+
+Julia:
+* keep subtree if possible in tree.CommitMove()
+* engine
 
 go run game_of_stones/ui
 go run -tags=connect6 game_of_stones/sim -a=22,64,20,500 -b=22,64,20,1000
