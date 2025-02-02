@@ -54,7 +54,7 @@ func main() {
 
 	uiOut(ui, "game-name %s\n", name)
 
-	openingMoves := []game.Move{}
+	var openingMoves []game.Move
 	if name == "gomoku" {
 		openingMoves = gomokuOpeningMoves()
 	} else {
@@ -130,24 +130,6 @@ func randomPlaces() []game.Place {
 		}
 	}
 	return random
-}
-
-func openingWhiteConnect6Move() string {
-	places := []string{}
-	for j := range 5 {
-		for i := range 5 {
-			if i != 2 || j != 2 {
-				places = append(places, fmt.Sprintf("%c%d", i+'h', j+7))
-			}
-		}
-	}
-
-	idx1 := rand.Intn(len(places))
-	idx2 := idx1
-	for idx1 == idx2 {
-		idx2 = rand.Intn(len(places))
-	}
-	return "move " + places[idx1] + "-" + places[idx2] + "\n"
 }
 
 func waitForUi(cmd *Cmd) {
