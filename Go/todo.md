@@ -17,9 +17,9 @@ go build -o out/sim apps/sim/*.go
 go build -o out/ui apps/ui/ui.go
 
 go build -o out/gomoku -tags=gomoku apps/engine/*.go
-out/sim "gomoku -log=black.log" "gomoku -log=white.log"
+out/sim 1000 "gomoku -log=black.log" "gomoku -log=white.log"
 
 go build -o out/connect6 -tags=connect6 apps/engine/*.go
-out/sim connect6 connect6
+out/sim 1000 "connect6 -log=black.log" "connect6 -log=white.log"
 
 go generate game_of_stones/...

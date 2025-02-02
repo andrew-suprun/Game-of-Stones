@@ -127,6 +127,10 @@ func ParsePlace(place string) (Place, error) {
 	return Place{X: x, Y: y}, nil
 }
 
+func (game *Game) StoneValues() []int16 {
+	return stoneValue[1:maxStones]
+}
+
 func (game *Game) initValues() {
 	for y := 0; y < Size; y++ {
 		v := 1 + min(maxStones1, y, Size-1-y)

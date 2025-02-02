@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,9 +22,9 @@ type Cmd struct {
 }
 
 func main() {
-	if len(os.Args) != 3 {
+	if len(os.Args) != 4 {
 		fmt.Println(os.Args)
-		panic("Expected 2 arguments.")
+		panic("Expected 3 arguments: <millis> <engine1> engine2>.")
 	}
 	logChan := make(chan string, 1)
 	go logPrinter(logChan)
@@ -31,8 +32,12 @@ func main() {
 	ui := startEngine("ui", logChan, "Ui")
 	go waitForUi(ui)
 
-	black := startEngine(os.Args[1], logChan, "X")
-	white := startEngine(os.Args[2], logChan, "O")
+	millis, err := strconv.ParseInt(os.Args[1], 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	black := startEngine(os.Args[2], logChan, "X")
+	white := startEngine(os.Args[3], logChan, "O")
 	fmt.Fprintf(black.out, "game-name\n")
 	fmt.Fprintf(white.out, "game-name\n")
 	name, _ := black.in.ReadString('\n')
@@ -56,21 +61,21 @@ func main() {
 	}
 
 	for _, move := range openingMoves {
-		fmt.Fprint(black.out, move)
-		fmt.Fprint(white.out, move)
-		uiOut(ui, "%s", move)
+		fmt.Fprintf(black.out, "move %s\n", move)
+		fmt.Fprintf(white.out, "move %s\n", move)
+		uiOut(ui, "move %s\n", move)
 	}
 
 	if len(openingMoves)%2 == 1 {
-		playMove(white, black, ui)
+		playMove(white, black, ui, millis)
 	}
 
 	for {
-		playMove(black, white, ui)
+		playMove(black, white, ui, millis)
 		if isTerminal(black) {
 			break
 		}
-		playMove(white, black, ui)
+		playMove(white, black, ui, millis)
 		if isTerminal(white) {
 			break
 		}
@@ -82,36 +87,44 @@ func main() {
 }
 
 func gomokuOpeningMoves() []string {
-	return []string{"move j10\n", openingWhiteGomokuMove(), openingBlackGomokuMove()}
+	places := []string{"j10"}
+	random := randomPlaces()
+	for range 4 {
+		r := rand.Intn(len(random))
+		places = append(places, random[r])
+		random[r] = random[len(random)-1]
+		random = random[:len(random)-1]
+	}
+	return places
 }
 
 func connect6OpeningMoves() []string {
-	return []string{"move j10\n", openingWhiteConnect6Move()}
+	places := []string{"j10"}
+	random := randomPlaces()
+	for range 2 {
+		r := rand.Intn(len(random))
+		place1 := random[r]
+		random[r] = random[len(random)-1]
+		random = random[:len(random)-1]
+		r = rand.Intn(len(random))
+		place2 := random[r]
+		random[r] = random[len(random)-1]
+		random = random[:len(random)-1]
+		places = append(places, place1+"-"+place2)
+	}
+	return places
 }
 
-func openingWhiteGomokuMove() string {
-	places := []string{}
-	for j := range 3 {
-		for i := range 3 {
-			if i != 1 || j != 1 {
-				places = append(places, fmt.Sprintf("move %c%d\n", i+'i', j+9))
+func randomPlaces() []string {
+	random := []string{}
+	for j := range 7 {
+		for i := range 7 {
+			if i != 3 || j != 3 {
+				random = append(random, fmt.Sprintf("%c%d", i+'g', j+7))
 			}
 		}
 	}
-	return places[rand.Intn(len(places))]
-}
-
-func openingBlackGomokuMove() string {
-	places := []string{}
-	for i := range 5 {
-		places = append(places, fmt.Sprintf("move h%d\n", i+8))
-		places = append(places, fmt.Sprintf("move l%d\n", i+8))
-	}
-	for i := range 4 {
-		places = append(places, fmt.Sprintf("move %c%d\n", i+'h', 8))
-		places = append(places, fmt.Sprintf("move %c%d\n", i+'h', 12))
-	}
-	return places[rand.Intn(len(places))]
+	return random
 }
 
 func openingWhiteConnect6Move() string {
@@ -141,8 +154,8 @@ func uiOut(ui *Cmd, format string, args ...any) {
 	fmt.Fprintf(ui.out, format, args...)
 }
 
-func playMove(maker, taker, ui *Cmd) string {
-	fmt.Fprintln(maker.out, "respond 500")
+func playMove(maker, taker, ui *Cmd, millis int64) string {
+	fmt.Fprintf(maker.out, "respond %d\n", millis)
 	response, _ := maker.in.ReadString('\n')
 	uiOut(ui, "%s", response)
 	fmt.Fprint(taker.out, response)
