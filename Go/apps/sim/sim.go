@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"game_of_stones/common"
+	"game_of_stones/game"
 	"io"
 	"math/rand"
 	"os"
@@ -53,7 +54,7 @@ func main() {
 
 	uiOut(ui, "game-name %s\n", name)
 
-	openingMoves := []string{}
+	openingMoves := []game.Move{}
 	if name == "gomoku" {
 		openingMoves = gomokuOpeningMoves()
 	} else {
@@ -70,36 +71,40 @@ func main() {
 		playMove(white, black, ui, millis)
 	}
 
+	dec := ""
 	for {
-		playMove(black, white, ui, millis)
-		if isTerminal(black) {
+		dec = playMove(black, white, ui, millis)
+		if dec != common.NoDecision.String() {
 			break
 		}
-		playMove(white, black, ui, millis)
-		if isTerminal(white) {
+		dec = playMove(white, black, ui, millis)
+		if dec != common.NoDecision.String() {
 			break
 		}
 	}
 
-	fmt.Println("stopping")
+	fmt.Printf("decision: %s\n", dec)
 	<-time.After(10 * time.Minute)
 	fmt.Println("stopped")
 }
 
-func gomokuOpeningMoves() []string {
-	places := []string{"j10"}
+func gomokuOpeningMoves() []game.Move {
+	moves := []game.Move{{P1: game.Place{X: game.Size / 2, Y: game.Size / 2}, P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 4 {
 		r := rand.Intn(len(random))
-		places = append(places, random[r])
+		place := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
+		moves = append(moves, game.Move{P1: place, P2: place})
 	}
-	return places
+	return moves
 }
 
-func connect6OpeningMoves() []string {
-	places := []string{"j10"}
+func connect6OpeningMoves() []game.Move {
+	places := []game.Move{{
+		P1: game.Place{X: game.Size / 2, Y: game.Size / 2},
+		P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 2 {
 		r := rand.Intn(len(random))
@@ -110,17 +115,17 @@ func connect6OpeningMoves() []string {
 		place2 := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
-		places = append(places, place1+"-"+place2)
+		places = append(places, game.Move{P1: place1, P2: place2})
 	}
 	return places
 }
 
-func randomPlaces() []string {
-	random := []string{}
-	for j := range 7 {
-		for i := range 7 {
-			if i != 3 || j != 3 {
-				random = append(random, fmt.Sprintf("%c%d", i+'g', j+7))
+func randomPlaces() []game.Place {
+	random := []game.Place{}
+	for j := range 5 {
+		for i := range 5 {
+			if i != 2 || j != 2 {
+				random = append(random, game.Place{X: int8(game.Size/2 - 2 + i), Y: int8(game.Size/2 - 2 + j)})
 			}
 		}
 	}
@@ -159,22 +164,14 @@ func playMove(maker, taker, ui *Cmd, millis int64) string {
 	response, _ := maker.in.ReadString('\n')
 	uiOut(ui, "%s", response)
 	fmt.Fprint(taker.out, response)
-	response = strings.TrimSpace(response)
-	if response == "stop" {
-		return "stop"
-	}
-	terms := strings.Fields(response)
-	if len(terms) > 2 {
-		return terms[2]
-	}
-	return ""
+	return decision(maker)
 }
 
-func isTerminal(cmd *Cmd) bool {
+func decision(cmd *Cmd) string {
 	fmt.Fprintln(cmd.out, "decision")
 	response, _ := cmd.in.ReadString('\n')
 	terms := strings.Fields(response)
-	return len(terms) == 2 && terms[1] != common.NoDecision.String()
+	return terms[1]
 }
 
 func startEngine(path string, logChan chan string, name string) *Cmd {

@@ -3,9 +3,9 @@
 package game
 
 const (
-	WinValue   = 0
-	maxStones  = 0
-	maxStones1 = 0
+	WinValue   = 500
+	maxStones  = 5
+	maxStones1 = 4
 )
 
 var gameValues = [2][64][2]int16{}
