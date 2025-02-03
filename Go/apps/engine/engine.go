@@ -45,8 +45,15 @@ loop:
 		}
 		terms := strings.Split(line, " ")
 		switch terms[0] {
-		case "game-name":
+		case "game-kind":
 			fmt.Println(game.GameName)
+		case "game-name":
+			intValues := theGame.StoneValues()
+			strValues := make([]string, len(intValues))
+			for i := range intValues {
+				strValues[i] = fmt.Sprintf("%d", intValues[i])
+			}
+			fmt.Println(strings.Join(strValues, ","))
 		case "move":
 			move, err := game.ParseMove(terms[1])
 			if err != nil {

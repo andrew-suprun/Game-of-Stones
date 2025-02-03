@@ -31,16 +31,28 @@ func main() {
 	go logPrinter(logChan)
 
 	ui := startEngine("ui", logChan, "Ui")
-	go waitForUi(ui)
+	go wait(ui)
 
+	stats := map[string]int{}
+
+	for i := range 10 {
+		playOpening(os.Args[2], os.Args[3], ui, logChan, i, stats)
+		playOpening(os.Args[3], os.Args[2], ui, logChan, i, stats)
+	}
+}
+
+func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed int, stats map[string]int) {
 	millis, err := strconv.ParseInt(os.Args[1], 10, 64)
 	if err != nil {
 		panic(err)
 	}
-	black := startEngine(os.Args[2], logChan, "X")
-	white := startEngine(os.Args[3], logChan, "O")
-	fmt.Fprintf(black.out, "game-name\n")
-	fmt.Fprintf(white.out, "game-name\n")
+
+	rnd := rand.New(rand.NewSource(int64(seed)))
+
+	black := startEngine(blackProc, logChan, "X")
+	white := startEngine(whiteProc, logChan, "O")
+	fmt.Fprintf(black.out, "game-kind\n")
+	fmt.Fprintf(white.out, "game-kind\n")
 	name, _ := black.in.ReadString('\n')
 	name = strings.TrimSpace(name)
 	name2, _ := white.in.ReadString('\n')
@@ -52,13 +64,13 @@ func main() {
 		panic(fmt.Sprintf("unknown game: %q", name))
 	}
 
-	uiOut(ui, "game-name %s\n", name)
+	uiOut(ui, "game-kind %s\n", name)
 
 	var openingMoves []game.Move
 	if name == "gomoku" {
-		openingMoves = gomokuOpeningMoves()
+		openingMoves = gomokuOpeningMoves(rnd)
 	} else {
-		openingMoves = connect6OpeningMoves()
+		openingMoves = connect6OpeningMoves(rnd)
 	}
 
 	for _, move := range openingMoves {
@@ -75,24 +87,37 @@ func main() {
 	for {
 		dec = playMove(black, white, ui, millis)
 		if dec != common.NoDecision.String() {
+			fmt.Fprintln(white.out, "stop")
+			if dec == common.FirstWin.String() {
+				fmt.Fprintln(black.out, "game-name")
+				response, _ := black.in.ReadString('\n')
+				response = strings.TrimSpace(response)
+				stats[response]++
+			}
 			break
 		}
 		dec = playMove(white, black, ui, millis)
 		if dec != common.NoDecision.String() {
+			fmt.Fprintln(black.out, "stop")
+			if dec == common.SecondWin.String() {
+				fmt.Fprintln(white.out, "game-name")
+				response, _ := white.in.ReadString('\n')
+				response = strings.TrimSpace(response)
+				stats[response]++
+			}
 			break
 		}
 	}
-
-	fmt.Printf("decision: %s\n", dec)
-	<-time.After(10 * time.Minute)
-	fmt.Println("stopped")
+	fmt.Println(stats)
+	<-time.After(3 * time.Second)
+	fmt.Fprintln(ui.out, "clear")
 }
 
-func gomokuOpeningMoves() []game.Move {
+func gomokuOpeningMoves(rnd *rand.Rand) []game.Move {
 	moves := []game.Move{{P1: game.Place{X: game.Size / 2, Y: game.Size / 2}, P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 4 {
-		r := rand.Intn(len(random))
+		r := rnd.Intn(len(random))
 		place := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
@@ -101,17 +126,17 @@ func gomokuOpeningMoves() []game.Move {
 	return moves
 }
 
-func connect6OpeningMoves() []game.Move {
+func connect6OpeningMoves(rnd *rand.Rand) []game.Move {
 	places := []game.Move{{
 		P1: game.Place{X: game.Size / 2, Y: game.Size / 2},
 		P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 2 {
-		r := rand.Intn(len(random))
+		r := rnd.Intn(len(random))
 		place1 := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
-		r = rand.Intn(len(random))
+		r = rnd.Intn(len(random))
 		place2 := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
@@ -132,7 +157,7 @@ func randomPlaces() []game.Place {
 	return random
 }
 
-func waitForUi(cmd *Cmd) {
+func wait(cmd *Cmd) {
 	cmd.cmd.Wait()
 	os.Exit(0)
 }

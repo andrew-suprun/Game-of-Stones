@@ -239,7 +239,7 @@ func input(window *app.Window, stateChan chan *state) {
 			fmt.Println("info: Stopped.")
 			os.Exit(0)
 		}
-		if strings.HasPrefix(text, "game-name") {
+		if strings.HasPrefix(text, "game-kind") {
 			gameName = strings.Fields(text)[1]
 		}
 		if strings.HasPrefix(text, "move ") {
@@ -247,6 +247,17 @@ func input(window *app.Window, stateChan chan *state) {
 		}
 		if strings.HasPrefix(text, "respond") {
 			state := <-stateChan
+			state.respond = true
+			stateChan <- state
+		}
+		if strings.HasPrefix(text, "clear") {
+			state := <-stateChan
+			for y := range game.Size {
+				for x := range game.Size {
+					state.places[y][x] = stateEmpty
+				}
+			}
+
 			state.respond = true
 			stateChan <- state
 		}
