@@ -15,9 +15,9 @@ import (
 	"game_of_stones/tree"
 )
 
-var maxPlaces = flag.Int("places", 20, "number of places to consider")
-var maxMoves = flag.Int("moves", 64, "number of moves to consider")
-var explorationCoeff = flag.Float64("C", 100, "exploration coeffitient")
+var maxPlaces = flag.Int("places", 18, "number of places to consider")
+var maxMoves = flag.Int("moves", 55, "number of moves to consider")
+var explorationCoeff = flag.Float64("C", 30, "exploration coeffitient")
 var logFileName = flag.String("log", "", "log file name")
 var logFile *os.File
 
@@ -48,12 +48,7 @@ loop:
 		case "game-kind":
 			fmt.Println(game.GameName)
 		case "game-name":
-			intValues := theGame.StoneValues()
-			strValues := make([]string, len(intValues))
-			for i := range intValues {
-				strValues[i] = fmt.Sprintf("%d", intValues[i])
-			}
-			fmt.Println(strings.Join(strValues, ","))
+			fmt.Printf("%d-%d-%.0f\n", *maxPlaces, *maxMoves, *explorationCoeff)
 		case "move":
 			move, err := game.ParseMove(terms[1])
 			if err != nil {
@@ -71,11 +66,10 @@ loop:
 			maxDuration := time.Duration(millis) * time.Millisecond
 			expanstions := 0
 			for {
-				dec := theTree.Expand()
+				dec, done := theTree.Expand()
 				expanstions++
-				duration := time.Since(timestamp)
-				if dec != common.NoDecision || duration > maxDuration {
-					log("expanded: %s; value %d; expansions %d; time %v\n", dec, theTree.Value(), expanstions, duration)
+				if done || dec != common.NoDecision || time.Since(timestamp) > maxDuration {
+					log("forced response %v; decision %v time %v\n", done, dec, time.Since(timestamp))
 					break
 				}
 			}

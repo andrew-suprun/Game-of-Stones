@@ -47,13 +47,25 @@ func NewTree[move Equatable[move]](
 	}
 }
 
-func (tree *Tree[m]) Expand() Decision {
+func (tree *Tree[m]) Expand() (Decision, bool) {
 	root := &tree.nodes[0]
 	if root.decision == NoDecision {
 		tree.expand(0)
 		tree.validate()
 	}
-	return root.decision
+
+	count := 0
+	expanded := int32(0)
+	for i := root.firstChild; i < root.lastChild; i++ {
+		child := tree.nodes[i]
+		if child.decision == NoDecision {
+			count++
+		}
+		if child.nSims > 1 {
+			expanded++
+		}
+	}
+	return root.decision, expanded == root.lastChild-root.firstChild && count == 1
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) {

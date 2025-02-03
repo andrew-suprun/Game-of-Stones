@@ -27,7 +27,7 @@ const (
 
 var (
 	colorBg       = color.NRGBA{127, 106, 79, 255}
-	colorSelected = color.NRGBA{255, 127, 127, 255}
+	colorSelected = color.NRGBA{31, 127, 255, 255}
 	colorBlack    = color.NRGBA{0, 0, 0, 255}
 	colorWhite    = color.NRGBA{255, 255, 255, 255}
 )
@@ -250,15 +250,16 @@ func input(window *app.Window, stateChan chan *state) {
 			state.respond = true
 			stateChan <- state
 		}
-		if strings.HasPrefix(text, "clear") {
+		if text == "clear" {
 			state := <-stateChan
+			state.turn = First
+			state.n_selected = 0
 			for y := range game.Size {
 				for x := range game.Size {
 					state.places[y][x] = stateEmpty
 				}
 			}
 
-			state.respond = true
 			stateChan <- state
 		}
 		window.Invalidate()

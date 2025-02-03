@@ -35,13 +35,14 @@ func main() {
 
 	stats := map[string]int{}
 
-	for i := range 10 {
-		playOpening(os.Args[2], os.Args[3], ui, logChan, i, stats)
-		playOpening(os.Args[3], os.Args[2], ui, logChan, i, stats)
+	for range 100 {
+		seed := rand.Int63()
+		playOpening(os.Args[2], os.Args[3], ui, logChan, seed, stats)
+		playOpening(os.Args[3], os.Args[2], ui, logChan, seed, stats)
 	}
 }
 
-func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed int, stats map[string]int) {
+func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed int64, stats map[string]int) {
 	millis, err := strconv.ParseInt(os.Args[1], 10, 64)
 	if err != nil {
 		panic(err)
@@ -93,6 +94,8 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed
 				response, _ := black.in.ReadString('\n')
 				response = strings.TrimSpace(response)
 				stats[response]++
+			} else {
+				stats["draw"]++
 			}
 			break
 		}
@@ -104,6 +107,8 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed
 				response, _ := white.in.ReadString('\n')
 				response = strings.TrimSpace(response)
 				stats[response]++
+			} else {
+				stats["draw"]++
 			}
 			break
 		}

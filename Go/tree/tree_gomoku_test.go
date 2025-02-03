@@ -21,8 +21,8 @@ func TestExpandGomoku(t *testing.T) {
 
 	for {
 		for range 100 {
-			dec := searchTree.Expand()
-			if dec != common.NoDecision {
+			dec, done := searchTree.Expand()
+			if done || dec != common.NoDecision {
 				break
 			}
 		}
