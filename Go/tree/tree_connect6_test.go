@@ -12,8 +12,8 @@ import (
 )
 
 func TestExpandConnect6(t *testing.T) {
-	connect6 := game.NewGame(28)
-	searchTree := NewTree(connect6, 64, 50)
+	connect6 := game.NewGame()
+	searchTree := NewTree(connect6)
 
 	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)

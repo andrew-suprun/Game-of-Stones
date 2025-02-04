@@ -12,13 +12,13 @@ func TestString(t *testing.T) {
 	moveValue := MoveValue[Move]{Move: move, Value: 5, Decision: FirstWin}
 	result := fmt.Sprintf("%v", moveValue)
 	fmt.Println(result)
-	if result != "b3-d5   v:    5 FirstWin" {
+	if result != "b3-d5   v:    5 first-win" {
 		t.Fail()
 	}
 }
 
 func TestMove(t *testing.T) {
-	c6 := NewGame(10)
+	c6 := NewGame()
 	m1, _ := ParseMove("j10")
 	c6.PlayMove(m1)
 	m2, _ := ParseMove("i9-i11")
@@ -26,7 +26,7 @@ func TestMove(t *testing.T) {
 }
 
 func TestTopMoves(t *testing.T) {
-	c6 := NewGame(10)
+	c6 := NewGame()
 	originalBoard := c6.values
 	m1, _ := ParseMove("j10")
 	c6.PlayMove(m1)

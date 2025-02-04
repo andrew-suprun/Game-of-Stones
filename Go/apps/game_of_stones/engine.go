@@ -18,8 +18,8 @@ func runEngine(playerStones Turn, in, out chan string) {
 		theTree         *tree.Tree[game.Move]
 	)
 
-	theGame = game.NewGame(22)
-	theTree = tree.NewTree[game.Move](theGame, 64, 20)
+	theGame = game.NewGame()
+	theTree = tree.NewTree[game.Move](theGame)
 	if playerStones == First {
 		oppPlayerStones = Second
 	} else {

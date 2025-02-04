@@ -19,7 +19,7 @@ func TestHeap(t *testing.T) {
 		values[i], values[j] = values[j], values[i]
 	})
 	for i := range 100 {
-		Add(values[i], &heap, less)
+		Add(values[i], &heap, 20, less)
 	}
 
 	for i := 1; i < 20; i++ {
@@ -46,7 +46,7 @@ func BenchmarkHeap(b *testing.B) {
 	for range b.N {
 		copy(values2, values)
 		for i := range 100 {
-			Add(values2[i], &heap, less)
+			Add(values2[i], &heap, 20, less)
 		}
 	}
 }

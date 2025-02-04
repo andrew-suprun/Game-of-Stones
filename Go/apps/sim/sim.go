@@ -23,9 +23,9 @@ type Cmd struct {
 }
 
 func main() {
-	if len(os.Args) != 4 {
+	if len(os.Args) != 3 {
 		fmt.Println(os.Args)
-		panic("Expected 3 arguments: <millis> <engine1> engine2>.")
+		panic("Expected 2 arguments: <millis> <engine>")
 	}
 	logChan := make(chan string, 1)
 	go logPrinter(logChan)
@@ -33,45 +33,35 @@ func main() {
 	ui := startEngine("ui", logChan, "Ui")
 	go wait(ui)
 
-	stats := map[string]int{}
-
-	for range 100 {
-		seed := rand.Int63()
-		playOpening(os.Args[2], os.Args[3], ui, logChan, seed, stats)
-		playOpening(os.Args[3], os.Args[2], ui, logChan, seed, stats)
+	for {
+		playOpening(os.Args[2], os.Args[2], ui, logChan)
 	}
 }
 
-func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed int64, stats map[string]int) {
+func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string) {
 	millis, err := strconv.ParseInt(os.Args[1], 10, 64)
 	if err != nil {
 		panic(err)
 	}
 
-	rnd := rand.New(rand.NewSource(int64(seed)))
-
 	black := startEngine(blackProc, logChan, "X")
 	white := startEngine(whiteProc, logChan, "O")
-	fmt.Fprintf(black.out, "game-kind\n")
-	fmt.Fprintf(white.out, "game-kind\n")
+	// black := startEngine(blackProc+" -log=log-black.log", logChan, "X")
+	// white := startEngine(whiteProc+" -log=log-white.log", logChan, "O")
+	fmt.Fprintf(black.out, "game-name\n")
 	name, _ := black.in.ReadString('\n')
 	name = strings.TrimSpace(name)
-	name2, _ := white.in.ReadString('\n')
-	name2 = strings.TrimSpace(name2)
-	if name != name2 {
-		panic(fmt.Sprintf("engings are playing different games: %q and %q", name, name2))
-	}
 	if name != "gomoku" && name != "connect6" {
 		panic(fmt.Sprintf("unknown game: %q", name))
 	}
 
-	uiOut(ui, "game-kind %s\n", name)
+	uiOut(ui, "game-name %s\n", name)
 
 	var openingMoves []game.Move
 	if name == "gomoku" {
-		openingMoves = gomokuOpeningMoves(rnd)
+		openingMoves = gomokuOpeningMoves()
 	} else {
-		openingMoves = connect6OpeningMoves(rnd)
+		openingMoves = connect6OpeningMoves()
 	}
 
 	for _, move := range openingMoves {
@@ -89,40 +79,23 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed
 		dec = playMove(black, white, ui, millis)
 		if dec != common.NoDecision.String() {
 			fmt.Fprintln(white.out, "stop")
-			if dec == common.FirstWin.String() {
-				fmt.Fprintln(black.out, "game-name")
-				response, _ := black.in.ReadString('\n')
-				response = strings.TrimSpace(response)
-				stats[response]++
-			} else {
-				stats["draw"]++
-			}
 			break
 		}
 		dec = playMove(white, black, ui, millis)
 		if dec != common.NoDecision.String() {
 			fmt.Fprintln(black.out, "stop")
-			if dec == common.SecondWin.String() {
-				fmt.Fprintln(white.out, "game-name")
-				response, _ := white.in.ReadString('\n')
-				response = strings.TrimSpace(response)
-				stats[response]++
-			} else {
-				stats["draw"]++
-			}
 			break
 		}
 	}
-	fmt.Println(stats)
 	<-time.After(3 * time.Second)
 	fmt.Fprintln(ui.out, "clear")
 }
 
-func gomokuOpeningMoves(rnd *rand.Rand) []game.Move {
+func gomokuOpeningMoves() []game.Move {
 	moves := []game.Move{{P1: game.Place{X: game.Size / 2, Y: game.Size / 2}, P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 4 {
-		r := rnd.Intn(len(random))
+		r := rand.Intn(len(random))
 		place := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
@@ -131,17 +104,17 @@ func gomokuOpeningMoves(rnd *rand.Rand) []game.Move {
 	return moves
 }
 
-func connect6OpeningMoves(rnd *rand.Rand) []game.Move {
+func connect6OpeningMoves() []game.Move {
 	places := []game.Move{{
 		P1: game.Place{X: game.Size / 2, Y: game.Size / 2},
 		P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 2 {
-		r := rnd.Intn(len(random))
+		r := rand.Intn(len(random))
 		place1 := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
-		r = rnd.Intn(len(random))
+		r = rand.Intn(len(random))
 		place2 := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]

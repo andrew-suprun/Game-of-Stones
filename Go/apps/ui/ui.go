@@ -42,7 +42,7 @@ const (
 	stateWhite
 )
 
-var gameName string = "connect6"
+var gameName string = "Game of Stones"
 var maxSelected int = 1
 
 type state struct {
@@ -239,7 +239,7 @@ func input(window *app.Window, stateChan chan *state) {
 			fmt.Println("info: Stopped.")
 			os.Exit(0)
 		}
-		if strings.HasPrefix(text, "game-kind") {
+		if strings.HasPrefix(text, "game-name") {
 			gameName = strings.Fields(text)[1]
 		}
 		if strings.HasPrefix(text, "move ") {

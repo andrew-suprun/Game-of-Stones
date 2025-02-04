@@ -20,6 +20,7 @@ func (turn Turn) String() string {
 }
 
 type Equatable[T any] interface {
+	fmt.Stringer
 	Equal(t T) bool
 }
 

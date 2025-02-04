@@ -18,12 +18,10 @@ type Game[move Equatable[move]] interface {
 }
 
 type Tree[move Equatable[move]] struct {
-	nodes             []node
-	moves             []move
-	game              Game[move]
-	topMoves          []MoveValue[move]
-	maxChildren       int32
-	explorationFactor float64
+	nodes    []node
+	moves    []move
+	game     Game[move]
+	topMoves []MoveValue[move]
 }
 
 type node struct {
@@ -34,38 +32,33 @@ type node struct {
 	decision   Decision
 }
 
+const explorationFactor = 20
+
 func NewTree[move Equatable[move]](
 	game Game[move],
-	maxChildren int,
-	explorationFactor float64,
 ) *Tree[move] {
-	return &Tree[move]{
-		game:              game,
-		topMoves:          make([]MoveValue[move], 0, maxChildren),
-		maxChildren:       int32(maxChildren),
-		explorationFactor: explorationFactor,
-	}
+	return &Tree[move]{game: game}
 }
 
-func (tree *Tree[m]) Expand() (Decision, bool) {
+func (tree *Tree[m]) Expand() (decision Decision, forcedMove bool) {
 	root := &tree.nodes[0]
 	if root.decision == NoDecision {
 		tree.expand(0)
 		tree.validate()
 	}
 
-	count := 0
-	expanded := int32(0)
+	noDecision := 0
 	for i := root.firstChild; i < root.lastChild; i++ {
 		child := tree.nodes[i]
 		if child.decision == NoDecision {
-			count++
-		}
-		if child.nSims > 1 {
-			expanded++
+			if child.nSims > 1 {
+				noDecision++
+			} else {
+				return root.decision, false
+			}
 		}
 	}
-	return root.decision, expanded == root.lastChild-root.firstChild && count == 1
+	return root.decision, noDecision == 1
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) {
@@ -169,6 +162,17 @@ func (tree *Tree[move]) BestMove() move {
 	return tree.moves[bestChildIdx]
 }
 
+func (tree *Tree[m]) AvailableMoves() string {
+	buf := &bytes.Buffer{}
+	root := tree.nodes[0]
+	fmt.Fprintf(buf, "%s: d: %v v: %v n: %d\n", tree.moves[0].String(), root.decision, root.value, root.nSims)
+	for i := root.firstChild; i < root.lastChild; i++ {
+		child := tree.nodes[i]
+		fmt.Fprintf(buf, "  [%2d] %s: d: %v v: %v n: %d\n", i, tree.moves[i].String(), child.decision, child.value, child.nSims)
+	}
+	return buf.String()
+}
+
 func (tree *Tree[m]) Value() int16 {
 	return tree.nodes[0].value
 }
@@ -205,7 +209,7 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 			if child.decision != NoDecision {
 				continue
 			}
-			v := coeff*float64(child.value) + tree.explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
+			v := coeff*float64(child.value) + explorationFactor*math.Sqrt(logParentSims/float64(child.nSims))
 			if v > maxV {
 				maxV = v
 				selectedChildIdx = idx

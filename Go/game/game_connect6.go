@@ -99,7 +99,7 @@ func (game *Game) TopMoves(moves *[]MoveValue[Move]) {
 					Value:    value,
 					Decision: NoDecision,
 				}
-				heap.Add(move, moves, less)
+				heap.Add(move, moves, maxMoves, less)
 			}
 		}
 

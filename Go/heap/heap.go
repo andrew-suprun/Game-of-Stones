@@ -2,8 +2,8 @@ package heap
 
 type Less[E any] func(E, E) bool
 
-func Add[I any](item I, items *[]I, less Less[I]) {
-	if len(*items) == cap(*items) {
+func Add[I any](item I, items *[]I, maxItems int, less Less[I]) {
+	if len(*items) == maxItems {
 		if !less((*items)[0], item) {
 			return
 		}

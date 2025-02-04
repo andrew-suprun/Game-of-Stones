@@ -15,9 +15,6 @@ import (
 	"game_of_stones/tree"
 )
 
-var maxPlaces = flag.Int("places", 18, "number of places to consider")
-var maxMoves = flag.Int("moves", 55, "number of moves to consider")
-var explorationCoeff = flag.Float64("C", 30, "exploration coeffitient")
 var logFileName = flag.String("log", "", "log file name")
 var logFile *os.File
 
@@ -32,8 +29,8 @@ func main() {
 		defer logFile.Close()
 	}
 	reader := bufio.NewReader(os.Stdin)
-	theGame := game.NewGame(*maxPlaces)
-	theTree := tree.NewTree(theGame, *maxMoves, *explorationCoeff)
+	theGame := game.NewGame()
+	theTree := tree.NewTree(theGame)
 loop:
 	for {
 		line, err := reader.ReadString('\n')
@@ -45,10 +42,8 @@ loop:
 		}
 		terms := strings.Split(line, " ")
 		switch terms[0] {
-		case "game-kind":
-			fmt.Println(game.GameName)
 		case "game-name":
-			fmt.Printf("%d-%d-%.0f\n", *maxPlaces, *maxMoves, *explorationCoeff)
+			fmt.Println(game.GameName)
 		case "move":
 			move, err := game.ParseMove(terms[1])
 			if err != nil {
@@ -70,6 +65,7 @@ loop:
 				expanstions++
 				if done || dec != common.NoDecision || time.Since(timestamp) > maxDuration {
 					log("forced response %v; decision %v time %v\n", done, dec, time.Since(timestamp))
+					log("moves:\n%s\n", theTree.AvailableMoves())
 					break
 				}
 			}

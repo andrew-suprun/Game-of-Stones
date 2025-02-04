@@ -30,6 +30,11 @@ const (
 	White Stone = 8
 )
 
+const (
+	maxPlaces = 16
+	maxMoves  = 55
+)
+
 type Game struct {
 	stone  Stone
 	turn   Turn
@@ -39,7 +44,7 @@ type Game struct {
 	places []Place
 }
 
-func NewGame(maxPlaces int) *Game {
+func NewGame() *Game {
 	game := &Game{
 		stone:  Black,
 		places: make([]Place, 0, maxPlaces),
@@ -125,10 +130,6 @@ func ParsePlace(place string) (Place, error) {
 		return Place{}, errors.New("failed to parse place")
 	}
 	return Place{X: x, Y: y}, nil
-}
-
-func (game *Game) StoneValues() []int16 {
-	return stoneValue[1:maxStones]
 }
 
 func (game *Game) initValues() {
@@ -232,7 +233,7 @@ func (game *Game) topPlaces() {
 	for y := int8(0); y < Size; y++ {
 		for x := int8(0); x < Size; x++ {
 			if game.stones[y][x] == None {
-				heap.Add(Place{X: x, Y: y}, &game.places, less)
+				heap.Add(Place{X: x, Y: y}, &game.places, maxPlaces, less)
 			}
 		}
 	}
