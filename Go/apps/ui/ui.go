@@ -215,6 +215,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 						state.turn = First
 					}
 					fmt.Printf("move %s\n", move)
+					checkTerminal(state)
 				}
 			}
 		}
@@ -282,6 +283,9 @@ func playMove(stateChan chan *state, cmd string) {
 	}
 
 	state := <-stateChan
+
+	state.respond = false
+
 	for y := range game.Size {
 		for x := range game.Size {
 			switch state.places[y][x] {
@@ -293,16 +297,25 @@ func playMove(stateChan chan *state, cmd string) {
 		}
 	}
 
+	if state.turn == First {
+		state.places[move.P1.Y][move.P1.X] = stateBlackSelected
+		state.places[move.P2.Y][move.P2.X] = stateBlackSelected
+		state.turn = Second
+	} else {
+		state.places[move.P1.Y][move.P1.X] = stateWhiteSelected
+		state.places[move.P2.Y][move.P2.X] = stateWhiteSelected
+		state.turn = First
+	}
+
+	checkTerminal(state)
+
+	stateChan <- state
+}
+
+func checkTerminal(state *state) {
 	maxStones := 5
 	if gameName == "connect6" {
 		maxStones = 6
-	}
-	if state.turn == First {
-		state.places[move.P1.Y][move.P1.X] = stateBlack
-		state.places[move.P2.Y][move.P2.X] = stateBlack
-	} else {
-		state.places[move.P1.Y][move.P1.X] = stateWhite
-		state.places[move.P2.Y][move.P2.X] = stateWhite
 	}
 
 	xx, yy, dx, dy := 0, 0, 0, 0
@@ -312,12 +325,12 @@ func playMove(stateChan chan *state, cmd string) {
 			if x <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
-					if state.places[y][x+i] == stateBlack {
+					if state.places[y][x+i] == stateBlack || state.places[y][x+i] == stateBlackSelected {
 						b++
 						if b == maxStones {
 							xx, yy, dx, dy = x, y, 1, 0
 						}
-					} else if state.places[y][x+i] == stateWhite {
+					} else if state.places[y][x+i] == stateWhite || state.places[y][x+i] == stateWhiteSelected {
 						w++
 						if w == maxStones {
 							xx, yy, dx, dy = x, y, 1, 0
@@ -328,12 +341,12 @@ func playMove(stateChan chan *state, cmd string) {
 			if y <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
-					if state.places[y+i][x] == stateBlack {
+					if state.places[y+i][x] == stateBlack || state.places[y+i][x] == stateBlackSelected {
 						b++
 						if b == maxStones {
 							xx, yy, dx, dy = x, y, 0, 1
 						}
-					} else if state.places[y+i][x] == stateWhite {
+					} else if state.places[y+i][x] == stateWhite || state.places[y+i][x] == stateWhiteSelected {
 						w++
 						if w == maxStones {
 							xx, yy, dx, dy = x, y, 0, 1
@@ -344,12 +357,12 @@ func playMove(stateChan chan *state, cmd string) {
 			if x <= game.Size-maxStones && y <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
-					if state.places[y+i][x+i] == stateBlack {
+					if state.places[y+i][x+i] == stateBlack || state.places[y+i][x+i] == stateBlackSelected {
 						b++
 						if b == maxStones {
 							xx, yy, dx, dy = x, y, 1, 1
 						}
-					} else if state.places[y+i][x+i] == stateWhite {
+					} else if state.places[y+i][x+i] == stateWhite || state.places[y+i][x+i] == stateWhiteSelected {
 						w++
 						if w == maxStones {
 							xx, yy, dx, dy = x, y, 1, 1
@@ -360,12 +373,12 @@ func playMove(stateChan chan *state, cmd string) {
 			if x >= maxStones-1 && y <= game.Size-maxStones {
 				b, w := 0, 0
 				for i := range maxStones {
-					if state.places[y+i][x-i] == stateBlack {
+					if state.places[y+i][x-i] == stateBlack || state.places[y+i][x-i] == stateBlackSelected {
 						b++
 						if b == maxStones {
 							xx, yy, dx, dy = x, y, -1, 1
 						}
-					} else if state.places[y+i][x-i] == stateWhite {
+					} else if state.places[y+i][x-i] == stateWhite || state.places[y+i][x-i] == stateWhiteSelected {
 						w++
 						if w == maxStones {
 							xx, yy, dx, dy = x, y, -1, 1
@@ -386,17 +399,4 @@ func playMove(stateChan chan *state, cmd string) {
 			}
 		}
 	}
-
-	if state.turn == First {
-		state.places[move.P1.Y][move.P1.X] = stateBlackSelected
-		state.places[move.P2.Y][move.P2.X] = stateBlackSelected
-		state.turn = Second
-	} else {
-		state.places[move.P1.Y][move.P1.X] = stateWhiteSelected
-		state.places[move.P2.Y][move.P2.X] = stateWhiteSelected
-		state.turn = First
-	}
-
-	state.respond = false
-	stateChan <- state
 }

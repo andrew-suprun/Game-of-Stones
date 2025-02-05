@@ -124,7 +124,7 @@ func runLogger(log *bufio.Reader, logChan chan string, name string) {
 		if err != nil {
 			panic(err)
 		}
-		logChan <- name + ": " + line
+		logChan <- name + ": log: " + line
 	}
 }
 
