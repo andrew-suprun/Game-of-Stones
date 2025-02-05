@@ -1,7 +1,5 @@
-Go:
-* refresh Game of Stones
-
 Julia:
+* modularize
 * keep subtree if possible in tree.CommitMove()
 * engine
 

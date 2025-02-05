@@ -42,7 +42,7 @@ const (
 	stateWhite
 )
 
-var gameName string = "Game of Stones"
+var gameName string = "gomoku"
 var maxSelected int = 1
 
 type state struct {
@@ -58,10 +58,6 @@ func main() {
 }
 
 func run() {
-	if len(os.Args) > 1 && os.Args[1] == "gomoku" {
-		gameName = "gomoku"
-		maxSelected = 2
-	}
 	gameState := state{}
 	stateChan := make(chan *state, 1)
 	stateChan <- &gameState
@@ -69,7 +65,7 @@ func run() {
 	var ops op.Ops
 
 	window := new(app.Window)
-	window.Option(app.Title(gameName), app.Size(windowSize, windowSize))
+	window.Option(app.Title("Game of Stones"), app.Size(windowSize, windowSize))
 	// window.Option(app.Decorated(false))
 
 	go input(window, stateChan)
@@ -216,8 +212,6 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 					}
 					fmt.Printf("move %s\n", move)
 				}
-			default:
-				fmt.Println("key:", keyEvent)
 			}
 		}
 	}
@@ -241,6 +235,11 @@ func input(window *app.Window, stateChan chan *state) {
 		}
 		if strings.HasPrefix(text, "game-name") {
 			gameName = strings.Fields(text)[1]
+			if gameName == "connect6" {
+				maxSelected = 2
+			} else {
+				maxSelected = 1
+			}
 		}
 		if strings.HasPrefix(text, "move ") {
 			playMove(stateChan, text)
