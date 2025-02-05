@@ -26,31 +26,30 @@ mutable struct Tree{Move}
 end
 
 function expand!(tree, game)
-    expand!(tree, game, 1)
-    if tree.nodes[1].decision != no_decision
-        return false
+    decision = tree.nodes[1].decision
+    if decision == no_decision
+        expand!(tree, game, 1)
     end
+
     undecided = 0
     root = tree.nodes[1]
     for i in root.first_child:root.last_child
+        child = tree.nodes[i]
         if tree.nodes[i].decision == no_decision
-            undecided += 1
+            if child.n_sims > 1
+                undecided += 1
+            else
+                return root.decision, false
+            end
         end
     end
-    undecided > 1
+    return root.decision, undecided == 1
 end
 
 function expand!(tree, game, parent_idx)
     parent = tree.nodes[parent_idx]
     if parent.decision != no_decision
         error("Trying to expand decisive node.")
-        # tree.nodes[parent_idx] = Node(
-        #     first_child=parent.first_child,
-        #     last_child=parent.last_child,
-        #     n_sims=parent.n_sims + n_moves,
-        #     value=parent.value,
-        #     decision=parent.decision)
-        # return
     end
 
     if parent.first_child == 0
@@ -74,10 +73,10 @@ function expand!(tree, game, parent_idx)
         expand!(tree, game, idx)
         undo_move!(game, move)
     end
-    tree.nodes[parent_idx] = update_stats(tree, tree.nodes[parent_idx], game.stone)
+    tree.nodes[parent_idx] = update_stats!(tree, tree.nodes[parent_idx], game.stone)
 end
 
-function update_stats(tree, node, stone)
+function update_stats!(tree, node, stone)
     n_sims = Int32(0)
     value = tree.nodes[node.first_child].value
     decision = no_decision
@@ -139,7 +138,7 @@ function commit_move!(tree, game, to_play)
     play_move!(game, move)
     empty!(tree.nodes)
     empty!(tree.moves)
-    node = Node(value=board_value(game), decision=decision(game)[1])
+    node = Node(value=board_value(game), decision=decision(game))
     push!(tree.nodes, node)
     push!(tree.moves, move)
 end

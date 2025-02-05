@@ -47,18 +47,18 @@ func (tree *Tree[m]) Expand() (decision Decision, forcedMove bool) {
 		tree.validate()
 	}
 
-	noDecision := 0
+	undecided := 0
 	for i := root.firstChild; i < root.lastChild; i++ {
 		child := tree.nodes[i]
 		if child.decision == NoDecision {
 			if child.nSims > 1 {
-				noDecision++
+				undecided++
 			} else {
 				return root.decision, false
 			}
 		}
 	}
-	return root.decision, noDecision == 1
+	return root.decision, undecided == 1
 }
 
 func (tree *Tree[move]) CommitMove(toPlay move) {

@@ -70,7 +70,7 @@ func main() {
 			firstEngineMove = true
 		} else {
 			engine.send(uiMove)
-			if engine.decision() != common.NoDecision.String() {
+			if engine.call("decision") != common.NoDecision.String() {
 				break
 			}
 		}
@@ -80,7 +80,7 @@ func main() {
 		} else {
 			engineMove := engine.call("respond %d", millis)
 			ui.send(engineMove)
-			if engine.decision() != common.NoDecision.String() {
+			if engine.call("decision") != common.NoDecision.String() {
 				break
 			}
 		}
@@ -181,13 +181,6 @@ func (cmd *Cmd) send(format string, args ...any) {
 	text := fmt.Sprintf(format, args...)
 	fmt.Printf("%s: sending %q\n", cmd.name, text)
 	fmt.Fprintln(cmd.out, text+"\n")
-}
-
-func (cmd *Cmd) decision() string {
-	fmt.Fprintln(cmd.out, "decision")
-	response, _ := cmd.in.ReadString('\n')
-	terms := strings.Fields(response)
-	return terms[1]
 }
 
 func (cmd *Cmd) wait() {

@@ -59,10 +59,8 @@ loop:
 			}
 			timestamp := time.Now()
 			maxDuration := time.Duration(millis) * time.Millisecond
-			expanstions := 0
 			for {
 				dec, done := theTree.Expand()
-				expanstions++
 				if done || dec != common.NoDecision || time.Since(timestamp) > maxDuration {
 					log("forced response %v; decision %v time %v\n", done, dec, time.Since(timestamp))
 					log("moves:\n%s\n", theTree.AvailableMoves())

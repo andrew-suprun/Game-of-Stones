@@ -24,7 +24,7 @@ function run_simulation(tree, game)
         commit_move!(tree, game, "$move")
         println(game.stones)
         dec = decision(game)
-        if dec[1] != no_decision
+        if dec != no_decision
             println(dec)
             break
         end

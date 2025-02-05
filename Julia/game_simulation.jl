@@ -19,16 +19,8 @@ function run_simulation(name)
     println(game.stones)
     while true
         for i in 1:10_000
-            cont = expand!(tree, game)
-            if game.stone == black && tree.root.decision == first_win
-                println("decision: Black win after $i expands")
-                break
-            elseif game.stone == white && tree.root.decision == second_win
-                println("decision: White win after $i expands")
-                break
-            end
-            if !cont
-                println("decision: single undecided after $i expands")
+            dec, done := expand!(tree, game)
+            if done || dec != no_decision
                 break
             end
         end

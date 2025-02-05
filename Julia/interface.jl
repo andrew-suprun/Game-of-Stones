@@ -2,6 +2,18 @@ const board_size = 19
 
 @enum Decision::Int8 no_decision draw first_win second_win
 
+function string(decision::Decision)
+    if decision == no_decision
+        return "no-decision"
+    elseif decision == first_win
+        return "first-win"
+    elseif decision == second_win
+        return "second-win"
+    elseif decision == draw
+        return "draw"
+    end
+end
+
 struct MoveValue{Move}
     move::Move
     value::Int16
@@ -12,3 +24,6 @@ struct Name{x} end
 Name(x) = Name{x}()
 const gomoku = Name(:Gomoku)
 const connect6 = Name(:Connect6)
+
+string(::Name{:Gomoku}) = "gomoku"
+string(::Name{:Connect6}) = "connect6"
