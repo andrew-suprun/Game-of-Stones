@@ -44,6 +44,7 @@ const (
 
 var gameName string = "gomoku"
 var maxSelected int = 1
+var firstEnterKey = true
 
 type state struct {
 	places     [game.Size][game.Size]placeState
@@ -181,7 +182,10 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 		if keyEvent.State == key.Press {
 			switch keyEvent.Name {
 			case key.NameReturn:
-				if state.respond && state.n_selected == maxSelected {
+				if state.respond && state.n_selected == 0 && firstEnterKey {
+					fmt.Println("skip")
+					firstEnterKey = false
+				} else if state.respond && state.n_selected == maxSelected {
 					selected := []game.Place{}
 					for x := range game.Size {
 						for y := range game.Size {

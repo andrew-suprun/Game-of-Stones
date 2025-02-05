@@ -16,13 +16,11 @@ import (
 )
 
 const usage = `Usage: game_of_stones [params]
-    -stones=[black|white] (black)
     -engine=<engine> (gomoku)
 	-spm=<seconds per move> (1.0)
 `
 
 var (
-	stones = flag.String("stones", "black", "black or white")
 	engine = flag.String("engine", "gomoku", "path to engine")
 	spm    = flag.Float64("spm", 1, "seconds per move")
 )
@@ -62,22 +60,29 @@ func main() {
 	ui.send("move j10")
 	engine.send("move j10")
 
-	if *stones == "black" {
-		game.playFirstWhiteStones()
-	}
+	firstEngineMove := false
 
 	millis := int(*spm * 1000)
 
 	for {
 		uiMove := ui.call("respond")
-		engine.send(uiMove)
-		if engine.decision() != common.NoDecision.String() {
-			break
+		if uiMove == "skip" {
+			firstEngineMove = true
+		} else {
+			engine.send(uiMove)
+			if engine.decision() != common.NoDecision.String() {
+				break
+			}
 		}
-		engineMove := engine.call("respond %d", millis)
-		ui.send(engineMove)
-		if engine.decision() != common.NoDecision.String() {
-			break
+		if firstEngineMove {
+			game.playFirstWhiteStones()
+			firstEngineMove = false
+		} else {
+			engineMove := engine.call("respond %d", millis)
+			ui.send(engineMove)
+			if engine.decision() != common.NoDecision.String() {
+				break
+			}
 		}
 	}
 
