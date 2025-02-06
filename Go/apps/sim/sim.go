@@ -3,9 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"game_of_stones/common"
-	"game_of_stones/game"
 	"io"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -13,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"game_of_stones/game"
 )
 
 type Cmd struct {
@@ -22,10 +23,26 @@ type Cmd struct {
 	out  io.Writer
 }
 
+type state struct {
+	gameName     string
+	nMove        int
+	openingMoves []game.Move
+	millis       int64
+	running      bool
+	rnd          *rand.Rand
+}
+
+type stones int
+
+const (
+	blackStones stones = iota
+	whiteStones
+)
+
 func main() {
-	if len(os.Args) != 3 {
+	if len(os.Args) != 4 {
 		fmt.Println(os.Args)
-		panic("Expected 2 arguments: <millis> <engine>")
+		panic("Expected 3 arguments: <millis> <engine1> engine2>.")
 	}
 	logChan := make(chan string, 1)
 	go logPrinter(logChan)
@@ -33,94 +50,119 @@ func main() {
 	ui := startEngine("ui", logChan, "Ui")
 	go wait(ui)
 
-	for {
-		playOpening(os.Args[2], os.Args[2], ui, logChan)
+	stats := map[string]int{}
+
+	for i := range 10 {
+		playOpening(os.Args[2], os.Args[3], ui, logChan, int64(i), stats)
+		playOpening(os.Args[3], os.Args[2], ui, logChan, int64(i), stats)
 	}
 }
 
-func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string) {
+func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string,
+	seed int64, stats map[string]int) {
 	millis, err := strconv.ParseInt(os.Args[1], 10, 64)
 	if err != nil {
 		panic(err)
 	}
 
 	black := startEngine(blackProc, logChan, "X")
-	white := startEngine(whiteProc, logChan, "O")
-	// black := startEngine(blackProc+" -log=log-black.log", logChan, "X")
-	// white := startEngine(whiteProc+" -log=log-white.log", logChan, "O")
 	fmt.Fprintf(black.out, "game-name\n")
-	name, _ := black.in.ReadString('\n')
-	name = strings.TrimSpace(name)
-	if name != "gomoku" && name != "connect6" {
-		panic(fmt.Sprintf("unknown game: %q", name))
-	}
+	blackChan := make(chan []string)
+	go reader(black, blackChan)
+	white := startEngine(whiteProc, logChan, "O")
+	fmt.Fprintf(white.out, "game-name\n")
+	whiteChan := make(chan []string)
+	go reader(white, whiteChan)
 
-	uiOut(ui, "game-name %s\n", name)
+	state := &state{rnd: rand.New(rand.NewSource(int64(seed))), millis: millis, running: true}
 
-	var openingMoves []game.Move
-	if name == "gomoku" {
-		openingMoves = gomokuOpeningMoves()
-	} else {
-		openingMoves = connect6OpeningMoves()
-	}
-
-	for _, move := range openingMoves {
-		fmt.Fprintf(black.out, "move %s\n", move)
-		fmt.Fprintf(white.out, "move %s\n", move)
-		uiOut(ui, "move %s\n", move)
-	}
-
-	if len(openingMoves)%2 == 1 {
-		playMove(white, black, ui, millis)
-	}
-
-	dec := ""
-	for {
-		dec = playMove(black, white, ui, millis)
-		if dec != common.NoDecision.String() {
-			fmt.Fprintln(white.out, "stop")
-			break
-		}
-		dec = playMove(white, black, ui, millis)
-		if dec != common.NoDecision.String() {
-			fmt.Fprintln(black.out, "stop")
-			break
+	for state.running {
+		select {
+		case event := <-blackChan:
+			state.handleEvent(event, black, white, ui, blackStones)
+		case event := <-whiteChan:
+			state.handleEvent(event, white, black, ui, whiteStones)
 		}
 	}
+
+	fmt.Println(stats)
 	<-time.After(3 * time.Second)
 	fmt.Fprintln(ui.out, "clear")
 }
 
-func gomokuOpeningMoves() []game.Move {
-	moves := []game.Move{{P1: game.Place{X: game.Size / 2, Y: game.Size / 2}, P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
+func (state *state) handleEvent(event []string, this, that, ui *Cmd, stones stones) {
+	if len(event) < 2 {
+		return
+	}
+	switch event[0] {
+	case "game-name":
+		if state.gameName == "" {
+			state.gameName = event[1]
+			ui.send("game-name %s", state.gameName)
+		} else if state.gameName != event[1] {
+			log.Fatalf("engings are playing different games: %q and %q",
+				state.gameName, event[1])
+		}
+		if state.gameName == "gomoku" {
+			state.selectGomokuOpeningMoves()
+		} else if state.gameName == "connect6" {
+			state.selectConnect6OpeningMoves()
+		} else {
+			log.Fatalf("Wrong game: %q choose either \"gomoku\" or \"connect6\"")
+		}
+		for _, move := range state.openingMoves {
+			this.send("move %s", move)
+			that.send("move %s", move)
+			ui.send("move %s", move)
+		}
+		if len(state.openingMoves)%2 == 0 {
+			this.send("respond %d", state.millis)
+		} else {
+			that.send("respond %d", state.millis)
+		}
+	case "move":
+	case "decision":
+	}
+}
+
+func reader(engine *Cmd, engineChan chan []string) {
+	for {
+		line, err := engine.in.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		engineChan <- strings.Fields(line)
+	}
+}
+
+func (state *state) selectGomokuOpeningMoves() {
+	state.openingMoves = []game.Move{{P1: game.Place{X: game.Size / 2, Y: game.Size / 2}, P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 4 {
-		r := rand.Intn(len(random))
+		r := state.rnd.Intn(len(random))
 		place := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
-		moves = append(moves, game.Move{P1: place, P2: place})
+		state.openingMoves = append(state.openingMoves, game.Move{P1: place, P2: place})
 	}
-	return moves
 }
 
-func connect6OpeningMoves() []game.Move {
-	places := []game.Move{{
+func (state *state) selectConnect6OpeningMoves() {
+	state.openingMoves = []game.Move{{
 		P1: game.Place{X: game.Size / 2, Y: game.Size / 2},
 		P2: game.Place{X: game.Size / 2, Y: game.Size / 2}}}
 	random := randomPlaces()
 	for range 2 {
-		r := rand.Intn(len(random))
+		r := state.rnd.Intn(len(random))
 		place1 := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
-		r = rand.Intn(len(random))
+		r = state.rnd.Intn(len(random))
 		place2 := random[r]
 		random[r] = random[len(random)-1]
 		random = random[:len(random)-1]
-		places = append(places, game.Move{P1: place1, P2: place2})
+		state.openingMoves = append(state.openingMoves, game.Move{P1: place1, P2: place2})
 	}
-	return places
 }
 
 func randomPlaces() []game.Place {
@@ -135,28 +177,13 @@ func randomPlaces() []game.Place {
 	return random
 }
 
+func (cmd *Cmd) send(format string, args ...any) {
+	fmt.Fprintf(cmd.out, "%s\n", fmt.Sprintf(format, args...))
+}
+
 func wait(cmd *Cmd) {
 	cmd.cmd.Wait()
 	os.Exit(0)
-}
-
-func uiOut(ui *Cmd, format string, args ...any) {
-	fmt.Fprintf(ui.out, format, args...)
-}
-
-func playMove(maker, taker, ui *Cmd, millis int64) string {
-	fmt.Fprintf(maker.out, "respond %d\n", millis)
-	response, _ := maker.in.ReadString('\n')
-	uiOut(ui, "%s", response)
-	fmt.Fprint(taker.out, response)
-	return decision(maker)
-}
-
-func decision(cmd *Cmd) string {
-	fmt.Fprintln(cmd.out, "decision")
-	response, _ := cmd.in.ReadString('\n')
-	terms := strings.Fields(response)
-	return terms[1]
 }
 
 func startEngine(path string, logChan chan string, name string) *Cmd {

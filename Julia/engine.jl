@@ -12,7 +12,7 @@ function run_engine(name)
         end
         terms = split(line)
         if terms[1] == "game-name"
-            println(string(name))
+            println("game-name $name")
         elseif terms[1] == "move"
             commit_move!(tree, game, terms[2])
             println(stderr, game.stones)
@@ -34,7 +34,7 @@ function run_engine(name)
             commit_move!(tree, game, "$move")
             println(stderr, game.stones)
         elseif terms[1] == "decision"
-            println(string(decision(game)))
+            println("decision $(decision(game))")
         elseif terms[1] == "stop"
             break
         end

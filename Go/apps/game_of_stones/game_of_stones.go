@@ -70,7 +70,9 @@ func main() {
 			firstEngineMove = true
 		} else {
 			engine.send(uiMove)
-			if engine.call("decision") != common.NoDecision.String() {
+			dec := engine.call("decision")
+			terms := strings.Fields(dec)
+			if len(terms) > 1 && terms[1] != common.NoDecision.String() {
 				break
 			}
 		}
@@ -80,7 +82,9 @@ func main() {
 		} else {
 			engineMove := engine.call("respond %d", millis)
 			ui.send(engineMove)
-			if engine.call("decision") != common.NoDecision.String() {
+			dec := engine.call("decision")
+			terms := strings.Fields(dec)
+			if len(terms) > 1 && terms[1] != common.NoDecision.String() {
 				break
 			}
 		}

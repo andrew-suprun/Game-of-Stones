@@ -43,7 +43,7 @@ loop:
 		terms := strings.Split(line, " ")
 		switch terms[0] {
 		case "game-name":
-			fmt.Println(game.GameName)
+			fmt.Printf("game-name %s\n", game.GameName)
 		case "move":
 			move, err := game.ParseMove(terms[1])
 			if err != nil {

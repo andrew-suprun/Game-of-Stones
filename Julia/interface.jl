@@ -2,7 +2,7 @@ const board_size = 19
 
 @enum Decision::Int8 no_decision draw first_win second_win
 
-function string(decision::Decision)
+function Base.show(io::IO, decision::Decision)
     if decision == no_decision
         return "no-decision"
     elseif decision == first_win
@@ -25,5 +25,5 @@ Name(x) = Name{x}()
 const gomoku = Name(:Gomoku)
 const connect6 = Name(:Connect6)
 
-string(::Name{:Gomoku}) = "gomoku"
-string(::Name{:Connect6}) = "connect6"
+Base.show(io::IO, ::Name{:Gomoku}) = "gomoku"
+Base.show(io::IO, ::Name{:Connect6}) = "connect6"
