@@ -13,19 +13,20 @@ import (
 	"strings"
 	"time"
 
+	"game_of_stones/common"
 	"game_of_stones/game"
 )
 
 type Cmd struct {
-	name string
-	cmd  *exec.Cmd
-	in   *bufio.Reader
-	out  io.Writer
+	name   string
+	player string
+	cmd    *exec.Cmd
+	in     *bufio.Reader
+	out    io.Writer
 }
 
 type state struct {
 	gameName     string
-	nMove        int
 	openingMoves []game.Move
 	millis       int64
 	running      bool
@@ -37,7 +38,10 @@ type stones int
 const (
 	blackStones stones = iota
 	whiteStones
+	ui
 )
+
+var stats = map[string]int{}
 
 func main() {
 	if len(os.Args) != 4 {
@@ -50,27 +54,25 @@ func main() {
 	ui := startEngine("ui", logChan, "Ui")
 	go wait(ui)
 
-	stats := map[string]int{}
-
-	for i := range 10 {
-		playOpening(os.Args[2], os.Args[3], ui, logChan, int64(i), stats)
-		playOpening(os.Args[3], os.Args[2], ui, logChan, int64(i), stats)
+	for range 10 {
+		seed := time.Now().UnixNano()
+		playOpening(os.Args[2], os.Args[3], ui, logChan, seed)
+		playOpening(os.Args[3], os.Args[2], ui, logChan, seed)
 	}
 }
 
-func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string,
-	seed int64, stats map[string]int) {
+func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string, seed int64) {
 	millis, err := strconv.ParseInt(os.Args[1], 10, 64)
 	if err != nil {
 		panic(err)
 	}
 
 	black := startEngine(blackProc, logChan, "X")
-	fmt.Fprintf(black.out, "game-name\n")
+	black.send("game-name")
 	blackChan := make(chan []string)
 	go reader(black, blackChan)
 	white := startEngine(whiteProc, logChan, "O")
-	fmt.Fprintf(white.out, "game-name\n")
+	white.send("game-name")
 	whiteChan := make(chan []string)
 	go reader(white, whiteChan)
 
@@ -79,26 +81,29 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, logChan chan string,
 	for state.running {
 		select {
 		case event := <-blackChan:
-			state.handleEvent(event, black, white, ui, blackStones)
+			state.handleEvent(event, black, white, ui, black.name, black.player)
 		case event := <-whiteChan:
-			state.handleEvent(event, white, black, ui, whiteStones)
+			state.handleEvent(event, white, black, ui, white.name, white.player)
 		}
 	}
 
-	fmt.Println(stats)
+	fmt.Fprintln(os.Stderr, stats)
 	<-time.After(3 * time.Second)
 	fmt.Fprintln(ui.out, "clear")
 }
 
-func (state *state) handleEvent(event []string, this, that, ui *Cmd, stones stones) {
+func (state *state) handleEvent(event []string, this, that, ui *Cmd, name, player string) {
 	if len(event) < 2 {
 		return
 	}
+	// fmt.Fprintf(os.Stderr, "> received from %s-%s: %v\n", player, name, event)
 	switch event[0] {
 	case "game-name":
+
 		if state.gameName == "" {
 			state.gameName = event[1]
 			ui.send("game-name %s", state.gameName)
+			return
 		} else if state.gameName != event[1] {
 			log.Fatalf("engings are playing different games: %q and %q",
 				state.gameName, event[1])
@@ -108,29 +113,42 @@ func (state *state) handleEvent(event []string, this, that, ui *Cmd, stones ston
 		} else if state.gameName == "connect6" {
 			state.selectConnect6OpeningMoves()
 		} else {
-			log.Fatalf("Wrong game: %q choose either \"gomoku\" or \"connect6\"")
+			log.Fatalf("Wrong game: %q choose either \"gomoku\" or \"connect6\"", state.gameName)
 		}
 		for _, move := range state.openingMoves {
 			this.send("move %s", move)
 			that.send("move %s", move)
 			ui.send("move %s", move)
 		}
-		if len(state.openingMoves)%2 == 0 {
+		if len(state.openingMoves)%2 == 0 && this.name == "X" ||
+			len(state.openingMoves)%2 == 1 && this.name == "O" {
+
 			this.send("respond %d", state.millis)
 		} else {
 			that.send("respond %d", state.millis)
 		}
 	case "move":
+		ui.send("move %s", event[1])
+		that.send("move %s", event[1])
+		this.send("decision")
 	case "decision":
+		switch event[1] {
+		case common.NoDecision.String():
+			that.send("respond %d", state.millis)
+		case common.Draw.String():
+			state.running = false
+		default:
+			stats[this.player]++
+			state.running = false
+			this.send("stop")
+			that.send("stop")
+		}
 	}
 }
 
 func reader(engine *Cmd, engineChan chan []string) {
 	for {
-		line, err := engine.in.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
+		line, _ := engine.in.ReadString('\n')
 		engineChan <- strings.Fields(line)
 	}
 }
@@ -179,6 +197,7 @@ func randomPlaces() []game.Place {
 
 func (cmd *Cmd) send(format string, args ...any) {
 	fmt.Fprintf(cmd.out, "%s\n", fmt.Sprintf(format, args...))
+	// fmt.Fprintf(os.Stderr, "> sent to %s: %q\n", cmd.player, fmt.Sprintf(format, args...))
 }
 
 func wait(cmd *Cmd) {
@@ -208,7 +227,7 @@ func startEngine(path string, logChan chan string, name string) *Cmd {
 	if err != nil {
 		panic(err)
 	}
-	return &Cmd{path, cmd, bufio.NewReader(in), out}
+	return &Cmd{name, parts[0], cmd, bufio.NewReader(in), out}
 }
 
 func runLogger(log *bufio.Reader, logChan chan string, name string) {
@@ -227,7 +246,6 @@ func runLogger(log *bufio.Reader, logChan chan string, name string) {
 func logPrinter(logChan chan string) {
 	for {
 		line := <-logChan
-		line = strings.TrimSpace(line)
-		fmt.Fprintln(os.Stderr, line)
+		fmt.Fprint(os.Stderr, line)
 	}
 }

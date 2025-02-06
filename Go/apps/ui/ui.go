@@ -229,32 +229,35 @@ func input(window *app.Window, stateChan chan *state) {
 
 	for {
 		text, err := reader.ReadString('\n')
-		text = strings.TrimSpace(text)
 		if err != nil {
 			fmt.Println("error: Failed to read from standard input.")
 			os.Exit(1)
 		}
-		if text == "stop" {
-			fmt.Println("info: Stopped.")
-			os.Exit(0)
+		cmd := strings.Fields(text)
+
+		if len(cmd) == 0 {
+			continue
 		}
-		if strings.HasPrefix(text, "game-name") {
+
+		switch cmd[0] {
+		case "stop":
+			os.Exit(0)
+		case "game-name":
 			gameName = strings.Fields(text)[1]
 			if gameName == "connect6" {
 				maxSelected = 2
 			} else {
 				maxSelected = 1
 			}
-		}
-		if strings.HasPrefix(text, "move ") {
-			playMove(stateChan, text)
-		}
-		if strings.HasPrefix(text, "respond") {
+		case "move":
+			if len(cmd) > 1 {
+				playMove(stateChan, cmd[1])
+			}
+		case "respond":
 			state := <-stateChan
 			state.respond = true
 			stateChan <- state
-		}
-		if text == "clear" {
+		case "clear":
 			state := <-stateChan
 			state.turn = First
 			state.n_selected = 0
@@ -263,22 +266,16 @@ func input(window *app.Window, stateChan chan *state) {
 					state.places[y][x] = stateEmpty
 				}
 			}
-
 			stateChan <- state
 		}
 		window.Invalidate()
 	}
 }
 
-func playMove(stateChan chan *state, cmd string) {
-	terms := strings.Fields(cmd)
-	if len(terms) < 2 {
-		fmt.Printf("error: Invalid move command: %q\n", cmd)
-		os.Exit(1)
-	}
-	move, err := game.ParseMove(terms[1])
+func playMove(stateChan chan *state, moveStr string) {
+	move, err := game.ParseMove(moveStr)
 	if err != nil {
-		fmt.Printf("error: Invalid move command: %q\n", cmd)
+		fmt.Printf("error: Invalid move command: %q\n", moveStr)
 		os.Exit(1)
 	}
 

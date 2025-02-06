@@ -18,6 +18,5 @@ out/game-of-stones -engine=../../Julia/gomoku.jl
 
 out/sim 1000 gomoku ../../Julia/gomoku.jl
 
-
 go generate game_of_stones/...
 

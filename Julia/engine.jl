@@ -3,10 +3,8 @@ using Dates
 function run_engine(name)
     tree = Tree{Move}(20.0)
     game = Game(name)
-    println(stderr, game.stones)
     while true
         line = strip(readline())
-        println(stderr, "engine read `$line`")
         if line == ""
             continue
         end
@@ -15,7 +13,6 @@ function run_engine(name)
             println("game-name $name")
         elseif terms[1] == "move"
             commit_move!(tree, game, terms[2])
-            println(stderr, game.stones)
         elseif terms[1] == "respond"
             expand!(tree, game)
             millis = parse(Int, terms[2])
@@ -29,12 +26,11 @@ function run_engine(name)
             end
 
             move = best_move(tree, game)
-            println(stderr, "move: $move")
             println("move $move")
             commit_move!(tree, game, "$move")
-            println(stderr, game.stones)
         elseif terms[1] == "decision"
-            println("decision $(decision(game))")
+            dec = decision(game)
+            println("decision $(string(dec))")
         elseif terms[1] == "stop"
             break
         end
