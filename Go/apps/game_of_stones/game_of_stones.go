@@ -40,7 +40,8 @@ func main() {
 
 	engine := startEngine(*engine, logChan)
 	gameName := engine.call("game-name")
-
+	parts := strings.Fields(gameName)
+	gameName = parts[1]
 	ui := startEngine("ui", logChan)
 	go ui.wait()
 
@@ -172,13 +173,13 @@ func (cmd *Cmd) call(format string, args ...any) string {
 	fmt.Fprintln(cmd.out, out+"\n")
 	in, _ := cmd.in.ReadString('\n')
 	in = strings.TrimSpace(in)
-	fmt.Printf("%s: call %q -> %q\n", cmd.name, out, in)
+	// fmt.Printf("%s: call %q -> %q\n", cmd.name, out, in)
 	return in
 }
 
 func (cmd *Cmd) send(format string, args ...any) {
 	text := fmt.Sprintf(format, args...)
-	fmt.Printf("%s: sending %q\n", cmd.name, text)
+	// fmt.Printf("%s: sending %q\n", cmd.name, text)
 	fmt.Fprintln(cmd.out, text+"\n")
 }
 

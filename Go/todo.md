@@ -15,7 +15,7 @@ go build -o out/connect6 -tags=connect6 apps/engine/*.go
 out/game-of-stones -engine=connect6 -spm=0.1
 out/game-of-stones -engine=../../Julia/gomoku.jl
 
-out/sim 1000 gomoku ../../Julia/gomoku.jl
+out/sim 250 gomoku ../../Julia/gomoku.jl
 
 go generate game_of_stones/...
 
