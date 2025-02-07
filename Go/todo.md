@@ -1,7 +1,6 @@
-Julia:
-* modularize
-* keep subtree if possible in tree.CommitMove()
-* engine
+Go:
+* game-of-stones app 
+
 
 go test game_of_stones/...
 

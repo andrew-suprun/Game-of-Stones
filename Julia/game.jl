@@ -1,7 +1,7 @@
 include("heap.jl")
 
-const n_places::Int32 = 32
-const n_moves::Int32 = 128
+const n_places::Int32 = 16
+const n_moves::Int32 = 55
 
 struct Place
     x::Int8

@@ -15,11 +15,6 @@ import (
 	"time"
 )
 
-const usage = `Usage: game_of_stones [params]
-    -engine=<engine> (gomoku)
-	-spm=<seconds per move> (1.0)
-`
-
 var (
 	engine = flag.String("engine", "gomoku", "path to engine")
 	spm    = flag.Float64("spm", 1, "seconds per move")

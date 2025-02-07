@@ -136,6 +136,51 @@ end
 function commit_move!(tree, game, to_play)
     move = parse_move(to_play)
     play_move!(game, move)
+
+    idx = 0
+    root = tree.nodes[1]
+    if root.first_child > 0
+        for childIdx in root.first_child:root.last_child
+            if tree.moves[childIdx] == move
+                idx = childIdx
+                break
+            end
+        end
+    end
+
+    if idx != 0
+        new_nodes = [tree.nodes[idx]]
+        new_moves = [tree.moves[idx]]
+        new_idx = 1
+        while new_idx <= length(new_nodes)
+            new_node = new_nodes[new_idx]
+            old_first_child = new_node.first_child
+            old_last_child = new_node.last_child
+            if old_first_child == 0 && old_last_child == 0
+                new_idx += 1
+                continue
+            end
+            new_first_child = length(new_nodes) + 1
+            append!(new_nodes, tree.nodes[old_first_child:old_last_child])
+            append!(new_moves, tree.moves[old_first_child:old_last_child])
+            new_last_child = length(new_nodes)
+
+            new_nodes[new_idx] = Node(
+                first_child=new_first_child,
+                last_child=new_last_child,
+                n_sims=new_node.n_sims,
+                value=new_node.value,
+                decision=new_node.decision,
+            )
+
+            new_idx += 1
+        end
+        tree.nodes = new_nodes
+        tree.moves = new_moves
+
+        return
+    end
+
     empty!(tree.nodes)
     empty!(tree.moves)
     node = Node(value=board_value(game), decision=decision(game))
@@ -197,7 +242,9 @@ function print_node(io::IO, tree, node_idx, depth)
     else
         println(io)
     end
-    for child_idx in node.first_child:node.last_child
-        print_node(io, tree, child_idx, depth + 1)
+    if node.first_child > 0
+        for child_idx in node.first_child:node.last_child
+            print_node(io, tree, child_idx, depth + 1)
+        end
     end
 end

@@ -18,9 +18,9 @@ type Game[move Equatable[move]] interface {
 }
 
 type Tree[move Equatable[move]] struct {
+	game     Game[move]
 	nodes    []node
 	moves    []move
-	game     Game[move]
 	topMoves []MoveValue[move]
 }
 
@@ -37,7 +37,12 @@ const explorationFactor = 20
 func NewTree[move Equatable[move]](
 	game Game[move],
 ) *Tree[move] {
-	return &Tree[move]{game: game}
+	var m move
+	return &Tree[move]{
+		game:  game,
+		nodes: []node{{}},
+		moves: []move{m},
+	}
 }
 
 func (tree *Tree[m]) Expand() (decision Decision, forcedMove bool) {
@@ -65,21 +70,17 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
 
 	idx := int32(-1)
-	if len(tree.nodes) > 0 {
-		root := tree.nodes[0]
-		for childIdx := root.firstChild; childIdx < root.lastChild; childIdx++ {
-			if tree.moves[childIdx].Equal(toPlay) {
-				idx = childIdx
-				break
-			}
+	root := tree.nodes[0]
+	for childIdx := root.firstChild; childIdx < root.lastChild; childIdx++ {
+		if tree.moves[childIdx].Equal(toPlay) {
+			idx = childIdx
+			break
 		}
 	}
 
 	if idx != -1 {
-		newNodes := []node{}
-		newMoves := []move{}
-		newNodes = append(newNodes, tree.nodes[idx])
-		newMoves = append(newMoves, tree.moves[idx])
+		newNodes := []node{tree.nodes[idx]}
+		newMoves := []move{tree.moves[idx]}
 		newIdx := 0
 		for newIdx < len(newNodes) {
 			oldFirstChild := newNodes[newIdx].firstChild
