@@ -24,15 +24,19 @@ func TestExpandConnect6(t *testing.T) {
 	move, _ = game.ParseMove("k8-m7")
 	searchTree.CommitMove(move)
 
-	timestamp := time.Now()
 	dur := time.Second
-	for range 100_000 {
-		dec, done := searchTree.Expand()
-		if done || dec != common.NoDecision || time.Since(timestamp) > dur {
-			break
+	for i := range 10 {
+		n := 0
+		timestamp := time.Now()
+		for range 100_000 {
+			dec, done := searchTree.Expand()
+			n++
+			if done || dec != common.NoDecision || time.Since(timestamp) > dur {
+				break
+			}
 		}
+		move = searchTree.BestMove()
+		fmt.Printf("move %s i %d n %d\n", move, i+1, n)
 	}
-	move = searchTree.BestMove()
 	searchTree.CommitMove(move)
-	fmt.Printf("move %s\n", move)
 }

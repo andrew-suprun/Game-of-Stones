@@ -87,12 +87,10 @@ func (game *Game) TopMoves(moves *[]MoveValue[Move]) {
 					hasDraw = true
 				}
 			} else {
-				value = gameValue + value/2 //TODO: Check alternative scoring below:
-
-				// game.placeStone(place2, 1)
-				// oppVal := game.oppValue()
-				// game.placeStone(place2, -1)
-				// value = gameValue + value + oppVal
+				game.placeStone(place2, 1)
+				oppVal := game.oppValue()
+				game.placeStone(place2, -1)
+				value = gameValue + value + oppVal
 
 				move := MoveValue[Move]{
 					Move:     Move{place1, place2},
