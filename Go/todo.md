@@ -1,5 +1,7 @@
 Go:
-* game-of-stones app 
+* PlayMove should return Decision
+* split Game struct into Board, Gomoku and Connect6
+* use copy of Board in tree.Expand()
 
 
 go test game_of_stones/...

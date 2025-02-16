@@ -1,0 +1,1 @@
+* run with `mojo -D ASSERT=all main.mojo`

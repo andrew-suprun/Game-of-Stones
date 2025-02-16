@@ -31,8 +31,8 @@ const (
 )
 
 const (
-	maxPlaces = 16
-	maxMoves  = 55
+	maxPlaces = 32
+	maxMoves  = 60
 )
 
 type Game struct {
