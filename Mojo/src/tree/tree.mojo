@@ -14,6 +14,13 @@ struct Node[Game: game.Game](CollectionElement):
     var last_child: Int32
     var n_sims: Int32
 
+    fn __init__(out self, move: Game.Move, value: Float32):
+        self.move = move
+        self.value = value
+        self.first_child = -1
+        self.last_child = -1
+        self.n_sims = 1
+
 
 struct Tree[Game: game.Game](Stringable, Writable):
     var c: Float32
@@ -30,10 +37,11 @@ struct Tree[Game: game.Game](Stringable, Writable):
     fn expand(mut self, game: Game):
         print("expand")
         if not is_decisive(self.nodes[0].value):
-            self._expand(game, 0)
+            var game_copy = game.copy()
+            self._expand(game_copy, 0)
             self._validate()
 
-    fn _expand(mut self, game: Game, parent_idx: Int32):
+    fn _expand(mut self, mut game: Game, parent_idx: Int32):
         var parent = self.nodes[parent_idx]
         var first_child = parent.first_child
         var last_child = parent.last_child
@@ -46,19 +54,11 @@ struct Tree[Game: game.Game](Stringable, Writable):
             )
 
             self.nodes[parent_idx].first_child = Int32(self.nodes.size)
-            self.nodes[parent_idx].last_child = Int32(
-                self.nodes.size + self.top_moves.size
-            )
             for idx in range(self.top_moves.size):
                 self.nodes.append(
-                    Node(
-                        move=self.top_moves[idx],
-                        value=self.top_values[idx],
-                        first_child=0,
-                        last_child=0,
-                        n_sims=1,
-                    )
+                    Node(self.top_moves[idx], self.top_values[idx])
                 )
+            self.nodes[parent_idx].last_child = Int32(self.nodes.size)
         else:
             var selected_child_idx = Int32(-1)
             var n_sims = Float32(parent.n_sims)
