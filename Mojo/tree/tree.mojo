@@ -1,9 +1,8 @@
 from math import log2, sqrt
-from utils.numerics import nan, inf, neg_inf
 
 
 import game
-from value import is_decisive, is_win, is_loss, is_draw, loss
+from value import is_decisive, is_win, is_loss, is_draw, win, loss
 
 
 @value
@@ -44,16 +43,13 @@ struct Tree[Game: game.Game](Stringable, Writable):
         if not is_decisive(self.nodes[0].value):
             var game_copy = game.copy()
             self._expand(game_copy, 0)
-            self._validate()
 
     fn _expand(mut self, mut game: Game, parent_idx: Int32):
         var parent = self.nodes[parent_idx]
         var first_child = parent.first_child
         var last_child = parent.last_child
-        print("#1", first_child, last_child)
         var children = range(first_child, last_child)
         if first_child == -1:
-            print("#2")
             game.top_moves(self.top_moves, self.top_values)
             debug_assert(
                 self.top_moves.size > 0,
@@ -67,7 +63,6 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 )
             self.nodes[parent_idx].last_child = Int32(self.nodes.size)
         else:
-            print("#3")
             var selected_child_idx = Int32(-1)
             var n_sims = Float32(parent.n_sims)
             var log_parent_sims = log2(n_sims)
@@ -82,15 +77,17 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 if v > maxV:
                     maxV = v
                     selected_child_idx = idx
-            debug_assert(selected_child_idx > 1, "Failed to select a child.")
+            debug_assert(selected_child_idx > 0, "Failed to select a child.")
             game.play_move(self.nodes[selected_child_idx].move)
             self._expand(game, selected_child_idx)
 
-        print("#4")
         self.nodes[parent_idx].n_sims = 0
-        self.nodes[parent_idx].value = loss()
+        self.nodes[parent_idx].value = win()
         var has_draw = False
-        for i in children:
+        for i in range(
+            self.nodes[parent_idx].first_child,
+            self.nodes[parent_idx].last_child,
+        ):
             var child = self.nodes[i]
             if is_win(child.value):
                 self.nodes[parent_idx].value = -child.value
@@ -103,8 +100,8 @@ struct Tree[Game: game.Game](Stringable, Writable):
             self.nodes[parent_idx].n_sims += child.n_sims
             if self.nodes[parent_idx].value >= -child.value:
                 self.nodes[parent_idx].value = -child.value
-        if has_draw and parent.value < 0:
-            parent.value = 0
+        if has_draw and self.nodes[parent_idx].value > 0:
+            self.nodes[parent_idx].value = 0
 
     fn __str__(self) -> String:
         return String.write(self)
@@ -118,6 +115,3 @@ struct Tree[Game: game.Game](Stringable, Writable):
         if parent.first_child != -1:
             for child_idx in range(parent.first_child, parent.last_child):
                 self.write_to(writer, child_idx, depth + 1)
-
-    fn _validate(self):
-        pass
