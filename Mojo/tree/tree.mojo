@@ -25,6 +25,8 @@ struct Node(CollectionElement, Stringable, Writable):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move, " v: ", self.value)
+        if self.first_child != -1:
+            writer.write(" [", self.first_child, ":", self.last_child, "]")
 
 
 struct Tree[Game: game.Game](Stringable, Writable):
@@ -102,6 +104,47 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 self.nodes[parent_idx].value = -child.value
         if has_draw and self.nodes[parent_idx].value > 0:
             self.nodes[parent_idx].value = 0
+
+    fn best_move(self) -> game.Move:
+        var first_child = Int(self.nodes[0].first_child)
+        var last_child = Int(self.nodes[0].last_child)
+        var best_child = self.nodes[first_child]
+        for child in self.nodes[first_child:last_child]:
+            if best_child.value < child[].value:
+                best_child = child[]
+        return best_child.move
+
+    fn play_move(mut self, move: game.Move):
+        var idx = -1
+        var root = self.nodes[0]
+        var first_child = Int(self.nodes[0].first_child)
+        var last_child = Int(self.nodes[0].last_child)
+        for child_idx in range(first_child, last_child):
+            if self.nodes[child_idx].move == move:
+                idx = child_idx
+                break
+
+        if idx != -1:
+            var new_nodes = List[Node](self.nodes[idx])
+            var new_idx = 0
+            while new_idx < new_nodes.size:
+                var old_first_child = new_nodes[new_idx].first_child
+                var old_last_child = new_nodes[new_idx].last_child
+                if old_first_child == -1:
+                    new_idx += 1
+                    continue
+                new_nodes[new_idx].first_child = new_nodes.size
+                new_nodes.extend(
+                    self.nodes[Int(old_first_child) : Int(old_last_child)]
+                )
+                new_nodes[new_idx].last_child = new_nodes.size
+                new_idx += 1
+
+            self.nodes = new_nodes
+            return
+
+        self.nodes.clear()
+        self.nodes.append(Node(game.Move(0, 0, 0, 0), 0))
 
     fn __str__(self) -> String:
         return String.write(self)
