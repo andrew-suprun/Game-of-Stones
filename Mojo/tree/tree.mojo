@@ -2,18 +2,18 @@ from math import log2, sqrt
 
 
 import game
-from value import is_decisive, is_win, is_loss, is_draw, win, loss
+from scores import Score, is_decisive, is_win, is_loss, is_draw, win, loss
 
 
 @value
 struct Node(CollectionElement, Stringable, Writable):
     var move: game.Move
-    var value: Float32
+    var value: Score
     var first_child: Int32
     var last_child: Int32
     var n_sims: Int32
 
-    fn __init__(out self, move: game.Move, value: Float32):
+    fn __init__(out self, move: game.Move, value: Score):
         self.move = move
         self.value = value
         self.first_child = -1
@@ -33,13 +33,13 @@ struct Tree[Game: game.Game](Stringable, Writable):
     var c: Float32
     var nodes: List[Node]
     var top_moves: List[game.Move]
-    var top_values: List[Float32]
+    var top_values: List[Score]
 
     fn __init__(out self, c: Float32):
         self.c = c
         self.nodes = List[Node](Node(game.Move(0, 0, 0, 0), 0))
         self.top_moves = List[game.Move]()
-        self.top_values = List[Float32]()
+        self.top_values = List[Score]()
 
     fn expand(mut self, game: Game):
         if not is_decisive(self.nodes[0].value):
@@ -68,7 +68,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
             var selected_child_idx = Int32(-1)
             var n_sims = Float32(parent.n_sims)
             var log_parent_sims = log2(n_sims)
-            var maxV = loss()
+            var maxV = loss
             for idx in children:
                 var child = self.nodes[idx]
                 if is_decisive(child.value):
@@ -84,7 +84,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
             self._expand(game, selected_child_idx)
 
         self.nodes[parent_idx].n_sims = 0
-        self.nodes[parent_idx].value = win()
+        self.nodes[parent_idx].value = win
         var has_draw = False
         for i in range(
             self.nodes[parent_idx].first_child,
@@ -116,7 +116,6 @@ struct Tree[Game: game.Game](Stringable, Writable):
 
     fn play_move(mut self, move: game.Move):
         var idx = -1
-        var root = self.nodes[0]
         var first_child = Int(self.nodes[0].first_child)
         var last_child = Int(self.nodes[0].last_child)
         for child_idx in range(first_child, last_child):
