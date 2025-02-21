@@ -1,6 +1,6 @@
 from game import Game, Move
 from tree import Tree, Node
-import value
+import scores
 
 from random import seed, random_si64, random_float64
 import testing
@@ -18,14 +18,14 @@ struct TestGame(Game):
         values.clear()
         if random_si64(0, 8) == 0:
             moves.append(random_move())
-            values.append(value.win())
+            values.append(scores.win)
             return
 
         var n_moves = random_si64(2, 5)
         for _ in range(n_moves):
             moves.append(random_move())
             if random_si64(0, 8) == 0:
-                values.append(value.draw())
+                values.append(scores.draw)
             else:
                 values.append(Float32(random_float64(-1, 1)))
 
