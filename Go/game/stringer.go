@@ -124,7 +124,7 @@ func (game *Game) ValuesString(buf *bytes.Buffer, valuesIdx int) {
 				} else if value <= -WinValue {
 					fmt.Fprintf(buf, " WinO │")
 				} else {
-					fmt.Fprintf(buf, "%5d │", game.values[y][x][valuesIdx])
+					fmt.Fprintf(buf, "%5d │", value)
 				}
 			case Black:
 				buf.WriteString("    X │")

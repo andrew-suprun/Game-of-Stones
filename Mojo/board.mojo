@@ -1,11 +1,40 @@
 from collections import InlineArray
+from utils.numerics import isnan, isinf
 
 alias Cell = SIMD[DType.int8, 2]
-alias black: Cell = Cell(1, 0)
-alias white: Cell = Cell(0, 1)
-alias empty: Cell = Cell(0, 0)
+
+
+@always_inline
+fn is_black(cell: Cell, out result: Bool):
+    result = cell[0] == 1
+
+
+@always_inline
+fn is_white(cell: Cell, out result: Bool):
+    result = cell[1] == 1
+
+
+@always_inline
+fn is_empty(cell: Cell, out result: Bool):
+    result = not is_black(cell) and not is_white(cell)
+
 
 alias Value = SIMD[DType.float16, 2]
+
+
+@always_inline
+fn is_win(v: Float16) -> Bool:
+    return isinf(v) and v > 0
+
+
+@always_inline
+fn is_loss(v: Float16) -> Bool:
+    return isinf(v) and v < 0
+
+
+@always_inline
+fn is_draw(v: Float16) -> Bool:
+    return isnan(v)
 
 
 struct Board[size: Int, max_stones: Int](Stringable, Writable):
@@ -13,7 +42,7 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
     var values: InlineArray[Value, size * size]
 
     fn __init__(out self):
-        self.cells = InlineArray[Cell, size * size](empty)
+        self.cells = InlineArray[Cell, size * size](SIMD[DType.int8, 2](0, 0))
         self.values = InlineArray[Value, size * size](Value(0, 0))
         for y in range(size):
             var v = 1 + min(max_stones - 1, y, size - 1 - y)
@@ -77,9 +106,9 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
             writer.write(String(y + 1).rjust(2))
             for x in range(size):
                 var cell = self[x, y]
-                if cell[0] == 1:
+                if is_black(cell):
                     writer.write(" X") if x == 0 else writer.write("─X")
-                elif cell[1] == 1:
+                elif is_white(cell):
                     writer.write(" O") if x == 0 else writer.write("─O")
                 else:
                     if y == 0:
@@ -110,3 +139,43 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
         for i in range(size):
             writer.write(String.format(" {}", chr(i + ord("a"))))
         writer.write("\n")
+
+    fn str_values(self, out str: String):
+        try:
+            str = self.str_values_raises(0, skip_footer=True)
+            str += self.str_values_raises(1)
+        except:
+            str = ""
+
+    fn str_values_raises(
+        self, table_idx: Int, skip_footer: Bool = False, out str: String
+    ) raises:
+        str = String("\n   │")
+        for i in range(size):
+            str += String.format("    {} ", chr(i + ord("a")))
+        str += "│\n"
+        str += "───┼" + "──────" * size + "┼───\n"
+        for y in range(size):
+            str += String(y + 1).rjust(2) + " │"
+            for x in range(size):
+                if is_black(self[x, y]):
+                    str += "    X "
+                elif is_white(self[x, y]):
+                    str += "    O "
+                else:
+                    var value = self.getvalue(x, y)[table_idx]
+                    if is_win(value):
+                        str += " WinX "
+                    elif is_loss(value):
+                        str += " WinO "
+                    elif is_draw(value):
+                        str += " Draw "
+                    else:
+                        str += String(Int(value)).rjust(5, " ") + " "
+            str += "│ " + String(y + 1).rjust(2) + "\n"
+        str += "───┼" + "──────" * size + "┼───\n"
+        if not skip_footer:
+            str += "   │"
+            for i in range(size):
+                str += String.format("    {} ", chr(i + ord("a")))
+            str += "│\n"
