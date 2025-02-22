@@ -20,8 +20,8 @@ struct Node(CollectionElement, Stringable, Writable):
         self.last_child = -1
         self.n_sims = 1
 
-    fn __str__(self) -> String:
-        return String.write(self)
+    fn __str__(self, out result: String):
+        result = String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move, " v: ", self.value)
