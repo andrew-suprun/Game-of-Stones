@@ -23,8 +23,6 @@ fn table2[
         result[i * size] = Pair(values[i], values[i] - values[i + 1])
 
     result[0] = Pair(1, -1)
-    result[size - 1] = 0
-    result[(size - 1) * size] = 0
 
 
 fn table3[

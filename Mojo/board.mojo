@@ -1,23 +1,6 @@
 from collections import InlineArray
 from utils.numerics import isnan, isinf
 
-alias Cell = SIMD[DType.int8, 2]
-
-
-@always_inline
-fn is_black(cell: Cell, out result: Bool):
-    result = cell[0] == 1
-
-
-@always_inline
-fn is_white(cell: Cell, out result: Bool):
-    result = cell[1] == 1
-
-
-@always_inline
-fn is_empty(cell: Cell, out result: Bool):
-    result = not is_black(cell) and not is_white(cell)
-
 
 alias Value = SIMD[DType.float16, 2]
 
@@ -38,11 +21,14 @@ fn is_draw(v: Float16) -> Bool:
 
 
 struct Board[size: Int, max_stones: Int](Stringable, Writable):
-    var cells: InlineArray[Cell, size * size]
+    alias empty = 0
+    alias black = 1
+    alias white = max_stones + 1
+    var places: InlineArray[Int8, size * size]
     var values: InlineArray[Value, size * size]
 
     fn __init__(out self):
-        self.cells = InlineArray[Cell, size * size](SIMD[DType.int8, 2](0, 0))
+        self.places = InlineArray[Int8, size * size](Self.empty)
         self.values = InlineArray[Value, size * size](Value(0, 0))
         for y in range(size):
             var v = 1 + min(max_stones - 1, y, size - 1 - y)
@@ -71,12 +57,12 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
                 self.setvalue(x, y, Value(total, -total))
 
     @always_inline
-    fn __getitem__(self, x: Int, y: Int, out result: Cell):
-        result = self.cells[y * size + x]
+    fn __getitem__(self, x: Int, y: Int, out result: Int8):
+        result = self.places[y * size + x]
 
     @always_inline
-    fn __setitem__(mut self, x: Int, y: Int, value: Cell):
-        self.cells[y * size + x] = value
+    fn __setitem__(mut self, x: Int, y: Int, value: Int8):
+        self.places[y * size + x] = value
 
     @always_inline
     fn getvalue(self, x: Int, y: Int, out result: Value):
@@ -105,10 +91,10 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
         for y in range(size):
             writer.write(String(y + 1).rjust(2))
             for x in range(size):
-                var cell = self[x, y]
-                if is_black(cell):
+                var stone = self[x, y]
+                if stone == Self.black:
                     writer.write(" X") if x == 0 else writer.write("─X")
-                elif is_white(cell):
+                elif stone == Self.white:
                     writer.write(" O") if x == 0 else writer.write("─O")
                 else:
                     if y == 0:
@@ -132,7 +118,7 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
                             writer.write("─┤")
                         else:
                             writer.write("─┼")
-            writer.write(String(y + 1).rjust(2), "\n")
+            writer.write(String(y + 1).rjust(3), "\n")
 
         writer.write("  ")
 
@@ -158,9 +144,10 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
         for y in range(size):
             str += String(y + 1).rjust(2) + " │"
             for x in range(size):
-                if is_black(self[x, y]):
+                var stone = self[x, y]
+                if stone == Self.black:
                     str += "    X "
-                elif is_white(self[x, y]):
+                elif stone == Self.white:
                     str += "    O "
                 else:
                     var value = self.getvalue(x, y)[table_idx]
@@ -173,9 +160,9 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
                     else:
                         str += String(Int(value)).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
-        str += "───┼" + "──────" * size + "┼───\n"
+        str += "───┼" + "──────" * size + "┼───"
         if not skip_footer:
-            str += "   │"
+            str += "\n   │"
             for i in range(size):
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
