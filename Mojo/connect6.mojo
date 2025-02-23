@@ -1,4 +1,6 @@
-from values import *
+from collections import InlineArray
+from utils.numerics import inf
+import values as v
 
 alias max_stones = 6
 
@@ -12,6 +14,4 @@ alias values = InlineArray[Float16, max_stones + 1](
     inf[DType.float16](),
 )
 
-alias t1 = table1[values]()
-alias t2 = table2[values]()
-alias t3 = table3[t2, max_stones]()
+alias value_table = v.value_table[values]()
