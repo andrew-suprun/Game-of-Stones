@@ -1,3 +1,5 @@
+from board import Place
+
 trait Game(ExplicitlyCopyable):
     # alias Move: EqualityComparableCollectionElement
 
@@ -33,29 +35,5 @@ struct Move(EqualityComparableCollectionElement, Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.p1, "-", self.p2)
 
-
-
-@value
-struct Place(EqualityComparableCollectionElement, Stringable, Writable):
-    var x: Int8
-    var y: Int8
-
-    fn __init__(out self, x: Int, y: Int):
-        self.x = x
-        self.y = y
-
-    @always_inline
-    fn __eq__(self, other: Self) -> Bool:
-        return self.x == other.x and self.y == other.y
-
-    @always_inline
-    fn __ne__(self, other: Self) -> Bool:
-        return not (self == other)
-
-    fn __str__(self) -> String:
-        return String(self)
-
-    fn write_to[W: Writer](self, mut writer: W):
-        writer.write(chr(Int(self.x) + ord("a")), self.y+1)
 
 

@@ -45,6 +45,16 @@ func TestBoardValues(t *testing.T) {
 	}
 }
 
+func TestPlaceStone1(t *testing.T) {
+	game := NewGame()
+	game.placeStone(Place{9, 9}, 1)
+	game.placeStone(Place{8, 9}, 1)
+	game.stone = White
+	game.turn = Second
+	game.placeStone(Place{9, 8}, 1)
+	fmt.Printf("%#v\n", game)
+}
+
 func TestPlaceStone(t *testing.T) {
 	rnd := rand.New(rand.NewSource(3))
 	moves := []testMove{}

@@ -1,6 +1,32 @@
 from collections import InlineArray
 from utils.numerics import isnan, isinf
 
+from values import Pair, value_table
+
+
+@value
+struct Place(EqualityComparableCollectionElement, Stringable, Writable):
+    var x: Int8
+    var y: Int8
+
+    fn __init__(out self, x: Int, y: Int):
+        self.x = x
+        self.y = y
+
+    @always_inline
+    fn __eq__(self, other: Self) -> Bool:
+        return self.x == other.x and self.y == other.y
+
+    @always_inline
+    fn __ne__(self, other: Self) -> Bool:
+        return not (self == other)
+
+    fn __str__(self) -> String:
+        return String(self)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
+
 
 alias Value = SIMD[DType.float16, 2]
 
@@ -20,16 +46,30 @@ fn is_draw(v: Float16) -> Bool:
     return isnan(v)
 
 
-struct Board[size: Int, max_stones: Int](Stringable, Writable):
+struct Board[
+    size: Int,
+    max_stones: Int,
+    value_table: InlineArray[InlineArray[Value, max_stones * max_stones], 2],
+](Stringable, Writable):
     alias empty = 0
     alias black = 1
-    alias white = max_stones + 1
+    alias white = max_stones
+    alias first = 0
+    alias second = 1
+
+    alias max_stones_1 = max_stones
+
     var places: InlineArray[Int8, size * size]
     var values: InlineArray[Value, size * size]
+    var value: Value
+    var turn: Int
 
     fn __init__(out self):
         self.places = InlineArray[Int8, size * size](Self.empty)
         self.values = InlineArray[Value, size * size](Value(0, 0))
+        self.value = 0
+        self.turn = 0
+
         for y in range(size):
             var v = 1 + min(max_stones - 1, y, size - 1 - y)
             for x in range(size):
@@ -56,6 +96,71 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
                 var total = v + h + t1 + t2
                 self.setvalue(x, y, Value(total, -total))
 
+    fn place_stone(mut self, place: Place):
+        print("place stone", place)
+        var x = Int(place.x)
+        var y = Int(place.y)
+        self.value += self.getvalue(x, y)[self.turn]
+
+        var start = max(0, x - max_stones + 1)
+        var end = min(x + max_stones, size) - max_stones + 1
+        var n = end - start
+        self.update_row(start, y, 1, 0, n)
+
+        start = max(0, y - max_stones + 1)
+        end = min(y + max_stones, size) - max_stones + 1
+        n = end - start
+        self.update_row(x, start, 0, 1, n)
+
+        var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
+
+        n = min(
+            max_stones,
+            m,
+            size - max_stones + 1 - y + x,
+            size - max_stones + 1 - x + y,
+        )
+        if n > 0:
+            var mn = min(x, y, max_stones - 1)
+            var x_start = x - mn
+            var y_start = y - mn
+            self.update_row(x_start, y_start, 1, 1, n)
+
+        n = min(
+            max_stones, m, 2 * size - 2 - max_stones - y - x, x + y - max_stones
+        )
+        if n > 0:
+            mn = min(size - 1 - x, y, max_stones - 1)
+            x_start = x + mn
+            y_start = y - mn
+            self.update_row(x_start, y_start, -1, 1, n)
+
+        if self.turn == Self.first:
+            self[x, y] = Self.black
+        else:
+            self[x, y] = Self.white
+
+    # TODO use start offset and delta
+    fn update_row(
+        mut self, x_start: Int, y_start: Int, dx: Int, dy: Int, n: Int
+    ):
+        print("  row ", x_start, y_start, dx, dy, n)
+        var x = x_start
+        var y = y_start
+        var stones = Int8(0)
+        for i in range(max_stones - 1):
+            stones += self[x + i * dx, y + i * dy]
+        for _ in range(n):
+            stones += self[x + (max_stones - 1) * dx, y + (max_stones - 1) * dy]
+            var values = value_table[self.turn][stones]
+            print("    stones", stones, "values", values)
+            if values[0] != 0 or values[1] != 0:
+                for j in range(max_stones):
+                    self.addvalue(x + j * dx, y + j * dy, values)
+            stones -= self[x, y]
+            x += dx
+            y += dy
+
     @always_inline
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self.places[y * size + x]
@@ -71,6 +176,10 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
     @always_inline
     fn setvalue(mut self, x: Int, y: Int, value: Value):
         self.values[y * size + x] = value
+
+    @always_inline
+    fn addvalue(mut self, x: Int, y: Int, value: Value):
+        self.values[y * size + x] += value
 
     fn __str__(self, out result: String):
         result = String.write(self)
