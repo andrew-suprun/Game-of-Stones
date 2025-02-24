@@ -97,20 +97,19 @@ struct Board[
                 self.setvalue(x, y, Value(total, -total))
 
     fn place_stone(mut self, place: Place):
-        print("place stone", place)
         var x = Int(place.x)
         var y = Int(place.y)
         self.value += self.getvalue(x, y)[self.turn]
 
-        var start = max(0, x - max_stones + 1)
-        var end = min(x + max_stones, size) - max_stones + 1
-        var n = end - start
-        self.update_row(start, y, 1, 0, n)
+        var x_start = max(0, x - max_stones + 1)
+        var x_end = min(x + max_stones, size) - max_stones + 1
+        var n = x_end - x_start
+        self.update_row(y * size + x_start, 1, n)
 
-        start = max(0, y - max_stones + 1)
-        end = min(y + max_stones, size) - max_stones + 1
-        n = end - start
-        self.update_row(x, start, 0, 1, n)
+        var y_start = max(0, y - max_stones + 1)
+        var y_end = min(y + max_stones, size) - max_stones + 1
+        n = y_end - y_start
+        self.update_row(y_start * size + x, size, n)
 
         var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
 
@@ -124,42 +123,40 @@ struct Board[
             var mn = min(x, y, max_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
-            self.update_row(x_start, y_start, 1, 1, n)
+            self.update_row(y_start * size + x_start, size + 1, n)
 
         n = min(
             max_stones, m, 2 * size - 2 - max_stones - y - x, x + y - max_stones
         )
         if n > 0:
-            mn = min(size - 1 - x, y, max_stones - 1)
-            x_start = x + mn
-            y_start = y - mn
-            self.update_row(x_start, y_start, -1, 1, n)
+            var mn = min(size - 1 - x, y, max_stones - 1)
+            var x_start = x + mn
+            var y_start = y - mn
+            self.update_row(y_start * size + x_start, size - 1, n)
 
         if self.turn == Self.first:
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
 
-    # TODO use start offset and delta
-    fn update_row(
-        mut self, x_start: Int, y_start: Int, dx: Int, dy: Int, n: Int
-    ):
-        print("  row ", x_start, y_start, dx, dy, n)
-        var x = x_start
-        var y = y_start
+    fn update_row(mut self, start: Int, delta: Int, n: Int):
+        var offset = start
         var stones = Int8(0)
+
+        @parameter
         for i in range(max_stones - 1):
-            stones += self[x + i * dx, y + i * dy]
+            stones += self.places[offset + i * delta]
+
         for _ in range(n):
-            stones += self[x + (max_stones - 1) * dx, y + (max_stones - 1) * dy]
+            stones += self.places[offset + delta * (max_stones - 1)]
             var values = value_table[self.turn][stones]
-            print("    stones", stones, "values", values)
             if values[0] != 0 or values[1] != 0:
+
+                @parameter
                 for j in range(max_stones):
-                    self.addvalue(x + j * dx, y + j * dy, values)
-            stones -= self[x, y]
-            x += dx
-            y += dy
+                    self.values[offset + j * delta] += values
+            stones -= self.places[offset]
+            offset += delta
 
     @always_inline
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
@@ -176,10 +173,6 @@ struct Board[
     @always_inline
     fn setvalue(mut self, x: Int, y: Int, value: Value):
         self.values[y * size + x] = value
-
-    @always_inline
-    fn addvalue(mut self, x: Int, y: Int, value: Value):
-        self.values[y * size + x] += value
 
     fn __str__(self, out result: String):
         result = String.write(self)
