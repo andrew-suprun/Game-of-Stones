@@ -5,11 +5,11 @@ bench for Parametrized InlineArray of SIMD of Float16:
 bench_update_row  0.15290429737311909
 bench_place_stone 0.6144289014373717
 
-bench for Dynamic value_table:
+pass value_table as argument:
 bench_update_row  0.11899786430912883
 bench_place_stone 0.459621600919188
 
 
-bench value_table: List:
+type of value_table is List[SIMD]:
 bench_update_row  0.13883511729798678
 bench_place_stone 0.23857141424272815
