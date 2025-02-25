@@ -56,14 +56,17 @@ struct Board[
     alias first = 0
     alias second = 1
 
-    var places: InlineArray[Int8, size * size]
-    var values: InlineArray[Value, size * size]
+    var places: List[Int8]
+    var values: List[Value]
     var value: Value
     var turn: Int
 
     fn __init__(out self):
-        self.places = InlineArray[Int8, size * size](Self.empty)
-        self.values = InlineArray[Value, size * size](Value(0, 0))
+        self.places = List[Int8](capacity=size * size)
+        self.values = List[Value](capacity=size * size)
+        for _ in range(size * size):
+            self.places.append(Self.empty)
+            self.values.append(Value(0, 0))
         self.value = 0
         self.turn = 0
 
@@ -96,9 +99,7 @@ struct Board[
     fn place_stone(
         mut self,
         place: Place,
-        value_table: InlineArray[
-            InlineArray[Value, max_stones * max_stones], 2
-        ],
+        value_table: InlineArray[List[Value], 2],
     ):
         var x = Int(place.x)
         var y = Int(place.y)
@@ -147,9 +148,7 @@ struct Board[
         start: Int,
         delta: Int,
         n: Int,
-        value_table: InlineArray[
-            InlineArray[Value, max_stones * max_stones], 2
-        ],
+        value_table: InlineArray[List[Value], 2],
     ):
         var offset = start
         var stones = Int8(0)
