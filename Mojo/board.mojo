@@ -50,9 +50,9 @@ struct Board[
     size: Int,
     max_stones: Int,
 ](Stringable, Writable):
-    alias empty = 0
-    alias black = 1
-    alias white = max_stones
+    alias empty = Int8(0)
+    alias black = Int8(1)
+    alias white = Int8(max_stones)
     alias first = 0
     alias second = 1
 
@@ -80,8 +80,8 @@ struct Board[
                     min(
                         max_stones,
                         m,
-                        size - max_stones - 1 - y + x,
-                        size - max_stones - 1 - x + y,
+                        size - max_stones + 1 - y + x,
+                        size - max_stones + 1 - x + y,
                     ),
                 )
                 var t2 = max(
@@ -89,8 +89,8 @@ struct Board[
                     min(
                         max_stones,
                         m,
-                        2 * size - 1 - max_stones - 1 - y - x,
-                        x + y - max_stones - 1 + 1,
+                        2 * size - 1 - max_stones + 1 - y - x,
+                        x + y - max_stones + 1 + 1,
                     ),
                 )
                 var total = v + h + t1 + t2
@@ -130,7 +130,7 @@ struct Board[
             self.update_row(y_start * size + x_start, size + 1, n, value_table)
 
         n = min(
-            max_stones, m, 2 * size - 2 - max_stones - y - x, x + y - max_stones
+            max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones + 2
         )
         if n > 0:
             var mn = min(size - 1 - x, y, max_stones - 1)
@@ -278,3 +278,72 @@ struct Board[
             for i in range(size):
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
+
+    fn debug_board_value(self, values: List[Float16], out value: Float16):
+        value = Float16(0)
+        for y in range(size):
+            var stones = Int8(0)
+            for x in range(max_stones - 1):
+                stones += self[x, y]
+            for x in range(size - max_stones + 1):
+                stones += self[x + max_stones - 1, y]
+                value += self.debug_calc_value(stones, values)
+                stones -= self[x, y]
+
+        for x in range(size):
+            var stones = Int8(0)
+            for y in range(max_stones - 1):
+                stones += self[x, y]
+            for y in range(size - max_stones + 1):
+                stones += self[x, y + max_stones - 1]
+                value += self.debug_calc_value(stones, values)
+                stones -= self[x, y]
+
+        for y in range(size - max_stones + 1):
+            var stones = Int8(0)
+            for x in range(max_stones - 1):
+                stones += self[x, y + x]
+            for x in range(size - max_stones + 1 - y):
+                stones += self[x + max_stones - 1, x + y + max_stones - 1]
+                value += self.debug_calc_value(stones, values)
+                stones -= self[x, x + y]
+
+        for x in range(1, size - max_stones + 1):
+            var stones = Int8(0)
+            for y in range(max_stones - 1):
+                stones += self[x + y, y]
+            for y in range(size - max_stones + 1 - x):
+                stones += self[x + y + max_stones - 1, y + max_stones - 1]
+                value += self.debug_calc_value(stones, values)
+                stones -= self[x + y, y]
+
+        for y in range(size - max_stones + 1):
+            var stones = Int8(0)
+            for x in range(max_stones - 1):
+                stones += self[size - 1 - x, x + y]
+            for x in range(size - max_stones + 1 - y):
+                stones += self[
+                    size - 1 - x - max_stones + 1, x + y + max_stones - 1
+                ]
+                value += self.debug_calc_value(stones, values)
+                stones -= self[size - 1 - x, x + y]
+
+        for x in range(1, size - max_stones + 1):
+            var stones = Int8(0)
+            for y in range(max_stones - 1):
+                stones += self[size - 1 - x - y, y]
+            for y in range(size - max_stones + 1 - x):
+                stones += self[size - max_stones - x - y, y + max_stones - 1]
+                value += self.debug_calc_value(stones, values)
+                stones -= self[size - 1 - x - y, y]
+
+    fn debug_calc_value(
+        self, stones: Int8, values: List[Float16], out value: Float16
+    ):
+        value = 0
+        var black = stones % max_stones
+        var white = stones // max_stones
+        if white == 0:
+            return values[Int(black)]
+        elif black == 0:
+            return -values[Int(white)]

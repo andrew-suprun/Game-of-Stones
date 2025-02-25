@@ -12,7 +12,7 @@ fn value_table[
 
     v2 = List[Pair](Pair(1, -1))
     for i in range(max_stones - 1):
-        v2.append(Pair(values[i + 1] - values[i], -values[i]))
+        v2.append(Pair(values[i + 2] - values[i + 1], -values[i + 1]))
 
     result = InlineArray[List[Pair], 2](
         List[Pair](capacity=max_stones * max_stones),

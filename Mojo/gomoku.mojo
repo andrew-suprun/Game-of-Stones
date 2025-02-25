@@ -5,6 +5,7 @@ import values as v
 alias max_stones = 5
 
 alias values = List[Float16](
+    Float16(0),
     Float16(1),
     Float16(5),
     Float16(25),
