@@ -3,6 +3,45 @@ from benchmark import benchmark, Unit, keep
 from random import seed, random_si64, random_float64
 
 
+alias a = get_a()
+
+
+fn get_a(out a: List[(Int16, Int16)]):
+    a = List[(Int16, Int16)]()
+    for i in range(1100):
+        a.append((Int16(1), Int16(2)))
+
+
+fn b_parameter[a: List[(Int16, Int16)]]():
+    var s: (Int16, Int16) = (Int16(0), Int16(0))
+    for _ in range(10_000):
+        var x = random_si64(0, 100)
+        for j in range(x, x + 1000):
+            s[0] += a[j][0]
+            s[1] += a[j][1]
+    keep(s[0])
+    keep(s[1])
+
+
+fn benchParameter():
+    b_parameter[a]()
+
+
+fn b_argument(a: List[(Int16, Int16)]):
+    var s: (Int16, Int16) = (Int16(0), Int16(0))
+    for _ in range(10_000):
+        var x = random_si64(0, 100)
+        for j in range(x, x + 1000):
+            s[0] += a[j][0]
+            s[1] += a[j][1]
+    keep(s[0])
+    keep(s[1])
+
+
+fn benchAgrument():
+    b_argument(a)
+
+
 fn benchInlineArraySIMDFloat():
     var a = InlineArray[SIMD[DType.float16, 2], 1100](0)
     for i in range(1100):
@@ -117,6 +156,15 @@ fn benchListTupleInt():
 
 def main():
     seed(1)
+
+    print(
+        "benchParameter            ",
+        benchmark.run[benchParameter]().mean(),
+    )
+    print(
+        "benchAgrument             ",
+        benchmark.run[benchAgrument]().mean(),
+    )
     print(
         "benchInlineArraySIMDFloat ",
         benchmark.run[benchInlineArraySIMDFloat]().mean(),

@@ -5,15 +5,15 @@ from connect6 import value_table, max_stones
 
 
 fn bench_update_row():
-    var board = Board[19, max_stones, value_table]()
+    var board = Board[19, max_stones]()
     for _ in range(1000):
-        board.update_row(0, board.size + 1, 6)
+        board.update_row(0, board.size + 1, 6, value_table)
 
 
 fn bench_place_stone():
-    var board = Board[19, max_stones, value_table]()
+    var board = Board[19, max_stones]()
     for _ in range(1000):
-        board.place_stone(Place(9, 9))
+        board.place_stone(Place(9, 9), value_table)
 
 
 def main():
