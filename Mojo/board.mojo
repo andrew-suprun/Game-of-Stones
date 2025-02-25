@@ -57,8 +57,6 @@ struct Board[
     alias first = 0
     alias second = 1
 
-    alias max_stones_1 = max_stones
-
     var places: InlineArray[Int8, size * size]
     var values: InlineArray[Value, size * size]
     var value: Value
