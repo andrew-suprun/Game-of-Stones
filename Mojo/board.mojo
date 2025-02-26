@@ -99,7 +99,7 @@ struct Board[
     fn place_stone(
         mut self,
         place: Place,
-        value_table: InlineArray[List[Value], 2],
+        values: List[Value],
     ):
         var x = Int(place.x)
         var y = Int(place.y)
@@ -108,12 +108,12 @@ struct Board[
         var x_start = max(0, x - max_stones + 1)
         var x_end = min(x + max_stones, size) - max_stones + 1
         var n = x_end - x_start
-        self.update_row(y * size + x_start, 1, n, value_table)
+        self.update_row(y * size + x_start, 1, n, values)
 
         var y_start = max(0, y - max_stones + 1)
         var y_end = min(y + max_stones, size) - max_stones + 1
         n = y_end - y_start
-        self.update_row(y_start * size + x, size, n, value_table)
+        self.update_row(y_start * size + x, size, n, values)
 
         var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
 
@@ -127,7 +127,7 @@ struct Board[
             var mn = min(x, y, max_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
-            self.update_row(y_start * size + x_start, size + 1, n, value_table)
+            self.update_row(y_start * size + x_start, size + 1, n, values)
 
         n = min(
             max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones + 2
@@ -136,7 +136,7 @@ struct Board[
             var mn = min(size - 1 - x, y, max_stones - 1)
             var x_start = x + mn
             var y_start = y - mn
-            self.update_row(y_start * size + x_start, size - 1, n, value_table)
+            self.update_row(y_start * size + x_start, size - 1, n, values)
 
         if self.turn == Self.first:
             self[x, y] = Self.black
@@ -148,7 +148,7 @@ struct Board[
         start: Int,
         delta: Int,
         n: Int,
-        value_table: InlineArray[List[Value], 2],
+        values: List[Value],
     ):
         var offset = start
         var stones = Int8(0)
@@ -159,7 +159,7 @@ struct Board[
 
         for _ in range(n):
             stones += self.places[offset + delta * (max_stones - 1)]
-            var values = value_table[self.turn][stones]
+            var values = values[stones]
             if values[0] != 0 or values[1] != 0:
 
                 @parameter
