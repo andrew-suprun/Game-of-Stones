@@ -10,7 +10,7 @@ alias values = List[Float32](
     Float32(5),
     Float32(25),
     Float32(125),
-    inf[DType.float32](),
+    Float32(625),
 )
 
 alias value_table = v.value_table[max_stones, values]()

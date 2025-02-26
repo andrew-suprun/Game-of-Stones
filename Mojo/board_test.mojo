@@ -25,7 +25,7 @@ def test_place_stone():
                         var copy = board.copy()
                         copy.turn = 0
                         copy.place_stone(Place(x, y), value_table)
-                        var expected = copy.debug_board_value(values)[0] - value
+                        var expected = copy.debug_board_value(values) - value
                         if actual[0] != expected:
                             failure = True
                             print(
@@ -39,7 +39,7 @@ def test_place_stone():
                         copy = board.copy()
                         copy.turn = 1
                         copy.place_stone(Place(x, y), value_table)
-                        expected = copy.debug_board_value(values)[1] - value
+                        expected = copy.debug_board_value(values) - value
                         if actual[1] != expected:
                             failure = True
                             print(

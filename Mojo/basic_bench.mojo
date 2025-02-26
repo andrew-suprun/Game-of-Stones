@@ -6,14 +6,14 @@ from random import seed, random_si64, random_float64
 alias a = get_a()
 
 
-fn get_a(out a: List[(Int16, Int16)]):
-    a = List[(Int16, Int16)]()
+fn get_a(out a: List[(Float32, Float32)]):
+    a = List[(Float32, Float32)]()
     for i in range(1100):
-        a.append((Int16(1), Int16(2)))
+        a.append((Float32(1), Float32(2)))
 
 
-fn b_parameter[a: List[(Int16, Int16)]]():
-    var s: (Int16, Int16) = (Int16(0), Int16(0))
+fn b_parameter[a: List[(Float32, Float32)]]():
+    var s: (Float32, Float32) = (Float32(0), Float32(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -27,8 +27,8 @@ fn benchParameter():
     b_parameter[a]()
 
 
-fn b_argument(a: List[(Int16, Int16)]):
-    var s: (Int16, Int16) = (Int16(0), Int16(0))
+fn b_argument(a: List[(Float32, Float32)]):
+    var s: (Float32, Float32) = (Float32(0), Float32(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -57,12 +57,12 @@ fn benchInlineArraySIMDFloat():
 
 
 fn benchInlineArraySIMDInt():
-    var a = InlineArray[SIMD[DType.int16, 2], 1100](0)
+    var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
-        a[i] = SIMD[DType.int16, 2](
-            Int16(random_si64(0, 10)), Int16(random_float64(0, 10))
+        a[i] = SIMD[DType.float32, 2](
+            Float32(random_si64(0, 10)), Float32(random_float64(0, 10))
         )
-    var s: SIMD[DType.int16, 2] = 0
+    var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -85,10 +85,10 @@ fn benchInlineArrayTupleFloat():
 
 
 fn benchInlineArrayTupleInt():
-    var a = InlineArray[(Int16, Int16), 1100]((Int16(0), Int16(0)))
+    var a = InlineArray[(Float32, Float32), 1100]((Float32(0), Float32(0)))
     for i in range(1100):
-        a[i] = (Int16(random_si64(0, 10)), Int16(random_float64(0, 10)))
-    var s = (Int16(0), Int16(0))
+        a[i] = (Float32(random_si64(0, 10)), Float32(random_float64(0, 10)))
+    var s = (Float32(0), Float32(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -113,12 +113,14 @@ fn benchListSIMDFloat():
 
 
 fn benchListSIMDInt():
-    var a = List[SIMD[DType.int16, 2]](0)
-    for i in range(1100):
-        a[i] = SIMD[DType.int16, 2](
-            Int16(random_si64(0, 10)), Int16(random_float64(0, 10))
+    var a = List[SIMD[DType.float32, 2]](0)
+    for _ in range(1100):
+        a.append(
+            SIMD[DType.float32, 2](
+                Float32(random_si64(0, 10)), Float32(random_float64(0, 10))
+            )
         )
-    var s: SIMD[DType.int16, 2] = 0
+    var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -128,8 +130,10 @@ fn benchListSIMDInt():
 
 fn benchListTupleFloat():
     var a = List[(Float32, Float32), 1100]((Float32(0), Float32(0)))
-    for i in range(1100):
-        a[i] = Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
+    for _ in range(1100):
+        a.append(
+            (Float32(random_float64(0, 10)), Float32(random_float64(0, 10)))
+        )
     var s = (Float32(0), Float32(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
@@ -141,10 +145,10 @@ fn benchListTupleFloat():
 
 
 fn benchListTupleInt():
-    var a = List[(Int16, Int16), 1100]((Int16(0), Int16(0)))
-    for i in range(1100):
-        a[i] = (Int16(random_si64(0, 10)), Int16(random_float64(0, 10)))
-    var s = (Int16(0), Int16(0))
+    var a = List[(Float32, Float32), 1100]((Float32(0), Float32(0)))
+    for _ in range(1100):
+        a.append((Float32(random_si64(0, 10)), Float32(random_float64(0, 10))))
+    var s = (Float32(0), Float32(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):

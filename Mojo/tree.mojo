@@ -9,9 +9,9 @@ from scores import Score, is_decisive, is_win, is_loss, is_draw, win, loss
 struct Node(CollectionElement, Stringable, Writable):
     var move: game.Move
     var value: Score
-    var first_child: Int32
-    var last_child: Int32
-    var n_sims: Int32
+    var first_child: Float32
+    var last_child: Float32
+    var n_sims: Float32
 
     fn __init__(out self, move: game.Move, value: Score):
         self.move = move
@@ -46,7 +46,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
             var game_copy = game.copy()
             self._expand(game_copy, 0)
 
-    fn _expand(mut self, mut game: Game, parent_idx: Int32):
+    fn _expand(mut self, mut game: Game, parent_idx: Float32):
         var parent = self.nodes[parent_idx]
         var first_child = parent.first_child
         var last_child = parent.last_child
@@ -58,14 +58,14 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 "Function game.top_moves(...) returns empty result.",
             )
 
-            self.nodes[parent_idx].first_child = Int32(self.nodes.size)
+            self.nodes[parent_idx].first_child = Float32(self.nodes.size)
             for idx in range(self.top_moves.size):
                 self.nodes.append(
                     Node(self.top_moves[idx], self.top_values[idx])
                 )
-            self.nodes[parent_idx].last_child = Int32(self.nodes.size)
+            self.nodes[parent_idx].last_child = Float32(self.nodes.size)
         else:
-            var selected_child_idx = Int32(-1)
+            var selected_child_idx = Float32(-1)
             var n_sims = Float32(parent.n_sims)
             var log_parent_sims = log2(n_sims)
             var maxV = loss
@@ -151,7 +151,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, 0, 0)
 
-    fn write_to[W: Writer](self, mut writer: W, idx: Int32, depth: Int):
+    fn write_to[W: Writer](self, mut writer: W, idx: Float32, depth: Int):
         writer.write("|   " * depth, self.nodes[idx], "\n")
         var parent = self.nodes[idx]
         if parent.first_child != -1:
