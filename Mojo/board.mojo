@@ -28,21 +28,21 @@ struct Place(EqualityComparableCollectionElement, Stringable, Writable):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-alias Value = SIMD[DType.float16, 2]
+alias Value = SIMD[DType.float32, 2]
 
 
 @always_inline
-fn is_win(v: Float16) -> Bool:
+fn is_win(v: Float32) -> Bool:
     return isinf(v) and v > 0
 
 
 @always_inline
-fn is_loss(v: Float16) -> Bool:
+fn is_loss(v: Float32) -> Bool:
     return isinf(v) and v < 0
 
 
 @always_inline
-fn is_draw(v: Float16) -> Bool:
+fn is_draw(v: Float32) -> Bool:
     return isnan(v)
 
 
@@ -286,8 +286,8 @@ struct Board[
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
-    fn debug_board_value(self, values: List[Float16], out value: Float16):
-        value = Float16(0)
+    fn debug_board_value(self, values: List[Float32], out value: Float32):
+        value = Float32(0)
         for y in range(size):
             var stones = Int8(0)
             for x in range(max_stones - 1):
@@ -345,7 +345,7 @@ struct Board[
                 stones -= self[size - 1 - x - y, y]
 
     fn debug_calc_value(
-        self, stones: Int8, values: List[Float16], out value: Float16
+        self, stones: Int8, values: List[Float32], out value: Float32
     ):
         value = 0
         var black = stones % max_stones

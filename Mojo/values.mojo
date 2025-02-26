@@ -2,11 +2,11 @@ from utils.numerics import inf
 from collections import InlineArray
 from math import sqrt
 
-alias Pair = SIMD[DType.float16, 2]
+alias Pair = SIMD[DType.float32, 2]
 
 
 fn value_table[
-    max_stones: Int, values: List[Float16]
+    max_stones: Int, values: List[Float32]
 ](out result: InlineArray[List[Pair], 2]):
     alias result_size = max_stones * max_stones
 

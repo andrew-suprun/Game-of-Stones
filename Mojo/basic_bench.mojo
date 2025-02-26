@@ -43,12 +43,12 @@ fn benchAgrument():
 
 
 fn benchInlineArraySIMDFloat():
-    var a = InlineArray[SIMD[DType.float16, 2], 1100](0)
+    var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
-        a[i] = SIMD[DType.float16, 2](
-            Float16(random_float64(0, 10)), Float16(random_float64(0, 10))
+        a[i] = SIMD[DType.float32, 2](
+            Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
         )
-    var s: SIMD[DType.float16, 2] = 0
+    var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -71,10 +71,10 @@ fn benchInlineArraySIMDInt():
 
 
 fn benchInlineArrayTupleFloat():
-    var a = InlineArray[(Float16, Float16), 1100]((Float16(0), Float16(0)))
+    var a = InlineArray[(Float32, Float32), 1100]((Float32(0), Float32(0)))
     for i in range(1100):
-        a[i] = Float16(random_float64(0, 10)), Float16(random_float64(0, 10))
-    var s = (Float16(0), Float16(0))
+        a[i] = Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
+    var s = (Float32(0), Float32(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -99,12 +99,12 @@ fn benchInlineArrayTupleInt():
 
 
 fn benchListSIMDFloat():
-    var a = InlineArray[SIMD[DType.float16, 2], 1100](0)
+    var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
-        a[i] = SIMD[DType.float16, 2](
-            Float16(random_float64(0, 10)), Float16(random_float64(0, 10))
+        a[i] = SIMD[DType.float32, 2](
+            Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
         )
-    var s: SIMD[DType.float16, 2] = 0
+    var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -127,10 +127,10 @@ fn benchListSIMDInt():
 
 
 fn benchListTupleFloat():
-    var a = List[(Float16, Float16), 1100]((Float16(0), Float16(0)))
+    var a = List[(Float32, Float32), 1100]((Float32(0), Float32(0)))
     for i in range(1100):
-        a[i] = Float16(random_float64(0, 10)), Float16(random_float64(0, 10))
-    var s = (Float16(0), Float16(0))
+        a[i] = Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
+    var s = (Float32(0), Float32(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
