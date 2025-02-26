@@ -1,12 +1,19 @@
+from scores import Score
 from board import Place
 
-trait Game(ExplicitlyCopyable):
+trait Game:
     # alias Move: EqualityComparableCollectionElement
 
-    fn top_moves(self, mut moves: List[Move], mut values: List[Float32]):
+    fn top_moves(self, mut moves: List[Move], mut values: List[Score]):
         ...
 
     fn play_move(mut self, move: Move):
+        ...
+
+    fn undo_move(mut self, move: Move):
+        ...
+
+    fn score(self, out score: Score):
         ...
 
 

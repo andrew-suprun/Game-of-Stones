@@ -1,6 +1,6 @@
+from scores import Score
 from game import Game, Move
 from tree import Tree, Node
-import scores
 
 from random import seed, random_si64, random_float64
 import testing
@@ -13,7 +13,7 @@ struct TestGame(Game):
     fn copy(self) -> Self:
         return TestGame()
 
-    fn top_moves(self, mut moves: List[Move], mut values: List[Float32]):
+    fn top_moves(self, mut moves: List[Move], mut values: List[Score]):
         moves.clear()
         values.clear()
         if random_si64(0, 8) == 0:
@@ -27,10 +27,16 @@ struct TestGame(Game):
             if random_si64(0, 8) == 0:
                 values.append(scores.draw)
             else:
-                values.append(Float32(random_float64(-1, 1)))
+                values.append(Score(random_float64(-1, 1)))
 
     fn play_move(mut self, move: Move):
         pass
+
+    fn undo_move(mut self, move: Move):
+        pass
+
+    fn score(self, out score: Score):
+        score = 0
 
 
 fn random_move() -> game.Move:
@@ -43,9 +49,7 @@ fn random_move() -> game.Move:
 
 
 def test_tree():
-    print("start")
-    seed(1)
     var g = TestGame()
     var t = Tree[TestGame](1)
-    t.expand(g)
+    _ = t.expand(g)
     print(t)

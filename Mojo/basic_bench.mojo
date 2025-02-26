@@ -2,18 +2,19 @@ from collections import InlineArray
 from benchmark import benchmark, Unit, keep
 from random import seed, random_si64, random_float64
 
+from scores import Score
 
 alias a = get_a()
 
 
-fn get_a(out a: List[(Float32, Float32)]):
-    a = List[(Float32, Float32)]()
+fn get_a(out a: List[(Score, Score)]):
+    a = List[(Score, Score)]()
     for i in range(1100):
-        a.append((Float32(1), Float32(2)))
+        a.append((Score(1), Score(2)))
 
 
-fn b_parameter[a: List[(Float32, Float32)]]():
-    var s: (Float32, Float32) = (Float32(0), Float32(0))
+fn b_parameter[a: List[(Score, Score)]]():
+    var s: (Score, Score) = (Score(0), Score(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -27,8 +28,8 @@ fn benchParameter():
     b_parameter[a]()
 
 
-fn b_argument(a: List[(Float32, Float32)]):
-    var s: (Float32, Float32) = (Float32(0), Float32(0))
+fn b_argument(a: List[(Score, Score)]):
+    var s: (Score, Score) = (Score(0), Score(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -46,7 +47,7 @@ fn benchInlineArraySIMDFloat():
     var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
         a[i] = SIMD[DType.float32, 2](
-            Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
+            Score(random_float64(0, 10)), Score(random_float64(0, 10))
         )
     var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
@@ -60,7 +61,7 @@ fn benchInlineArraySIMDInt():
     var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
         a[i] = SIMD[DType.float32, 2](
-            Float32(random_si64(0, 10)), Float32(random_float64(0, 10))
+            Score(random_si64(0, 10)), Score(random_float64(0, 10))
         )
     var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
@@ -71,10 +72,10 @@ fn benchInlineArraySIMDInt():
 
 
 fn benchInlineArrayTupleFloat():
-    var a = InlineArray[(Float32, Float32), 1100]((Float32(0), Float32(0)))
+    var a = InlineArray[(Score, Score), 1100]((Score(0), Score(0)))
     for i in range(1100):
-        a[i] = Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
-    var s = (Float32(0), Float32(0))
+        a[i] = Score(random_float64(0, 10)), Score(random_float64(0, 10))
+    var s = (Score(0), Score(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -85,10 +86,10 @@ fn benchInlineArrayTupleFloat():
 
 
 fn benchInlineArrayTupleInt():
-    var a = InlineArray[(Float32, Float32), 1100]((Float32(0), Float32(0)))
+    var a = InlineArray[(Score, Score), 1100]((Score(0), Score(0)))
     for i in range(1100):
-        a[i] = (Float32(random_si64(0, 10)), Float32(random_float64(0, 10)))
-    var s = (Float32(0), Float32(0))
+        a[i] = (Score(random_si64(0, 10)), Score(random_float64(0, 10)))
+    var s = (Score(0), Score(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -102,7 +103,7 @@ fn benchListSIMDFloat():
     var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
         a[i] = SIMD[DType.float32, 2](
-            Float32(random_float64(0, 10)), Float32(random_float64(0, 10))
+            Score(random_float64(0, 10)), Score(random_float64(0, 10))
         )
     var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
@@ -117,7 +118,7 @@ fn benchListSIMDInt():
     for _ in range(1100):
         a.append(
             SIMD[DType.float32, 2](
-                Float32(random_si64(0, 10)), Float32(random_float64(0, 10))
+                Score(random_si64(0, 10)), Score(random_float64(0, 10))
             )
         )
     var s: SIMD[DType.float32, 2] = 0
@@ -129,12 +130,10 @@ fn benchListSIMDInt():
 
 
 fn benchListTupleFloat():
-    var a = List[(Float32, Float32), 1100]((Float32(0), Float32(0)))
+    var a = List[(Score, Score), 1100]((Score(0), Score(0)))
     for _ in range(1100):
-        a.append(
-            (Float32(random_float64(0, 10)), Float32(random_float64(0, 10)))
-        )
-    var s = (Float32(0), Float32(0))
+        a.append((Score(random_float64(0, 10)), Score(random_float64(0, 10))))
+    var s = (Score(0), Score(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -145,10 +144,10 @@ fn benchListTupleFloat():
 
 
 fn benchListTupleInt():
-    var a = List[(Float32, Float32), 1100]((Float32(0), Float32(0)))
+    var a = List[(Score, Score), 1100]((Score(0), Score(0)))
     for _ in range(1100):
-        a.append((Float32(random_si64(0, 10)), Float32(random_float64(0, 10))))
-    var s = (Float32(0), Float32(0))
+        a.append((Score(random_si64(0, 10)), Score(random_float64(0, 10))))
+    var s = (Score(0), Score(0))
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):

@@ -1,16 +1,17 @@
 from utils.numerics import inf
 
+from scores import Score
 import values as v
 
 alias max_stones = 5
 
-alias values = List[Float32](
-    Float32(0),
-    Float32(1),
-    Float32(5),
-    Float32(25),
-    Float32(125),
-    Float32(625),
+alias values = List[Score](
+    Score(0),
+    Score(1),
+    Score(5),
+    Score(25),
+    Score(125),
+    Score(625),
 )
 
 alias value_table = v.value_table[max_stones, values]()

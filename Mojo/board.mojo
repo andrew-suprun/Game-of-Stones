@@ -1,7 +1,8 @@
 from collections import InlineArray
 from utils.numerics import isnan, isinf
 
-from values import Pair, value_table
+from scores import Score, Pair
+from values import value_table
 
 
 @value
@@ -28,9 +29,6 @@ struct Place(EqualityComparableCollectionElement, Stringable, Writable):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-alias Value = SIMD[DType.float32, 2]
-
-
 @always_inline
 fn is_win(v: Float32) -> Bool:
     return isinf(v) and v > 0
@@ -46,28 +44,27 @@ fn is_draw(v: Float32) -> Bool:
     return isnan(v)
 
 
-struct Board[
-    size: Int,
-    max_stones: Int,
-](ExplicitlyCopyable, Stringable, Writable):
+alias first = 0
+alias second = 1
+
+
+struct Board[size: Int, max_stones: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(max_stones)
-    alias first = 0
-    alias second = 1
 
     var places: List[Int8]
-    var values: List[Value]
-    var value: Value
+    var values: List[Pair]
+    var score: Score
     var turn: Int
 
     fn __init__(out self):
         self.places = List[Int8](capacity=size * size)
-        self.values = List[Value](capacity=size * size)
+        self.values = List[Pair](capacity=size * size)
         for _ in range(size * size):
             self.places.append(Self.empty)
-            self.values.append(Value(0, 0))
-        self.value = 0
+            self.values.append(Pair(0, 0))
+        self.score = 0
         self.turn = 0
 
         for y in range(size):
@@ -94,26 +91,31 @@ struct Board[
                     ),
                 )
                 var total = v + h + t1 + t2
-                self.setvalue(x, y, Value(total, -total))
+                self.setvalue(x, y, Pair(total, -total))
 
     fn place_stone(
         mut self,
         place: Place,
-        values: List[Value],
+        coeff: Score,
+        values: List[Pair],
     ):
         var x = Int(place.x)
         var y = Int(place.y)
-        self.value += self.getvalue(x, y)[self.turn]
+
+        if coeff == 1:
+            self.score += self.getvalue(x, y)[self.turn]
+        else:
+            self[x, y] = Self.empty
 
         var x_start = max(0, x - max_stones + 1)
         var x_end = min(x + max_stones, size) - max_stones + 1
         var n = x_end - x_start
-        self.update_row(y * size + x_start, 1, n, values)
+        self.update_row(y * size + x_start, 1, n, coeff, values)
 
         var y_start = max(0, y - max_stones + 1)
         var y_end = min(y + max_stones, size) - max_stones + 1
         n = y_end - y_start
-        self.update_row(y_start * size + x, size, n, values)
+        self.update_row(y_start * size + x, size, n, coeff, values)
 
         var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
 
@@ -127,7 +129,9 @@ struct Board[
             var mn = min(x, y, max_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
-            self.update_row(y_start * size + x_start, size + 1, n, values)
+            self.update_row(
+                y_start * size + x_start, size + 1, n, coeff, values
+            )
 
         n = min(
             max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones + 2
@@ -136,19 +140,25 @@ struct Board[
             var mn = min(size - 1 - x, y, max_stones - 1)
             var x_start = x + mn
             var y_start = y - mn
-            self.update_row(y_start * size + x_start, size - 1, n, values)
+            self.update_row(
+                y_start * size + x_start, size - 1, n, coeff, values
+            )
 
-        if self.turn == Self.first:
-            self[x, y] = Self.black
+        if coeff == 1:
+            if self.turn == first:
+                self[x, y] = Self.black
+            else:
+                self[x, y] = Self.white
         else:
-            self[x, y] = Self.white
+            self.score -= self.getvalue(x, y)[self.turn]
 
     fn update_row(
         mut self,
         start: Int,
         delta: Int,
         n: Int,
-        values: List[Value],
+        coeff: Score,
+        values: List[Pair],
     ):
         var offset = start
         var stones = Int8(0)
@@ -159,7 +169,7 @@ struct Board[
 
         for _ in range(n):
             stones += self.places[offset + delta * (max_stones - 1)]
-            var values = values[stones]
+            var values = values[stones] * coeff
             if values[0] != 0 or values[1] != 0:
 
                 @parameter
@@ -177,19 +187,16 @@ struct Board[
         self.places[y * size + x] = value
 
     @always_inline
-    fn getvalue(self, x: Int, y: Int, out result: Value):
+    fn getvalue(self, x: Int, y: Int, out result: Pair):
         result = self.values[y * size + x]
 
     @always_inline
-    fn setvalue(mut self, x: Int, y: Int, value: Value):
+    fn setvalue(mut self, x: Int, y: Int, value: Pair):
         self.values[y * size + x] = value
 
-    fn copy(self, out other: Self):
-        other = Self()
-        other.places = self.places
-        other.values = self.values
-        other.value = self.value
-        other.turn = self.turn
+    @always_inline
+    fn setturn(mut self, turn: Int):
+        self.turn = turn
 
     fn __str__(self, out result: String):
         result = String.write(self)

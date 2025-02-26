@@ -1,4 +1,4 @@
-alias Pair = SIMD[DType.float32, 2]
+from scores import Pair
 
 
 fn value_table[

@@ -1,6 +1,7 @@
 from utils.numerics import nan, inf, neg_inf, isnan, isfinite, isinf
 
 alias Score = Float32
+alias Pair = SIMD[DType.float32, 2]
 alias win = inf[DType.float32]()
 alias loss = neg_inf[DType.float32]()
 alias draw = nan[DType.float32]()

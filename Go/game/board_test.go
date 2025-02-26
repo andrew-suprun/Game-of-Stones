@@ -106,9 +106,9 @@ func BenchmarkPlayMove(b *testing.B) {
 
 func BenchmarkPlaceStone(b *testing.B) {
 
-	// b.ResetTimer()
+	board := NewGame()
+	b.ResetTimer()
 	for range b.N {
-		board := NewGame()
 		for range 1000 {
 			board.placeStone(Place{9, 9}, 1)
 		}
@@ -117,9 +117,9 @@ func BenchmarkPlaceStone(b *testing.B) {
 
 func BenchmarkUpdateRow(b *testing.B) {
 
-	// b.ResetTimer()
+	board := NewGame()
+	b.ResetTimer()
 	for range b.N {
-		board := NewGame()
 		for range 1000 {
 			board.updateRow(0, 0, 1, 1, 6, 1)
 		}

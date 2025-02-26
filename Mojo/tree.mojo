@@ -1,17 +1,17 @@
 from math import log2, sqrt
 
 
+from scores import Score, is_decisive, is_win, is_loss, is_draw, win, loss, draw
 import game
-from scores import Score, is_decisive, is_win, is_loss, is_draw, win, loss
 
 
 @value
 struct Node(CollectionElement, Stringable, Writable):
     var move: game.Move
     var value: Score
-    var first_child: Float32
-    var last_child: Float32
-    var n_sims: Float32
+    var first_child: Score
+    var last_child: Score
+    var n_sims: Score
 
     fn __init__(out self, move: game.Move, value: Score):
         self.move = move
@@ -30,23 +30,37 @@ struct Node(CollectionElement, Stringable, Writable):
 
 
 struct Tree[Game: game.Game](Stringable, Writable):
-    var c: Float32
+    var c: Score
     var nodes: List[Node]
     var top_moves: List[game.Move]
     var top_values: List[Score]
 
-    fn __init__(out self, c: Float32):
+    fn __init__(out self, c: Score):
         self.c = c
         self.nodes = List[Node](Node(game.Move(0, 0, 0, 0), 0))
         self.top_moves = List[game.Move]()
         self.top_values = List[Score]()
 
-    fn expand(mut self, game: Game):
-        if not is_decisive(self.nodes[0].value):
-            var game_copy = game.copy()
-            self._expand(game_copy, 0)
+    fn expand(mut self, mut game: Game, out done: Bool):
+        var root = self.nodes[0]
+        if is_decisive(root.value):
+            done = True
+            return
+        else:
+            self._expand(game, 0)
 
-    fn _expand(mut self, mut game: Game, parent_idx: Float32):
+        var undecided = 0
+        for i in range(root.first_child, root.last_child):
+            var child = self.nodes[i]
+            if not is_decisive(child.value):
+                if child.n_sims > 1:
+                    undecided += 1
+                else:
+                    done = False
+                    return
+        done = undecided == 1
+
+    fn _expand(mut self, mut game: Game, parent_idx: Score):
         var parent = self.nodes[parent_idx]
         var first_child = parent.first_child
         var last_child = parent.last_child
@@ -58,15 +72,15 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 "Function game.top_moves(...) returns empty result.",
             )
 
-            self.nodes[parent_idx].first_child = Float32(self.nodes.size)
+            self.nodes[parent_idx].first_child = Score(self.nodes.size)
             for idx in range(self.top_moves.size):
                 self.nodes.append(
                     Node(self.top_moves[idx], self.top_values[idx])
                 )
-            self.nodes[parent_idx].last_child = Float32(self.nodes.size)
+            self.nodes[parent_idx].last_child = Score(self.nodes.size)
         else:
-            var selected_child_idx = Float32(-1)
-            var n_sims = Float32(parent.n_sims)
+            var selected_child_idx = Score(-1)
+            var n_sims = Score(parent.n_sims)
             var log_parent_sims = log2(n_sims)
             var maxV = loss
             for idx in children:
@@ -74,18 +88,21 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 if is_decisive(child.value):
                     continue
                 var v = child.value / n_sims + self.c * sqrt(
-                    log_parent_sims / Float32(child.n_sims)
+                    log_parent_sims / Score(child.n_sims)
                 )
                 if v > maxV:
                     maxV = v
                     selected_child_idx = idx
             debug_assert(selected_child_idx > 0, "Failed to select a child.")
-            game.play_move(self.nodes[selected_child_idx].move)
+            var move = self.nodes[selected_child_idx].move
+            game.play_move(move)
             self._expand(game, selected_child_idx)
+            game.undo_move(move)
 
         self.nodes[parent_idx].n_sims = 0
         self.nodes[parent_idx].value = win
         var has_draw = False
+        var all_draws = True
         for i in range(
             self.nodes[parent_idx].first_child,
             self.nodes[parent_idx].last_child,
@@ -99,20 +116,23 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 continue
             elif is_loss(child.value):
                 continue
+            all_draws = False
             self.nodes[parent_idx].n_sims += child.n_sims
             if self.nodes[parent_idx].value >= -child.value:
                 self.nodes[parent_idx].value = -child.value
-        if has_draw and self.nodes[parent_idx].value > 0:
+        if all_draws:
+            self.nodes[parent_idx].value = draw
+        elif has_draw and self.nodes[parent_idx].value > 0:
             self.nodes[parent_idx].value = 0
 
-    fn best_move(self) -> game.Move:
+    fn best_move(self, out result: game.Move):
         var first_child = Int(self.nodes[0].first_child)
         var last_child = Int(self.nodes[0].last_child)
         var best_child = self.nodes[first_child]
         for child in self.nodes[first_child:last_child]:
             if best_child.value < child[].value:
                 best_child = child[]
-        return best_child.move
+        result = best_child.move
 
     fn play_move(mut self, move: game.Move):
         var idx = -1
@@ -151,7 +171,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, 0, 0)
 
-    fn write_to[W: Writer](self, mut writer: W, idx: Float32, depth: Int):
+    fn write_to[W: Writer](self, mut writer: W, idx: Score, depth: Int):
         writer.write("|   " * depth, self.nodes[idx], "\n")
         var parent = self.nodes[idx]
         if parent.first_child != -1:
