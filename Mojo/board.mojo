@@ -49,7 +49,7 @@ fn is_draw(v: Float16) -> Bool:
 struct Board[
     size: Int,
     max_stones: Int,
-](Stringable, Writable):
+](ExplicitlyCopyable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(max_stones)
@@ -183,6 +183,13 @@ struct Board[
     @always_inline
     fn setvalue(mut self, x: Int, y: Int, value: Value):
         self.values[y * size + x] = value
+
+    fn copy(self, out other: Self):
+        other = Self()
+        other.places = self.places
+        other.values = self.values
+        other.value = self.value
+        other.turn = self.turn
 
     fn __str__(self, out result: String):
         result = String.write(self)

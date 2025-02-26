@@ -23,7 +23,7 @@ fn value_table[
         result[1].append(0)
 
     for i in range(max_stones - 1):
-        result[0][i * max_stones] = Pair(-v2[i][1], -v2[i][0])
+        result[0][i * max_stones] = Pair(v2[i][1], v2[i][0])
         result[0][i] = v2[i + 1] - v2[i]
         result[1][i] = Pair(-v2[i][0], -v2[i][1])
         result[1][i * max_stones] = Pair(
