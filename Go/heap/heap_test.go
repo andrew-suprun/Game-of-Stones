@@ -34,19 +34,16 @@ func TestHeap(t *testing.T) {
 func BenchmarkHeap(b *testing.B) {
 	heap := make([]int, 0, 20)
 	values := make([]int, 100)
-	values2 := make([]int, 100)
 	for i := range 100 {
-		values[i] = i + 1
+		values[i] = 100 - i
 	}
-	rand.Shuffle(100, func(i, j int) {
-		values[i], values[j] = values[j], values[i]
-	})
-
 	b.ResetTimer()
 	for range b.N {
-		copy(values2, values)
-		for i := range 100 {
-			Add(values2[i], &heap, 20, less)
+		for range 1000 {
+			for i := range 100 {
+				clear(heap)
+				Add(values[i], &heap, 20, less)
+			}
 		}
 	}
 }

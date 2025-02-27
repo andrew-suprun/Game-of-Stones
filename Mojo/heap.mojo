@@ -1,3 +1,5 @@
+from collections import InlineArray
+
 struct Heap[
     T: AnyTrivialRegType, //,
     max_items: Int,
@@ -8,7 +10,7 @@ struct Heap[
     fn __init__(out self):
         self.items = List[T]()
 
-    fn clear(mut self, item: T):
+    fn clear(mut self):
         self.items.clear()
 
     fn add(mut self, item: T):
