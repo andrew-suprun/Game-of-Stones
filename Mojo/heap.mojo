@@ -1,54 +1,39 @@
-from collections import InlineArray
-
-struct Heap[
-    T: AnyTrivialRegType, //,
-    max_items: Int,
-    less: fn (a: T, b: T, out r: Bool) capturing,
-]:
-    var items: List[T]
-
-    fn __init__(out self):
-        self.items = List[T]()
-
-    fn clear(mut self):
-        self.items.clear()
-
-    fn add(mut self, item: T):
-        if self.items.size == max_items:
-            if not less(self.items[0], item):
-                return
-            self.items[0] = item
-            self.sift_down()
+fn add[T: WritableCollectionElement, max_items: Int, less: fn (a: T, b: T, out r: Bool) capturing](item: T, mut items: List[T]):
+    if len(items) == max_items:
+        if not less(items[0], item):
             return
-        self.items.append(item)
-        self.sift_up()
+        items[0] = item
+        sift_down[less](items)
+        return
+    items.append(item)
+    sift_up[less](items)
 
-    fn sift_up(mut self):
-        var child_idx = self.items.size - 1
-        var child = self.items[child_idx]
-        while child_idx > 0 and less(child, self.items[(child_idx - 1) // 2]):
-            var parent_idx = (child_idx - 1) // 2
-            var parent = self.items[parent_idx]
-            self.items[child_idx] = parent
-            child_idx = parent_idx
-        self.items[child_idx] = child
+fn sift_up[T: WritableCollectionElement, //, less: fn (a: T, b: T, out r: Bool) capturing](mut items: List[T]):
+    var child_idx = len(items) - 1
+    var child = items[child_idx]
+    while child_idx > 0 and less(child, items[(child_idx - 1) // 2]):
+        var parent_idx = (child_idx - 1) // 2
+        var parent = items[parent_idx]
+        items[child_idx] = parent
+        child_idx = parent_idx
+    items[child_idx] = child
 
-    fn sift_down(mut self):
-        var idx = 0
-        var elem = self.items[idx]
-        while True:
-            var first = idx
-            var leftChildIdx = idx*2 + 1
-            if leftChildIdx < self.items.size and less(self.items[leftChildIdx], elem):
-                first = leftChildIdx
-            var rightChildIdx = idx*2 + 2
-            if rightChildIdx < self.items.size and
-                less(self.items[rightChildIdx], elem) and
-                less(self.items[rightChildIdx], self.items[leftChildIdx]):
-                first = rightChildIdx
-            if idx == first:
-                break
-
-            self.items[idx] = self.items[first]
-            idx = first
-        self.items[idx] = elem
+fn sift_down[T: WritableCollectionElement, //, less: fn (a: T, b: T, out r: Bool) capturing](mut items: List[T]):
+    var idx = 0
+    var elem = items[idx]
+    while True:
+        var first = idx
+        var leftChildIdx = idx*2 + 1
+        if leftChildIdx < len(items) and less(items[leftChildIdx], elem):
+            first = leftChildIdx
+        var rightChildIdx = idx*2 + 2
+        if rightChildIdx < len(items) and
+            less(items[rightChildIdx], elem) and
+            less(items[rightChildIdx], items[leftChildIdx]):
+            first = rightChildIdx
+        if idx == first:
+            break
+        
+        items[idx] = items[first]
+        idx = first
+    items[idx] = elem

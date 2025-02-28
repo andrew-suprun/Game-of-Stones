@@ -1,3 +1,4 @@
+from testing import assert_true
 from random import seed, random_si64
 
 from scores import Score
@@ -10,69 +11,45 @@ def test_place_stone():
     seed(0)
     var board = Board[19, max_stones]()
     var value = Score(0)
-    for i in range(200):
-        print(board)
-        print(board.str_values())
+    for _ in range(200):
         board.turn = Int(random_si64(0, 1))
         var x = Int(random_si64(0, board.size - 1))
         var y = Int(random_si64(0, board.size - 1))
-        print("=== playing:", i, Place(x, y), board.turn)
-        board.place_stone(Place(x, y), 1, value_table[0])
-        print(board)
-        print(board.str_values())
-        board.place_stone(Place(x, y), -1, value_table[0])
         if board[x, y] == board.empty:
             var failure = False
             for y in range(board.size):
                 for x in range(board.size):
                     if board[x, y] == board.empty:
-                        print("#1.1")
-                        var actual = board.getvalue(x, y)
+                        var actual = board.getscores(Place(x, y))
                         board.turn = 0
-                        print("#1.2")
                         board.place_stone(Place(x, y), 1, value_table[0])
-                        print("#1.3")
                         var expected = board.debug_board_value(values) - value
-                        print("#1.4")
                         board.place_stone(Place(x, y), -1, value_table[0])
-                        print("#1.5", actual[0], expected)
                         if actual[0] != expected:
                             failure = True
-                            print(
-                                "X",
-                                Place(x, y),
-                                "actial",
-                                actual[0],
-                                "expected",
-                                expected,
-                            )
                         board.turn = 1
-                        print("#1.6")
                         board.place_stone(Place(x, y), 1, value_table[1])
-                        print("#1.7")
                         expected = board.debug_board_value(values) - value
-                        print("#1.8", x, y)
                         board.place_stone(Place(x, y), -1, value_table[1])
-                        print("#2", actual[1], expected)
                         if actual[1] != expected:
                             failure = True
-                            print(
-                                "O",
-                                Place(x, y),
-                                "actial",
-                                actual[1],
-                                "expected",
-                                expected,
-                            )
-            print("#3")
             if failure:
                 print(board)
-                print(board.str_values())
+                print(board.str_scores())
                 return
-            print("#4")
-            value += board.getvalue(x, y)[board.turn]
+            value += board.getscores(Place(x, y))[board.turn]
             if board.turn == 0:
                 board.place_stone(Place(x, y), 1, value_table[0])
             else:
                 board.place_stone(Place(x, y), 1, value_table[1])
-            print("#5")
+
+
+def test_top_moves():
+    var board = Board[19, max_stones]()
+    board.place_stone(Place(9, 9), 1, value_table[0])
+    board.place_stone(Place(8, 9), 1, value_table[0])
+    board.select_top_places()
+    for i in range(1, 30):
+        var parent = board.top_places[(i - 1) / 2]
+        var child = board.top_places[i]
+        assert_true(board.getscores(parent)[0] <= board.getscores(child)[0])

@@ -11,7 +11,7 @@ alias values = List[Score](
     Score(5),
     Score(25),
     Score(125),
-    Score(625),
+    inf[DType.float32](),
 )
 
 alias value_table = v.value_table[max_stones, values]()

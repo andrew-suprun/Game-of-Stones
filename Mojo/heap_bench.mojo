@@ -1,25 +1,21 @@
 from benchmark import benchmark, Unit
-from random import seed, shuffle
 
-from heap import Heap
+from heap import add
 
 
 fn bench():
-    seed(4)
-
     @parameter
     fn less(a: Int, b: Int, out r: Bool):
         r = a < b
 
-    var heap = Heap[20, less]()
+    var heap = List[Int]()
     var values = List[Int]()
     for i in range(100):
         values.append(100 - i)
 
     for _ in range(1000):
-        heap.clear()
         for i in range(100):
-            heap.add(values[i])
+            add[Int, 20, less](values[i], heap)
 
 
 def main():
