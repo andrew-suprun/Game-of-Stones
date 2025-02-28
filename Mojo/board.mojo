@@ -1,7 +1,7 @@
 from collections import InlineArray
 from utils.numerics import isnan, isinf
 
-from scores import Score, Scores
+from scores import Score, Scores, loss
 from heap import add
 
 
@@ -49,7 +49,7 @@ alias first = 0
 alias second = 1
 
 
-struct Board[size: Int, max_stones: Int](Stringable, Writable):
+struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(max_stones)
@@ -58,7 +58,6 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
     var scores: List[Scores]
     var score: Score
     var turn: Int
-    var top_places: List[Place]
 
     fn __init__(out self):
         self.places = List[Int8](capacity=size * size)
@@ -68,7 +67,6 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
             self.scores.append(Scores(0, 0))
         self.score = 0
         self.turn = 0
-        self.top_places = List[Place]()
 
         for y in range(size):
             var v = 1 + min(max_stones - 1, y, size - 1 - y)
@@ -106,7 +104,10 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
         var y = Int(place.y)
 
         if coeff == 1:
-            self.score += self.getscores(place)[self.turn]
+            if self.turn == first:
+                self.score += self.getscores(place)[first]
+            else:
+                self.score -= self.getscores(place)[second]
         else:
             self[x, y] = Self.empty
 
@@ -153,7 +154,10 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
             else:
                 self[x, y] = Self.white
         else:
-            self.score -= self.getscores(place)[self.turn]
+            if self.turn == first:
+                self.score -= self.getscores(place)[first]
+            else:
+                self.score += self.getscores(place)[second]
 
     fn update_row(
         mut self,
@@ -181,7 +185,7 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
             stones -= self.places[offset]
             offset += delta
 
-    fn select_top_places(mut self):
+    fn top_places(self, mut top_places: List[Place]):
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
             r = self.getscores(a)[0] < self.getscores(b)[0]
@@ -190,20 +194,28 @@ struct Board[size: Int, max_stones: Int](Stringable, Writable):
         fn less_second(a: Place, b: Place, out r: Bool):
             r = self.getscores(a)[1] < self.getscores(b)[1]
 
-        self.top_places.clear()
+        top_places.clear()
 
         if self.turn == first:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        add[Place, 30, less_first](Place(x, y), self.top_places)
+                        add[Place, max_places, less_first](
+                            Place(x, y), top_places
+                        )
         else:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        add[Place, 30, less_second](
-                            Place(x, y), self.top_places
+                        add[Place, max_places, less_second](
+                            Place(x, y), top_places
                         )
+
+    fn max_score[turn: Int](self, out r: Score):
+        r = loss
+        for scores in self.scores:
+            if r < scores[][turn]:
+                r = scores[][turn]
 
     @always_inline
     fn __getitem__(self, x: Int, y: Int, out result: Int8):

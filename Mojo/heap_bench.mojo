@@ -19,4 +19,4 @@ fn bench():
 
 
 def main():
-    print("heap bench    ", benchmark.run[bench]().mean(Unit.ns))
+    print("heap bench       ", benchmark.run[bench]().mean(Unit.ms))

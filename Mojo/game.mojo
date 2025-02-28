@@ -4,7 +4,7 @@ from board import Place
 trait Game:
     # alias Move: EqualityComparableCollectionElement
 
-    fn top_moves(self, mut moves: List[Move], mut values: List[Score]):
+    fn top_moves(mut self, mut move_scores: List[MoveScore]):
         ...
 
     fn play_move(mut self, move: Move):
@@ -19,6 +19,7 @@ trait Game:
 
 # TODO Make it alias type in Game
 @value
+@register_passable("trivial")
 struct Move(EqualityComparableCollectionElement, Stringable, Writable):
     var p1: Place
     var p2: Place
@@ -43,4 +44,14 @@ struct Move(EqualityComparableCollectionElement, Stringable, Writable):
         writer.write(self.p1, "-", self.p2)
 
 
+@value
+@register_passable("trivial")
+struct MoveScore(Stringable, Writable):
+    var move: Move
+    var score: Score
 
+    fn __str__(self) -> String:
+        return String(self)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(self.move, " v: ", self.score)
