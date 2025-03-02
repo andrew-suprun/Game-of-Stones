@@ -1,4 +1,4 @@
-* add board.remove_stone()
+* use sys.param_env for compile time config
 * make Move an alias type in Game
 
 mojo -D ASSERT=all board_bench.mojo

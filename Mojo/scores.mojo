@@ -1,15 +1,15 @@
-from utils.numerics import nan, inf, neg_inf, isnan, isfinite, isinf
+from utils.numerics import inf, neg_inf, isfinite, isinf
 
 alias Score = Float32
 alias Scores = SIMD[DType.float32, 2]
 alias win = inf[DType.float32]()
 alias loss = neg_inf[DType.float32]()
-alias draw = nan[DType.float32]()
+alias draw = Float32(0.5)
 
 
 @always_inline
 fn is_decisive(v: Score) -> Bool:
-    return not isfinite(v)
+    return not isfinite(v) or is_draw(v)
 
 
 @always_inline
@@ -24,4 +24,4 @@ fn is_loss(v: Score) -> Bool:
 
 @always_inline
 fn is_draw(v: Score) -> Bool:
-    return isnan(v)
+    return v == draw

@@ -1,7 +1,6 @@
-from collections import InlineArray
-from utils.numerics import isnan, isinf
+from collections.string import StringSlice
 
-from scores import Score, Scores, loss
+from scores import Score, Scores, loss, is_win, is_loss, is_draw
 from heap import add
 
 
@@ -14,6 +13,10 @@ struct Place(EqualityComparableCollectionElement, Stringable, Writable):
     fn __init__(out self, x: Int, y: Int):
         self.x = x
         self.y = y
+
+    fn __init__(out self, place: String) raises:
+        self.x = ord(place[0]) - ord("a")
+        self.y = Int(place[1:]) - 1
 
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
@@ -28,21 +31,6 @@ struct Place(EqualityComparableCollectionElement, Stringable, Writable):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
-
-
-@always_inline
-fn is_win(v: Float32) -> Bool:
-    return isinf(v) and v > 0
-
-
-@always_inline
-fn is_loss(v: Float32) -> Bool:
-    return isinf(v) and v < 0
-
-
-@always_inline
-fn is_draw(v: Float32) -> Bool:
-    return isnan(v)
 
 
 alias first = 0
@@ -100,6 +88,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         coeff: Score,
         scores: List[Scores],
     ):
+        # print("play stone", place, coeff)
         var x = Int(place.x)
         var y = Int(place.y)
 
@@ -158,6 +147,8 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 self.score -= self.getscores(place)[first]
             else:
                 self.score += self.getscores(place)[second]
+        # print(self)
+        # print(self.str_scores())
 
     fn update_row(
         mut self,
@@ -167,6 +158,13 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         coeff: Score,
         scores: List[Scores],
     ):
+        # print(
+        #     "  update_row",
+        #     Place(start % self.size, start // self.size),
+        #     delta,
+        #     n,
+        #     coeff,
+        # )
         var offset = start
         var stones = Int8(0)
 
@@ -177,6 +175,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         for _ in range(n):
             stones += self.places[offset + delta * (max_stones - 1)]
             var scores = scores[stones] * coeff
+            # print("    stones", stones, "scores", scores)
             if scores[0] != 0 or scores[1] != 0:
 
                 @parameter
@@ -210,12 +209,20 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                         add[Place, max_places, less_second](
                             Place(x, y), top_places
                         )
+        print("top places: ", end="")
+        for place in top_places:
+            if self.turn == first:
+                print(place[], self.getscores(place[])[0], " ", end="")
+            else:
+                print(place[], self.getscores(place[])[1], " ", end="")
+        print()
 
     fn max_score[turn: Int](self, out r: Score):
         r = loss
-        for scores in self.scores:
-            if r < scores[][turn]:
-                r = scores[][turn]
+        for i in range(len(self.scores)):
+            var score = self.scores[i][turn]
+            if r < score and self.places[i] == self.empty:
+                r = score
 
     @always_inline
     fn __getitem__(self, x: Int, y: Int, out result: Int8):

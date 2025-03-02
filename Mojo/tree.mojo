@@ -9,9 +9,9 @@ import game
 struct Node(CollectionElement, Stringable, Writable):
     var move: game.Move
     var value: Score
-    var first_child: Score
-    var last_child: Score
-    var n_sims: Score
+    var first_child: Int
+    var last_child: Int
+    var n_sims: Int
 
     fn __init__(out self, move: game.Move, value: Score):
         self.move = move
@@ -32,13 +32,13 @@ struct Node(CollectionElement, Stringable, Writable):
 struct Tree[Game: game.Game](Stringable, Writable):
     var c: Score
     var nodes: List[Node]
-    var top_moves: List[game.Move]
+    var top_moves: List[game.MoveScore]
     var top_values: List[Score]
 
     fn __init__(out self, c: Score):
         self.c = c
         self.nodes = List[Node](Node(game.Move(0, 0, 0, 0), 0))
-        self.top_moves = List[game.Move]()
+        self.top_moves = List[game.MoveScore]()
         self.top_values = List[Score]()
 
     fn expand(mut self, mut game: Game, out done: Bool):
@@ -59,6 +59,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
                     done = False
                     return
         done = undecided == 1
+        print(self)
 
     fn _expand(mut self, mut game: Game, parent_idx: Score):
         var parent = self.nodes[parent_idx]
@@ -66,22 +67,22 @@ struct Tree[Game: game.Game](Stringable, Writable):
         var last_child = parent.last_child
         var children = range(first_child, last_child)
         if first_child == -1:
-            game.top_moves(self.top_moves, self.top_values)
+            game.top_moves(self.top_moves)
             debug_assert(
-                self.top_moves.size > 0,
+                len(self.top_moves) > 0,
                 "Function game.top_moves(...) returns empty result.",
             )
 
-            self.nodes[parent_idx].first_child = Score(self.nodes.size)
-            for idx in range(self.top_moves.size):
+            self.nodes[parent_idx].first_child = len(self.nodes)
+            for idx in range(len(self.top_moves)):
                 self.nodes.append(
-                    Node(self.top_moves[idx], self.top_values[idx])
+                    Node(self.top_moves[idx].move, self.top_moves[idx].score)
                 )
-            self.nodes[parent_idx].last_child = Score(self.nodes.size)
+            self.nodes[parent_idx].last_child = len(self.nodes)
         else:
-            var selected_child_idx = Score(-1)
-            var n_sims = Score(parent.n_sims)
-            var log_parent_sims = log2(n_sims)
+            var selected_child_idx = -1
+            var n_sims = parent.n_sims
+            var log_parent_sims = log2(Score(n_sims))
             var maxV = loss
             for idx in children:
                 var child = self.nodes[idx]
@@ -146,17 +147,17 @@ struct Tree[Game: game.Game](Stringable, Writable):
         if idx != -1:
             var new_nodes = List[Node](self.nodes[idx])
             var new_idx = 0
-            while new_idx < new_nodes.size:
+            while new_idx < len(new_nodes):
                 var old_first_child = new_nodes[new_idx].first_child
                 var old_last_child = new_nodes[new_idx].last_child
                 if old_first_child == -1:
                     new_idx += 1
                     continue
-                new_nodes[new_idx].first_child = new_nodes.size
+                new_nodes[new_idx].first_child = len(new_nodes)
                 new_nodes.extend(
                     self.nodes[Int(old_first_child) : Int(old_last_child)]
                 )
-                new_nodes[new_idx].last_child = new_nodes.size
+                new_nodes[new_idx].last_child = len(new_nodes)
                 new_idx += 1
 
             self.nodes = new_nodes

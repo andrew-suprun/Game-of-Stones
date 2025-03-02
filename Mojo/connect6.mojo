@@ -1,5 +1,3 @@
-from utils.numerics import inf
-
 from scores import Score, win, draw
 from game import Game, Move, MoveScore
 from board import Board, Place, first, second
@@ -15,7 +13,7 @@ alias values = List[Score](
     Score(25),
     Score(125),
     Score(625),
-    inf[DType.float32](),
+    win,
 )
 
 alias value_table = v.value_table[max_stones, values]()
@@ -44,14 +42,12 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
         var has_draw = False
 
         # TODO use enumerated iterator
-        for i in range(len(self.top_places)):
+        for i in range(len(self.top_places) - 1):
             var place1 = self.top_places[i]
-            var scores = self.board.getscores(place1)
-            var score1 = scores[0] if turn_first else scores[second]
-            if score1 == win:
-                move_scores.append(MoveScore(Move(place1, place1), win))
-                return
-
+            var score1 = self.board.getscores(place1)[0] + self.board.getscores(
+                place1
+            )[1]
+            # print("place1", place1, "score1", score1)
             if turn_first:
                 self.board.place_stone(place1, 1, value_table[0])
             else:
@@ -59,40 +55,50 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
             for j in range(i + 1, len(self.top_places)):
                 var place2 = self.top_places[j]
-                var scores = self.board.getscores(place2)
-                var score2 = scores[0] if turn_first else scores[second]
-                if score2 == win:
+                var score2 = self.board.getscores(place2)[
+                    0
+                ] + self.board.getscores(place2)[1]
+                # print("place2", place2, "score2", score2)
+
+                if self.board.score == win:
                     move_scores.append(MoveScore(Move(place1, place2), win))
                     return
-
-                var score = score1 + score2
-                if score == 0:
+                elif score1 + score2 == 0:
                     if not has_draw:
-                        move_scores.append(
-                            MoveScore(Move(place1, place2), draw)
+                        add[MoveScore, max_moves, less](
+                            MoveScore(Move(place1, place2), draw), move_scores
                         )
                         has_draw = True
                 else:
                     var opp_score = Score(0)
                     if turn_first:
                         self.board.place_stone(place2, 1, value_table[0])
-                        opp_score = (
-                            score
-                            - self.board.max_score[second]()
-                            - self.board.score
-                        )
+                        opp_score = self.board.max_score[second]()
+                        # print(
+                        #     "opp_score.second",
+                        #     opp_score,
+                        #     "board score",
+                        #     self.board.score,
+                        #     "move score",
+                        #     opp_score - self.board.score,
+                        # )
                         self.board.place_stone(place2, -1, value_table[0])
                     else:
                         self.board.place_stone(place2, 1, value_table[1])
-                        opp_score = (
-                            score
-                            - self.board.max_score[first]()
-                            - self.board.score
-                        )
+                        opp_score = self.board.max_score[first]()
+                        # print(
+                        #     "opp_score.first",
+                        #     opp_score,
+                        #     "move score",
+                        #     opp_score - self.board.score,
+                        # )
                         self.board.place_stone(place2, -1, value_table[1])
 
                     add[MoveScore, max_moves, less](
-                        MoveScore(Move(place1, place2), opp_score), move_scores
+                        MoveScore(
+                            Move(place1, place2), opp_score - self.board.score
+                        ),
+                        move_scores,
                     )
 
             if turn_first:
@@ -129,4 +135,17 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
 
 fn main():
-    pass
+    print("t3.1:")
+    print("len", len(value_table))
+    for y in range(max_stones):
+        for x in range(max_stones):
+            print(value_table[0][y * max_stones + x], ", ", sep="", end="")
+        print()
+    print()
+
+    print("t3.2:")
+    for y in range(max_stones):
+        for x in range(max_stones):
+            print(value_table[1][y * max_stones + x], ", ", sep="", end="")
+        print()
+    print()
