@@ -58,7 +58,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                 var score2 = self.board.getscores(place2)[
                     0
                 ] + self.board.getscores(place2)[1]
-                # print("place2", place2, "score2", score2)
 
                 if self.board.score == win:
                     move_scores.append(MoveScore(Move(place1, place2), win))
@@ -70,34 +69,20 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                         )
                         has_draw = True
                 else:
-                    var opp_score = Score(0)
+                    var move_score = Score(0)
                     if turn_first:
                         self.board.place_stone(place2, 1, value_table[0])
-                        opp_score = self.board.max_score[second]()
-                        # print(
-                        #     "opp_score.second",
-                        #     opp_score,
-                        #     "board score",
-                        #     self.board.score,
-                        #     "move score",
-                        #     opp_score - self.board.score,
-                        # )
+                        var opp_score = self.board.max_score[second]()
+                        move_score = self.board.score - opp_score
                         self.board.place_stone(place2, -1, value_table[0])
                     else:
                         self.board.place_stone(place2, 1, value_table[1])
-                        opp_score = self.board.max_score[first]()
-                        # print(
-                        #     "opp_score.first",
-                        #     opp_score,
-                        #     "move score",
-                        #     opp_score - self.board.score,
-                        # )
+                        var opp_score = self.board.max_score[first]()
+                        move_score = self.board.score - opp_score
                         self.board.place_stone(place2, -1, value_table[1])
 
                     add[MoveScore, max_moves, less](
-                        MoveScore(
-                            Move(place1, place2), opp_score - self.board.score
-                        ),
+                        MoveScore(Move(place1, place2), move_score),
                         move_scores,
                     )
 
@@ -121,14 +106,14 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     fn undo_move(mut self, move: Move):
         if self.board.turn == board.first:
             self.board.setturn(board.second)
-            self.board.place_stone(move.p1, -1, value_table[board.first])
-            if move.p1 != move.p2:
-                self.board.place_stone(move.p2, -1, value_table[board.first])
-        else:
-            self.board.setturn(board.first)
-            self.board.place_stone(move.p1, -1, value_table[board.second])
             if move.p1 != move.p2:
                 self.board.place_stone(move.p2, -1, value_table[board.second])
+            self.board.place_stone(move.p1, -1, value_table[board.second])
+        else:
+            self.board.setturn(board.first)
+            if move.p1 != move.p2:
+                self.board.place_stone(move.p2, -1, value_table[board.first])
+            self.board.place_stone(move.p1, -1, value_table[board.first])
 
     fn score(self, out score: Score):
         score = self.board.score

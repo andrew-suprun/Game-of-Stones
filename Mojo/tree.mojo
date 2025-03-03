@@ -59,7 +59,6 @@ struct Tree[Game: game.Game](Stringable, Writable):
                     done = False
                     return
         done = undecided == 1
-        print(self)
 
     fn _expand(mut self, mut game: Game, parent_idx: Score):
         var parent = self.nodes[parent_idx]

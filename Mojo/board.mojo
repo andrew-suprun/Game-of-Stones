@@ -88,7 +88,6 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         coeff: Score,
         scores: List[Scores],
     ):
-        # print("play stone", place, coeff)
         var x = Int(place.x)
         var y = Int(place.y)
 
@@ -147,8 +146,6 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 self.score -= self.getscores(place)[first]
             else:
                 self.score += self.getscores(place)[second]
-        # print(self)
-        # print(self.str_scores())
 
     fn update_row(
         mut self,
@@ -158,13 +155,6 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         coeff: Score,
         scores: List[Scores],
     ):
-        # print(
-        #     "  update_row",
-        #     Place(start % self.size, start // self.size),
-        #     delta,
-        #     n,
-        #     coeff,
-        # )
         var offset = start
         var stones = Int8(0)
 
@@ -209,13 +199,6 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                         add[Place, max_places, less_second](
                             Place(x, y), top_places
                         )
-        print("top places: ", end="")
-        for place in top_places:
-            if self.turn == first:
-                print(place[], self.getscores(place[])[0], " ", end="")
-            else:
-                print(place[], self.getscores(place[])[1], " ", end="")
-        print()
 
     fn max_score[turn: Int](self, out r: Score):
         r = loss
