@@ -10,7 +10,7 @@ trait Game:
     fn play_move(mut self, move: Move):
         ...
 
-    fn undo_move(mut self, move: Move):
+    fn undo_move(mut self):
         ...
 
     fn score(self, out score: Score):

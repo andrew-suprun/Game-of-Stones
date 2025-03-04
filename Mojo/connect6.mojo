@@ -22,10 +22,12 @@ alias value_table = v.value_table[max_stones, values]()
 struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     var board: Board[size, max_stones, max_places]
     var top_places: List[Place]
+    var history: List[Move]
 
     fn __init__(out self):
         self.board = Board[size, max_stones, max_places]()
         self.top_places = List[Place]()
+        self.history = List[Move]()
 
     fn top_moves(mut self, mut move_scores: List[MoveScore]):
         @parameter
@@ -49,9 +51,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             )[1]
             # print("place1", place1, "score1", score1)
             if turn_first:
-                self.board.place_stone(place1, 1, value_table[0])
+                self.board.place_stone(place1, value_table[0])
             else:
-                self.board.place_stone(place1, 1, value_table[1])
+                self.board.place_stone(place1, value_table[1])
 
             for j in range(i + 1, len(self.top_places)):
                 var place2 = self.top_places[j]
@@ -71,49 +73,45 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                 else:
                     var move_score = Score(0)
                     if turn_first:
-                        self.board.place_stone(place2, 1, value_table[0])
+                        self.board.place_stone(place2, value_table[0])
                         var opp_score = self.board.max_score[second]()
                         move_score = self.board.score - opp_score
-                        self.board.place_stone(place2, -1, value_table[0])
+                        self.board.remove_stone()
                     else:
-                        self.board.place_stone(place2, 1, value_table[1])
+                        self.board.place_stone(place2, value_table[1])
                         var opp_score = self.board.max_score[first]()
                         move_score = self.board.score - opp_score
-                        self.board.place_stone(place2, -1, value_table[1])
+                        self.board.remove_stone()
 
                     add[MoveScore, max_moves, less](
                         MoveScore(Move(place1, place2), move_score),
                         move_scores,
                     )
 
-            if turn_first:
-                self.board.place_stone(place1, -1, value_table[0])
-            else:
-                self.board.place_stone(place1, -1, value_table[1])
+            self.board.remove_stone()
 
     fn play_move(mut self, move: Move):
+        self.history.append(move)
         if self.board.turn == board.first:
-            self.board.place_stone(move.p1, 1, value_table[board.first])
+            self.board.place_stone(move.p1, value_table[board.first])
             if move.p1 != move.p2:
-                self.board.place_stone(move.p2, 1, value_table[board.first])
+                self.board.place_stone(move.p2, value_table[board.first])
             self.board.setturn(board.second)
         else:
-            self.board.place_stone(move.p1, 1, value_table[board.second])
+            self.board.place_stone(move.p1, value_table[board.second])
             if move.p1 != move.p2:
-                self.board.place_stone(move.p2, 1, value_table[board.second])
+                self.board.place_stone(move.p2, value_table[board.second])
             self.board.setturn(board.first)
 
-    fn undo_move(mut self, move: Move):
+    fn undo_move(mut self):
         if self.board.turn == board.first:
             self.board.setturn(board.second)
-            if move.p1 != move.p2:
-                self.board.place_stone(move.p2, -1, value_table[board.second])
-            self.board.place_stone(move.p1, -1, value_table[board.second])
         else:
             self.board.setturn(board.first)
-            if move.p1 != move.p2:
-                self.board.place_stone(move.p2, -1, value_table[board.first])
-            self.board.place_stone(move.p1, -1, value_table[board.first])
+        var move = self.history.pop()
+        if move.p1 != move.p2:
+            self.board.remove_stone()
+        self.board.remove_stone()
 
     fn score(self, out score: Score):
         score = self.board.score

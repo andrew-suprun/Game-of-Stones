@@ -37,6 +37,21 @@ alias first = 0
 alias second = 1
 
 
+@value
+@register_passable("trivial")
+struct PlaceScores:
+    var offset: Int
+    var scores: Scores
+
+
+@value
+@register_passable("trivial")
+struct ScoreMark:
+    var place: Place
+    var score: Score
+    var history_idx: Int
+
+
 struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
@@ -46,6 +61,8 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     var scores: List[Scores]
     var score: Score
     var turn: Int
+    var history: List[PlaceScores]
+    var history_indices: List[ScoreMark]
 
     fn __init__(out self):
         self.places = List[Int8](capacity=size * size)
@@ -55,6 +72,8 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             self.scores.append(Scores(0, 0))
         self.score = 0
         self.turn = 0
+        self.history = List[PlaceScores]()
+        self.history_indices = List[ScoreMark]()
 
         for y in range(size):
             var v = 1 + min(max_stones - 1, y, size - 1 - y)
@@ -85,29 +104,29 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     fn place_stone(
         mut self,
         place: Place,
-        coeff: Score,
         scores: List[Scores],
     ):
+        self.history_indices.append(
+            ScoreMark(place, self.score, len(self.history))
+        )
+
         var x = Int(place.x)
         var y = Int(place.y)
 
-        if coeff == 1:
-            if self.turn == first:
-                self.score += self.getscores(place)[first]
-            else:
-                self.score -= self.getscores(place)[second]
+        if self.turn == first:
+            self.score += self.getscores(place)[first]
         else:
-            self[x, y] = Self.empty
+            self.score -= self.getscores(place)[second]
 
         var x_start = max(0, x - max_stones + 1)
         var x_end = min(x + max_stones, size) - max_stones + 1
         var n = x_end - x_start
-        self.update_row(y * size + x_start, 1, n, coeff, scores)
+        self.update_row(y * size + x_start, 1, n, scores)
 
         var y_start = max(0, y - max_stones + 1)
         var y_end = min(y + max_stones, size) - max_stones + 1
         n = y_end - y_start
-        self.update_row(y_start * size + x, size, n, coeff, scores)
+        self.update_row(y_start * size + x, size, n, scores)
 
         var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
 
@@ -121,9 +140,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             var mn = min(x, y, max_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
-            self.update_row(
-                y_start * size + x_start, size + 1, n, coeff, scores
-            )
+            self.update_row(y_start * size + x_start, size + 1, n, scores)
 
         n = min(
             max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones + 2
@@ -132,29 +149,23 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             var mn = min(size - 1 - x, y, max_stones - 1)
             var x_start = x + mn
             var y_start = y - mn
-            self.update_row(
-                y_start * size + x_start, size - 1, n, coeff, scores
-            )
+            self.update_row(y_start * size + x_start, size - 1, n, scores)
 
-        if coeff == 1:
-            if self.turn == first:
-                self[x, y] = Self.black
-            else:
-                self[x, y] = Self.white
+        if self.turn == first:
+            self[x, y] = Self.black
         else:
-            if self.turn == first:
-                self.score -= self.getscores(place)[first]
-            else:
-                self.score += self.getscores(place)[second]
+            self[x, y] = Self.white
 
     fn update_row(
         mut self,
         start: Int,
         delta: Int,
         n: Int,
-        coeff: Score,
         scores: List[Scores],
     ):
+        for i in range(start, start + delta * (max_stones - 1 + n), delta):
+            self.history.append(PlaceScores(i, self.scores[i]))
+
         var offset = start
         var stones = Int8(0)
 
@@ -164,8 +175,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
 
         for _ in range(n):
             stones += self.places[offset + delta * (max_stones - 1)]
-            var scores = scores[stones] * coeff
-            # print("    stones", stones, "scores", scores)
+            var scores = scores[stones]
             if scores[0] != 0 or scores[1] != 0:
 
                 @parameter
@@ -173,6 +183,15 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                     self.scores[offset + j * delta] += scores
             stones -= self.places[offset]
             offset += delta
+
+    fn remove_stone(mut self):
+        var idx = self.history_indices.pop()
+        self[Int(idx.place.x), Int(idx.place.y)] = self.empty
+        self.score = idx.score
+        for i in range(idx.history_idx, len(self.history)):
+            var h_scores = self.history[i]
+            self.scores[h_scores.offset] = h_scores.scores
+        self.history.resize(idx.history_idx)
 
     fn top_places(self, mut top_places: List[Place]):
         @parameter

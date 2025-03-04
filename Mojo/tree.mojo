@@ -97,7 +97,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
             var move = self.nodes[selected_child_idx].move
             game.play_move(move)
             self._expand(game, selected_child_idx)
-            game.undo_move(move)
+            game.undo_move()
 
         self.nodes[parent_idx].n_sims = 0
         self.nodes[parent_idx].value = win

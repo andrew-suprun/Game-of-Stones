@@ -9,7 +9,7 @@ from connect6 import max_stones, value_table, values
 
 def test_place_stone():
     seed(0)
-    var board = Board[19, max_stones]()
+    var board = Board[19, max_stones, 20]()
     var value = Score(0)
     for _ in range(200):
         board.turn = Int(random_si64(0, 1))
@@ -22,15 +22,15 @@ def test_place_stone():
                     if board[x, y] == board.empty:
                         var actual = board.getscores(Place(x, y))
                         board.turn = 0
-                        board.place_stone(Place(x, y), 1, value_table[0])
+                        board.place_stone(Place(x, y), value_table[0])
                         var expected = board.debug_board_value(values) - value
-                        board.place_stone(Place(x, y), -1, value_table[0])
+                        board.remove_stone()
                         if actual[0] != expected:
                             failure = True
                         board.turn = 1
-                        board.place_stone(Place(x, y), 1, value_table[1])
+                        board.place_stone(Place(x, y), value_table[1])
                         expected = board.debug_board_value(values) - value
-                        board.place_stone(Place(x, y), -1, value_table[1])
+                        board.remove_stone()
                         if actual[1] != expected:
                             failure = True
             if failure:
@@ -39,17 +39,18 @@ def test_place_stone():
                 return
             value += board.getscores(Place(x, y))[board.turn]
             if board.turn == 0:
-                board.place_stone(Place(x, y), 1, value_table[0])
+                board.place_stone(Place(x, y), value_table[0])
             else:
-                board.place_stone(Place(x, y), 1, value_table[1])
+                board.place_stone(Place(x, y), value_table[1])
 
 
 def test_top_moves():
-    var board = Board[19, max_stones]()
-    board.place_stone(Place(9, 9), 1, value_table[0])
-    board.place_stone(Place(8, 9), 1, value_table[0])
-    board.select_top_places()
-    for i in range(1, 30):
-        var parent = board.top_places[(i - 1) / 2]
-        var child = board.top_places[i]
+    var board = Board[19, max_stones, 20]()
+    board.place_stone(Place(9, 9), value_table[0])
+    board.place_stone(Place(8, 9), value_table[0])
+    var top_places = List[Place]()
+    board.top_places(top_places)
+    for i in range(1, 20):
+        var parent = top_places[(i - 1) / 2]
+        var child = top_places[i]
         assert_true(board.getscores(parent)[0] <= board.getscores(child)[0])

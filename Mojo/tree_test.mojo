@@ -31,7 +31,7 @@ struct TestGame(Game):
     fn play_move(mut self, move: Move):
         pass
 
-    fn undo_move(mut self, move: Move):
+    fn undo_move(mut self):
         pass
 
     fn score(self, out score: Score):
