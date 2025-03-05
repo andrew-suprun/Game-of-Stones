@@ -57,18 +57,14 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
             for j in range(i + 1, len(self.top_places)):
                 var place2 = self.top_places[j]
-                var score2 = self.board.getscores(place2)[
-                    0
-                ] + self.board.getscores(place2)[1]
+                var score2 = self.board.getscores(place2)[0] + self.board.getscores(place2)[1]
 
                 if self.board.score == win:
                     move_scores.append(MoveScore(Move(place1, place2), win))
                     return
                 elif score1 + score2 == 0:
                     if not has_draw:
-                        add[MoveScore, max_moves, less](
-                            MoveScore(Move(place1, place2), draw), move_scores
-                        )
+                        add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), draw), move_scores)
                         has_draw = True
                 else:
                     var move_score = Score(0)

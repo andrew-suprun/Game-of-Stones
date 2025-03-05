@@ -22,6 +22,4 @@ fn value_table[
         result[0][i * max_stones] = Scores(v2[i][1], -v2[i][0])
         result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
         result[1][i] = Scores(-v2[i][0], v2[i][1])
-        result[1][i * max_stones] = Scores(
-            v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0]
-        )
+        result[1][i * max_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])

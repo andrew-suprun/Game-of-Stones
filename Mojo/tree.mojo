@@ -67,16 +67,11 @@ struct Tree[Game: game.Game](Stringable, Writable):
         var children = range(first_child, last_child)
         if first_child == -1:
             game.top_moves(self.top_moves)
-            debug_assert(
-                len(self.top_moves) > 0,
-                "Function game.top_moves(...) returns empty result.",
-            )
+            debug_assert(len(self.top_moves) > 0, "Function game.top_moves(...) returns empty result.")
 
             self.nodes[parent_idx].first_child = len(self.nodes)
             for idx in range(len(self.top_moves)):
-                self.nodes.append(
-                    Node(self.top_moves[idx].move, self.top_moves[idx].score)
-                )
+                self.nodes.append(Node(self.top_moves[idx].move, self.top_moves[idx].score))
             self.nodes[parent_idx].last_child = len(self.nodes)
         else:
             var selected_child_idx = -1
@@ -103,10 +98,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
         self.nodes[parent_idx].value = win
         var has_draw = False
         var all_draws = True
-        for i in range(
-            self.nodes[parent_idx].first_child,
-            self.nodes[parent_idx].last_child,
-        ):
+        for i in range(self.nodes[parent_idx].first_child, self.nodes[parent_idx].last_child):
             var child = self.nodes[i]
             if is_win(child.value):
                 self.nodes[parent_idx].value = -child.value
@@ -153,9 +145,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
                     new_idx += 1
                     continue
                 new_nodes[new_idx].first_child = len(new_nodes)
-                new_nodes.extend(
-                    self.nodes[Int(old_first_child) : Int(old_last_child)]
-                )
+                new_nodes.extend(self.nodes[Int(old_first_child) : Int(old_last_child)])
                 new_nodes[new_idx].last_child = len(new_nodes)
                 new_idx += 1
 
