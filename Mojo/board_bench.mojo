@@ -15,7 +15,7 @@ fn bench_update_row():
 
 fn bench_place_stone():
     var board = Board[19, max_stones, 8]()
-    var values = value_table[0] if board.turn == 0 else value_table[1]
+    var values = value_table[0]
     for _ in range(1000):
         board.place_stone(Place(9, 9), values)
         board.remove_stone()

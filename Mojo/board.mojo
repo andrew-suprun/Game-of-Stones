@@ -219,10 +219,10 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                             Place(x, y), top_places
                         )
 
-    fn max_score[turn: Int](self, out r: Score):
+    fn max_score[player: Int](self, out r: Score):
         r = loss
         for i in range(len(self.scores)):
-            var score = self.scores[i][turn]
+            var score = self.scores[i][player]
             if r < score and self.places[i] == self.empty:
                 r = score
 
