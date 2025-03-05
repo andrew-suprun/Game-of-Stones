@@ -60,3 +60,16 @@ func TestTopMoves(t *testing.T) {
 		t.Error("Fail")
 	}
 }
+func BenchmarkTopMoves(b *testing.B) {
+	c6 := NewGame()
+	m1, _ := ParseMove("j10")
+	c6.PlayMove(m1)
+	m2, _ := ParseMove("i9-i11")
+	c6.PlayMove(m2)
+
+	moves := make([]MoveValue[Move], 0, 60)
+	b.ResetTimer()
+	for range b.N {
+		c6.TopMoves(&moves)
+	}
+}

@@ -300,6 +300,88 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
+    fn decision(self, out decision: String):
+        var black_stones = max_stones * Self.black
+        var white_stones = max_stones * Self.white
+
+        for y in range(max_stones - 1):
+            var stones = Int8(0)
+            for x in range(size-max_stones+1):
+                stones += self[x + max_stones - 1, y]
+                if stones == black_stones:
+                    return "first-win"
+                elif stones == white_stones:
+                    return "second-win"
+                stones -= self[x, y]
+            
+        for x in range(max_stones - 1):
+            var stones = Int8(0)
+            for y in range(size-max_stones+1):
+                stones += self[x, y + max_stones - 1]
+                if stones == black_stones:
+                    return "first-win"
+                elif stones == white_stones:
+                    return "second-win"
+                stones -= self[x, y]
+
+        
+        for y in range(size - max_stones + 1):
+            var stones = Int8(0)
+            for x in range(max_stones - 1):
+                stones += self[x, y+x]
+            for x in range(size - max_stones + 1 - y):
+                stones += self[x+max_stones + 1, x + y + max_stones + 1]
+                if stones == black_stones:
+                    return "first-win"
+                elif stones == white_stones:
+                    return "second-win"
+                stones -= self[x, x+y]
+
+        for x in range(1, size - max_stones + 1):
+            var stones = Int8(0)
+            for y in range(max_stones - 1):
+                stones += self[x+y, y]
+            for y in range(size - max_stones + 1 - x):
+                stones += self[x + y + max_stones - 1, y + max_stones - 1]
+                if stones == black_stones:
+                    return "first-win"
+                elif stones == white_stones:
+                    return "second-win"
+                stones -= self[x+y, y]
+
+
+        for y in range(size - max_stones + 1):
+            var stones = Int8(0)
+            for x in range(max_stones - 1):
+                stones += self[size - 1 - x, x + y]
+            for x in range(size - max_stones + 1 - y):
+                stones += self[size - x - max_stones, x + y + max_stones - 1]
+                if stones == black_stones:
+                    return "first-win"
+                elif stones == white_stones:
+                    return "second-win"
+                stones -= self[size - 1 - x, x + y]
+
+        for x in range(1, size - max_stones + 1):
+            var stones = Int8(0)
+            for y in range(max_stones - 1):
+                stones += self[size - 1 - x - y, y]
+            for y in range(size - max_stones + 1 - x):
+                stones += self[size - max_stones - x - y, y + max_stones - 1]
+                if stones == black_stones:
+                    return "first-win"
+                elif stones == white_stones:
+                    return "second-win"
+                stones -= self[size - 1 - x - y, y]
+
+        for y in range(size):
+            for x in range(size):
+                if self[x, y] != 0:
+                    return "no-decision"
+
+        return "draw"
+
+
     fn debug_board_value(self, scores: List[Float32], out value: Float32):
         value = Float32(0)
         for y in range(size):

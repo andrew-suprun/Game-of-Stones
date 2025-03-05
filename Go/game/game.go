@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	. "game_of_stones/common"
@@ -148,7 +147,6 @@ func (game *Game) initValues() {
 }
 
 func (game *Game) placeStone(place Place, coeff int16) {
-	fmt.Printf("  placeStone: %v %v\n", place, coeff)
 	x, y := place.X, place.Y
 	if coeff == 1 {
 		game.value += game.values[y][x][game.turn]
@@ -201,7 +199,6 @@ func (game *Game) placeStone(place Place, coeff int16) {
 }
 
 func (game *Game) updateRow(x, y, dx, dy, n int8, coeff int16) {
-	fmt.Printf("updateRow: %d %d %d %d %d %d\n", x, y, dx, dy, n, coeff)
 	stones := Stone(0)
 	for i := int8(0); i < maxStones1; i++ {
 		stones += game.stones[y+i*dy][x+i*dx]
@@ -209,7 +206,6 @@ func (game *Game) updateRow(x, y, dx, dy, n int8, coeff int16) {
 	for range n {
 		stones += game.stones[y+maxStones1*dy][x+maxStones1*dx]
 		values := gameValues[game.turn][stones]
-		fmt.Printf("    stones %d scores %v\n", stones, values)
 		blackValue, whiteValue := values[0]*coeff, values[1]*coeff
 		if blackValue != 0 || whiteValue != 0 {
 			for j := int8(0); j < maxStones; j++ {
