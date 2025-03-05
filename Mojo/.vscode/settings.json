@@ -1,3 +1,4 @@
 {
     "mojo.run.focusOnTerminalAfterLaunch": true,
+    "editor.formatOnSave": false,
 }

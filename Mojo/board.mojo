@@ -80,35 +80,13 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             for x in range(size):
                 var h = 1 + min(max_stones - 1, x, size - 1 - x)
                 var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
-                var t1 = max(
-                    0,
-                    min(
-                        max_stones,
-                        m,
-                        size - max_stones + 1 - y + x,
-                        size - max_stones + 1 - x + y,
-                    ),
-                )
-                var t2 = max(
-                    0,
-                    min(
-                        max_stones,
-                        m,
-                        2 * size - 1 - max_stones + 1 - y - x,
-                        x + y - max_stones + 1 + 1,
-                    ),
-                )
+                var t1 = max(0, min(max_stones, m, size - max_stones + 1 - y + x, size - max_stones + 1 - x + y))
+                var t2 = max(0, min(max_stones, m, 2 * size - 1 - max_stones + 1 - y - x, x + y - max_stones + 1 + 1))
                 var total = v + h + t1 + t2
                 self.setscores(Place(x, y), Scores(total, total))
 
-    fn place_stone(
-        mut self,
-        place: Place,
-        scores: List[Scores],
-    ):
-        self.history_indices.append(
-            ScoreMark(place, self.score, len(self.history))
-        )
+    fn place_stone(mut self, place: Place, scores: List[Scores]):
+        self.history_indices.append(ScoreMark(place, self.score, len(self.history)))
 
         var x = Int(place.x)
         var y = Int(place.y)
@@ -130,21 +108,14 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
 
         var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
 
-        n = min(
-            max_stones,
-            m,
-            size - max_stones + 1 - y + x,
-            size - max_stones + 1 - x + y,
-        )
+        n = min(max_stones, m, size - max_stones + 1 - y + x, size - max_stones + 1 - x + y)
         if n > 0:
             var mn = min(x, y, max_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
             self.update_row(y_start * size + x_start, size + 1, n, scores)
 
-        n = min(
-            max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones + 2
-        )
+        n = min(max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones + 2)
         if n > 0:
             var mn = min(size - 1 - x, y, max_stones - 1)
             var x_start = x + mn
@@ -156,13 +127,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         else:
             self[x, y] = Self.white
 
-    fn update_row(
-        mut self,
-        start: Int,
-        delta: Int,
-        n: Int,
-        scores: List[Scores],
-    ):
+    fn update_row(mut self, start: Int, delta: Int, n: Int, scores: List[Scores]):
         for i in range(start, start + delta * (max_stones - 1 + n), delta):
             self.history.append(PlaceScores(i, self.scores[i]))
 
@@ -208,16 +173,12 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        add[Place, max_places, less_first](
-                            Place(x, y), top_places
-                        )
+                        add[Place, max_places, less_first](Place(x, y), top_places)
         else:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        add[Place, max_places, less_second](
-                            Place(x, y), top_places
-                        )
+                        add[Place, max_places, less_second](Place(x, y), top_places)
 
     fn max_score[player: Int](self, out r: Score):
         r = loss
@@ -307,9 +268,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         except:
             str = ""
 
-    fn str_scores_raises(
-        self, table_idx: Int, skip_footer: Bool = False, out str: String
-    ) raises:
+    fn str_scores_raises(self, table_idx: Int, skip_footer: Bool = False, out str: String) raises:
         str = String("\n   │")
         for i in range(size):
             str += String.format("    {} ", chr(i + ord("a")))
@@ -399,9 +358,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 value += self.debug_calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
-    fn debug_calc_value(
-        self, stones: Int8, scores: List[Float32], out value: Float32
-    ):
+    fn debug_calc_value(self, stones: Int8, scores: List[Float32], out value: Float32):
         value = 0
         var black = stones % max_stones
         var white = stones // max_stones
