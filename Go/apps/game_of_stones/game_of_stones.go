@@ -169,18 +169,17 @@ func randomPlaces() []game.Place {
 }
 
 func (cmd *Cmd) call(format string, args ...any) string {
-	out := fmt.Sprintf(format, args...)
-	fmt.Fprintln(cmd.out, out+"\n")
+	cmd.send(format, args...)
 	in, _ := cmd.in.ReadString('\n')
 	in = strings.TrimSpace(in)
-	// fmt.Printf("%s: call %q -> %q\n", cmd.name, out, in)
+	fmt.Printf("%s: got %q\n", cmd.name, in)
 	return in
 }
 
 func (cmd *Cmd) send(format string, args ...any) {
 	text := fmt.Sprintf(format, args...)
-	// fmt.Printf("%s: sending %q\n", cmd.name, text)
 	fmt.Fprintln(cmd.out, text+"\n")
+	fmt.Printf("%s: sent %q\n", cmd.name, text)
 }
 
 func (cmd *Cmd) wait() {

@@ -40,6 +40,7 @@ loop:
 		} else if err != nil {
 			panic(err)
 		}
+		log("got %q\n", line)
 		terms := strings.Split(line, " ")
 		switch terms[0] {
 		case "game-name":
@@ -50,7 +51,6 @@ loop:
 				panic(err)
 			}
 			theTree.CommitMove(move)
-			log("got %q", line)
 			log("%s", theGame)
 		case "respond":
 			millis, err := strconv.ParseInt(terms[1], 10, 64)

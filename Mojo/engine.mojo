@@ -1,5 +1,6 @@
 from sys import argv
 from time import perf_counter_ns
+from builtin.io import _fdopen
 
 from connect6 import Connect6, Move
 from tree import Tree
@@ -16,28 +17,39 @@ def main():
         log_file = open(args[1], "w")
         log = True
 
+    var stdin = _fdopen["r"](0)
+
+
     var game = Game()
     var tree = Tree[Connect6[19, 60, 32]](20)
     
     while True:
         var line: String
         try:
-            line = String(input().strip())
+            if log:
+                print("read line 1", file=log_file)
+            var text = stdin.readline()
+            # var text = input()
+            if log:
+                print("read line 2", file=log_file)
+            line = String(text.strip())
         except:
             if log:
+                print("ERROR", file=log_file)
                 log_file.close()
             return
         if line == "":
             continue
+        if log:
+            print("got", line, file=log_file)
         var terms = line.split(" ")
         if terms[0] == "game-name":
-            print("connect6")
+            print("game-name connect6")
         elif terms[0] == "move":
             var move = Move(terms[1])
             game.play_move(move)
             tree.play_move(move)
             if log:
-                print("got", line, file=log_file)
                 print(game.board, file=log_file)
         elif terms[0] == "respond":
             var deadline = perf_counter_ns() + Int(terms[1]) * 1_000_000
@@ -52,11 +64,13 @@ def main():
                 print("move", move, file=log_file)
                 print(game.board, file=log_file)
         elif terms[0] == "decision":
-            print("decision", game.board.decision())
+            print("decision no-decision")
+            # print("decision", game.board.decision())
 
         elif terms[0] == "stop":
             if log:
                 log_file.close()
             return
         else:
-            print("unknown", line)
+            if log:
+                print("unknown", line, file=log_file)
