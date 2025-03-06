@@ -153,7 +153,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         var idx = self.history_indices.pop()
         self[Int(idx.place.x), Int(idx.place.y)] = self.empty
         self.score = idx.score
-        for i in range(idx.history_idx, len(self.history)):
+        for i in range(len(self.history)-1, idx.history_idx-1, -1):
             var h_scores = self.history[i]
             self.scores[h_scores.offset] = h_scores.scores
         self.history.resize(idx.history_idx)

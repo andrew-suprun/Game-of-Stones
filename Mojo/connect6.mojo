@@ -37,6 +37,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
         var turn_first = self.board.turn == first
         move_scores.clear()
         self.board.top_places(self.top_places)
+
         if len(self.top_places) < 2:
             move_scores.append(MoveScore(Move(0, 0, 0, 0), draw))
             return
@@ -49,7 +50,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             var score1 = self.board.getscores(place1)[0] + self.board.getscores(
                 place1
             )[1]
-            # print("place1", place1, "score1", score1)
             if turn_first:
                 self.board.place_stone(place1, value_table[0])
             else:
