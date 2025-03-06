@@ -2,16 +2,15 @@ from sys import argv
 from time import perf_counter_ns
 from builtin.io import _fdopen
 
-from connect6 import Connect6, Move
+from scores import Score
 from tree import Tree
+from game import Game, Move
 
-alias Game = Connect6[19, 60, 32]
-alias game_name = "connect6"
 
 var log_file = FileHandle()
 var log = False
 
-def main():
+fn run[G: Game](exp_factor: Score) raises:
     var args = argv()
     if len(args) > 1:
         log_file = open(args[1], "w")
@@ -20,8 +19,8 @@ def main():
     var stdin = _fdopen["r"](0)
 
 
-    var game = Game()
-    var tree = Tree[Connect6[19, 60, 32]](20)
+    var game = G()
+    var tree = Tree[G](20)
     
     while True:
         var line: String
@@ -44,13 +43,11 @@ def main():
             print("got", line, file=log_file)
         var terms = line.split(" ")
         if terms[0] == "game-name":
-            print("game-name connect6")
+            print("game-name", game.name())
         elif terms[0] == "move":
             var move = Move(terms[1])
             game.play_move(move)
             tree.play_move(move)
-            if log:
-                print(game.board, file=log_file)
         elif terms[0] == "respond":
             var deadline = perf_counter_ns() + Int(terms[1]) * 1_000_000
             while perf_counter_ns() < deadline:
@@ -62,10 +59,8 @@ def main():
             print("move", move)
             if log:
                 print("move", move, file=log_file)
-                print(game.board, file=log_file)
         elif terms[0] == "decision":
             print("decision no-decision")
-            # print("decision", game.board.decision())
 
         elif terms[0] == "stop":
             if log:

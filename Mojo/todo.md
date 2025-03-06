@@ -1,5 +1,4 @@
-* use SIMD for board scores
-* make score Int16
+* implement gomoku
 * use sys.param_env for compile time config
 * make Move an alias type in Game
 

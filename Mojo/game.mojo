@@ -4,6 +4,12 @@ from board import Place
 trait Game:
     # alias Move: EqualityComparableCollectionElement
 
+    fn __init__(out self):
+        ...
+
+    fn name(self, out name: String):
+        ...
+
     fn top_moves(mut self, mut move_scores: List[MoveScore]):
         ...
 
@@ -11,9 +17,6 @@ trait Game:
         ...
 
     fn undo_move(mut self):
-        ...
-
-    fn score(self, out score: Score):
         ...
 
 
@@ -53,7 +56,10 @@ struct Move(CollectionElement, EqualityComparable, Representable, Stringable, Wr
         r = String(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write(self.p1, "-", self.p2)
+        if self.p1 != self.p2:
+            writer.write(self.p1, "-", self.p2)
+        else:
+            writer.write(self.p1)
 
 
 @value

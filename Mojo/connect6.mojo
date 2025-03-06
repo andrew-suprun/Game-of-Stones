@@ -1,8 +1,9 @@
-from scores import Score, win, draw
-from game import Game, Move, MoveScore
-from board import Board, Place, first, second
-import values as v
 from heap import add
+from scores import Score, win, draw
+import values as v
+from board import Board, Place, first, second
+from game import Game, Move, MoveScore
+from engine import run
 
 alias max_stones = 6
 
@@ -28,6 +29,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
         self.board = Board[size, max_stones, max_places]()
         self.top_places = List[Place]()
         self.history = List[Move]()
+
+    fn name(self, out name: String):
+        name = "connect6"
 
     fn top_moves(mut self, mut move_scores: List[MoveScore]):
         @parameter
@@ -104,27 +108,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             self.board.setturn(board.second)
         else:
             self.board.setturn(board.first)
-        var move = self.history.pop()
+        var move = self.history[-1]
+        self.history.resize(len(self.history)-1)
         if move.p1 != move.p2:
             self.board.remove_stone()
         self.board.remove_stone()
 
-    fn score(self, out score: Score):
-        score = self.board.score
-
-
-fn main():
-    print("t3.1:")
-    print("len", len(value_table))
-    for y in range(max_stones):
-        for x in range(max_stones):
-            print(value_table[0][y * max_stones + x], ", ", sep="", end="")
-        print()
-    print()
-
-    print("t3.2:")
-    for y in range(max_stones):
-        for x in range(max_stones):
-            print(value_table[1][y * max_stones + x], ", ", sep="", end="")
-        print()
-    print()
+def main():
+    run[Connect6[19, 60, 32]](20)
