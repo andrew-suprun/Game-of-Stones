@@ -203,7 +203,7 @@ func (tree *Tree[m]) expand(parentIdx int32) {
 			coeff = -1
 		}
 		selectedChildIdx := int32(-1)
-		logParentSims := math.Log(float64(parent.nSims))
+		logParentSims := math.Log2(float64(parent.nSims))
 		maxV := math.Inf(-1)
 		for idx := parent.firstChild; idx < parent.lastChild; idx++ {
 			child := tree.nodes[idx]

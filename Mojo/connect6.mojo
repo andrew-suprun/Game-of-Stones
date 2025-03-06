@@ -76,7 +76,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                     else:
                         self.board.place_stone(place2, value_table[1])
                         var opp_score = self.board.max_score[first]()
-                        move_score = self.board.score - opp_score
+                        move_score = -self.board.score - opp_score
                         self.board.remove_stone()
 
                     add[MoveScore, max_moves, less](

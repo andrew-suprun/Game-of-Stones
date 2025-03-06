@@ -82,9 +82,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 var child = self.nodes[idx]
                 if is_decisive(child.value):
                     continue
-                var v = child.value / n_sims + self.c * sqrt(
-                    log_parent_sims / Score(child.n_sims)
-                )
+                var v = child.value + self.c * sqrt(log_parent_sims / Score(child.n_sims))
                 if v > maxV:
                     maxV = v
                     selected_child_idx = idx
