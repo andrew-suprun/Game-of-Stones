@@ -25,12 +25,7 @@ fn run[G: Game](exp_factor: Score) raises:
     while True:
         var line: String
         try:
-            if log:
-                print("read line 1", file=log_file)
             var text = stdin.readline()
-            # var text = input()
-            if log:
-                print("read line 2", file=log_file)
             line = String(text.strip())
         except:
             if log:
@@ -50,9 +45,15 @@ fn run[G: Game](exp_factor: Score) raises:
             tree.play_move(move)
         elif terms[0] == "respond":
             var deadline = perf_counter_ns() + Int(terms[1]) * 1_000_000
+            var sims = 0
             while perf_counter_ns() < deadline:
                 if tree.expand(game):
+                    if log:
+                        print("DONE", file=log_file)
                     break
+                sims += 1
+            if log:
+                print("sims", sims, file=log_file)
             var move = tree.best_move()
             game.play_move(move)
             tree.play_move(move)

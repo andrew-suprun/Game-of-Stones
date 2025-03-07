@@ -2,36 +2,36 @@ from benchmark import benchmark, Unit
 
 from tree import Tree
 from game import Move, MoveScore
-from connect6 import Connect6
+from gomoku import Gomoku
 
-alias C6 = Connect6[19, 60, 32]
+alias G = Gomoku[19, 32]
 
 fn bench_top_moves():
-    var c6 = C6()
+    var game = G()
     try:
-        c6.play_move(Move("j10"))
-        c6.play_move(Move("i9-i11"))
+        game.play_move(Move("j10"))
+        game.play_move(Move("i9"))
     except:
         pass
     var moves = List[MoveScore]()
     for _ in range(1000):
-        c6.top_moves(moves)
+        game.top_moves(moves)
     _ = moves
 
 fn bench_extend():
-    var game = C6()
-    var tree = Tree[C6](20)
+    var game = G()
+    var tree = Tree[G](20)
     try:
         game.play_move(Move("j10"))
-        game.play_move(Move("i9-i10"))
+        game.play_move(Move("i9"))
     except:
         pass
-    for _ in range(1000):
+    for _ in range(100_000):
         var done = tree.expand(game)
         if done:
             print("done")
             break
 
 def main():
-    print("bench_top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
+    # print("bench_top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
     print("bench_extend   ", benchmark.run[bench_extend]().mean(Unit.ms))

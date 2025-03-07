@@ -125,30 +125,13 @@ struct Tree[Game: game.Game](Stringable, Writable):
         result = best_child.move
 
     fn play_move(mut self, move: game.Move):
-        var idx = -1
+        var node = Node(game.Move(0, 0, 0, 0), 0)
         var first_child = Int(self.nodes[0].first_child)
         var last_child = Int(self.nodes[0].last_child)
         for child_idx in range(first_child, last_child):
             if self.nodes[child_idx].move == move:
-                idx = child_idx
+                node = self.nodes[child_idx]
                 break
-
-        if idx != -1:
-            var new_nodes = List[Node](self.nodes[idx])
-            var new_idx = 0
-            while new_idx < len(new_nodes):
-                var old_first_child = new_nodes[new_idx].first_child
-                var old_last_child = new_nodes[new_idx].last_child
-                if old_first_child == -1:
-                    new_idx += 1
-                    continue
-                new_nodes[new_idx].first_child = len(new_nodes)
-                new_nodes.extend(self.nodes[Int(old_first_child) : Int(old_last_child)])
-                new_nodes[new_idx].last_child = len(new_nodes)
-                new_idx += 1
-
-            self.nodes = new_nodes
-            return
 
         self.nodes.clear()
         self.nodes.append(Node(game.Move(0, 0, 0, 0), 0))
