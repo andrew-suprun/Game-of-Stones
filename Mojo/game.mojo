@@ -19,6 +19,9 @@ trait Game:
     fn undo_move(mut self):
         ...
 
+    fn score(self, out score: Score):
+        ...
+
 
 # TODO Make it alias type in Game
 @value

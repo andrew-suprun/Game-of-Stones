@@ -124,17 +124,9 @@ struct Tree[Game: game.Game](Stringable, Writable):
                 best_child = child[]
         result = best_child.move
 
-    fn play_move(mut self, move: game.Move):
-        var node = Node(game.Move(0, 0, 0, 0), 0)
-        var first_child = Int(self.nodes[0].first_child)
-        var last_child = Int(self.nodes[0].last_child)
-        for child_idx in range(first_child, last_child):
-            if self.nodes[child_idx].move == move:
-                node = self.nodes[child_idx]
-                break
-
+    fn reset(mut self, g: Game):
         self.nodes.clear()
-        self.nodes.append(Node(game.Move(0, 0, 0, 0), 0))
+        self.nodes.append(Node(game.Move(0, 0, 0, 0), g.score()))
 
     fn __str__(self) -> String:
         return String.write(self)

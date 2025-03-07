@@ -114,5 +114,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             self.board.remove_stone()
         self.board.remove_stone()
 
+    fn score(self, out score: Score):
+        return self.board.board_value(values)
+
 def main():
     run[Connect6[19, 60, 32]](20)

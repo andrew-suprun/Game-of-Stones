@@ -76,6 +76,9 @@ struct Gomoku[size: Int, max_moves: Int](Game):
         self.history.resize(len(self.history)-1)
         self.board.remove_stone()
 
+    fn score(self, out score: Score):
+        return self.board.board_value(values)
+
 def main():
     run[Gomoku[19, 32]](20)
 

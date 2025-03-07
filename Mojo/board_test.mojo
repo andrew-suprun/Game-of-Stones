@@ -23,13 +23,13 @@ def test_place_stone():
                         var actual = board.getscores(Place(x, y))
                         board.turn = 0
                         board.place_stone(Place(x, y), value_table[0])
-                        var expected = board.debug_board_value(values) - value
+                        var expected = board.board_value(values) - value
                         board.remove_stone()
                         if actual[0] != expected:
                             failure = True
                         board.turn = 1
                         board.place_stone(Place(x, y), value_table[1])
-                        expected = board.debug_board_value(values) - value
+                        expected = board.board_value(values) - value
                         board.remove_stone()
                         if actual[1] != expected:
                             failure = True

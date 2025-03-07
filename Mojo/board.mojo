@@ -382,7 +382,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         return "draw"
 
 
-    fn debug_board_value(self, scores: List[Float32], out value: Float32):
+    fn board_value(self, scores: List[Float32], out value: Float32):
         value = Float32(0)
         for y in range(size):
             var stones = Int8(0)
@@ -390,7 +390,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 stones += self[x, y]
             for x in range(size - max_stones + 1):
                 stones += self[x + max_stones - 1, y]
-                value += self.debug_calc_value(stones, scores)
+                value += self.calc_value(stones, scores)
                 stones -= self[x, y]
 
         for x in range(size):
@@ -399,7 +399,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 stones += self[x, y]
             for y in range(size - max_stones + 1):
                 stones += self[x, y + max_stones - 1]
-                value += self.debug_calc_value(stones, scores)
+                value += self.calc_value(stones, scores)
                 stones -= self[x, y]
 
         for y in range(size - max_stones + 1):
@@ -408,7 +408,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 stones += self[x, y + x]
             for x in range(size - max_stones + 1 - y):
                 stones += self[x + max_stones - 1, x + y + max_stones - 1]
-                value += self.debug_calc_value(stones, scores)
+                value += self.calc_value(stones, scores)
                 stones -= self[x, x + y]
 
         for x in range(1, size - max_stones + 1):
@@ -417,7 +417,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 stones += self[x + y, y]
             for y in range(size - max_stones + 1 - x):
                 stones += self[x + y + max_stones - 1, y + max_stones - 1]
-                value += self.debug_calc_value(stones, scores)
+                value += self.calc_value(stones, scores)
                 stones -= self[x + y, y]
 
         for y in range(size - max_stones + 1):
@@ -428,7 +428,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 stones += self[
                     size - 1 - x - max_stones + 1, x + y + max_stones - 1
                 ]
-                value += self.debug_calc_value(stones, scores)
+                value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x, x + y]
 
         for x in range(1, size - max_stones + 1):
@@ -437,14 +437,14 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 stones += self[size - 1 - x - y, y]
             for y in range(size - max_stones + 1 - x):
                 stones += self[size - max_stones - x - y, y + max_stones - 1]
-                value += self.debug_calc_value(stones, scores)
+                value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
-    fn debug_calc_value(self, stones: Int8, scores: List[Float32], out value: Float32):
+    fn calc_value(self, stones: Int8, scores: List[Float32], out value: Float32):
         value = 0
         var black = stones % max_stones
         var white = stones // max_stones
         if white == 0:
-            return scores[Int(black)]
+            return scores[black]
         elif black == 0:
-            return -scores[Int(white)]
+            return -scores[white]

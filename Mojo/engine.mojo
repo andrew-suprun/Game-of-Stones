@@ -42,7 +42,7 @@ fn run[G: Game](exp_factor: Score) raises:
         elif terms[0] == "move":
             var move = Move(terms[1])
             game.play_move(move)
-            tree.play_move(move)
+            tree.reset(game)
         elif terms[0] == "respond":
             var deadline = perf_counter_ns() + Int(terms[1]) * 1_000_000
             var sims = 0
@@ -56,7 +56,7 @@ fn run[G: Game](exp_factor: Score) raises:
                 print("sims", sims, file=log_file)
             var move = tree.best_move()
             game.play_move(move)
-            tree.play_move(move)
+            tree.reset(game)
             print("move", move)
             if log:
                 print("move", move, file=log_file)
