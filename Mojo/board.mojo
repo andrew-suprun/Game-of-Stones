@@ -382,8 +382,8 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         return "draw"
 
 
-    fn board_value(self, scores: List[Float32], out value: Float32):
-        value = Float32(0)
+    fn board_value(self, scores: List[Score], out value: Score):
+        value = Score(0)
         for y in range(size):
             var stones = Int8(0)
             for x in range(max_stones - 1):
@@ -440,7 +440,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
-    fn calc_value(self, stones: Int8, scores: List[Float32], out value: Float32):
+    fn calc_value(self, stones: Int8, scores: List[Score], out value: Score):
         value = 0
         var black = stones % max_stones
         var white = stones // max_stones

@@ -10,6 +10,7 @@ from game import Game, Move
 var log_file = FileHandle()
 var log = False
 
+
 fn run[G: Game](exp_factor: Score) raises:
     var args = argv()
     if len(args) > 1:
@@ -18,10 +19,9 @@ fn run[G: Game](exp_factor: Score) raises:
 
     var stdin = _fdopen["r"](0)
 
-
     var game = G()
     var tree = Tree[G](20)
-    
+
     while True:
         var line: String
         try:
@@ -43,6 +43,8 @@ fn run[G: Game](exp_factor: Score) raises:
             var move = Move(terms[1])
             game.play_move(move)
             tree.reset(game)
+            if log:
+                print(game, file=log_file)
         elif terms[0] == "respond":
             var deadline = perf_counter_ns() + Int(terms[1]) * 1_000_000
             var sims = 0
@@ -52,17 +54,16 @@ fn run[G: Game](exp_factor: Score) raises:
                         print("DONE", file=log_file)
                     break
                 sims += 1
-            if log:
-                print("sims", sims, file=log_file)
             var move = tree.best_move()
             game.play_move(move)
             tree.reset(game)
             print("move", move)
             if log:
                 print("move", move, file=log_file)
+                print("sims", sims, file=log_file)
+                print(game, file=log_file)
         elif terms[0] == "decision":
             print("decision no-decision")
-
         elif terms[0] == "stop":
             if log:
                 log_file.close()

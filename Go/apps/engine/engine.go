@@ -59,6 +59,7 @@ loop:
 			}
 			timestamp := time.Now()
 			maxDuration := time.Duration(millis) * time.Millisecond
+			sims := 0
 			for {
 				dec, done := theTree.Expand()
 				if done || dec != common.NoDecision || time.Since(timestamp) > maxDuration {
@@ -66,11 +67,13 @@ loop:
 					log("moves:\n%s\n", theTree.AvailableMoves())
 					break
 				}
+				sims++
 			}
 			move := theTree.BestMove()
 			theTree.CommitMove(move)
 			fmt.Printf("move %s\n", move)
 			log("move %s\n", move)
+			log("sims %d\n", sims)
 			log("%s", theGame)
 		case "decision":
 			fmt.Printf("decision %s\n", theGame.Decision())

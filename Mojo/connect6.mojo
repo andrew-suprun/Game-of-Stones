@@ -1,3 +1,5 @@
+from sys import env_get_int
+
 from heap import add
 from scores import Score, win, draw
 import values as v
@@ -117,5 +119,16 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     fn score(self, out score: Score):
         return self.board.board_value(values)
 
+    fn __str__(self, out str: String):
+        return String(self.board)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(self.board)
+
+alias board_size = env_get_int["BOARD_SIZE", 19]()
+alias max_moves = env_get_int["MAX_MOVES", 60]()
+alias max_places = env_get_int["MAX_PLACES", 32]()
+alias exp_factor = env_get_int["EXP_FACTOR", 20]()
+
 def main():
-    run[Connect6[19, 60, 32]](20)
+    run[Connect6[board_size, max_moves, max_places]](Score(exp_factor))

@@ -4,7 +4,7 @@ alias Score = Float32
 alias Scores = SIMD[DType.float32, 2]
 alias win = inf[DType.float32]()
 alias loss = neg_inf[DType.float32]()
-alias draw = Float32(0.5)
+alias draw = Score(0.5)
 
 
 @always_inline

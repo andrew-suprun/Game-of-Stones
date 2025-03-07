@@ -1,4 +1,3 @@
-* use sys.param_env for compile time config
 * make Move an alias type in Game
 
 mojo -D ASSERT=all heap_bench.mojo

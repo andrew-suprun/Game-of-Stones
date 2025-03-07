@@ -1,7 +1,7 @@
 from scores import Score
 from board import Place
 
-trait Game:
+trait Game(Stringable, Writable):
     # alias Move: EqualityComparableCollectionElement
 
     fn __init__(out self):
