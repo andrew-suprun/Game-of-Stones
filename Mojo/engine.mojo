@@ -45,6 +45,11 @@ fn run[G: Game](exp_factor: Score) raises:
             tree.reset(game)
             if log:
                 print(game, file=log_file)
+        elif terms[0] == "undo":
+            game.undo_move()
+            tree.reset(game)
+            if log:
+                print(game, file=log_file)
         elif terms[0] == "respond":
             var deadline = perf_counter_ns() + Int(terms[1]) * 1_000_000
             var sims = 0

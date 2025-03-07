@@ -52,6 +52,9 @@ loop:
 			}
 			theTree.CommitMove(move)
 			log("%s", theGame)
+		case "undo":
+			theTree.Reset()
+			log("%s", theGame)
 		case "respond":
 			millis, err := strconv.ParseInt(terms[1], 10, 64)
 			if err != nil {

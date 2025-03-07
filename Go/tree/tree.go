@@ -22,6 +22,7 @@ type Tree[move Equatable[move]] struct {
 	nodes    []node
 	moves    []move
 	topMoves []MoveValue[move]
+	history  []move
 }
 
 type node struct {
@@ -68,38 +69,7 @@ func (tree *Tree[m]) Expand() (decision Decision, forcedMove bool) {
 
 func (tree *Tree[move]) CommitMove(toPlay move) {
 	tree.game.PlayMove(toPlay)
-
-	idx := int32(-1)
-	root := tree.nodes[0]
-	for childIdx := root.firstChild; childIdx < root.lastChild; childIdx++ {
-		if tree.moves[childIdx].Equal(toPlay) {
-			idx = childIdx
-			break
-		}
-	}
-
-	if idx != -1 {
-		newNodes := []node{tree.nodes[idx]}
-		newMoves := []move{tree.moves[idx]}
-		newIdx := 0
-		for newIdx < len(newNodes) {
-			oldFirstChild := newNodes[newIdx].firstChild
-			oldLastChild := newNodes[newIdx].lastChild
-			if oldFirstChild == 0 && oldLastChild == 0 {
-				newIdx++
-				continue
-			}
-			newNodes[newIdx].firstChild = int32(len(newNodes))
-			newNodes = append(newNodes, tree.nodes[oldFirstChild:oldLastChild]...)
-			newMoves = append(newMoves, tree.moves[oldFirstChild:oldLastChild]...)
-			newNodes[newIdx].lastChild = int32(len(newNodes))
-			newIdx++
-		}
-		tree.nodes = newNodes
-		tree.moves = newMoves
-
-		return
-	}
+	tree.history = append(tree.history, toPlay)
 
 	tree.nodes = tree.nodes[:0]
 	tree.nodes = append(tree.nodes, node{
@@ -108,6 +78,21 @@ func (tree *Tree[move]) CommitMove(toPlay move) {
 	})
 	tree.moves = tree.moves[:0]
 	tree.moves = append(tree.moves, toPlay)
+}
+
+func (tree *Tree[move]) Reset() {
+	lastMove := tree.history[len(tree.history)-1]
+	tree.history = tree.history[:len(tree.history)-1]
+	tree.game.UndoMove(lastMove)
+
+	tree.nodes = tree.nodes[:0]
+	tree.nodes = append(tree.nodes, node{
+		value:    tree.game.BoardValue(),
+		decision: tree.game.Decision(),
+	})
+	var m move
+	tree.moves = tree.moves[:0]
+	tree.moves = append(tree.moves, m)
 }
 
 func (tree *Tree[move]) BestMove() move {
