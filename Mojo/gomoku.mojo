@@ -53,8 +53,8 @@ struct Gomoku[size: Int, max_moves: Int](Game):
                     add[MoveScore, max_moves, less](MoveScore(Move(place, place), draw), move_scores)
                     has_draw = True
             else:
-                var move_score = (self.board.getscores(place)[first] + self.board.score) // 2  if turn_first
-                    else (self.board.getscores(place)[second] - self.board.score) // 2
+                var move_score = self.board.getscores(place)[first] // 2 + self.board.score  if turn_first
+                    else self.board.getscores(place)[second] // 2 - self.board.score
 
                 add[MoveScore, max_moves, less](
                     MoveScore(Move(place, place), move_score),

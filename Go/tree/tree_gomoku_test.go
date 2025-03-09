@@ -10,8 +10,8 @@ import (
 )
 
 func TestExpandGomoku(t *testing.T) {
-	gomoku := game.NewGame(8)
-	searchTree := NewTree(gomoku, 8, 20)
+	gomoku := game.NewGame()
+	searchTree := NewTree(gomoku)
 
 	move, _ := game.ParseMove("j10")
 	searchTree.CommitMove(move)
@@ -28,7 +28,7 @@ func TestExpandGomoku(t *testing.T) {
 		}
 		move = searchTree.BestMove()
 		searchTree.CommitMove(move)
-		dec, _, _, _, _ := gomoku.Decision()
+		dec := gomoku.Decision()
 		if dec != common.NoDecision {
 			break
 		}
