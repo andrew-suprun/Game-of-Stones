@@ -68,7 +68,7 @@ fn run[G: Game](exp_factor: Score) raises:
                 print("sims", sims, file=log_file)
                 print(game, file=log_file)
         elif terms[0] == "decision":
-            print("decision no-decision")
+            print(game.decision())
         elif terms[0] == "stop":
             if log:
                 log_file.close()

@@ -22,6 +22,10 @@ trait Game(Stringable, Writable):
     fn score(self, out score: Score):
         ...
 
+    fn decision(self, out decision: String):
+        ...
+
+
 
 # TODO Make it alias type in Game
 @value

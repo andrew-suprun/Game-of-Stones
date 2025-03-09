@@ -58,6 +58,8 @@ func main() {
 	app.Main()
 }
 
+var history []state
+
 func run() {
 	gameState := state{}
 	stateChan := make(chan *state, 1)
@@ -217,6 +219,10 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 					fmt.Printf("move %s\n", move)
 					checkTerminal(state)
 				}
+			case key.NameEscape:
+				if len(history) > 0 {
+					fmt.Printf("undo\n")
+				}
 			}
 		}
 	}
@@ -256,6 +262,14 @@ func input(window *app.Window, stateChan chan *state) {
 		case "respond":
 			state := <-stateChan
 			state.respond = true
+			stateChan <- state
+		case "undo":
+			state := <-stateChan
+			if len(history) > 0 {
+				history = history[:len(history)-1]
+				state = &history[len(history)-1]
+			}
+			log.Println("len", len(history))
 			stateChan <- state
 		case "clear":
 			state := <-stateChan
@@ -305,6 +319,8 @@ func playMove(stateChan chan *state, moveStr string) {
 	}
 
 	checkTerminal(state)
+	history = append(history, *state)
+	log.Println("len", len(history))
 
 	stateChan <- state
 }

@@ -64,6 +64,11 @@ func main() {
 		uiMove := ui.call("respond")
 		if uiMove == "skip" {
 			firstEngineMove = true
+		} else if uiMove == "undo" {
+			engine.send("undo")
+			engine.send("undo")
+			ui.send("undo")
+			continue
 		} else {
 			engine.send(uiMove)
 			dec := engine.call("decision")

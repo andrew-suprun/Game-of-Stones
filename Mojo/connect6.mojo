@@ -119,6 +119,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     fn score(self, out score: Score):
         return self.board.board_value(values)
 
+    fn decision(self, out decision: String):
+        return self.board.decision()
+
     fn __str__(self, out str: String):
         return String(self.board)
 
