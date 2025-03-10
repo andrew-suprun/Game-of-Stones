@@ -18,5 +18,5 @@ fn bench():
             add[Int, 20, less](values[i], heap)
 
 
-def main():
+fn main() raises:
     print("heap bench       ", benchmark.run[bench]().mean(Unit.ms))

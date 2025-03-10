@@ -63,7 +63,7 @@ fn benchListSIMDFloat():
     keep(s)
 
 
-def main():
+fn main() raises:
     seed(1)
 
     print(

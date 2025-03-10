@@ -118,9 +118,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             self.board.remove_stone()
         self.board.remove_stone()
 
-    fn score(self, out score: Score):
-        return self.board.board_value(values)
-
     fn __str__(self, out str: String):
         return String(self.board)
 
@@ -132,5 +129,5 @@ alias max_moves = env_get_int["MAX_MOVES", 60]()
 alias max_places = env_get_int["MAX_PLACES", 32]()
 alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
-def main():
+fn main() raises:
     run[Connect6[board_size, max_moves, max_places]](Score(exp_factor))

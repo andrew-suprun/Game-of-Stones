@@ -32,6 +32,6 @@ fn bench_extend():
             print("done")
             break
 
-def main():
+fn main() raises:
     print("bench_top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
     print("bench_extend   ", benchmark.run[bench_extend]().mean(Unit.ms))

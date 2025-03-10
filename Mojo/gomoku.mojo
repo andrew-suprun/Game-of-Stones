@@ -80,9 +80,6 @@ struct Gomoku[size: Int, max_moves: Int](Game):
         self.history.resize(len(self.history)-1)
         self.board.remove_stone()
 
-    fn score(self, out score: Score):
-        return self.board.board_value(values)
-
     fn __str__(self, out str: String):
         return String(self.board)
 
@@ -94,6 +91,6 @@ alias max_moves = env_get_int["MAX_MOVES", 32]()
 alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 
-def main():
+fn main() raises:
     run[Gomoku[board_size, max_moves]](Score(exp_factor))
 

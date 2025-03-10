@@ -126,7 +126,7 @@ struct Tree[Game: game.Game](Stringable, Writable):
 
     fn reset(mut self, g: Game):
         self.nodes.clear()
-        self.nodes.append(Node(game.Move(0, 0, 0, 0), g.score()))
+        self.nodes.append(Node(game.Move(0, 0, 0, 0), 0))
 
     fn __str__(self) -> String:
         return String.write(self)

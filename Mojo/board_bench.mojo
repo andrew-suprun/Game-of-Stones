@@ -32,7 +32,7 @@ fn bench_top_places():
     for _ in range(1000):
         board.top_places(top_places)
 
-def main():
+fn main() raises:
     print("bench_update_row ", benchmark.run[bench_update_row]().mean(Unit.ms))
     print("bench_place_stone", benchmark.run[bench_place_stone]().mean(Unit.ms))
     print("bench_max_score  ", benchmark.run[bench_max_score]().mean(Unit.ms))
