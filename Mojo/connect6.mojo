@@ -106,6 +106,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             self.board.setturn(board.first)
 
     fn undo_move(mut self):
+        if len(self.history) == 0:
+            return
         if self.board.turn == board.first:
             self.board.setturn(board.second)
         else:
@@ -118,9 +120,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
     fn score(self, out score: Score):
         return self.board.board_value(values)
-
-    fn decision(self, out decision: String):
-        return self.board.decision()
 
     fn __str__(self, out str: String):
         return String(self.board)

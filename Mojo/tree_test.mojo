@@ -18,7 +18,8 @@ def test_tree():
     g.play_move(Move("j11"))
     g.play_move(Move("a3"))
 
-    _ = t.expand(g)
-    print(t)
-    _ = t.expand(g)
-    print(t)
+    for _ in range(3):
+        _ = t.expand(g)
+    print(g)
+    # print(t)
+    testing.assert_true(False)

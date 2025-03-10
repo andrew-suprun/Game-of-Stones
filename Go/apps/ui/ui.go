@@ -51,6 +51,7 @@ type state struct {
 	respond    bool
 	turn       Turn
 	n_selected int
+	decision   string
 }
 
 func main() {
@@ -61,7 +62,7 @@ func main() {
 var history []state
 
 func run() {
-	gameState := state{}
+	gameState := state{decision: "no-decision"}
 	stateChan := make(chan *state, 1)
 	stateChan <- &gameState
 
@@ -220,7 +221,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 					checkTerminal(state)
 				}
 			case key.NameEscape:
-				if len(history) > 0 {
+				if len(history) > 1 {
 					fmt.Printf("undo\n")
 				}
 			}
@@ -265,10 +266,13 @@ func input(window *app.Window, stateChan chan *state) {
 			stateChan <- state
 		case "undo":
 			state := <-stateChan
-			if len(history) > 0 {
-				history = history[:len(history)-1]
-				state = &history[len(history)-1]
-			}
+			history = history[:len(history)-1]
+			state = &history[len(history)-1]
+			log.Println("len", len(history))
+			stateChan <- state
+		case "decision":
+			state := <-stateChan
+			fmt.Printf("decision %s\n", state.decision)
 			log.Println("len", len(history))
 			stateChan <- state
 		case "clear":
@@ -410,6 +414,11 @@ func checkTerminal(state *state) {
 			case stateWhite:
 				state.places[yy+dy*i][xx+dx*i] = stateWhiteSelected
 			}
+		}
+		if state.places[yy][xx] == stateBlackSelected {
+			state.decision = "first-win"
+		} else if state.places[yy][xx] == stateWhiteSelected {
+			state.decision = "second-win"
 		}
 	}
 }

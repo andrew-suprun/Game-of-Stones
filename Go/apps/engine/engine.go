@@ -78,8 +78,6 @@ loop:
 			log("move %s\n", move)
 			log("sims %d\n", sims)
 			log("%s", theGame)
-		case "decision":
-			fmt.Printf("decision %s\n", theGame.Decision())
 		case "stop":
 			break loop
 		}

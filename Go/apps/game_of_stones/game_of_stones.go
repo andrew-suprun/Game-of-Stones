@@ -59,9 +59,14 @@ func main() {
 	firstEngineMove := false
 
 	millis := int(*spm * 1000)
+	onlyUndo := false
 
 	for {
 		uiMove := ui.call("respond")
+		if onlyUndo && uiMove != "undo" {
+			continue
+		}
+		onlyUndo = false
 		if uiMove == "skip" {
 			firstEngineMove = true
 		} else if uiMove == "undo" {
@@ -71,7 +76,7 @@ func main() {
 			continue
 		} else {
 			engine.send(uiMove)
-			dec := engine.call("decision")
+			dec := ui.call("decision")
 			terms := strings.Fields(dec)
 			if len(terms) > 1 && terms[1] != common.NoDecision.String() {
 				break
@@ -83,10 +88,10 @@ func main() {
 		} else {
 			engineMove := engine.call("respond %d", millis)
 			ui.send(engineMove)
-			dec := engine.call("decision")
+			dec := ui.call("decision")
 			terms := strings.Fields(dec)
 			if len(terms) > 1 && terms[1] != common.NoDecision.String() {
-				break
+				onlyUndo = true
 			}
 		}
 	}
