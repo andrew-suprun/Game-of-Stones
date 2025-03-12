@@ -58,7 +58,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     alias white = Int8(max_stones)
 
     var places: List[Int8]
-    var scores: List[Scores]
+    var scores: List[Scores] 
     var score: Score
     var turn: Int
     var history: List[PlaceScores]
@@ -180,7 +180,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                     if self[x, y] == self.empty:
                         add[Place, max_places, less_second](Place(x, y), top_places)
 
-    fn max_score[player: Int](self, out r: Score):
+    fn max_score(self, player: Int,  out r: Score):
         r = loss
         for i in range(len(self.scores)):
             var score = self.scores[i][player]
@@ -202,10 +202,6 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     @always_inline
     fn setscores(mut self, place: Place, value: Scores):
         self.scores[Int(place.y) * size + Int(place.x)] = value
-
-    @always_inline
-    fn setturn(mut self, turn: Int):
-        self.turn = turn
 
     fn __str__(self, out result: String):
         result = String.write(self)

@@ -70,8 +70,8 @@ struct Tree[Game: game.Game](Stringable, Writable):
             debug_assert(len(self.top_moves) > 0, "Function game.top_moves(...) returns empty result.")
 
             self.nodes[parent_idx].first_child = len(self.nodes)
-            for idx in range(len(self.top_moves)):
-                self.nodes.append(Node(self.top_moves[idx].move, self.top_moves[idx].score))
+            for move in self.top_moves:
+                self.nodes.append(Node(move[].move, move[].score))
             self.nodes[parent_idx].last_child = len(self.nodes)
         else:
             var selected_child_idx = -1
@@ -140,3 +140,9 @@ struct Tree[Game: game.Game](Stringable, Writable):
         if parent.first_child != -1:
             for child_idx in range(parent.first_child, parent.last_child):
                 self.write_to(writer, child_idx, depth + 1)
+
+    fn debug_print_root_children(self):
+        var first_child = Int(self.nodes[0].first_child)
+        var last_child = Int(self.nodes[0].last_child)
+        for child in self.nodes[first_child:last_child]:
+            print(child[])

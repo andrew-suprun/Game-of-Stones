@@ -1,16 +1,18 @@
+from collections import InlineArray
+
 from scores import Score, Scores
 
 
 fn value_table[
     max_stones: Int, scores: List[Score]
-](out result: (List[Scores], List[Scores])):
+](out result: InlineArray[List[SIMD[DType.float32, 2]], 2]):
     alias result_size = max_stones * max_stones
 
     v2 = List[Scores](Scores(1, -1))
     for i in range(max_stones - 1):
         v2.append(Scores(scores[i + 2] - scores[i + 1], -scores[i + 1]))
 
-    result = (
+    result = InlineArray[List[SIMD[DType.float32, 2]], 2](
         List[Scores](capacity=max_stones * max_stones),
         List[Scores](capacity=max_stones * max_stones),
     )

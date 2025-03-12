@@ -1,4 +1,5 @@
 from sys import env_get_int
+from collections import InlineArray
 
 from heap import add
 from scores import Score, win, draw
@@ -19,18 +20,19 @@ alias values = List[Score](
     win,
 )
 
-alias value_table = v.value_table[max_stones, values]()
 
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     var board: Board[size, max_stones, max_places]
     var top_places: List[Place]
     var history: List[Move]
+    var value_table: InlineArray[List[SIMD[DType.float32, 2]], 2]
 
     fn __init__(out self):
         self.board = Board[size, max_stones, max_places]()
         self.top_places = List[Place]()
         self.history = List[Move]()
+        self.value_table = v.value_table[max_stones, values]()
 
     fn name(self, out name: String):
         name = "connect6"
@@ -40,7 +42,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
         fn less(a: MoveScore, b: MoveScore, out r: Bool):
             r = a.score < b.score
 
-        var turn_first = self.board.turn == first
         move_scores.clear()
         self.board.top_places(self.top_places)
 
@@ -56,10 +57,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             var score1 = self.board.getscores(place1)[0] + self.board.getscores(
                 place1
             )[1]
-            if turn_first:
-                self.board.place_stone(place1, value_table[0])
-            else:
-                self.board.place_stone(place1, value_table[1])
+
+            self.board.place_stone(place1, self.value_table[self.board.turn])
 
             for j in range(i + 1, len(self.top_places)):
                 var place2 = self.top_places[j]
@@ -73,17 +72,12 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                         add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), draw), move_scores)
                         has_draw = True
                 else:
-                    var move_score = Score(0)
-                    if turn_first:
-                        self.board.place_stone(place2, value_table[0])
-                        var opp_score = self.board.max_score[second]()
-                        move_score = self.board.score - opp_score
-                        self.board.remove_stone()
-                    else:
-                        self.board.place_stone(place2, value_table[1])
-                        var opp_score = self.board.max_score[first]()
-                        move_score = -self.board.score - opp_score
-                        self.board.remove_stone()
+                    self.board.place_stone(place2, self.value_table[self.board.turn])
+                    var opp_turn = 1 - self.board.turn
+                    var coeff = 1 - 2 * self.board.turn
+                    var opp_score = self.board.max_score(opp_turn)
+                    var move_score = coeff * self.board.score - opp_score
+                    self.board.remove_stone()
 
                     add[MoveScore, max_moves, less](
                         MoveScore(Move(place1, place2), move_score),
@@ -94,24 +88,18 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
     fn play_move(mut self, move: Move):
         self.history.append(move)
-        if self.board.turn == board.first:
-            self.board.place_stone(move.p1, value_table[board.first])
-            if move.p1 != move.p2:
-                self.board.place_stone(move.p2, value_table[board.first])
-            self.board.setturn(board.second)
-        else:
-            self.board.place_stone(move.p1, value_table[board.second])
-            if move.p1 != move.p2:
-                self.board.place_stone(move.p2, value_table[board.second])
-            self.board.setturn(board.first)
+
+        self.board.place_stone(move.p1, self.value_table[self.board.turn])
+        if move.p1 != move.p2:
+            self.board.place_stone(move.p2, self.value_table[self.board.turn])
+        self.board.turn = 1 - self.board.turn
 
     fn undo_move(mut self):
         if len(self.history) == 0:
             return
-        if self.board.turn == board.first:
-            self.board.setturn(board.second)
-        else:
-            self.board.setturn(board.first)
+
+        self.board.turn = 1 - self.board.turn
+
         var move = self.history[-1]
         self.history.resize(len(self.history)-1)
         if move.p1 != move.p2:

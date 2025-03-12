@@ -1,4 +1,5 @@
 from sys import env_get_int
+from collections import InlineArray
 
 from heap import add
 from scores import Score, win, draw
@@ -11,17 +12,18 @@ alias max_stones = 5
 
 alias values = List[Score](Score(0), Score(1), Score(5), Score(25), Score(125), win)
 
-alias value_table = v.value_table[max_stones, values]()
 
 struct Gomoku[size: Int, max_moves: Int](Game):
     var board: Board[size, max_stones, max_moves]
     var top_places: List[Place]
     var history: List[Move]
+    var value_table: InlineArray[List[SIMD[DType.float32, 2]], 2]
 
     fn __init__(out self):
         self.board = Board[size, max_stones, max_moves]()
         self.top_places = List[Place]()
         self.history = List[Move]()
+        self.value_table = v.value_table[max_stones, values]()
 
     fn name(self, out name: String):
         name = "gomoku"
@@ -63,20 +65,15 @@ struct Gomoku[size: Int, max_moves: Int](Game):
 
     fn play_move(mut self, move: Move):
         self.history.append(move)
-        if self.board.turn == board.first:
-            self.board.place_stone(move.p1, value_table[board.first])
-            self.board.setturn(board.second)
-        else:
-            self.board.place_stone(move.p1, value_table[board.second])
-            self.board.setturn(board.first)
+
+        self.board.place_stone(move.p1, self.value_table[self.board.turn])
+        self.board.turn = 1 - self.board.turn
 
     fn undo_move(mut self):
         if len(self.history) == 0:
             return
-        if self.board.turn == board.first:
-            self.board.setturn(board.second)
-        else:
-            self.board.setturn(board.first)
+
+        self.board.turn = 1 - self.board.turn
         self.history.resize(len(self.history)-1)
         self.board.remove_stone()
 
