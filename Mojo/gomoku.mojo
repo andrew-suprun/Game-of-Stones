@@ -15,12 +15,14 @@ alias values = List[Score](Score(0), Score(1), Score(5), Score(25), Score(125), 
 
 struct Gomoku[size: Int, max_moves: Int](Game):
     var board: Board[size, max_stones, max_moves]
+    var turn: Int
     var top_places: List[Place]
     var history: List[Move]
     var value_table: InlineArray[List[SIMD[DType.float32, 2]], 2]
 
     fn __init__(out self):
         self.board = Board[size, max_stones, max_moves]()
+        self.turn = 0
         self.top_places = List[Place]()
         self.history = List[Move]()
         self.value_table = v.value_table[max_stones, values]()
@@ -33,9 +35,9 @@ struct Gomoku[size: Int, max_moves: Int](Game):
         fn less(a: MoveScore, b: MoveScore, out r: Bool):
             r = a.score < b.score
 
-        var turn_first = self.board.turn == first
+        var turn_first = self.turn == first
         move_scores.clear()
-        self.board.top_places(self.top_places)
+        self.board.top_places(self.turn, self.top_places)
 
         if not self.top_places:
             move_scores.append(MoveScore(Move(0, 0, 0, 0), draw))
@@ -66,14 +68,14 @@ struct Gomoku[size: Int, max_moves: Int](Game):
     fn play_move(mut self, move: Move):
         self.history.append(move)
 
-        self.board.place_stone(move.p1, self.value_table[self.board.turn])
-        self.board.turn = 1 - self.board.turn
+        self.board.place_stone(move.p1, self.turn, self.value_table[self.turn])
+        self.turn = 1 - self.turn
 
     fn undo_move(mut self):
         if len(self.history) == 0:
             return
 
-        self.board.turn = 1 - self.board.turn
+        self.turn = 1 - self.turn
         self.history.resize(len(self.history)-1)
         self.board.remove_stone()
 

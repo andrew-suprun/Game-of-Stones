@@ -4,10 +4,11 @@ from random import seed, random_si64
 from scores import Score
 from board import Board
 from game import Place
-from connect6 import max_stones, value_table, values
+from connect6 import Connect6, max_stones, values
 
 
 def test_place_stone():
+    var c6 = Connect6[19, 60, 32]()
     seed(0)
     var board = Board[19, max_stones, 20]()
     var value = Score(0)
@@ -22,13 +23,13 @@ def test_place_stone():
                     if board[x, y] == board.empty:
                         var actual = board.getscores(Place(x, y))
                         board.turn = 0
-                        board.place_stone(Place(x, y), value_table[0])
+                        board.place_stone(Place(x, y), c6.value_table[0])
                         var expected = board.board_value(values) - value
                         board.remove_stone()
                         if actual[0] != expected:
                             failure = True
                         board.turn = 1
-                        board.place_stone(Place(x, y), value_table[1])
+                        board.place_stone(Place(x, y), c6.value_table[1])
                         expected = board.board_value(values) - value
                         board.remove_stone()
                         if actual[1] != expected:
@@ -39,15 +40,16 @@ def test_place_stone():
                 return
             value += board.getscores(Place(x, y))[board.turn]
             if board.turn == 0:
-                board.place_stone(Place(x, y), value_table[0])
+                board.place_stone(Place(x, y), c6.value_table[0])
             else:
-                board.place_stone(Place(x, y), value_table[1])
+                board.place_stone(Place(x, y), c6.value_table[1])
 
 
 def test_top_moves():
+    var c6 = Connect6[19, 60, 32]()
     var board = Board[19, max_stones, 20]()
-    board.place_stone(Place(9, 9), value_table[0])
-    board.place_stone(Place(8, 9), value_table[0])
+    board.place_stone(Place(9, 9), c6.value_table[0])
+    board.place_stone(Place(8, 9), c6.value_table[0])
     var top_places = List[Place]()
     board.top_places(top_places)
     for i in range(1, 20):

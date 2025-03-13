@@ -24,12 +24,14 @@ alias values = List[Score](
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     var board: Board[size, max_stones, max_places]
+    var turn: Int
     var top_places: List[Place]
     var history: List[Move]
     var value_table: InlineArray[List[SIMD[DType.float32, 2]], 2]
 
     fn __init__(out self):
         self.board = Board[size, max_stones, max_places]()
+        self.turn = 0
         self.top_places = List[Place]()
         self.history = List[Move]()
         self.value_table = v.value_table[max_stones, values]()
@@ -43,7 +45,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             r = a.score < b.score
 
         move_scores.clear()
-        self.board.top_places(self.top_places)
+        self.board.top_places(self.turn, self.top_places)
 
         if len(self.top_places) < 2:
             move_scores.append(MoveScore(Move(0, 0, 0, 0), draw))
@@ -58,7 +60,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                 place1
             )[1]
 
-            self.board.place_stone(place1, self.value_table[self.board.turn])
+            self.board.place_stone(place1, self.turn, self.value_table[self.turn])
 
             for j in range(i + 1, len(self.top_places)):
                 var place2 = self.top_places[j]
@@ -72,9 +74,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                         add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), draw), move_scores)
                         has_draw = True
                 else:
-                    self.board.place_stone(place2, self.value_table[self.board.turn])
-                    var opp_turn = 1 - self.board.turn
-                    var coeff = 1 - 2 * self.board.turn
+                    self.board.place_stone(place2, self.turn, self.value_table[self.turn])
+                    var opp_turn = 1 - self.turn
+                    var coeff = 1 - 2 * self.turn
                     var opp_score = self.board.max_score(opp_turn)
                     var move_score = coeff * self.board.score - opp_score
                     self.board.remove_stone()
@@ -89,16 +91,16 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     fn play_move(mut self, move: Move):
         self.history.append(move)
 
-        self.board.place_stone(move.p1, self.value_table[self.board.turn])
+        self.board.place_stone(move.p1, self.turn, self.value_table[self.turn])
         if move.p1 != move.p2:
-            self.board.place_stone(move.p2, self.value_table[self.board.turn])
-        self.board.turn = 1 - self.board.turn
+            self.board.place_stone(move.p2, self.turn, self.value_table[self.turn])
+        self.turn = 1 - self.turn
 
     fn undo_move(mut self):
         if len(self.history) == 0:
             return
 
-        self.board.turn = 1 - self.board.turn
+        self.turn = 1 - self.turn
 
         var move = self.history[-1]
         self.history.resize(len(self.history)-1)

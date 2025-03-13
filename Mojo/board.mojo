@@ -1,12 +1,10 @@
-from collections.string import StringSlice
-
 from scores import Score, Scores, loss, is_win, is_loss, is_draw
 from heap import add
 
 
 @value
 @register_passable("trivial")
-struct Place(EqualityComparableCollectionElement, Stringable, Writable):
+struct Place(EqualityComparable, Movable, Copyable, Stringable, Writable):
     var x: Int8
     var y: Int8
 
@@ -60,7 +58,6 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     var places: List[Int8]
     var scores: List[Scores] 
     var score: Score
-    var turn: Int
     var history: List[PlaceScores]
     var history_indices: List[ScoreMark]
 
@@ -71,7 +68,6 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             self.places.append(Self.empty)
             self.scores.append(Scores(0, 0))
         self.score = 0
-        self.turn = 0
         self.history = List[PlaceScores]()
         self.history_indices = List[ScoreMark]()
 
@@ -85,13 +81,13 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 var total = v + h + t1 + t2
                 self.setscores(Place(x, y), Scores(total, total))
 
-    fn place_stone(mut self, place: Place, scores: List[Scores]):
+    fn place_stone(mut self, place: Place, turn: Int, scores: List[Scores]):
         self.history_indices.append(ScoreMark(place, self.score, len(self.history)))
 
         var x = Int(place.x)
         var y = Int(place.y)
 
-        if self.turn == first:
+        if turn == first:
             self.score += self.getscores(place)[first]
         else:
             self.score -= self.getscores(place)[second]
@@ -122,7 +118,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             var y_start = y - mn
             self.update_row(y_start * size + x_start, size - 1, n, scores)
 
-        if self.turn == first:
+        if turn == first:
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
@@ -158,7 +154,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             self.scores[h_scores.offset] = h_scores.scores
         self.history.resize(idx.history_idx)
 
-    fn top_places(self, mut top_places: List[Place]):
+    fn top_places(self, turn: Int, mut top_places: List[Place]):
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
             r = self.getscores(a)[0] < self.getscores(b)[0]
@@ -169,7 +165,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
 
         top_places.clear()
 
-        if self.turn == first:
+        if turn == first:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:

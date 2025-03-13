@@ -10,7 +10,7 @@ alias G = Gomoku[19, 32]
 
 def test_tree():
     var g = G()
-    var t = Tree[G](20)
+    var t = Tree[G, 20]()
     g.play_move(Move("j10"))
     g.play_move(Move("a1"))
     g.play_move(Move("j9"))
@@ -21,5 +21,4 @@ def test_tree():
     for _ in range(3):
         _ = t.expand(g)
     print(g)
-    # print(t)
-    testing.assert_true(False)
+    print(t)
