@@ -13,19 +13,17 @@ alias max_stones = 5
 alias values = List[Score](Score(0), Score(1), Score(5), Score(25), Score(125), win)
 
 
-struct Gomoku[size: Int, max_moves: Int](Game):
-    var board: Board[size, max_stones, max_moves]
+struct Gomoku[values: List[Score], size: Int, max_moves: Int](Game):
+    var board: Board[values, size, max_stones, max_moves]
     var turn: Int
     var top_places: List[Place]
     var history: List[Move]
-    var value_table: InlineArray[List[SIMD[DType.float32, 2]], 2]
 
     fn __init__(out self):
-        self.board = Board[size, max_stones, max_moves]()
+        self.board = Board[values, size, max_stones, max_moves]()
         self.turn = 0
         self.top_places = List[Place]()
         self.history = List[Move]()
-        self.value_table = v.value_table[max_stones, values]()
 
     fn name(self, out name: String):
         name = "gomoku"
@@ -68,7 +66,7 @@ struct Gomoku[size: Int, max_moves: Int](Game):
     fn play_move(mut self, move: Move):
         self.history.append(move)
 
-        self.board.place_stone(move.p1, self.turn, self.value_table[self.turn])
+        self.board.place_stone(move.p1, self.turn)
         self.turn = 1 - self.turn
 
     fn undo_move(mut self):
@@ -91,5 +89,5 @@ alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 
 fn main() raises:
-    run[Gomoku[board_size, max_moves]](Score(exp_factor))
+    run[Gomoku[values, board_size, max_moves]](Score(exp_factor))
 

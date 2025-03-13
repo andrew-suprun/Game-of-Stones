@@ -1,5 +1,8 @@
+from collections import InlineArray
+
 from scores import Score, Scores, loss, is_win, is_loss, is_draw
 from heap import add
+import values as v
 
 
 @value
@@ -50,7 +53,7 @@ struct ScoreMark:
     var history_idx: Int
 
 
-struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
+struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(max_stones)
@@ -60,6 +63,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
     var score: Score
     var history: List[PlaceScores]
     var history_indices: List[ScoreMark]
+    var value_table: InlineArray[List[SIMD[DType.float32, 2]], 2]
 
     fn __init__(out self):
         self.places = List[Int8](capacity=size * size)
@@ -70,6 +74,7 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
         self.score = 0
         self.history = List[PlaceScores]()
         self.history_indices = List[ScoreMark]()
+        self.value_table = v.value_table[max_stones, values]()
 
         for y in range(size):
             var v = 1 + min(max_stones - 1, y, size - 1 - y)
@@ -81,7 +86,8 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
                 var total = v + h + t1 + t2
                 self.setscores(Place(x, y), Scores(total, total))
 
-    fn place_stone(mut self, place: Place, turn: Int, scores: List[Scores]):
+    fn place_stone(mut self, place: Place, turn: Int):
+        var scores = self.value_table[turn]
         self.history_indices.append(ScoreMark(place, self.score, len(self.history)))
 
         var x = Int(place.x)
@@ -122,7 +128,8 @@ struct Board[size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
-
+    
+    @always_inline
     fn update_row(mut self, start: Int, delta: Int, n: Int, scores: List[Scores]):
         for i in range(start, start + delta * (max_stones - 1 + n), delta):
             self.history.append(PlaceScores(i, self.scores[i]))
