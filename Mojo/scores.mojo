@@ -8,20 +8,20 @@ alias draw = Score(0.25)
 
 
 @always_inline
-fn is_decisive(v: Score) -> Bool:
+fn is_decisive(v: Score, out result: Bool):
     return not isfinite(v) or is_draw(v)
 
 
 @always_inline
-fn is_win(v: Score) -> Bool:
+fn is_win(v: Score, out result: Bool):
     return isinf(v) and v > 0
 
 
 @always_inline
-fn is_loss(v: Score) -> Bool:
+fn is_loss(v: Score, out result: Bool):
     return isinf(v) and v < 0
 
 
 @always_inline
-fn is_draw(v: Score) -> Bool:
+fn is_draw(v: Score, out result: Bool):
     return v == draw

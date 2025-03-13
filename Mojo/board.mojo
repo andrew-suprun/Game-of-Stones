@@ -19,15 +19,15 @@ struct Place(EqualityComparableCollectionElement, Stringable, Writable):
         self.y = Int(place[1:]) - 1
 
     @always_inline
-    fn __eq__(self, other: Self) -> Bool:
-        return self.x == other.x and self.y == other.y
+    fn __eq__(self, other: Self, out result: Bool):
+        result = self.x == other.x and self.y == other.y
 
     @always_inline
-    fn __ne__(self, other: Self) -> Bool:
-        return not (self == other)
+    fn __ne__(self, other: Self, out result: Bool):
+        result = not (self == other)
 
-    fn __str__(self) -> String:
-        return String(self)
+    fn __str__(self, out result: String):
+        result = String(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)

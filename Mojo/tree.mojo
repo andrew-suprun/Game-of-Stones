@@ -35,8 +35,8 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
     fn reset(mut self, g: Game):
         self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
 
-    fn __str__(self) -> String:
-        return String.write(self)
+    fn __str__(self, out result: String):
+        result = String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         self.root.write_to(writer, 0)
