@@ -20,7 +20,7 @@ fn run[G: Game](exp_factor: Score) raises:
     var stdin = _fdopen["r"](0)
 
     var game = G()
-    var tree = Tree[G](20)
+    var tree = Tree[G, 20]()
 
     while True:
         var line: String
