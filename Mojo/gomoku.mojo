@@ -13,7 +13,7 @@ alias max_stones = 5
 alias values = List[Score](Score(0), Score(1), Score(5), Score(25), Score(125), win)
 
 
-struct Gomoku[values: List[Score], size: Int, max_moves: Int](Game):
+struct Gomoku[size: Int, max_moves: Int](Game):
     var board: Board[values, size, max_stones, max_moves]
     var turn: Int
     var top_places: List[Place]
@@ -89,5 +89,5 @@ alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 
 fn main() raises:
-    run[Gomoku[values, board_size, max_moves]](Score(exp_factor))
+    run[Gomoku[board_size, max_moves]](Score(exp_factor))
 

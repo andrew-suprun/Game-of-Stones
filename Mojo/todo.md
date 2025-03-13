@@ -12,4 +12,5 @@ bench_max_score   0.227
 bench_top_places  3.238
 
 mojo -D ASSERT=all connect6_bench.mojo 
-bench_top_moves 459.5984
+bench_top_moves 508.037
+bench_extend    530.677

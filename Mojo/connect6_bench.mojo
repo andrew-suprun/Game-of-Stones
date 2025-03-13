@@ -20,7 +20,7 @@ fn bench_top_moves():
 
 fn bench_extend():
     var game = C6()
-    var tree = Tree[C6](20)
+    var tree = Tree[C6, 20]()
     try:
         game.play_move(Move("j10"))
         game.play_move(Move("i9-i10"))

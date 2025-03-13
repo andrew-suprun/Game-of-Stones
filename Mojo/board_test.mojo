@@ -10,10 +10,10 @@ from connect6 import Connect6, max_stones, values
 def test_place_stone():
     var c6 = Connect6[19, 60, 32]()
     seed(0)
-    var board = Board[19, max_stones, 20]()
+    var board = Board[values, 19, max_stones, 20]()
     var value = Score(0)
     for _ in range(200):
-        board.turn = Int(random_si64(0, 1))
+        var turn = Int(random_si64(0, 1))
         var x = Int(random_si64(0, board.size - 1))
         var y = Int(random_si64(0, board.size - 1))
         if board[x, y] == board.empty:
@@ -22,14 +22,14 @@ def test_place_stone():
                 for x in range(board.size):
                     if board[x, y] == board.empty:
                         var actual = board.getscores(Place(x, y))
-                        board.turn = 0
-                        board.place_stone(Place(x, y), c6.value_table[0])
+                        turn = 0
+                        board.place_stone(Place(x, y), turn)
                         var expected = board.board_value(values) - value
                         board.remove_stone()
                         if actual[0] != expected:
                             failure = True
-                        board.turn = 1
-                        board.place_stone(Place(x, y), c6.value_table[1])
+                        turn = 1
+                        board.place_stone(Place(x, y), turn)
                         expected = board.board_value(values) - value
                         board.remove_stone()
                         if actual[1] != expected:
@@ -38,20 +38,19 @@ def test_place_stone():
                 print(board)
                 print(board.str_scores())
                 return
-            value += board.getscores(Place(x, y))[board.turn]
-            if board.turn == 0:
-                board.place_stone(Place(x, y), c6.value_table[0])
+            value += board.getscores(Place(x, y))[turn]
+            if turn == 0:
+                board.place_stone(Place(x, y), turn)
             else:
-                board.place_stone(Place(x, y), c6.value_table[1])
+                board.place_stone(Place(x, y), turn)
 
 
 def test_top_moves():
-    var c6 = Connect6[19, 60, 32]()
-    var board = Board[19, max_stones, 20]()
-    board.place_stone(Place(9, 9), c6.value_table[0])
-    board.place_stone(Place(8, 9), c6.value_table[0])
+    var board = Board[values, 19, max_stones, 20]()
+    board.place_stone(Place(9, 9), 0)
+    board.place_stone(Place(8, 9), 1)
     var top_places = List[Place]()
-    board.top_places(top_places)
+    board.top_places(0, top_places)
     for i in range(1, 20):
         var parent = top_places[(i - 1) / 2]
         var child = top_places[i]

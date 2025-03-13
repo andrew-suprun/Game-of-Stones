@@ -20,7 +20,7 @@ alias values = List[Score](
 
 
 
-struct Connect6[values: List[Score], size: Int, max_moves: Int, max_places: Int](Game):
+struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     var board: Board[values, size, max_stones, max_places]
     var turn: Int
     var top_places: List[Place]
@@ -116,4 +116,4 @@ alias max_places = env_get_int["MAX_PLACES", 32]()
 alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 fn main() raises:
-    run[Connect6[values, board_size, max_moves, max_places]](Score(exp_factor))
+    run[Connect6[board_size, max_moves, max_places]](Score(exp_factor))
