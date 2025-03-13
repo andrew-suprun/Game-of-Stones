@@ -1,13 +1,51 @@
 from math import log2, sqrt
 from memory import Pointer
 
-
 from scores import Score, is_decisive, is_win, is_loss, is_draw, win, loss, draw
 import game
 
+struct Tree[Game: game.Game, c: Score](Stringable, Writable):
+    var root: Node[Game, c]
+    var top_moves: List[game.MoveScore]
+
+    fn __init__(out self):
+        self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
+        self.top_moves = List[game.MoveScore]()
+
+    fn expand(mut self, mut game: Game, out done: Bool):
+        if is_decisive(self.root.value):
+            done = True
+            return
+        else:
+            self.root._expand(game, self.top_moves)
+
+        var undecided = 0
+        for child in self.root.children:
+            if not is_decisive(child[].value):
+                if child[].n_sims > 1:
+                    undecided += 1
+                else:
+                    done = False
+                    return
+        done = undecided == 1
+
+    fn best_move(self, out result: game.Move):
+        result = self.root._best_move()
+        
+    fn reset(mut self, g: Game):
+        self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
+
+    fn __str__(self) -> String:
+        return String.write(self)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        self.root.write_to(writer, 0)
+
+    fn debug_print_root_children(self):
+        self.root.debug_print_root_children()
 
 @value
-struct Node[Game: game.Game, c: Score](CollectionElement, Stringable, Writable):
+struct Node[Game: game.Game, c: Score](Copyable, Movable, Stringable, Writable):
     var move: game.Move
     var value: Score
     var children: List[Self]
@@ -86,53 +124,6 @@ struct Node[Game: game.Game, c: Score](CollectionElement, Stringable, Writable):
             for child in self.children:
                 child[].write_to(writer, depth + 1)
 
-    fn _print_root_children(self):
+    fn debug_print_root_children(self):
         for child in self.children:
             print(child[])
-
-
-
-struct Tree[Game: game.Game, c: Score](Stringable, Writable):
-    var root: Node[Game, c]
-    var top_moves: List[game.MoveScore]
-    var top_values: List[Score]
-
-    fn __init__(out self):
-        self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
-        self.top_moves = List[game.MoveScore]()
-        self.top_values = List[Score]()
-
-    fn expand(mut self, mut game: Game, out done: Bool):
-        if is_decisive(self.root.value):
-            done = True
-            return
-        else:
-            self.root._expand(game, self.top_moves)
-
-        var undecided = 0
-        for child in self.root.children:
-            if not is_decisive(child[].value):
-                if child[].n_sims > 1:
-                    undecided += 1
-                else:
-                    done = False
-                    return
-        done = undecided == 1
-
-    fn best_move(self, out result: game.Move):
-        result = self.root._best_move()
-        
-    fn reset(mut self, g: Game):
-        self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
-
-    fn __str__(self) -> String:
-        return String.write(self)
-
-    fn write_to[W: Writer](self, mut writer: W):
-        self.root.write_to(writer, 0)
-
-    fn _print_root_children(self):
-        self.root._print_root_children()
-
-fn main():
-    pass
