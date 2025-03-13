@@ -63,7 +63,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
     var score: Score
     var history: List[PlaceScores]
     var history_indices: List[ScoreMark]
-    var value_table: InlineArray[List[SIMD[DType.float32, 2]], 2]
+    var value_table: InlineArray[InlineArray[Scores, max_stones * max_stones], 2]
 
     fn __init__(out self):
         self.places = List[Int8](capacity=size * size)
@@ -130,7 +130,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
             self[x, y] = Self.white
     
     @always_inline
-    fn update_row(mut self, start: Int, delta: Int, n: Int, scores: List[Scores]):
+    fn update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, max_stones * max_stones]):
         for i in range(start, start + delta * (max_stones - 1 + n), delta):
             self.history.append(PlaceScores(i, self.scores[i]))
 
