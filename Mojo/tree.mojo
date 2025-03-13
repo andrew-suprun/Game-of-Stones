@@ -66,7 +66,7 @@ struct Node[Game: game.Game, c: Score](CollectionElement, Stringable, Writable):
         elif has_draw and self.value > 0:
             self.value = 0
 
-    fn best_move(self, out result: game.Move):
+    fn _best_move(self, out result: game.Move):
         debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
         var best_child = Pointer.address_of(self.children[0])
         for child in self.children:
@@ -86,7 +86,7 @@ struct Node[Game: game.Game, c: Score](CollectionElement, Stringable, Writable):
             for child in self.children:
                 child[].write_to(writer, depth + 1)
 
-    fn debug_print_root_children(self):
+    fn _print_root_children(self):
         for child in self.children:
             print(child[])
 
@@ -120,7 +120,7 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
         done = undecided == 1
 
     fn best_move(self, out result: game.Move):
-        result = self.root.best_move()
+        result = self.root._best_move()
         
     fn reset(mut self, g: Game):
         self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
@@ -131,8 +131,8 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         self.root.write_to(writer, 0)
 
-    fn debug_print_root_children(self):
-        self.root.debug_print_root_children()
+    fn _print_root_children(self):
+        self.root._print_root_children()
 
 fn main():
     pass
