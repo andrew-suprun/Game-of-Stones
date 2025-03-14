@@ -1,4 +1,5 @@
-* fix ui "undo"
+* ui
+* sim
 * make Move an alias type in Game
 
 mojo -D ASSERT=all heap_bench.mojo

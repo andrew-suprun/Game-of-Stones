@@ -115,7 +115,7 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, uiChan chan []string, log
 		move = white.call("move", "respond %d", millis)[0]
 		decision = ui.call("decision", "move %s", move)[0]
 		if decision != "no-decision" {
-			stats[black.player]++
+			stats[white.player]++
 			break
 		}
 		black.send("move %s", move)

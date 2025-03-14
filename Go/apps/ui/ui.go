@@ -295,6 +295,11 @@ func playMove(stateChan chan []state, moveStr string) {
 	states = append(states, states[len(states)-1])
 	state := &states[len(states)-1]
 
+	if len(states) >= 100 {
+		state.decision = "draw"
+		return
+	}
+
 	state.respond = false
 
 	for y := range game.Size {

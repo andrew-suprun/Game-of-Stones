@@ -66,8 +66,6 @@ loop:
 			for {
 				dec, done := theTree.Expand()
 				if done || dec != common.NoDecision || time.Since(timestamp) > maxDuration {
-					log("forced response %v; decision %v time %v\n", done, dec, time.Since(timestamp))
-					log("moves:\n%s\n", theTree.AvailableMoves())
 					break
 				}
 				sims++
