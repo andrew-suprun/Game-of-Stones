@@ -1,5 +1,4 @@
-* move value_table from connect6/gomoku to board
-* move turn from board to connect6/gomoku
+* fix ui "undo"
 * make Move an alias type in Game
 
 mojo -D ASSERT=all heap_bench.mojo

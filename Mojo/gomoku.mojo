@@ -90,4 +90,3 @@ alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 fn main() raises:
     run[Gomoku[board_size, max_moves]](Score(exp_factor))
-

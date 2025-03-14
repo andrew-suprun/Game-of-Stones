@@ -59,12 +59,10 @@ func main() {
 	app.Main()
 }
 
-var history []state
-
 func run() {
-	gameState := state{decision: "no-decision"}
-	stateChan := make(chan *state, 1)
-	stateChan <- &gameState
+	states := []state{{decision: "no-decision"}}
+	stateChan := make(chan []state, 1)
+	stateChan <- states
 
 	var ops op.Ops
 
@@ -91,10 +89,11 @@ func run() {
 	}
 }
 
-func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
-	state := <-stateChan
+func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan []state) {
+	states := <-stateChan
+	state := &states[len(states)-1]
 	defer func() {
-		stateChan <- state
+		stateChan <- states
 	}()
 	ops.Reset()
 
@@ -221,7 +220,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 					checkTerminal(state)
 				}
 			case key.NameEscape:
-				if len(history) > 1 {
+				if len(states) > 1 {
 					fmt.Printf("undo\n")
 				}
 			}
@@ -231,7 +230,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan *state) {
 	ev.Frame(ops)
 }
 
-func input(window *app.Window, stateChan chan *state) {
+func input(window *app.Window, stateChan chan []state) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -261,43 +260,40 @@ func input(window *app.Window, stateChan chan *state) {
 				playMove(stateChan, cmd[1])
 			}
 		case "respond":
-			state := <-stateChan
-			state.respond = true
-			stateChan <- state
+			states := <-stateChan
+			states[len(states)-1].respond = true
+			stateChan <- states
 		case "undo":
-			state := <-stateChan
-			history = history[:len(history)-1]
-			state = &history[len(history)-1]
-			log.Println("len", len(history))
-			stateChan <- state
-		case "decision":
-			state := <-stateChan
-			fmt.Printf("decision %s\n", state.decision)
-			log.Println("len", len(history))
-			stateChan <- state
+			states := <-stateChan
+			states = states[:len(states)-1]
+			stateChan <- states
 		case "clear":
-			state := <-stateChan
+			states := <-stateChan
+			state := &states[len(states)-1]
 			state.turn = First
 			state.n_selected = 0
+			state.decision = "no-decision"
 			for y := range game.Size {
 				for x := range game.Size {
 					state.places[y][x] = stateEmpty
 				}
 			}
-			stateChan <- state
+			stateChan <- states
 		}
 		window.Invalidate()
 	}
 }
 
-func playMove(stateChan chan *state, moveStr string) {
+func playMove(stateChan chan []state, moveStr string) {
 	move, err := game.ParseMove(moveStr)
 	if err != nil {
 		fmt.Printf("error: Invalid move command: %q\n", moveStr)
 		os.Exit(1)
 	}
 
-	state := <-stateChan
+	states := <-stateChan
+	states = append(states, states[len(states)-1])
+	state := &states[len(states)-1]
 
 	state.respond = false
 
@@ -323,10 +319,10 @@ func playMove(stateChan chan *state, moveStr string) {
 	}
 
 	checkTerminal(state)
-	history = append(history, *state)
-	log.Println("len", len(history))
+	fmt.Printf("decision %s\n", state.decision)
+	fmt.Fprintf(os.Stderr, "decision %s\n", state.decision)
 
-	stateChan <- state
+	stateChan <- states
 }
 
 func checkTerminal(state *state) {
