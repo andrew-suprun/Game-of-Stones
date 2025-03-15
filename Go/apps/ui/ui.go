@@ -52,6 +52,7 @@ type state struct {
 	turn          Turn
 	n_selected    int
 	firstEnterKey bool
+	undoOnly      bool
 }
 
 func main() {
@@ -126,23 +127,25 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 				if !ok {
 					break
 				}
-				place := state.places[y][x]
-				if state.respond {
-					if state.turn == First {
-						if place == stateBlackSelected {
-							state.places[y][x] = stateEmpty
-							state.n_selected--
-						} else if place == stateEmpty && state.n_selected < maxSelected {
-							state.places[y][x] = stateBlackSelected
-							state.n_selected++
-						}
-					} else {
-						if place == stateWhiteSelected {
-							state.places[y][x] = stateEmpty
-							state.n_selected--
-						} else if place == stateEmpty && state.n_selected < maxSelected {
-							state.places[y][x] = stateWhiteSelected
-							state.n_selected++
+				if !state.undoOnly {
+					place := state.places[y][x]
+					if state.respond {
+						if state.turn == First {
+							if place == stateBlackSelected {
+								state.places[y][x] = stateEmpty
+								state.n_selected--
+							} else if place == stateEmpty && state.n_selected < maxSelected {
+								state.places[y][x] = stateBlackSelected
+								state.n_selected++
+							}
+						} else {
+							if place == stateWhiteSelected {
+								state.places[y][x] = stateEmpty
+								state.n_selected--
+							} else if place == stateEmpty && state.n_selected < maxSelected {
+								state.places[y][x] = stateWhiteSelected
+								state.n_selected++
+							}
 						}
 					}
 				}
@@ -183,6 +186,9 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 		if keyEvent.State == key.Press {
 			switch keyEvent.Name {
 			case key.NameReturn:
+				if state.undoOnly {
+					break
+				}
 				if state.respond && state.n_selected == 0 && state.firstEnterKey {
 					fmt.Println("skip")
 					state.firstEnterKey = false
@@ -219,6 +225,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 				}
 			case key.NameEscape:
 				if len(history) > 1 {
+					state.undoOnly = false
 					fmt.Printf("undo\n")
 				}
 			}
@@ -267,6 +274,10 @@ func input(window *app.Window, stateChan chan state) {
 			<-stateChan
 			history = history[:len(history)-1]
 			state := history[len(history)-1]
+			stateChan <- state
+		case "undo-only":
+			state := <-stateChan
+			state.undoOnly = true
 			stateChan <- state
 		case "clear":
 			st := <-stateChan

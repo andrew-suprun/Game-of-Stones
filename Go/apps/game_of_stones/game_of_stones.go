@@ -59,7 +59,6 @@ func main() {
 	firstEngineMove := false
 
 	millis := int(*spm * 1000)
-	onlyUndo := false
 
 	for {
 		response := ui.call("respond")
@@ -67,10 +66,6 @@ func main() {
 		if len(fields) == 0 {
 			continue
 		}
-		if onlyUndo && response != "undo" {
-			continue
-		}
-		onlyUndo = false
 		if response == "skip" {
 			firstEngineMove = true
 		} else if response == "undo" {
@@ -90,7 +85,8 @@ func main() {
 			ui.send("move %s", fields[1])
 			dec := fields[2]
 			if dec != common.NoDecision.String() {
-				onlyUndo = true
+				fmt.Println("only undo")
+				ui.send("undo-only")
 			}
 		}
 	}
