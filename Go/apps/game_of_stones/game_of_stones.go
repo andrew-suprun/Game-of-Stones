@@ -62,35 +62,34 @@ func main() {
 	onlyUndo := false
 
 	for {
-		uiMove := ui.call("respond")
-		if onlyUndo && uiMove != "undo" {
+		response := ui.call("respond")
+		fields := strings.Fields(response)
+		if len(fields) == 0 {
+			continue
+		}
+		if onlyUndo && response != "undo" {
 			continue
 		}
 		onlyUndo = false
-		if uiMove == "skip" {
+		if response == "skip" {
 			firstEngineMove = true
-		} else if uiMove == "undo" {
+		} else if response == "undo" {
 			engine.send("undo")
 			engine.send("undo")
 			ui.send("undo")
 			continue
 		} else {
-			engine.send(uiMove)
-			dec := ui.call("decision")
-			terms := strings.Fields(dec)
-			if len(terms) > 1 && terms[1] != common.NoDecision.String() {
-				break
-			}
+			engine.send("move %s", fields[1])
 		}
 		if firstEngineMove {
 			game.playFirstWhiteStones()
 			firstEngineMove = false
 		} else {
-			engineMove := engine.call("respond %d", millis)
-			ui.send(engineMove)
-			dec := ui.call("decision")
-			terms := strings.Fields(dec)
-			if len(terms) > 1 && terms[1] != common.NoDecision.String() {
+			response := engine.call("respond %d", millis)
+			fields := strings.Fields(response)
+			ui.send("move %s", fields[1])
+			dec := fields[2]
+			if dec != common.NoDecision.String() {
 				onlyUndo = true
 			}
 		}

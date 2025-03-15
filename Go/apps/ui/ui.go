@@ -114,9 +114,13 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 
 	for y := range game.Size {
 		for x := range game.Size {
+			stack := clip.Rect{Min: image.Point{X: (x+1)*d - r, Y: (y+1)*d - r}, Max: image.Point{X: (x+1)*d + r, Y: (y+1)*d + r}}.Push(ops)
+			event.Op(ops, y*100+x)
+			stack.Pop()
+
 			for {
 				_, ok := ev.Source.Event(pointer.Filter{
-					Target: &state.places[y][x],
+					Target: y*100 + x,
 					Kinds:  pointer.Press,
 				})
 				if !ok {
@@ -143,9 +147,6 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 					}
 				}
 			}
-			stack := clip.Rect{Min: image.Point{X: (x+1)*d - r, Y: (y+1)*d - r}, Max: image.Point{X: (x+1)*d + r, Y: (y+1)*d + r}}.Push(ops)
-			event.Op(ops, &state.places[y][x])
-			stack.Pop()
 
 			var stoneColor color.NRGBA
 			switch state.places[y][x] {
@@ -215,7 +216,6 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 						state.turn = First
 					}
 					fmt.Printf("move %s\n", move)
-					checkTerminal(state)
 				}
 			case key.NameEscape:
 				if len(history) > 1 {
@@ -240,6 +240,7 @@ func input(window *app.Window, stateChan chan state) {
 		cmd := strings.Fields(text)
 
 		if len(cmd) == 0 {
+			window.Invalidate()
 			continue
 		}
 
@@ -259,11 +260,13 @@ func input(window *app.Window, stateChan chan state) {
 			}
 		case "respond":
 			state := <-stateChan
+			history = append(history, state)
 			state.respond = true
 			stateChan <- state
 		case "undo":
-			state := <-stateChan
+			<-stateChan
 			history = history[:len(history)-1]
+			state := history[len(history)-1]
 			stateChan <- state
 		case "clear":
 			st := <-stateChan
@@ -287,7 +290,6 @@ func playMove(stateChan chan state, moveStr string) {
 	}
 
 	state := <-stateChan
-	history = append(history, state)
 
 	state.respond = false
 
@@ -312,96 +314,5 @@ func playMove(stateChan chan state, moveStr string) {
 		state.turn = First
 	}
 
-	checkTerminal(state)
-
 	stateChan <- state
-}
-
-func checkTerminal(state state) {
-	maxStones := 5
-	if gameName == "connect6" {
-		maxStones = 6
-	}
-
-	xx, yy, dx, dy := 0, 0, 0, 0
-
-	for y := range game.Size {
-		for x := range game.Size {
-			if x <= game.Size-maxStones {
-				b, w := 0, 0
-				for i := range maxStones {
-					if state.places[y][x+i] == stateBlack || state.places[y][x+i] == stateBlackSelected {
-						b++
-						if b == maxStones {
-							xx, yy, dx, dy = x, y, 1, 0
-						}
-					} else if state.places[y][x+i] == stateWhite || state.places[y][x+i] == stateWhiteSelected {
-						w++
-						if w == maxStones {
-							xx, yy, dx, dy = x, y, 1, 0
-						}
-					}
-				}
-			}
-			if y <= game.Size-maxStones {
-				b, w := 0, 0
-				for i := range maxStones {
-					if state.places[y+i][x] == stateBlack || state.places[y+i][x] == stateBlackSelected {
-						b++
-						if b == maxStones {
-							xx, yy, dx, dy = x, y, 0, 1
-						}
-					} else if state.places[y+i][x] == stateWhite || state.places[y+i][x] == stateWhiteSelected {
-						w++
-						if w == maxStones {
-							xx, yy, dx, dy = x, y, 0, 1
-						}
-					}
-				}
-			}
-			if x <= game.Size-maxStones && y <= game.Size-maxStones {
-				b, w := 0, 0
-				for i := range maxStones {
-					if state.places[y+i][x+i] == stateBlack || state.places[y+i][x+i] == stateBlackSelected {
-						b++
-						if b == maxStones {
-							xx, yy, dx, dy = x, y, 1, 1
-						}
-					} else if state.places[y+i][x+i] == stateWhite || state.places[y+i][x+i] == stateWhiteSelected {
-						w++
-						if w == maxStones {
-							xx, yy, dx, dy = x, y, 1, 1
-						}
-					}
-				}
-			}
-			if x >= maxStones-1 && y <= game.Size-maxStones {
-				b, w := 0, 0
-				for i := range maxStones {
-					if state.places[y+i][x-i] == stateBlack || state.places[y+i][x-i] == stateBlackSelected {
-						b++
-						if b == maxStones {
-							xx, yy, dx, dy = x, y, -1, 1
-						}
-					} else if state.places[y+i][x-i] == stateWhite || state.places[y+i][x-i] == stateWhiteSelected {
-						w++
-						if w == maxStones {
-							xx, yy, dx, dy = x, y, -1, 1
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if dx != 0 || dy != 0 {
-		for i := range maxStones {
-			switch state.places[yy+dy*i][xx+dx*i] {
-			case stateBlack:
-				state.places[yy+dy*i][xx+dx*i] = stateBlackSelected
-			case stateWhite:
-				state.places[yy+dy*i][xx+dx*i] = stateWhiteSelected
-			}
-		}
-	}
 }
