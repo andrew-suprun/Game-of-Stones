@@ -47,9 +47,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             move_scores.append(MoveScore(Move(0, 0, 0, 0), draw))
             return
 
-        var has_draw = False
-
-        # TODO use enumerated iterator
         for i in range(len(self.top_places) - 1):
             var place1 = self.top_places[i]
             var score1 = self.board.getscores(place1)[0] + self.board.getscores(place1)[1]
@@ -64,9 +61,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                     move_scores.append(MoveScore(Move(place1, place2), win))
                     return
                 elif score1 + score2 == 0:
-                    if not has_draw:
-                        add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), draw), move_scores)
-                        has_draw = True
+                    add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), draw), move_scores)
                 else:
                     self.board.place_stone(place2, self.turn)
                     var opp_turn = 1 - self.turn

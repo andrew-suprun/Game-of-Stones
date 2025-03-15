@@ -14,8 +14,10 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
 
     fn expand(mut self, mut game: Game, out done: Bool):
         if is_decisive(self.root.value):
-            done = True
-            return
+            print("decisive")
+            for child in self.root.children:
+                print("  ", child[])
+            return True
         else:
             self.root._expand(game, self.top_moves)
 
@@ -25,9 +27,14 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
                 if child[].n_sims > 1:
                     undecided += 1
                 else:
-                    done = False
-                    return
-        done = undecided == 1
+                    return False
+
+        if undecided == 1:
+            print("forced")
+            for child in self.root.children:
+                print("  ", child[])
+
+        return undecided == 1
 
     fn best_move(self, out result: game.Move):
         result = self.root._best_move()
@@ -109,6 +116,8 @@ struct Node[Game: game.Game, c: Score](Copyable, Movable, Stringable, Writable):
         var best_child = Pointer.address_of(self.children[0])
         for child in self.children:
             if best_child[].value < child[].value:
+                best_child = child
+            elif is_loss(best_child[].value) and best_child[].n_sims < child[].n_sims:
                 best_child = child
         result = best_child[].move
 
