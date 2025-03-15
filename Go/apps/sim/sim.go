@@ -95,30 +95,32 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, uiChan chan []string, log
 	for _, move := range openingMoves {
 		black.send("move %s", move)
 		white.send("move %s", move)
-		ui.call("decision", "move %s", move)
+		ui.send("move %s", move)
 	}
 
 	if len(openingMoves)%2 == 1 {
 		move := white.call("move", "respond %d", millis)[0]
 		black.send("move %s", move)
-		ui.call("decision", "move %s", move)
+		ui.send("move %s", move)
 	}
 
 	for {
-		move := black.call("move", "respond %d", millis)[0]
-		decision := ui.call("decision", "move %s", move)[0]
+		response := black.call("move", "respond %d", millis)
+		ui.send("move %s", response[0])
+		decision := response[1]
 		if decision != "no-decision" {
 			stats[black.player]++
 			break
 		}
-		white.send("move %s", move)
-		move = white.call("move", "respond %d", millis)[0]
-		decision = ui.call("decision", "move %s", move)[0]
+		white.send("move %s", response[0])
+		response = white.call("move", "respond %d", millis)
+		ui.send("move %s", response[0])
+		decision = response[1]
 		if decision != "no-decision" {
 			stats[white.player]++
 			break
 		}
-		black.send("move %s", move)
+		black.send("move %s", response[0])
 	}
 
 	fmt.Println("stats", stats)

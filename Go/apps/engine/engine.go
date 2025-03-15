@@ -71,11 +71,11 @@ loop:
 				sims++
 			}
 			move := theTree.BestMove()
+			decision := theGame.Decision().String()
 			theTree.CommitMove(move)
-			fmt.Printf("move %s\n", move)
-			log("move %s\n", move)
-			log("sims %d\n", sims)
-			log("%s", theGame)
+			fmt.Printf("move %s %s\n", move, decision)
+			log("move %s %s %d\n", move, decision, sims)
+			log("%s\n", theGame)
 		case "stop":
 			break loop
 		}

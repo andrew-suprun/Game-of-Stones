@@ -44,14 +44,14 @@ const (
 
 var gameName string = "gomoku"
 var maxSelected int = 1
-var firstEnterKey = true
+var history []state
 
 type state struct {
-	places     [game.Size][game.Size]placeState
-	respond    bool
-	turn       Turn
-	n_selected int
-	decision   string
+	places        [game.Size][game.Size]placeState
+	respond       bool
+	turn          Turn
+	n_selected    int
+	firstEnterKey bool
 }
 
 func main() {
@@ -60,9 +60,8 @@ func main() {
 }
 
 func run() {
-	states := []state{{decision: "no-decision"}}
-	stateChan := make(chan []state, 1)
-	stateChan <- states
+	stateChan := make(chan state, 1)
+	stateChan <- state{firstEnterKey: true}
 
 	var ops op.Ops
 
@@ -89,11 +88,10 @@ func run() {
 	}
 }
 
-func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan []state) {
-	states := <-stateChan
-	state := &states[len(states)-1]
+func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
+	state := <-stateChan
 	defer func() {
-		stateChan <- states
+		stateChan <- state
 	}()
 	ops.Reset()
 
@@ -184,9 +182,9 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan []state) {
 		if keyEvent.State == key.Press {
 			switch keyEvent.Name {
 			case key.NameReturn:
-				if state.respond && state.n_selected == 0 && firstEnterKey {
+				if state.respond && state.n_selected == 0 && state.firstEnterKey {
 					fmt.Println("skip")
-					firstEnterKey = false
+					state.firstEnterKey = false
 				} else if state.respond && state.n_selected == maxSelected {
 					selected := []game.Place{}
 					for x := range game.Size {
@@ -220,7 +218,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan []state) {
 					checkTerminal(state)
 				}
 			case key.NameEscape:
-				if len(states) > 1 {
+				if len(history) > 1 {
 					fmt.Printf("undo\n")
 				}
 			}
@@ -230,7 +228,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan []state) {
 	ev.Frame(ops)
 }
 
-func input(window *app.Window, stateChan chan []state) {
+func input(window *app.Window, stateChan chan state) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -260,45 +258,36 @@ func input(window *app.Window, stateChan chan []state) {
 				playMove(stateChan, cmd[1])
 			}
 		case "respond":
-			states := <-stateChan
-			states[len(states)-1].respond = true
-			stateChan <- states
+			state := <-stateChan
+			state.respond = true
+			stateChan <- state
 		case "undo":
-			states := <-stateChan
-			states = states[:len(states)-1]
-			stateChan <- states
+			state := <-stateChan
+			history = history[:len(history)-1]
+			stateChan <- state
 		case "clear":
-			states := <-stateChan
-			state := &states[len(states)-1]
-			state.turn = First
-			state.n_selected = 0
-			state.decision = "no-decision"
-			for y := range game.Size {
-				for x := range game.Size {
-					state.places[y][x] = stateEmpty
-				}
-			}
-			stateChan <- states
+			st := <-stateChan
+			st.places = [game.Size][game.Size]placeState{}
+			st.respond = false
+			st.turn = First
+			st.n_selected = 0
+			st.firstEnterKey = true
+			history = []state{}
+			stateChan <- st
 		}
 		window.Invalidate()
 	}
 }
 
-func playMove(stateChan chan []state, moveStr string) {
+func playMove(stateChan chan state, moveStr string) {
 	move, err := game.ParseMove(moveStr)
 	if err != nil {
 		fmt.Printf("error: Invalid move command: %q\n", moveStr)
 		os.Exit(1)
 	}
 
-	states := <-stateChan
-	states = append(states, states[len(states)-1])
-	state := &states[len(states)-1]
-
-	if len(states) >= 100 {
-		state.decision = "draw"
-		return
-	}
+	state := <-stateChan
+	history = append(history, state)
 
 	state.respond = false
 
@@ -324,13 +313,11 @@ func playMove(stateChan chan []state, moveStr string) {
 	}
 
 	checkTerminal(state)
-	fmt.Printf("decision %s\n", state.decision)
-	fmt.Fprintf(os.Stderr, "decision %s\n", state.decision)
 
-	stateChan <- states
+	stateChan <- state
 }
 
-func checkTerminal(state *state) {
+func checkTerminal(state state) {
 	maxStones := 5
 	if gameName == "connect6" {
 		maxStones = 6
@@ -415,11 +402,6 @@ func checkTerminal(state *state) {
 			case stateWhite:
 				state.places[yy+dy*i][xx+dx*i] = stateWhiteSelected
 			}
-		}
-		if state.places[yy][xx] == stateBlackSelected {
-			state.decision = "first-win"
-		} else if state.places[yy][xx] == stateWhiteSelected {
-			state.decision = "second-win"
 		}
 	}
 }
