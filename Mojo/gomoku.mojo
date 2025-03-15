@@ -33,7 +33,6 @@ struct Gomoku[size: Int, max_moves: Int](Game):
         fn less(a: MoveScore, b: MoveScore, out r: Bool):
             r = a.score < b.score
 
-        var turn_first = self.turn == first
         move_scores.clear()
         self.board.top_places(self.turn, self.top_places)
 
@@ -55,13 +54,9 @@ struct Gomoku[size: Int, max_moves: Int](Game):
                     add[MoveScore, max_moves, less](MoveScore(Move(place, place), draw), move_scores)
                     has_draw = True
             else:
-                var move_score = self.board.getscores(place)[first] // 2 + self.board.score  if turn_first
-                    else self.board.getscores(place)[second] // 2 - self.board.score
-
-                add[MoveScore, max_moves, less](
-                    MoveScore(Move(place, place), move_score),
-                    move_scores,
-                )
+                var coeff = 1 - 2 * self.turn
+                var move_score = self.board.getscores(place)[self.turn] // 2 + coeff * self.board.score
+                add[MoveScore, max_moves, less](MoveScore(Move(place, place), move_score), move_scores)
 
     fn play_move(mut self, move: Move):
         self.history.append(move)
@@ -77,6 +72,9 @@ struct Gomoku[size: Int, max_moves: Int](Game):
         self.history.resize(len(self.history)-1)
         self.board.remove_stone()
 
+    fn decision(self, out decision: String):
+        return self.board.decision()
+
     fn __str__(self, out str: String):
         return String(self.board)
 
@@ -89,4 +87,4 @@ alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 
 fn main() raises:
-    run[Gomoku[board_size, max_moves]](Score(exp_factor))
+    run[Gomoku[board_size, max_moves], exp_factor]()

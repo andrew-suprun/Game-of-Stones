@@ -19,11 +19,14 @@ trait Game(Stringable, Writable):
     fn undo_move(mut self):
         ...
 
+    fn decision(self, out decision: String):
+        ...
+
 
 # TODO Make it alias type in Game
 @value
 @register_passable("trivial")
-struct Move(CollectionElement, EqualityComparable, Representable, Stringable, Writable):
+struct Move(Movable, Copyable, EqualityComparable, Representable, Stringable, Writable):
     var p1: Place
     var p2: Place
 

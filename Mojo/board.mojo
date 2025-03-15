@@ -190,6 +190,97 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
             if r < score and self.places[i] == self.empty:
                 r = score
 
+    fn decision(self, out decision: String):
+        for y in range(size):
+            var stones = SIMD[DType.int64, 2](0, 0)
+            for x in range(max_stones - 1):
+                stones += self.counts(self[x, y])
+            for x in range(size - max_stones + 1):
+                stones += self.counts(self[x + max_stones - 1, y])
+                if stones[0] == max_stones:
+                    return "first-win"
+                elif stones[1] == max_stones:
+                    return "second-win"
+                stones -= self.counts(self[x, y])
+
+        for x in range(size):
+            var stones = SIMD[DType.int64, 2](0, 0)
+            for y in range(max_stones - 1):
+                stones += self.counts(self[x, y])
+            for y in range(size - max_stones + 1):
+                stones += self.counts(self[x, y + max_stones - 1])
+                if stones[0] == max_stones:
+                    return "first-win"
+                elif stones[1] == max_stones:
+                    return "second-win"
+                stones -= self.counts(self[x, y])
+
+        for y in range(size - max_stones + 1):
+            var stones = SIMD[DType.int64, 2](0, 0)
+            for x in range(max_stones - 1):
+                stones += self.counts(self[x, y+x])
+            for x in range(size - max_stones + 1 - y):
+                stones += self.counts(self[x+max_stones + 1, x + y + max_stones + 1])
+                if stones[0] == max_stones:
+                    return "first-win"
+                elif stones[1] == max_stones:
+                    return "second-win"
+                stones -= self.counts(self[x, x+y])
+
+        for x in range(1, size - max_stones + 1):
+            var stones = SIMD[DType.int64, 2](0, 0)
+            for y in range(max_stones - 1):
+                stones += self.counts(self[x+y, y])
+            for y in range(size - max_stones + 1 - x):
+                stones += self.counts(self[x + y + max_stones - 1, y + max_stones - 1])
+                if stones[0] == max_stones:
+                    return "first-win"
+                elif stones[1] == max_stones:
+                    return "second-win"
+                stones -= self.counts(self[x+y, y])
+
+
+        for y in range(size - max_stones + 1):
+            var stones = SIMD[DType.int64, 2](0, 0)
+            for x in range(max_stones - 1):
+                stones += self.counts(self[size - 1 - x, x + y])
+            for x in range(size - max_stones + 1 - y):
+                stones += self.counts(self[size - x - max_stones, x + y + max_stones - 1])
+                if stones[0] == max_stones:
+                    return "first-win"
+                elif stones[1] == max_stones:
+                    return "second-win"
+                stones -= self.counts(self[size - 1 - x, x + y])
+
+        for x in range(1, size - max_stones + 1):
+            var stones = SIMD[DType.int64, 2](0, 0)
+            for y in range(max_stones - 1):
+                stones += self.counts(self[size - 1 - x - y, y])
+            for y in range(size - max_stones + 1 - x):
+                stones += self.counts(self[size - max_stones - x - y, y + max_stones - 1])
+                if stones[0] == max_stones:
+                    return "first-win"
+                elif stones[1] == max_stones:
+                    return "second-win"
+                stones -= self.counts(self[size - 1 - x - y, y])
+
+        for y in range(size):
+            for x in range(size):
+                if self.getscores(Place(x, y))[0] != 0:
+                    return "no-decision"
+
+        return "draw"
+
+    @always_inline
+    fn counts(self, stones: Int8, out result: SIMD[DType.int64, 2]):
+        if stones == 1:
+            return SIMD[DType.int64, 2](1, 0)
+        elif stones == max_stones:
+            return SIMD[DType.int64, 2](0, 1)
+        else:
+            return SIMD[DType.int64, 2](0, 0)
+    
+
     @always_inline
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self.places[y * size + x]
@@ -365,3 +456,4 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
             return scores[black]
         elif black == 0:
             return -scores[white]
+

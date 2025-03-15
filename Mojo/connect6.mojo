@@ -52,9 +52,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
         # TODO use enumerated iterator
         for i in range(len(self.top_places) - 1):
             var place1 = self.top_places[i]
-            var score1 = self.board.getscores(place1)[0] + self.board.getscores(
-                place1
-            )[1]
+            var score1 = self.board.getscores(place1)[0] + self.board.getscores(place1)[1]
 
             self.board.place_stone(place1, self.turn)
 
@@ -76,11 +74,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                     var opp_score = self.board.max_score(opp_turn)
                     var move_score = coeff * self.board.score - opp_score
                     self.board.remove_stone()
-
-                    add[MoveScore, max_moves, less](
-                        MoveScore(Move(place1, place2), move_score),
-                        move_scores,
-                    )
+                    add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), move_score), move_scores)
 
             self.board.remove_stone()
 
@@ -104,6 +98,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             self.board.remove_stone()
         self.board.remove_stone()
 
+    fn decision(self, out decision: String):
+        return self.board.decision()
+
     fn __str__(self, out str: String):
         return String(self.board)
 
@@ -116,4 +113,4 @@ alias max_places = env_get_int["MAX_PLACES", 32]()
 alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 fn main() raises:
-    run[Connect6[board_size, max_moves, max_places]](Score(exp_factor))
+    run[Connect6[board_size, max_moves, max_places], exp_factor]()

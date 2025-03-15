@@ -11,7 +11,7 @@ var log_file = FileHandle()
 var log = False
 
 
-fn run[G: Game](exp_factor: Score) raises:
+fn run[G: Game, exp_factor: Score]() raises:
     var args = argv()
     if len(args) > 1:
         log_file = open(args[1], "w")
@@ -20,7 +20,7 @@ fn run[G: Game](exp_factor: Score) raises:
     var stdin = _fdopen["r"](0)
 
     var game = G()
-    var tree = Tree[G, 20]()
+    var tree = Tree[G, exp_factor]()
 
     while True:
         var line: String
