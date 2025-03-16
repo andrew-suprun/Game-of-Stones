@@ -226,6 +226,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 			case key.NameEscape:
 				if len(history) > 1 {
 					state.undoOnly = false
+					fmt.Fprintln(os.Stderr, "<1> undo")
 					fmt.Printf("undo\n")
 				}
 			}
@@ -267,13 +268,13 @@ func input(window *app.Window, stateChan chan state) {
 			}
 		case "respond":
 			state := <-stateChan
-			history = append(history, state)
 			state.respond = true
 			stateChan <- state
 		case "undo":
 			<-stateChan
 			history = history[:len(history)-1]
 			state := history[len(history)-1]
+			fmt.Fprintln(os.Stderr, "<2> undo", len(history))
 			stateChan <- state
 		case "undo-only":
 			state := <-stateChan
@@ -325,5 +326,6 @@ func playMove(stateChan chan state, moveStr string) {
 		state.turn = First
 	}
 
+	history = append(history, state)
 	stateChan <- state
 }
