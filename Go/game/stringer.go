@@ -86,7 +86,7 @@ func (game *Game) GameString(buf *bytes.Buffer) {
 				}
 			}
 		}
-		fmt.Fprintf(buf, "%2d\n", y+1)
+		fmt.Fprintf(buf, " %2d\n", y+1)
 	}
 
 	buf.WriteString("  ")

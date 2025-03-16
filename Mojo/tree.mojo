@@ -134,5 +134,6 @@ struct Node[Game: game.Game, c: Score](Copyable, Movable, Stringable, Writable):
                 child[].write_to(writer, depth + 1)
 
     fn debug_print_root_children(self):
+        print(self)
         for child in self.children:
-            print(child[])
+            print("  ", child[])

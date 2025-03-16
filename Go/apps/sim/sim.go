@@ -124,7 +124,7 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, uiChan chan []string, log
 	}
 
 	fmt.Println("stats", stats)
-	<-time.After(2 * time.Second)
+	<-time.After(5 * time.Second)
 	ui.send("clear")
 }
 
@@ -178,6 +178,9 @@ func (cmd *Cmd) call(expected, format string, args ...any) []string {
 		text, _ := cmd.in.ReadString('\n')
 		text = strings.TrimSpace(text)
 		fields := strings.Fields(text)
+		if len(fields) == 0 {
+			continue
+		}
 		if fields[0] == expected {
 			fmt.Fprintf(os.Stderr, "<- %s-%s: %q\n", cmd.name, cmd.player, text)
 			return fields[1:]

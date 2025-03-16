@@ -49,16 +49,22 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
         for i in range(len(self.top_places) - 1):
             var place1 = self.top_places[i]
-            var score1 = self.board.getscores(place1)[0] + self.board.getscores(place1)[1]
+            var score1 = self.board.getscores(place1)[self.turn]
+            if score1 == win:
+                move_scores.clear()
+                move_scores.append(MoveScore(Move(place1, place1), win))
+                return
 
             self.board.place_stone(place1, self.turn)
 
             for j in range(i + 1, len(self.top_places)):
                 var place2 = self.top_places[j]
-                var score2 = self.board.getscores(place2)[0] + self.board.getscores(place2)[1]
+                var score2 = self.board.getscores(place2)[self.turn]
 
-                if self.board.score == win:
+                if score2 == win:
+                    move_scores.clear()
                     move_scores.append(MoveScore(Move(place1, place2), win))
+                    self.board.remove_stone()
                     return
                 elif score1 + score2 == 0:
                     add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), draw), move_scores)

@@ -63,7 +63,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
     var score: Score
     var history: List[PlaceScores]
     var history_indices: List[ScoreMark]
-    var value_table: InlineArray[InlineArray[Scores, max_stones * max_stones], 2]
+    var value_table: InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]
 
     fn __init__(out self):
         self.places = List[Int8](capacity=size * size)
@@ -130,7 +130,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
             self[x, y] = Self.white
     
     @always_inline
-    fn update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, max_stones * max_stones]):
+    fn update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, max_stones * max_stones + 1]):
         for i in range(start, start + delta * (max_stones - 1 + n), delta):
             self.history.append(PlaceScores(i, self.scores[i]))
 
@@ -220,7 +220,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
             for x in range(max_stones - 1):
                 stones += self.counts(self[x, y+x])
             for x in range(size - max_stones + 1 - y):
-                stones += self.counts(self[x+max_stones + 1, x + y + max_stones + 1])
+                stones += self.counts(self[x + max_stones - 1, x + y + max_stones - 1])
                 if stones[0] == max_stones:
                     return "first-win"
                 elif stones[1] == max_stones:
@@ -230,7 +230,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
         for x in range(1, size - max_stones + 1):
             var stones = SIMD[DType.int64, 2](0, 0)
             for y in range(max_stones - 1):
-                stones += self.counts(self[x+y, y])
+                stones += self.counts(self[x + y, y])
             for y in range(size - max_stones + 1 - x):
                 stones += self.counts(self[x + y + max_stones - 1, y + max_stones - 1])
                 if stones[0] == max_stones:

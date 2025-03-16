@@ -62,7 +62,7 @@ fn run[G: Game, exp_factor: Score]() raises:
             var move = tree.best_move()
             game.play_move(move)
             tree.reset(game)
-            print("move", move)
+            print("move", move, game.decision(), sims)
             if log:
                 print("move", move, file=log_file)
                 print("sims", sims, file=log_file)

@@ -14,3 +14,7 @@ bench_top_places  3.238
 mojo -D ASSERT=all connect6_bench.mojo 
 bench_top_moves 508.037
 bench_extend    530.677
+
+
+* Viva La Dirt League: tin foil hat
+* JD Kirk: Him

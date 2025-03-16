@@ -2,8 +2,8 @@ from collections import InlineArray
 
 from scores import Score, Scores
 
-fn value_table[max_stones: Int, scores: List[Score]](out result: InlineArray[InlineArray[Scores, max_stones * max_stones], 2]):
-    alias result_size = max_stones * max_stones
+fn value_table[max_stones: Int, scores: List[Score]](out result: InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]):
+    alias result_size = max_stones * max_stones + 1
 
     v2 = List[Scores](Scores(1, -1))
     for i in range(max_stones - 1):
