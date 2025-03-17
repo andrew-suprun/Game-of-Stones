@@ -55,11 +55,9 @@ func main() {
 	uiChan := make(chan []string)
 	go wait(ui)
 
-	for range 10 {
+	for {
 		seed := time.Now().UnixNano()
-		fmt.Fprintln(os.Stderr, "new openning 1")
 		playOpening(os.Args[2], os.Args[3], ui, uiChan, logChan, seed)
-		fmt.Fprintln(os.Stderr, "new openning 2")
 		playOpening(os.Args[3], os.Args[2], ui, uiChan, logChan, seed)
 	}
 }
@@ -188,7 +186,7 @@ func (cmd *Cmd) call(expected, format string, args ...any) []string {
 			continue
 		}
 		if fields[0] == expected {
-			fmt.Fprintf(os.Stderr, "<- %s-%s: %q\n", cmd.name, cmd.player, text)
+			// fmt.Fprintf(os.Stderr, "<- %s-%s: %q\n", cmd.name, cmd.player, text)
 			return fields[1:]
 		}
 	}
@@ -198,7 +196,7 @@ func (cmd *Cmd) call(expected, format string, args ...any) []string {
 func (cmd *Cmd) send(format string, args ...any) {
 	text := fmt.Sprintf(format, args...)
 	fmt.Fprintln(cmd.out, text+"\n")
-	fmt.Fprintf(os.Stderr, "-> %s-%s: %q\n", cmd.name, cmd.player, text)
+	// fmt.Fprintf(os.Stderr, "-> %s-%s: %q\n", cmd.name, cmd.player, text)
 }
 
 func wait(cmd *Cmd) {

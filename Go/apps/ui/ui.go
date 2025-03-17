@@ -222,6 +222,7 @@ func frame(ops *op.Ops, ev app.FrameEvent, stateChan chan state) {
 						state.turn = First
 					}
 					fmt.Printf("move %s\n", move)
+					checkTerminal(&state)
 				}
 			case key.NameEscape:
 				if len(history) > 1 {
@@ -325,5 +326,95 @@ func playMove(stateChan chan state, moveStr string) {
 	}
 
 	history = append(history, state)
+	checkTerminal(&state)
 	stateChan <- state
+}
+
+func checkTerminal(state *state) {
+	maxStones := 5
+	if gameName == "connect6" {
+		maxStones = 6
+	}
+
+	xx, yy, dx, dy := 0, 0, 0, 0
+
+	for y := range game.Size {
+		for x := range game.Size {
+			if x <= game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y][x+i] == stateBlack || state.places[y][x+i] == stateBlackSelected {
+						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, 1, 0
+						}
+					} else if state.places[y][x+i] == stateWhite || state.places[y][x+i] == stateWhiteSelected {
+						w++
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, 1, 0
+						}
+					}
+				}
+			}
+			if y <= game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y+i][x] == stateBlack || state.places[y+i][x] == stateBlackSelected {
+						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, 0, 1
+						}
+					} else if state.places[y+i][x] == stateWhite || state.places[y+i][x] == stateWhiteSelected {
+						w++
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, 0, 1
+						}
+					}
+				}
+			}
+			if x <= game.Size-maxStones && y <= game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y+i][x+i] == stateBlack || state.places[y+i][x+i] == stateBlackSelected {
+						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, 1, 1
+						}
+					} else if state.places[y+i][x+i] == stateWhite || state.places[y+i][x+i] == stateWhiteSelected {
+						w++
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, 1, 1
+						}
+					}
+				}
+			}
+			if x >= maxStones-1 && y <= game.Size-maxStones {
+				b, w := 0, 0
+				for i := range maxStones {
+					if state.places[y+i][x-i] == stateBlack || state.places[y+i][x-i] == stateBlackSelected {
+						b++
+						if b == maxStones {
+							xx, yy, dx, dy = x, y, -1, 1
+						}
+					} else if state.places[y+i][x-i] == stateWhite || state.places[y+i][x-i] == stateWhiteSelected {
+						w++
+						if w == maxStones {
+							xx, yy, dx, dy = x, y, -1, 1
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if dx != 0 || dy != 0 {
+		for i := range maxStones {
+			switch state.places[yy+dy*i][xx+dx*i] {
+			case stateBlack:
+				state.places[yy+dy*i][xx+dx*i] = stateBlackSelected
+			case stateWhite:
+				state.places[yy+dy*i][xx+dx*i] = stateWhiteSelected
+			}
+		}
+	}
 }
