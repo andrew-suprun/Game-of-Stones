@@ -108,7 +108,10 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, uiChan chan []string, log
 		response := black.call("move", "respond %d", millis)
 		ui.send("move %s", response[0])
 		decision := response[1]
-		if decision != "no-decision" {
+		if decision == "draw" {
+			stats["draw"]++
+			break
+		} else if decision != "no-decision" {
 			stats[black.player]++
 			break
 		}
@@ -116,7 +119,10 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, uiChan chan []string, log
 		response = white.call("move", "respond %d", millis)
 		ui.send("move %s", response[0])
 		decision = response[1]
-		if decision != "no-decision" {
+		if decision == "draw" {
+			stats["draw"]++
+			break
+		} else if decision != "no-decision" {
 			stats[white.player]++
 			break
 		}

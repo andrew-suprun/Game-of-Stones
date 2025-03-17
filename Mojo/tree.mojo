@@ -14,9 +14,6 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
 
     fn expand(mut self, mut game: Game, out done: Bool):
         if is_decisive(self.root.value):
-            print("decisive")
-            for child in self.root.children:
-                print("  ", child[])
             return True
         else:
             self.root._expand(game, self.top_moves)
@@ -28,11 +25,6 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
                     undecided += 1
                 else:
                     return False
-
-        if undecided == 1:
-            print("forced")
-            for child in self.root.children:
-                print("  ", child[])
 
         return undecided == 1
 
@@ -100,9 +92,9 @@ struct Node[Game: game.Game, c: Score](Copyable, Movable, Stringable, Writable):
             elif is_draw(child[].value):
                 has_draw = True
                 continue
-            elif is_loss(child[].value):
-                continue
             all_draws = False
+            if is_loss(child[].value):
+                continue
             self.n_sims += child[].n_sims
             if self.value >= -child[].value:
                 self.value = -child[].value

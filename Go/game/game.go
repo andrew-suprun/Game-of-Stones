@@ -341,7 +341,7 @@ func (game *Game) Decision() Decision {
 
 	for y := range Size {
 		for x := range Size {
-			if game.values[y][x][0] != 0 {
+			if game.stones[y][x] == None && game.values[y][x][0] != 0 {
 				return NoDecision
 			}
 		}

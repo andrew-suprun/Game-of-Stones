@@ -44,9 +44,10 @@ struct Gomoku[size: Int, max_moves: Int](Game):
 
         for p in self.top_places:
             var place = p[]
-            var score = self.board.getscores(place)[0] + self.board.getscores(place)[1]
+            var score = self.board.getscores(place)[self.turn]
 
-            if self.board.score == win:
+            if score == win:
+                move_scores.clear()
                 move_scores.append(MoveScore(Move(place, place), win))
                 return
             elif score == 0:

@@ -175,12 +175,12 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
         if turn == first:
             for y in range(size):
                 for x in range(size):
-                    if self[x, y] == self.empty:
+                    if self[x, y] == self.empty and self.getscores(Place(x, y))[first] > 0:
                         add[Place, max_places, less_first](Place(x, y), top_places)
         else:
             for y in range(size):
                 for x in range(size):
-                    if self[x, y] == self.empty:
+                    if self[x, y] == self.empty and self.getscores(Place(x, y))[second] > 0:
                         add[Place, max_places, less_second](Place(x, y), top_places)
 
     fn max_score(self, player: Int,  out r: Score):
@@ -266,7 +266,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
 
         for y in range(size):
             for x in range(size):
-                if self.getscores(Place(x, y))[0] != 0:
+                if self[x, y] == self.empty and self.getscores(Place(x, y))[0] != 0:
                     return "no-decision"
 
         return "draw"

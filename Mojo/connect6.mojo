@@ -44,7 +44,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
         self.board.top_places(self.turn, self.top_places)
 
         if len(self.top_places) < 2:
-            move_scores.append(MoveScore(Move(0, 0, 0, 0), draw))
+            if len(self.top_places) == 1:
+                var top_place = self.top_places[0]
+                move_scores.append(MoveScore(Move(top_place, top_place), draw))
+            else:
+                move_scores.append(MoveScore(Move(0, 0, 0, 0), draw))
             return
 
         for i in range(len(self.top_places) - 1):
