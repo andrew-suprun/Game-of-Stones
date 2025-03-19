@@ -11,10 +11,6 @@ struct Place(EqualityComparable, Movable, Copyable, Stringable, Writable):
     var x: Int8
     var y: Int8
 
-    fn __init__(out self, x: Int, y: Int):
-        self.x = x
-        self.y = y
-
     fn __init__(out self, place: String) raises:
         self.x = ord(place[0]) - ord("a")
         self.y = Int(place[1:]) - 1
