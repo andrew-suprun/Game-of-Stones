@@ -2,7 +2,7 @@ from benchmark import benchmark, Unit
 
 from tree import Move, MoveScore
 from tree.impl import Tree
-from game_of_stones.gomoku import Gomoku
+from game_of_stones import Gomoku
 
 alias G = Gomoku[19, 32]
 

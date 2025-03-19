@@ -3,7 +3,7 @@ from benchmark import benchmark, Unit
 from tree import Move, MoveScore
 from tree.impl import Tree
 from game_of_stones.board import Board, first
-from game_of_stones.connect6 import Connect6
+from game_of_stones import Connect6
 
 alias C6 = Connect6[19, 60, 32]
 

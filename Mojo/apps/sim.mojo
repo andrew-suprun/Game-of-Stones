@@ -2,7 +2,7 @@ from time import perf_counter_ns
 
 from tree import Move
 from tree.impl import Tree
-from game_of_stones.connect6 import Connect6
+from game_of_stones import Connect6
 
 
 alias G1 = Connect6[19, 60, 32]
