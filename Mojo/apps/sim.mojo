@@ -7,7 +7,7 @@ from connect6 import Connect6
 
 alias G1 = Connect6[19, 60, 32]
 alias G2 = Connect6[19, 60, 32]
-alias T1 = Tree[G1, 20]
+alias T1 = Tree[G1, 30]
 alias T2 = Tree[G2, 20]
 
 fn main() raises:

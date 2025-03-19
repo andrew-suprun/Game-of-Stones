@@ -19,4 +19,5 @@ fn bench():
 
 
 fn main() raises:
-    print("heap bench       ", benchmark.run[bench]().mean(Unit.ms))
+    print("\n--- heap (ms/100_000) ---")
+    print("add", benchmark.run[bench]().mean(Unit.ms))

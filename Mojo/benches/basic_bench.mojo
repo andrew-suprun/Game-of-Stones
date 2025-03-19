@@ -64,19 +64,8 @@ fn benchListSIMDFloat():
 
 
 fn main() raises:
-    seed(1)
-
-    print(
-        "benchInlineArraySIMDInt   ",
-        benchmark.run[benchInlineArraySIMDInt]().mean(),
-    )
-    print(
-        "benchListSIMDInt          ", benchmark.run[benchListSIMDInt]().mean()
-    )
-    print(
-        "benchInlineArraySIMDFloat ",
-        benchmark.run[benchInlineArraySIMDFloat]().mean(),
-    )
-    print(
-        "benchListSIMDFloat        ", benchmark.run[benchListSIMDFloat]().mean()
-    )
+    print("\n--- basic (ms/10_000) ---")
+    print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt]().mean())
+    print("List        SIMD Int  ", benchmark.run[benchListSIMDInt]().mean())
+    print("InlineArray SIMD Float", benchmark.run[benchInlineArraySIMDFloat]().mean())
+    print("List        SIMD Float", benchmark.run[benchListSIMDFloat]().mean())

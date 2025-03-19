@@ -20,18 +20,19 @@ fn bench_top_moves():
 
 fn bench_extend():
     var game = G()
-    var tree = Tree[G](20)
+    var tree = Tree[G, 20]()
     try:
         game.play_move(Move("j10"))
         game.play_move(Move("i9"))
     except:
         pass
-    for _ in range(100_000):
+    for _ in range(1000):
         var done = tree.expand(game)
         if done:
             print("done")
             break
 
 fn main() raises:
-    # print("bench_top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
-    print("bench_extend   ", benchmark.run[bench_extend]().mean(Unit.ms))
+    print("\n--- gomoku (ms/1000) ---")
+    print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
+    print("extend   ", benchmark.run[bench_extend]().mean(Unit.ms))

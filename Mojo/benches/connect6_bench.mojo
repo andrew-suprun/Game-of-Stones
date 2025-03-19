@@ -33,5 +33,6 @@ fn bench_extend():
             break
 
 fn main() raises:
-    print("bench_top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
-    print("bench_extend   ", benchmark.run[bench_extend]().mean(Unit.ms))
+    print("\n--- connect6 (ms/1000) ---")
+    print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
+    print("extend   ", benchmark.run[bench_extend]().mean(Unit.ms))

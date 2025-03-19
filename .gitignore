@@ -1,6 +1,7 @@
 *.log
 ols.json
 Odin.*
+playground
 playground*.*
 .DS_Store
 out

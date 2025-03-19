@@ -1,0 +1,22 @@
+--- basic (ms/10_000) ---
+InlineArray SIMD Int   0.011440277511961722
+List        SIMD Int   0.011282216981132076
+InlineArray SIMD Float 0.015512305194805197
+List        SIMD Float 0.011433302884615386
+
+--- board (ms/1000) ---
+update_row  0.049418661768348054
+place_stone 0.22626570000000001
+max_score   0.005015161204035743
+top_places  2.2534699999999996
+
+--- connect6 (ms/1000) ---
+top_moves 306.3674285714286
+extend    321.7301428571428
+
+--- gomoku (ms/1000) ---
+top_moves 3.24289402173913
+extend    6.199176623376624
+
+--- heap (ms/100_000) ---
+add 0.08735127953114193
