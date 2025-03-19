@@ -1,34 +1,8 @@
 from collections import InlineArray
 
-from scores import Score, Scores, loss, is_win, is_loss, is_draw
-from heap import add
-import values as v
-
-
-@value
-@register_passable("trivial")
-struct Place(EqualityComparable, Movable, Copyable, Stringable, Writable):
-    var x: Int8
-    var y: Int8
-
-    fn __init__(out self, place: String) raises:
-        self.x = ord(place[0]) - ord("a")
-        self.y = Int(place[1:]) - 1
-
-    @always_inline
-    fn __eq__(self, other: Self, out result: Bool):
-        result = self.x == other.x and self.y == other.y
-
-    @always_inline
-    fn __ne__(self, other: Self, out result: Bool):
-        result = not (self == other)
-
-    fn __str__(self, out result: String):
-        result = String(self)
-
-    fn write_to[W: Writer](self, mut writer: W):
-        writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
-
+from tree import Place, Score, Scores, loss, is_win, is_loss, is_draw
+from .heap import add
+import .values as v
 
 alias first = 0
 alias second = 1

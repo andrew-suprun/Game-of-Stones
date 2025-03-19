@@ -1,7 +1,6 @@
-from scores import Score
-from game import Game, Move, MoveScore
-from gomoku import Gomoku
-from tree import Tree, Node
+from tree import Game, Move, Score, MoveScore
+from tree.impl import Tree, Node
+from game_of_stones.gomoku import Gomoku
 
 from random import seed, random_si64, random_float64
 import testing

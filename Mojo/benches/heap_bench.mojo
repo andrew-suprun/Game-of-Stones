@@ -1,6 +1,6 @@
 from benchmark import benchmark, Unit
 
-from heap import add
+from game_of_stones.heap import add
 
 
 fn bench():

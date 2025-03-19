@@ -1,4 +1,4 @@
-# make T Infer-only parameter
+# TODO make T Infer-only parameter
 fn add[T: WritableCollectionElement, max_items: Int, less: fn (T, T, out Bool) capturing](item: T, mut items: List[T]):
     if len(items) == max_items:
         if not less(items[0], item):

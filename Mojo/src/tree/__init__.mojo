@@ -1,5 +1,4 @@
-from scores import Score
-from board import Place
+from utils.numerics import inf, neg_inf, isfinite, isinf
 
 trait Game(Stringable, Writable):
     # alias Move: EqualityComparableCollectionElement
@@ -64,6 +63,30 @@ struct Move(Movable, Copyable, EqualityComparable, Representable, Stringable, Wr
         else:
             writer.write(self.p1)
 
+@value
+@register_passable("trivial")
+struct Place(EqualityComparable, Movable, Copyable, Stringable, Writable):
+    var x: Int8
+    var y: Int8
+
+    fn __init__(out self, place: String) raises:
+        self.x = ord(place[0]) - ord("a")
+        self.y = Int(place[1:]) - 1
+
+    @always_inline
+    fn __eq__(self, other: Self, out result: Bool):
+        result = self.x == other.x and self.y == other.y
+
+    @always_inline
+    fn __ne__(self, other: Self, out result: Bool):
+        result = not (self == other)
+
+    fn __str__(self, out result: String):
+        result = String(self)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
+
 
 @value
 @register_passable("trivial")
@@ -79,3 +102,29 @@ struct MoveScore(CollectionElement, Representable, Stringable, Writable):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move, " v: ", self.score)
+
+alias Score = Float32
+alias Scores = SIMD[DType.float32, 2]
+alias win = inf[DType.float32]()
+alias loss = neg_inf[DType.float32]()
+alias draw = Score(0.5)
+
+
+@always_inline
+fn is_decisive(v: Score, out result: Bool):
+    return not isfinite(v) or is_draw(v)
+
+
+@always_inline
+fn is_win(v: Score, out result: Bool):
+    return isinf(v) and v > 0
+
+
+@always_inline
+fn is_loss(v: Score, out result: Bool):
+    return isinf(v) and v < 0
+
+
+@always_inline
+fn is_draw(v: Score, out result: Bool):
+    return v == draw

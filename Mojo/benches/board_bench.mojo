@@ -1,10 +1,9 @@
 from benchmark import benchmark, Unit
 
-from scores import Score
-from board import Board, first
-from game import Place
-from connect6 import values, max_stones
-import values as v
+from tree import Score, Place
+from game_of_stones.board import Board, first
+from game_of_stones.connect6 import values, max_stones
+import game_of_stones.values as v
 
 fn bench_update_row():
     var board = Board[values, 19, max_stones, 8]()

@@ -1,14 +1,12 @@
 from testing import assert_true
 from random import seed, random_si64
 
-from scores import Score
-from board import Board
-from game import Place
-from connect6 import Connect6, max_stones, values
+from tree import Score, Place
+from game_of_stones.board import Board
+from game_of_stones.connect6 import Connect6, max_stones, values
 
 
 def test_place_stone():
-    var c6 = Connect6[19, 60, 32]()
     seed(0)
     var board = Board[values, 19, max_stones, 20]()
     var value = Score(0)

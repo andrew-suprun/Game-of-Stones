@@ -1,12 +1,10 @@
 from sys import env_get_int
 from collections import InlineArray
 
-from heap import add
-from scores import Score, win, draw
-import values as v
-from board import Board, Place, first, second
-from game import Game, Move, MoveScore
-from engine import run
+from tree import Game, Move, MoveScore, Score, win, draw
+
+from .heap import add
+from .board import Board, Place, first, second
 
 alias max_stones = 5
 
@@ -87,5 +85,3 @@ alias max_moves = env_get_int["MAX_MOVES", 32]()
 alias exp_factor = env_get_int["EXP_FACTOR", 20]()
 
 
-fn main() raises:
-    run[Gomoku[board_size, max_moves], exp_factor]()

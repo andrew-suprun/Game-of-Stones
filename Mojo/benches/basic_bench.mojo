@@ -2,7 +2,7 @@ from collections import InlineArray
 from benchmark import benchmark, Unit, keep
 from random import seed, random_si64, random_float64
 
-from scores import Score
+from tree import Score
 
 
 fn benchInlineArraySIMDInt():

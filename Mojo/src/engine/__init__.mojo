@@ -2,14 +2,11 @@ from sys import argv
 from time import perf_counter_ns
 from builtin.io import _fdopen
 
-from scores import Score
-from tree import Tree
-from game import Game, Move
-
+from tree.impl import Tree
+from tree import Game, Move, Score
 
 var log_file = FileHandle()
 var log = False
-
 
 fn run[G: Game, exp_factor: Score]() raises:
     var args = argv()

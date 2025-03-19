@@ -1,8 +1,8 @@
 from benchmark import benchmark, Unit
 
-from tree import Tree
-from game import Move, MoveScore
-from gomoku import Gomoku
+from tree import Move, MoveScore
+from tree.impl import Tree
+from game_of_stones.gomoku import Gomoku
 
 alias G = Gomoku[19, 32]
 

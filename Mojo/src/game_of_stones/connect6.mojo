@@ -1,10 +1,7 @@
-from sys import env_get_int
+from tree import Game, Move, MoveScore, Score, win, draw
 
-from heap import add
-from scores import Score, win, draw
-from board import Board, Place, first, second
-from game import Game, Move, MoveScore
-from engine import run
+from .heap import add
+from .board import Board, Place, first, second
 
 alias max_stones = 6
 
@@ -111,11 +108,3 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
-
-alias board_size = env_get_int["BOARD_SIZE", 19]()
-alias max_moves = env_get_int["MAX_MOVES", 60]()
-alias max_places = env_get_int["MAX_PLACES", 32]()
-alias exp_factor = env_get_int["EXP_FACTOR", 20]()
-
-fn main() raises:
-    run[Connect6[board_size, max_moves, max_places], exp_factor]()

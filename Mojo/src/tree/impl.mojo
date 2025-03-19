@@ -1,16 +1,15 @@
 from math import log2, sqrt
 from memory import Pointer
 
-from scores import Score, is_decisive, is_win, is_loss, is_draw, win, loss, draw
-import game
+from tree import Game, Move, MoveScore
 
-struct Tree[Game: game.Game, c: Score](Stringable, Writable):
+struct Tree[Game: Game, c: Score](Stringable, Writable):
     var root: Node[Game, c]
-    var top_moves: List[game.MoveScore]
+    var top_moves: List[MoveScore]
 
     fn __init__(out self):
-        self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
-        self.top_moves = List[game.MoveScore]()
+        self.root = Node[Game, c](Move(0, 0, 0, 0), 0)
+        self.top_moves = List[MoveScore]()
 
     fn expand(mut self, mut game: Game, out done: Bool):
         if is_decisive(self.root.value):
@@ -28,11 +27,11 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
 
         return undecided == 1
 
-    fn best_move(self, out result: game.Move):
+    fn best_move(self, out result: Move):
         result = self.root._best_move()
         
     fn reset(mut self, g: Game):
-        self.root = Node[Game, c](game.Move(0, 0, 0, 0), 0)
+        self.root = Node[Game, c](Move(0, 0, 0, 0), 0)
 
     fn __str__(self, out result: String):
         result = String.write(self)
@@ -44,22 +43,22 @@ struct Tree[Game: game.Game, c: Score](Stringable, Writable):
         self.root.debug_print_root_children()
 
 @value
-struct Node[Game: game.Game, c: Score](Copyable, Movable, Stringable, Writable):
-    var move: game.Move
+struct Node[Game: Game, c: Score](Copyable, Movable, Stringable, Writable):
+    var move: Move
     var value: Score
     var children: List[Self]
     var n_sims: Int
 
-    fn __init__(out self, move: game.Move, value: Score):
+    fn __init__(out self, move: Move, value: Score):
         self.move = move
         self.value = value
         self.children = List[Self]()
         self.n_sims = 1
 
-    fn _expand(mut self, mut g: Game, mut top_moves: List[game.MoveScore]):
+    fn _expand(mut self, mut g: Game, mut top_moves: List[MoveScore]):
         if not self.children:
             g.top_moves(top_moves)
-            debug_assert(len(top_moves) > 0, "Function game.top_moves(...) returns empty result.")
+            debug_assert(len(top_moves) > 0, "Function top_moves(...) returns empty result.")
 
             self.children.reserve(len(top_moves))
             for move in top_moves:
@@ -103,7 +102,7 @@ struct Node[Game: game.Game, c: Score](Copyable, Movable, Stringable, Writable):
         elif has_draw and self.value > 0:
             self.value = 0
 
-    fn _best_move(self, out result: game.Move):
+    fn _best_move(self, out result: Move):
         debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
         var best_child = Pointer.address_of(self.children[0])
         for child in self.children:
