@@ -1,7 +1,7 @@
 from tree import Game, Move, Score, win, draw
 
 from .heap import add
-from .board import Board, Place, first, second
+from .board import Board, Place
 
 alias max_stones = 6
 

@@ -1,10 +1,7 @@
-from sys import env_get_int
-from collections import InlineArray
-
 from tree import Game, Move, Score, win, draw
 
 from .heap import add
-from .board import Board, Place, first, second
+from .board import Board, Place
 
 alias max_stones = 5
 
@@ -79,9 +76,4 @@ struct Gomoku[size: Int, max_moves: Int](Game):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
-
-alias board_size = env_get_int["BOARD_SIZE", 19]()
-alias max_moves = env_get_int["MAX_MOVES", 32]()
-alias exp_factor = env_get_int["EXP_FACTOR", 20]()
-
 
