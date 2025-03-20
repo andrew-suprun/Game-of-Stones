@@ -9,7 +9,7 @@ trait Game(Stringable, Writable):
     fn name(self, out name: String):
         ...
 
-    fn top_moves(mut self, mut move_scores: List[MoveScore]):
+    fn top_moves(mut self, mut move_scores: List[(Move, Score)]):
         ...
 
     fn play_move(mut self, move: Move):
@@ -87,21 +87,6 @@ struct Place(EqualityComparable, Movable, Copyable, Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-
-@value
-@register_passable("trivial")
-struct MoveScore(CollectionElement, Representable, Stringable, Writable):
-    var move: Move
-    var score: Score
-
-    fn __repr__(self, out r: String):
-        r = String(self)
-
-    fn __str__(self, out result: String):
-        result = String(self)
-
-    fn write_to[W: Writer](self, mut writer: W):
-        writer.write(self.move, " v: ", self.score)
 
 alias Score = Float32
 alias Scores = SIMD[DType.float32, 2]

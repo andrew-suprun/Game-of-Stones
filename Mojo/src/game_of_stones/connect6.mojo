@@ -1,4 +1,4 @@
-from tree import Game, Move, MoveScore, Score, win, draw
+from tree import Game, Move, Score, win, draw
 
 from .heap import add
 from .board import Board, Place, first, second
@@ -15,8 +15,6 @@ alias values = List[Score](
     win,
 )
 
-
-
 struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     var board: Board[values, size, max_stones, max_places]
     var turn: Int
@@ -32,10 +30,10 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     fn name(self, out name: String):
         name = "connect6"
 
-    fn top_moves(mut self, mut move_scores: List[MoveScore]):
+    fn top_moves(mut self, mut move_scores: List[(Move, Score)]):
         @parameter
-        fn less(a: MoveScore, b: MoveScore, out r: Bool):
-            r = a.score < b.score
+        fn less(a: (Move, Score), b: (Move, Score), out r: Bool):
+            r = a[1] < b[1]
 
         move_scores.clear()
         self.board.top_places(self.turn, self.top_places)
@@ -43,9 +41,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
         if len(self.top_places) < 2:
             if len(self.top_places) == 1:
                 var top_place = self.top_places[0]
-                move_scores.append(MoveScore(Move(top_place, top_place), draw))
+                move_scores.append((Move, Score)(Move(top_place, top_place), draw))
             else:
-                move_scores.append(MoveScore(Move(0, 0, 0, 0), draw))
+                move_scores.append((Move, Score)(Move(0, 0, 0, 0), draw))
             return
 
         for i in range(len(self.top_places) - 1):
@@ -53,7 +51,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
             var score1 = self.board.getscores(place1)[self.turn]
             if score1 == win:
                 move_scores.clear()
-                move_scores.append(MoveScore(Move(place1, place1), win))
+                move_scores.append((Move, Score)(Move(place1, place1), win))
                 return
 
             self.board.place_stone(place1, self.turn)
@@ -64,11 +62,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
 
                 if score2 == win:
                     move_scores.clear()
-                    move_scores.append(MoveScore(Move(place1, place2), win))
+                    move_scores.append((Move, Score)(Move(place1, place2), win))
                     self.board.remove_stone()
                     return
                 elif score1 + score2 == 0:
-                    add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), draw), move_scores)
+                    add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), draw), move_scores)
                 else:
                     self.board.place_stone(place2, self.turn)
                     var opp_turn = 1 - self.turn
@@ -76,7 +74,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                     var opp_score = self.board.max_score(opp_turn)
                     var move_score = coeff * self.board.score - opp_score
                     self.board.remove_stone()
-                    add[MoveScore, max_moves, less](MoveScore(Move(place1, place2), move_score), move_scores)
+                    add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), move_score), move_scores)
 
             self.board.remove_stone()
 

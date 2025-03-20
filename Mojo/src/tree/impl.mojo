@@ -1,15 +1,15 @@
 from math import log2, sqrt
 from memory import Pointer
 
-from tree import Game, Move, MoveScore
+from tree import Game, Move, Score
 
 struct Tree[Game: Game, c: Score](Stringable, Writable):
     var root: Node[Game, c]
-    var top_moves: List[MoveScore]
+    var top_moves: List[(Move, Score)]
 
     fn __init__(out self):
         self.root = Node[Game, c](Move(0, 0, 0, 0), 0)
-        self.top_moves = List[MoveScore]()
+        self.top_moves = List[(Move, Score)]()
 
     fn expand(mut self, mut game: Game, out done: Bool):
         if is_decisive(self.root.value):
@@ -55,14 +55,14 @@ struct Node[Game: Game, c: Score](Copyable, Movable, Stringable, Writable):
         self.children = List[Self]()
         self.n_sims = 1
 
-    fn _expand(mut self, mut g: Game, mut top_moves: List[MoveScore]):
+    fn _expand(mut self, mut g: Game, mut top_moves: List[(Move, Score)]):
         if not self.children:
             g.top_moves(top_moves)
             debug_assert(len(top_moves) > 0, "Function top_moves(...) returns empty result.")
 
             self.children.reserve(len(top_moves))
             for move in top_moves:
-                self.children.append(Node[Game, c](move[].move, move[].score))
+                self.children.append(Node[Game, c](move[][0], move[][1]))
         else:
             var selected_child = Pointer.address_of(self.children[0])
             var n_sims = self.n_sims

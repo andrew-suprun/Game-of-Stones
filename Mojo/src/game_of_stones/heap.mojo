@@ -1,5 +1,5 @@
 # TODO make T Infer-only parameter
-fn add[T: WritableCollectionElement, max_items: Int, less: fn (T, T, out Bool) capturing](item: T, mut items: List[T]):
+fn add[T: CollectionElement, max_items: Int, less: fn (T, T, out Bool) capturing](item: T, mut items: List[T]):
     if len(items) == max_items:
         if not less(items[0], item):
             return
@@ -9,7 +9,7 @@ fn add[T: WritableCollectionElement, max_items: Int, less: fn (T, T, out Bool) c
     items.append(item)
     sift_up[less](items)
 
-fn sift_up[T: WritableCollectionElement, //, less: fn (T, T, out Bool) capturing](mut items: List[T]):
+fn sift_up[T: CollectionElement, //, less: fn (T, T, out Bool) capturing](mut items: List[T]):
     var child_idx = len(items) - 1
     var child = items[child_idx]
     while child_idx > 0 and less(child, items[(child_idx - 1) // 2]):
@@ -19,7 +19,7 @@ fn sift_up[T: WritableCollectionElement, //, less: fn (T, T, out Bool) capturing
         child_idx = parent_idx
     items[child_idx] = child
 
-fn sift_down[T: WritableCollectionElement, //, less: fn (T, T, out Bool) capturing](mut items: List[T]):
+fn sift_down[T: CollectionElement, //, less: fn (T, T, out Bool) capturing](mut items: List[T]):
     var idx = 0
     var elem = items[idx]
     while True:

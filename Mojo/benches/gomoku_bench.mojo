@@ -1,6 +1,6 @@
 from benchmark import benchmark, Unit
 
-from tree import Move, MoveScore
+from tree import Move, Score
 from tree.impl import Tree
 from game_of_stones import Gomoku
 
@@ -13,7 +13,7 @@ fn bench_top_moves():
         game.play_move(Move("i9"))
     except:
         pass
-    var moves = List[MoveScore]()
+    var moves = List[(Move, Score)]()
     for _ in range(1000):
         game.top_moves(moves)
     _ = moves
