@@ -10,4 +10,4 @@ version = "0.1.0"
 sim = "mojo run -I src apps/sim.mojo"
 
 [dependencies]
-max = ">=25.2.0.dev2025021305,<26"
+max = ">=25.3.0.dev2025032005,<26"
