@@ -9,13 +9,7 @@ fn value_table[max_stones: Int, scores: List[Score]](out result: InlineArray[Inl
     for i in range(max_stones - 1):
         v2.append(Scores(scores[i + 2] - scores[i + 1], -scores[i + 1]))
 
-    result = InlineArray[InlineArray[Scores, result_size], 2](
-        InlineArray[Scores, result_size](uninitialized=True),
-        InlineArray[Scores, result_size](uninitialized=True),
-    )
-    for i in range(result_size):
-        result[0][i] = 0
-        result[1][i] = 0
+    result = InlineArray[InlineArray[Scores, result_size], 2](InlineArray[Scores, result_size](0))
 
     for i in range(max_stones - 1):
         result[0][i * max_stones] = Scores(v2[i][1], -v2[i][0])
