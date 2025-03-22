@@ -236,7 +236,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
 
         for y in range(size):
             for x in range(size):
-                if self[x, y] == self.empty and self.getscores(Place(x, y))[0] != 0:
+                if self[x, y] == self.empty and self.getscores(Place(x, y))[0] > 1:
                     return "no-decision"
 
         return "draw"

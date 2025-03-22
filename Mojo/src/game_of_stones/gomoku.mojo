@@ -5,8 +5,7 @@ from .board import Board, Place
 
 alias max_stones = 5
 
-alias values = List[Score](Score(0), Score(1), Score(5), Score(25), Score(125), win)
-
+alias values = List[Score](0, 1, 5, 25, 125, win)
 
 struct Gomoku[size: Int, max_moves: Int](Game):
     var board: Board[values, size, max_stones, max_moves]

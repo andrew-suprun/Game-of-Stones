@@ -5,15 +5,7 @@ from .board import Board, Place
 
 alias max_stones = 6
 
-alias values = List[Score](
-    Score(0),
-    Score(1),
-    Score(5),
-    Score(25),
-    Score(125),
-    Score(625),
-    win,
-)
+alias values = List[Score](0, 1, 5, 25, 125, 625, win)
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     var board: Board[values, size, max_stones, max_places]

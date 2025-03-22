@@ -20,13 +20,13 @@ struct Tree[Game: Game, c: Score](Stringable, Writable):
         var undecided = 0
         for child in self.root.children:
             if not is_decisive(child[].value):
-                if child[].n_sims > 1:
-                    undecided += 1
-                else:
-                    return False
+                undecided += 1
 
         return undecided == 1
 
+    fn value(self, out result: Score):
+        result = -self.root.value
+        
     fn best_move(self, out result: Move):
         result = self.root._best_move()
         

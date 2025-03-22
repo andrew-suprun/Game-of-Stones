@@ -2,7 +2,7 @@ from sys import argv
 from time import perf_counter_ns
 from builtin.io import _fdopen
 
-from tree.impl import Tree
+from tree.tree import Tree
 from tree import Game, Move, Score
 
 var log_file = FileHandle()
