@@ -1,4 +1,4 @@
-from sys import argv, env_get_int
+from sys import env_get_int
 from time import perf_counter_ns
 import random
 
@@ -6,12 +6,12 @@ from tree import Game, Move, Place, Score
 from tree.tree import Tree
 from game_of_stones import Connect6
 
-alias m1 = env_get_int["M1", 60]()
-alias p1 = env_get_int["P1", 32]()
-alias c1 = env_get_int["C1", 20]()
-alias m2 = env_get_int["M2", 60]()
-alias p2 = env_get_int["P2", 32]()
-alias c2 = env_get_int["C2", 20]()
+alias m1 = env_get_int["M1", 32]()
+alias p1 = env_get_int["P1", 16]()
+alias c1 = env_get_int["C1", 30]()
+alias m2 = env_get_int["M2", 32]()
+alias p2 = env_get_int["P2", 12]()
+alias c2 = env_get_int["C2", 30]()
 
 alias Game1 = Connect6[19, m1, p1]
 alias Game2 = Connect6[19, m2, p2]

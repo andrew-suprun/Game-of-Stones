@@ -1,4 +1,4 @@
-from sys import argv, env_get_int
+from sys import env_get_int
 from time import perf_counter_ns
 import random
 
