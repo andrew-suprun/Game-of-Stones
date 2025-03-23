@@ -1,5 +1,5 @@
 from python import Python, PythonObject
-from collections import InlineArray
+from collections import InlineArray, Set
 import time
 
 alias board_size = 19
@@ -20,17 +20,26 @@ alias d = window_height // (board_size + 1)
 alias r = d // 2
 
 @value
-struct Place:
+struct Place(KeyElement):
     var x: Int
     var y: Int
     var stone: Int
+    
+    fn __eq__(self, other: Self, out result: Bool):
+        return self.x == other.x and self.y == other.y
+
+    fn __ne__(self, other: Self, out result: Bool):
+        return self.x != other.x or self.y != other.y
+
+    fn __hash__(self, out result: UInt):
+        return hash(self.x + self.y * board_size)
 
 struct Game:
     var pygame: PythonObject
     var window: PythonObject
     var running: Bool
     var places: List[Place]
-    var selected: List[Place]
+    var selected: Set[Place]
 
     fn __init__(out self) raises:
         self.pygame = Python.import_module("pygame")
@@ -38,8 +47,8 @@ struct Game:
         self.window = self.pygame.display.set_mode((window_height, window_width))
         self.pygame.display.set_caption("Game of Stones")
         self.running = False
-        self.places = List[Place](Place(9, 9, black), Place(0, 0, white), Place(18, 18, white))
-        self.selected = List[Place](Place(9, 9, black), Place(0, 0, white), Place(18, 18, white))
+        self.places = List[Place](Place(9, 9, black), Place(8, 9, black), Place(0, 0, white), Place(18, 18, white))
+        self.selected = Set[Place](Place(9, 9, black), Place(0, 0, white), Place(18, 18, white))
 
 
     fn run(mut self) raises:
@@ -54,7 +63,7 @@ struct Game:
 
             for place in self.places:
                 var color = color_black if place[].stone == black else color_white
-                self.pygame.draw.circle(self.window, color, board_to_window(place[].x, place[].y), r)
+                self.pygame.draw.circle(self.window, color, board_to_window(place[].x, place[].y), r - 1)
 
             for place in self.selected:
                 self.pygame.draw.circle(self.window, color_selcted, board_to_window(place[].x, place[].y), r//5)
