@@ -1,10 +1,11 @@
 from sys import argv
 from collections import InlineArray, Set
-import time
+from time import perf_counter_ns
 from python import Python, PythonObject
+import random
 
 from game_of_stones import Gomoku, Connect6
-from tree import Move
+from tree import Move, Place
 from tree.tree import Tree
 
 alias board_size = 19
@@ -29,66 +30,61 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
-@value
-struct Place(KeyElement):
-    var x: Int
-    var y: Int
-    var stone: Int
-    
-    fn __eq__(self, other: Self, out result: Bool):
-        return self.x == other.x and self.y == other.y
-
-    fn __ne__(self, other: Self, out result: Bool):
-        return self.x != other.x or self.y != other.y
-
-    fn __hash__(self, out result: UInt):
-        return hash(self.x + self.y * board_size)
-
 alias G = Gomoku[19, 12]
 alias C6 = Connect6[19, 32, 16]
 
 struct State:
     var name: Int
-    var places: List[Place]
-    var selected: Set[Place]
+    var places: List[List[Place]]
+    var selected: List[List[Place]]
     var gomoku: G
     var connect6: C6
     var gomoku_tree: Tree[G, 30]
     var connect6_tree: Tree[C6, 30]
     var turn: Int
-    var player: Int
+    var max_selected: Int
     var search_complete: Bool
 
     fn __init__(out self, name: Int):
         self.name = name
-        self.places = List[Place]()
-        self.selected = Set[Place]()
+        self.places = List(List[Place](), List[Place]())
+        self.selected = List(List[Place](), List[Place]())
         self.gomoku = G()
         self.connect6 = C6()
         self.gomoku_tree = Tree[G, 30]()
         self.connect6_tree = Tree[C6, 30]()
         self.turn = black
-        self.player = engine
+        self.max_selected = 1 if name == gomoku else 2
         self.search_complete = False
 
     fn play_move(mut self, move: Move):
-        self.selected.clear()
+        self.selected[1 - self.turn].clear()
         if self.name == gomoku:
             self.gomoku.play_move(move)
+            self.gomoku_tree.reset(self.gomoku)
+            print("move", move, self.gomoku.decision())
         else:
             self.connect6.play_move(move)
+            self.connect6_tree.reset(self.connect6)
+            print("move", move, self.connect6.decision())
         
-        var place1 = Place(Int(move.p1.x), Int(move.p1.y), self.turn)
-        var place2 = Place(Int(move.p2.x), Int(move.p2.y), self.turn)
-        self.places.append(place1)
-        self.selected.add(place1)
+        var place1 = Place(Int(move.p1.x), Int(move.p1.y))
+        var place2 = Place(Int(move.p2.x), Int(move.p2.y))
+        self.places[self.turn].append(place1)
+        self.selected[self.turn].append(place1)
         if place1 != place2:
-            self.places.append(place2)
-            self.selected.add(place2)
+            self.places[self.turn].append(place2)
+            self.selected[self.turn].append(place2)
         
         self.turn = 1 - self.turn
-        self.player = 1 - self.player
         self.search_complete = False
+
+    fn best_move(mut self, out move: Move):
+        if self.name == gomoku:
+            move = self.gomoku_tree.best_move()
+        else:
+            move = self.connect6_tree.best_move()
+
 
     fn expand_tree(mut self, out complete: Bool):
         if not self.search_complete:
@@ -116,57 +112,117 @@ struct Game:
         self.running = True
 
     fn run(mut self) raises:
+        print("run")
         self.state = State(self.state.name)
         self.state.play_move(Move("j10"))
 
         while self.running:
-            if self.state.expand_tree():
-                self.handle_event(self.pygame.event.poll())
-            else:
-                self.handle_event(self.pygame.event.wait())
-                
-            self.window.fill(color_background)
+            self.human_move()
+            self.engine_move()
 
-            for i in range(1, board_size+1):
-                self.pygame.draw.line(self.window, color_line, (d, i*d), (board_size*d, i*d))
-                self.pygame.draw.line(self.window, color_line, (i*d, d), (i*d, board_size*d))
-
-            for place in self.state.places:
-                var color = color_black if place[].stone == black else color_white
-                self.pygame.draw.circle(self.window, color, board_to_window(place[].x, place[].y), r - 1)
-
-            for place in self.state.selected:
-                self.pygame.draw.circle(self.window, color_selcted, board_to_window(place[].x, place[].y), r//5)
-
-            self.pygame.display.flip()
-            time.sleep(.1)
         self.pygame.quit()
 
-    fn handle_event(mut self, event: PythonObject) raises:
-        if event.type == self.pygame.MOUSEMOTION:
-            ...
-        elif event.type == self.pygame.QUIT:
-            self.running = False
-        elif event.type == self.pygame.KEYDOWN:
-            if event.key == self.pygame.K_ESCAPE:
-                print("TODO: undo move")
-            elif event.key == self.pygame.K_RETURN:
-                print("TODO: play move")
-        elif event.type == self.pygame.MOUSEBUTTONDOWN:
-            var x = Int(event.pos[0]-r)//d
-            var y = Int(event.pos[1]-r)//d
-            if x < 0 or x >= board_size or y < 0 or y >= board_size:
-                ...
-            print(event.pos, x, y)
+    fn human_move(mut self) raises:
+        while True:
+            var event = self.pygame.event.wait()
+            if event.type == self.pygame.QUIT:
+                self.running = False
+                return
+            elif event.type == self.pygame.KEYDOWN:
+                if event.key == self.pygame.K_ESCAPE:
+                    print("TODO: undo move")
+                elif event.key == self.pygame.K_RETURN:
+                    print("TODO: play move")
+                    if not self.state.places[white] and not self.state.selected[white]:
+                        return
+            elif event.type == self.pygame.MOUSEBUTTONDOWN:
+                var x = Int(event.pos[0]-r)//d
+                var y = Int(event.pos[1]-r)//d
+                if x >=0 and x < board_size and y >= 0 and y < board_size:
+                    var place = Place(x, y)
+                    if place in self.state.places[1 - self.state.turn]:
+                        continue
+                    if place in self.state.selected[self.state.turn]:
+                        print("remove", x, y)
+                        var idx = self.state.places[self.state.turn].index(place)
+                        _ = self.state.places[self.state.turn].pop(idx)
+                        _ = self.state.selected[self.state.turn].pop(idx)
+                    elif len(self.state.selected[self.state.turn]) < self.state.max_selected:
+                        print("add", x, y)
+                        self.state.places[self.state.turn].append(place)
+                        self.state.selected[self.state.turn].append(place)
+                    else:
+                        print("else", self.state.name)
 
-fn board_to_window(x: Int, y: Int, out result: (Int, Int)):
-    result = ((x + 1) * d, (y + 1) * d)
+            self.draw()
+
+    fn engine_move(mut self) raises:
+        print("engine_move")
+        if not self.running: return
+
+        if not self.state.places[white] and not self.state.selected[white]:
+            var move = first_white_move(self.state.name)
+            self.state.play_move(move)
+
+            self.draw()
+            return
+
+
+        var deadline = perf_counter_ns() + 1_000_000_000
+        var done = False
+        while not done and perf_counter_ns() < deadline:
+            var event = self.pygame.event.poll()
+            if event.type == self.pygame.QUIT:
+                self.running = False
+                return
+            done = self.state.expand_tree()
+
+        var move = self.state.best_move()
+        self.state.play_move(move)
+        self.draw()
+
+    fn draw(self) raises:
+        self.window.fill(color_background)
+
+        for i in range(1, board_size+1):
+            self.pygame.draw.line(self.window, color_line, (d, i*d), (board_size*d, i*d))
+            self.pygame.draw.line(self.window, color_line, (i*d, d), (i*d, board_size*d))
+
+        for i in range(2):
+            for place in self.state.places[i]:
+                var color = color_black if i == black else color_white
+                self.pygame.draw.circle(self.window, color, board_to_window(place[].x, place[].y), r - 1)
+
+        for i in range(2):
+            for place in self.state.selected[i]:
+                self.pygame.draw.circle(self.window, color_selcted, board_to_window(place[].x, place[].y), r//5)
+
+        self.pygame.display.flip()
+
+fn first_white_move(name: Int, out move: Move):
+    var places = List[Place]()
+    for j in range(8, 11):
+        for i in range(8, 11):
+            if i != 9 or j != 9:
+                places.append(Place(Int8(i), Int8(j)))
+    random.seed()
+    random.shuffle(places)
+
+    if name == gomoku:
+        move = Move(places[0], places[0])
+    else:
+        move = Move(places[0], places[1])
+
+
+fn board_to_window(x: Int8, y: Int8, out result: (Int, Int)):
+    result = ((Int(x) + 1) * d, (Int(y) + 1) * d)
 
 fn main() raises:
-    var name = gomoku
+    print("main")
+    var name = connect6
     var args = argv()
-    if len(args) > 1 and (args[1] == "connect6" or args[1] == "c6"):
-        name = connect6
+    if len(args) > 1 and (args[1] == "gomoku"):
+        name = gomoku
 
     var game = Game(name)
     game.run()

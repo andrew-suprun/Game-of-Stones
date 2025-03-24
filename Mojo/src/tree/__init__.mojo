@@ -65,7 +65,7 @@ struct Move(Movable, Copyable, EqualityComparable, Representable, Stringable, Wr
 
 @value
 @register_passable("trivial")
-struct Place(EqualityComparable, Movable, Copyable, Stringable, Writable):
+struct Place(KeyElement, Stringable, Writable):
     var x: Int8
     var y: Int8
 
@@ -81,12 +81,14 @@ struct Place(EqualityComparable, Movable, Copyable, Stringable, Writable):
     fn __ne__(self, other: Self, out result: Bool):
         result = not (self == other)
 
+    fn __hash__(self, out result: UInt):
+        return hash(self.x) + hash(self.y) * 41
+
     fn __str__(self, out result: String):
         result = String(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
-
 
 alias Score = Float32
 alias Scores = SIMD[DType.float32, 2]
