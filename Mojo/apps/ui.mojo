@@ -30,8 +30,11 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
-alias G = Gomoku[19, 12]
+alias G = Gomoku[19, 20]
 alias C6 = Connect6[19, 32, 16]
+
+alias TG = Tree[G, 40]
+alias TC6 = Tree[C6, 30]
 
 struct State:
     var name: Int
@@ -39,8 +42,8 @@ struct State:
     var selected: List[List[Place]]
     var gomoku: G
     var connect6: C6
-    var gomoku_tree: Tree[G, 30]
-    var connect6_tree: Tree[C6, 30]
+    var gomoku_tree: TG
+    var connect6_tree: TC6
     var turn: Int
     var max_selected: Int
     var search_complete: Bool
@@ -51,8 +54,8 @@ struct State:
         self.selected = List(List[Place](), List[Place]())
         self.gomoku = G()
         self.connect6 = C6()
-        self.gomoku_tree = Tree[G, 30]()
-        self.connect6_tree = Tree[C6, 30]()
+        self.gomoku_tree = TG()
+        self.connect6_tree = TC6()
         self.turn = black
         self.max_selected = 1 if name == gomoku else 2
         self.search_complete = False
@@ -181,17 +184,20 @@ struct Game:
             self.draw()
             return
 
-
         var deadline = perf_counter_ns() + 1_000_000_000
         var done = False
+        var sim = 0
         while not done and perf_counter_ns() < deadline:
-            var event = self.pygame.event.poll()
-            if event.type == self.pygame.QUIT:
-                self.running = False
-                return
+            if sim % 1000 == 0:
+                var event = self.pygame.event.poll()
+                if event.type == self.pygame.QUIT:
+                    self.running = False
+                    return
             done = self.state.expand_tree()
+            sim += 1
 
         var move = self.state.best_move()
+        print("best move", move, "sim", sim, "done", done)
         self.play_move(move)
         self.draw()
 
