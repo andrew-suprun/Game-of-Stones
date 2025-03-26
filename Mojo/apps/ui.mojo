@@ -5,7 +5,7 @@ from python import Python, PythonObject
 import random
 
 from game_of_stones import Gomoku, Connect6
-from tree import Move, Place
+from tree import Move, Place, Score
 from tree.tree import Tree
 
 alias board_size = 19
@@ -81,6 +81,13 @@ struct State:
             move = self.gomoku_tree.best_move()
         else:
             move = self.connect6_tree.best_move()
+
+
+    fn value(mut self, out value: Score):
+        if self.name == gomoku:
+            value = self.gomoku_tree.value()
+        else:
+            value = self.connect6_tree.value()
 
 
     fn expand_tree(mut self, out complete: Bool):
@@ -167,6 +174,7 @@ struct Game:
                         if place in self.state.selected[self.state.turn]:
                             var idx = self.state.places[self.state.turn].index(place)
                             _ = self.state.places[self.state.turn].pop(idx)
+                            idx = self.state.selected[self.state.turn].index(place)
                             _ = self.state.selected[self.state.turn].pop(idx)
                         else:
                             continue
@@ -197,7 +205,7 @@ struct Game:
             sim += 1
 
         var move = self.state.best_move()
-        print("best move", move, "sim", sim, "done", done)
+        print("best move", move, "value", self.state.value(), "sim", sim, "done", done)
         self.play_move(move)
         self.draw()
 
