@@ -76,6 +76,18 @@ struct State:
         self.selected[self.turn].clear()
         self.search_complete = False
 
+    fn undo_move(mut self):
+        if self.name == gomoku:
+            self.gomoku.undo_move()
+            self.gomoku_tree.reset(self.gomoku)
+            print("undo")
+            print(self.gomoku)
+        else:
+            self.connect6.undo_move()
+            self.connect6_tree.reset(self.connect6)
+            print("undo")
+            print(self.connect6)
+        
     fn best_move(mut self, out move: Move):
         if self.name == gomoku:
             move = self.gomoku_tree.best_move()
@@ -97,6 +109,19 @@ struct State:
             else:
                 self.search_complete = self.connect6_tree.expand(self.connect6)
         return self.search_complete
+
+    fn add_selected(mut self, place: Place):
+        self.places[self.turn].append(place)
+        self.selected[self.turn].append(place)
+
+    fn remove_place(mut self, place: Place):
+        try:
+            var idx = self.places[self.turn].index(place)
+            _ = self.places[self.turn].pop(idx)
+            idx = self.selected[self.turn].index(place)
+            _ = self.selected[self.turn].pop(idx)
+        except:
+            pass
 
     fn debug_print(self):
         print("black")
@@ -129,8 +154,7 @@ struct Game:
 
     fn run(mut self) raises:
         self.state = State(self.state.name)
-        self.state.places[black].append(Place(9, 9))
-        self.state.selected[black].append(Place(9, 9))
+        self.state.add_selected(Place(9, 9))
         self.state.play_move(Move("j10"))
 
         while self.running:
@@ -148,7 +172,25 @@ struct Game:
             
             elif event.type == self.pygame.KEYDOWN:
                 if event.key == self.pygame.K_ESCAPE:
-                    print("TODO: undo move")
+                    if len(self.state.places[self.state.turn]) - len(self.state.selected[self.state.turn]) < self.state.max_selected:
+                        continue
+                    for stone in range(2):
+                        while self.state.selected[stone]:
+                            var place = self.state.selected[stone].pop()
+                            var idx = self.state.places[stone].index(place)
+                            _ = self.state.places[stone].pop(idx)
+
+                    for _ in range(self.state.max_selected):
+                        var place = self.state.places[self.state.turn][-1]
+                        self.state.remove_place(place)
+
+                    for i in range(self.state.max_selected):
+                        var place = self.state.places[1-self.state.turn][-1 - i]
+                        self.state.selected[1 - self.state.turn].append(place)
+
+                    self.state.undo_move()
+                    self.state.undo_move()
+
                 elif event.key == self.pygame.K_RETURN:
                     if not self.state.places[white] and not self.state.selected[white]:
                         return
@@ -170,17 +212,11 @@ struct Game:
                     var place = Place(x, y)
                     if place in self.state.places[1 - self.state.turn]:
                         continue
-                    if place in self.state.places[self.state.turn]:
-                        if place in self.state.selected[self.state.turn]:
-                            var idx = self.state.places[self.state.turn].index(place)
-                            _ = self.state.places[self.state.turn].pop(idx)
-                            idx = self.state.selected[self.state.turn].index(place)
-                            _ = self.state.selected[self.state.turn].pop(idx)
-                        else:
-                            continue
-                    elif len(self.state.selected[self.state.turn]) < self.state.max_selected:
-                        self.state.places[self.state.turn].append(place)
-                        self.state.selected[self.state.turn].append(place)
+                    if place in self.state.selected[self.state.turn]:
+                        self.state.remove_place(place)
+                    elif len(self.state.selected[self.state.turn]) < self.state.max_selected and
+                            place not in self.state.places[self.state.turn]:
+                        self.state.add_selected(place)
             self.draw()
 
     fn engine_move(mut self) raises:
@@ -205,16 +241,13 @@ struct Game:
             sim += 1
 
         var move = self.state.best_move()
-        print("best move", move, "value", self.state.value(), "sim", sim, "done", done)
         self.play_move(move)
         self.draw()
 
     fn play_move(mut self, move: Move) raises:
-        self.state.places[self.state.turn].append(move.p1)
-        self.state.selected[self.state.turn].append(move.p1)
+        self.state.add_selected(move.p1)
         if move.p1 != move.p2:
-            self.state.places[self.state.turn].append(move.p2)
-            self.state.selected[self.state.turn].append(move.p2)
+            self.state.add_selected(move.p2)
         self.state.play_move(move)
 
     fn draw(self) raises:
