@@ -1,4 +1,3 @@
-from collections import InlineArray
 from benchmark import benchmark, Unit, keep
 from random import random_si64, random_float64
 

@@ -1,5 +1,4 @@
 from sys import argv
-from collections import InlineArray, Set
 from time import perf_counter_ns
 from python import Python, PythonObject
 import random
@@ -47,6 +46,7 @@ struct State:
     var turn: Int
     var max_selected: Int
     var search_complete: Bool
+    var game_complete: Bool
 
     fn __init__(out self, name: Int):
         self.name = name
@@ -59,6 +59,7 @@ struct State:
         self.turn = black
         self.max_selected = 1 if name == gomoku else 2
         self.search_complete = False
+        self.game_complete = False
 
     fn play_move(mut self, move: Move):
         if self.name == gomoku:
@@ -66,11 +67,15 @@ struct State:
             self.gomoku_tree.reset(self.gomoku)
             print("move", move, self.gomoku.decision())
             print(self.gomoku)
+            if self.gomoku.decision() != "no-decision":
+                self.game_complete = True
         else:
             self.connect6.play_move(move)
             self.connect6_tree.reset(self.connect6)
             print("move", move, self.connect6.decision())
             print(self.connect6)
+            if self.connect6.decision() != "no-decision":
+                self.game_complete = True
         
         self.turn = 1 - self.turn
         self.selected[self.turn].clear()
@@ -139,7 +144,8 @@ struct Game:
     var pygame: PythonObject
     var window: PythonObject
     var state: State
-    var running: Bool
+    var app_complete: Bool
+    var game_complete_confirmed: Bool
 
     fn __init__(out self, name: Int) raises:
         self.pygame = Python.import_module("pygame")
@@ -150,24 +156,24 @@ struct Game:
         else:
             self.pygame.display.set_caption("Game of Stones - Connect6")
         self.state = State(name)
-        self.running = True
+        self.app_complete = False
+        self.game_complete_confirmed = False
 
-    fn run(mut self) raises:
+    fn run(mut self, out done: Bool) raises:
         self.state = State(self.state.name)
         self.state.add_selected(Place(9, 9))
         self.state.play_move(Move("j10"))
 
-        while self.running:
+        while not self.app_complete and not self.game_complete_confirmed:
             self.human_move()
             self.engine_move()
-
-        self.pygame.quit()
+        return self.app_complete
 
     fn human_move(mut self) raises:
         while True:
             var event = self.pygame.event.wait()
             if event.type == self.pygame.QUIT:
-                self.running = False
+                self.app_complete = True
                 return
             
             elif event.type == self.pygame.KEYDOWN:
@@ -192,8 +198,11 @@ struct Game:
                     self.state.undo_move()
 
                 elif event.key == self.pygame.K_RETURN:
-                    if not self.state.places[white] and not self.state.selected[white]:
+                    if self.state.game_complete:
+                        self.game_complete_confirmed = True
                         return
+                    # if not self.state.places[white] and not self.state.selected[white]:
+                    #     return
                     if len(self.state.selected[self.state.turn]) == self.state.max_selected:
                         var place1 = self.state.selected[self.state.turn][-1]
                         if self.state.max_selected == 1:
@@ -206,6 +215,8 @@ struct Game:
                         return
 
             elif event.type == self.pygame.MOUSEBUTTONDOWN:
+                if self.state.game_complete:
+                    return
                 var x = Int(event.pos[0]-r)//d
                 var y = Int(event.pos[1]-r)//d
                 if x >=0 and x < board_size and y >= 0 and y < board_size:
@@ -220,7 +231,7 @@ struct Game:
             self.draw()
 
     fn engine_move(mut self) raises:
-        if not self.running: return
+        if self.app_complete or self.state.game_complete: return
 
         if not self.state.places[white] and not self.state.selected[white]:
             var move = first_white_move(self.state.name)
@@ -235,7 +246,7 @@ struct Game:
             if sim % 1000 == 0:
                 var event = self.pygame.event.poll()
                 if event.type == self.pygame.QUIT:
-                    self.running = False
+                    self.app_complete = False
                     return
             done = self.state.expand_tree()
             sim += 1
@@ -266,6 +277,10 @@ struct Game:
 
         self.pygame.display.flip()
 
+    fn quit(self) raises:
+        self.pygame.quit()
+
+
 fn first_white_move(name: Int, out move: Move):
     var places = List[Place]()
     for j in range(8, 11):
@@ -290,5 +305,9 @@ fn main() raises:
     if len(args) > 1 and (args[1] == "gomoku"):
         name = gomoku
 
-    var game = Game(name)
-    game.run()
+    while True:
+        var game = Game(name)
+        var done = game.run()
+        if done:
+            game.quit()
+            break

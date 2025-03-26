@@ -1,5 +1,3 @@
-from collections import InlineArray
-
 from tree import Place, Score, Scores, loss, is_win, is_loss, is_draw
 from .heap import add
 import .values as v
