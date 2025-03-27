@@ -9,7 +9,7 @@ from game_of_stones import Gomoku
 alias m1 = env_get_int["M1", 16]()
 alias c1 = env_get_int["C1", 30]()
 alias m2 = env_get_int["M2", 16]()
-alias c2 = env_get_int["C2", 40]()
+alias c2 = env_get_int["C2", 30]()
 
 alias Game1 = Gomoku[19, m1]
 alias Game2 = Gomoku[19, m2]
