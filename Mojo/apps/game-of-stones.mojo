@@ -2,6 +2,7 @@ from sys import argv
 from time import perf_counter_ns
 from python import Python, PythonObject
 import random
+import sys
 
 from game_of_stones import Gomoku, Connect6
 from tree import Move, Place, Score
@@ -277,9 +278,6 @@ struct Game:
 
         self.pygame.display.flip()
 
-    fn quit(self) raises:
-        self.pygame.quit()
-
 
 fn first_white_move(name: Int, out move: Move):
     var places = List[Place]()
@@ -315,18 +313,22 @@ struct App:
             self.pygame.display.set_caption("Game of Stones - Connect6")
 
     fn run(mut self) raises:
-        while True:
+        var done = False
+        while not done:
             var game = Game(self.name, self.pygame, self.window)
-            var done = game.run()
-            if done:
-                game.quit()
-                break
+            done = game.run()
+        self.pygame.quit()
 
 fn main() raises:
-    var name = connect6
+    var name = -1
     var args = argv()
     if len(args) > 1 and (args[1] == "gomoku"):
         name = gomoku
+    elif len(args) > 1 and (args[1] == "connect6"):
+        name = connect6
+    else:
+        print("USAGE: game-of-stone [gomoku | connect6]")
+        sys.exit(1)
     var app = App(name)
     app.run()
 
