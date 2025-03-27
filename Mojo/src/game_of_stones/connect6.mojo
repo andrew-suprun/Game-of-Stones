@@ -4,7 +4,6 @@ from .heap import add
 from .board import Board, Place
 
 alias max_stones = 6
-
 alias values = List[Score](0, 1, 5, 25, 125, 625, win)
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):

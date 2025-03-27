@@ -207,7 +207,7 @@ struct Game:
         for turn in range(2):
             var color = color_black if turn == black else color_white
             for place in self.places[turn]:
-                self.pygame.draw.circle(self.window, color, board_to_window(place[].x, place[].y), r - 1)
+                self.pygame.draw.circle(self.window, color, board_to_window(place[].x, place[].y), r - 2)
             for place in self.selected[turn]:
                 self.pygame.draw.circle(self.window, color_selcted, board_to_window(place[].x, place[].y), r//5)
 

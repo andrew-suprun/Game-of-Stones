@@ -4,7 +4,6 @@ from .heap import add
 from .board import Board, Place
 
 alias max_stones = 5
-
 alias values = List[Score](0, 1, 5, 25, 125, win)
 
 struct Gomoku[size: Int, max_moves: Int](Game):
