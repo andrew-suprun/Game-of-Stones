@@ -159,7 +159,7 @@ struct Game:
             if sim % 1000 == 0:
                 var event = self.pygame.event.poll()
                 if event.type == self.pygame.QUIT:
-                    self.app_complete = False
+                    self.app_complete = True
                     return
             done = self.expand_tree()
             sim += 1
