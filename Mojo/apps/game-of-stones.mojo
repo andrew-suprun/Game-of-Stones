@@ -71,8 +71,9 @@ struct Game:
         self.game_complete_confirmed = False
 
     fn run(mut self, out done: Bool) raises:
-        self.add_selected(Place(9, 9))
-        self.play_move(Move("j10"))
+        var move = Move("j10")
+        self.add_stones(move)
+        self.play_move(move)
 
         while not self.app_complete and not self.game_complete_confirmed:
             self.human_move()
@@ -88,7 +89,8 @@ struct Game:
             
             elif event.type == self.pygame.KEYDOWN:
                 if event.key == self.pygame.K_ESCAPE:
-                    if len(self.places[self.turn]) - len(self.selected[self.turn]) < self.max_selected:
+                    var stones = len(self.places[black]) + len(self.places[white]) - len(self.selected[self.turn])
+                    if stones <= self.max_selected + 1:
                         continue
                     for stone in range(2):
                         while self.selected[stone]:
@@ -148,6 +150,7 @@ struct Game:
 
         if not self.places[white] and not self.selected[white]:
             var move = first_white_move(self.name)
+            self.add_stones(move)
             self.play_move(move)
             self.draw()
             return
@@ -165,14 +168,16 @@ struct Game:
             sim += 1
 
         var move = self.best_move()
+        self.add_stones(move)
         self.play_move(move)
         self.draw()
 
-    fn play_move(mut self, move: Move) raises:
+    fn add_stones(mut self, move: Move) raises:
         self.add_selected(move.p1)
         if move.p1 != move.p2:
             self.add_selected(move.p2)
 
+    fn play_move(mut self, move: Move) raises:
         if self.name == gomoku:
             self.gomoku.play_move(move)
             self.gomoku_tree.reset(self.gomoku)
@@ -257,16 +262,16 @@ struct Game:
             pass
 
     fn debug_print(self):
-        print("black")
+        print("  black")
         for place in self.places[black]:
-            print("  place", place[].x, place[].y)
+            print("    place", place[].x, place[].y)
         for place in self.selected[black]:
-            print("    selected", place[].x, place[].y)
-        print("white")
+            print("      selected", place[].x, place[].y)
+        print("  white")
         for place in self.places[white]:
-            print("  place", place[].x, place[].y)
+            print("    place", place[].x, place[].y)
         for place in self.selected[white]:
-            print("    selected", place[].x, place[].y)
+            print("      selected", place[].x, place[].y)
 
 fn first_white_move(name: Int, out move: Move):
     var places = List[Place]()
