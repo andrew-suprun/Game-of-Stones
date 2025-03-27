@@ -141,20 +141,17 @@ struct State:
             print("    selected", place[].x, place[].y)
 
 struct Game:
+    var name: Int
     var pygame: PythonObject
     var window: PythonObject
     var state: State
     var app_complete: Bool
     var game_complete_confirmed: Bool
 
-    fn __init__(out self, name: Int) raises:
-        self.pygame = Python.import_module("pygame")
-        self.pygame.init()
-        self.window = self.pygame.display.set_mode((window_height, window_width))
-        if name == gomoku:
-            self.pygame.display.set_caption("Game of Stones - Gomoku")
-        else:
-            self.pygame.display.set_caption("Game of Stones - Connect6")
+    fn __init__(out self, name: Int, pygame: PythonObject, window: PythonObject) raises:
+        self.name = name
+        self.pygame = pygame
+        self.window = window
         self.state = State(name)
         self.app_complete = False
         self.game_complete_confirmed = False
@@ -194,6 +191,8 @@ struct Game:
                         var place = self.state.places[1-self.state.turn][-1 - i]
                         self.state.selected[1 - self.state.turn].append(place)
 
+                    self.state.game_complete = False
+
                     self.state.undo_move()
                     self.state.undo_move()
 
@@ -201,8 +200,9 @@ struct Game:
                     if self.state.game_complete:
                         self.game_complete_confirmed = True
                         return
-                    # if not self.state.places[white] and not self.state.selected[white]:
-                    #     return
+                    # turn the table on first white move
+                    if not self.state.places[white]:
+                        return
                     if len(self.state.selected[self.state.turn]) == self.state.max_selected:
                         var place1 = self.state.selected[self.state.turn][-1]
                         if self.state.max_selected == 1:
@@ -299,15 +299,34 @@ fn first_white_move(name: Int, out move: Move):
 fn board_to_window(x: Int8, y: Int8, out result: (Int, Int)):
     result = ((Int(x) + 1) * d, (Int(y) + 1) * d)
 
+struct App:
+    var pygame: PythonObject
+    var window: PythonObject
+    var name: Int
+
+    fn __init__(out self, name: Int) raises:
+        self.name = name
+        self.pygame = Python.import_module("pygame")
+        self.pygame.init()
+        self.window = self.pygame.display.set_mode((window_height, window_width))
+        if name == gomoku:
+            self.pygame.display.set_caption("Game of Stones - Gomoku")
+        else:
+            self.pygame.display.set_caption("Game of Stones - Connect6")
+
+    fn run(mut self) raises:
+        while True:
+            var game = Game(self.name, self.pygame, self.window)
+            var done = game.run()
+            if done:
+                game.quit()
+                break
+
 fn main() raises:
     var name = connect6
     var args = argv()
     if len(args) > 1 and (args[1] == "gomoku"):
         name = gomoku
+    var app = App(name)
+    app.run()
 
-    while True:
-        var game = Game(name)
-        var done = game.run()
-        if done:
-            game.quit()
-            break
