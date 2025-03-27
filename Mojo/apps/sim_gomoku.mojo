@@ -6,9 +6,9 @@ from tree import Game, Move, Place, Score
 from tree.tree import Tree
 from game_of_stones import Gomoku
 
-alias m1 = env_get_int["M1", 20]()
-alias c1 = env_get_int["C1", 40]()
-alias m2 = env_get_int["M2", 20]()
+alias m1 = env_get_int["M1", 16]()
+alias c1 = env_get_int["C1", 30]()
+alias m2 = env_get_int["M2", 16]()
 alias c2 = env_get_int["C2", 40]()
 
 alias Game1 = Gomoku[19, m1]

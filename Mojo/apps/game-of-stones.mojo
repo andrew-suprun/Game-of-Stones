@@ -30,10 +30,10 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
-alias G = Gomoku[19, 20]
+alias G = Gomoku[19, 16]
 alias C6 = Connect6[19, 32, 16]
 
-alias TG = Tree[G, 40]
+alias TG = Tree[G, 30]
 alias TC6 = Tree[C6, 30]
 
 struct State:

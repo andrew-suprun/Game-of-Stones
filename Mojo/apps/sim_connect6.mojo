@@ -10,7 +10,7 @@ alias m1 = env_get_int["M1", 32]()
 alias p1 = env_get_int["P1", 16]()
 alias c1 = env_get_int["C1", 30]()
 alias m2 = env_get_int["M2", 32]()
-alias p2 = env_get_int["P2", 12]()
+alias p2 = env_get_int["P2", 16]()
 alias c2 = env_get_int["C2", 30]()
 
 alias Game1 = Connect6[19, m1, p1]
