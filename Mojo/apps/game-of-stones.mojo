@@ -30,8 +30,8 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
-alias G = Gomoku[19, 16]
-alias C6 = Connect6[19, 32, 16]
+alias G = Gomoku[19, 24]
+alias C6 = Connect6[19, 48, 24]
 
 alias TG = Tree[G, 30]
 alias TC6 = Tree[C6, 30]
@@ -159,13 +159,15 @@ struct Game:
         var done = False
         var sim = 0
         while not done and perf_counter_ns() < deadline:
-            if sim % 1000 == 0:
-                var event = self.pygame.event.poll()
-                if event.type == self.pygame.QUIT:
-                    self.app_complete = True
-                    return
-            done = self.expand_tree()
-            sim += 1
+            var event = self.pygame.event.poll()
+            if event.type == self.pygame.QUIT:
+                self.app_complete = True
+                return
+            var deadline2 = perf_counter_ns() + 16_000_000
+            while not done and perf_counter_ns() < deadline2:
+                done = self.expand_tree()
+                sim += 1
+        print("sims", sim)
 
         var move = self.best_move()
         self.add_stones(move)
@@ -180,14 +182,14 @@ struct Game:
     fn play_move(mut self, move: Move) raises:
         if self.name == gomoku:
             self.gomoku.play_move(move)
-            self.gomoku_tree.reset(self.gomoku)
+            self.gomoku_tree.play_move(move)
             print("move", move, self.gomoku.decision())
             print(self.gomoku)
             if self.gomoku.decision() != "no-decision":
                 self.game_complete = True
         else:
             self.connect6.play_move(move)
-            self.connect6_tree.reset(self.connect6)
+            self.connect6_tree.play_move(move)
             print("move", move, self.connect6.decision())
             print(self.connect6)
             if self.connect6.decision() != "no-decision":
@@ -217,12 +219,12 @@ struct Game:
     fn undo_move(mut self):
         if self.name == gomoku:
             self.gomoku.undo_move()
-            self.gomoku_tree.reset(self.gomoku)
+            self.gomoku_tree.reset()
             print("undo")
             print(self.gomoku)
         else:
             self.connect6.undo_move()
-            self.connect6_tree.reset(self.connect6)
+            self.connect6_tree.reset()
             print("undo")
             print(self.connect6)
         

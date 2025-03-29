@@ -39,12 +39,12 @@ fn run[G: Game, exp_factor: Score]() raises:
         elif terms[0] == "move":
             var move = Move(terms[1])
             game.play_move(move)
-            tree.reset(game)
+            tree.reset()
             if log:
                 print(game, file=log_file)
         elif terms[0] == "undo":
             game.undo_move()
-            tree.reset(game)
+            tree.reset()
             if log:
                 print(game, file=log_file)
         elif terms[0] == "respond":
@@ -58,7 +58,7 @@ fn run[G: Game, exp_factor: Score]() raises:
                 sims += 1
             var move = tree.best_move()
             game.play_move(move)
-            tree.reset(game)
+            tree.reset()
             print("move", move, game.decision(), sims)
             if log:
                 print("move", move, file=log_file)

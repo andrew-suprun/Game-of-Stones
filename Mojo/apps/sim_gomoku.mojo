@@ -86,8 +86,8 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         turn = not turn
         g1.play_move(move)
         g2.play_move(move)
-        t1.reset(g1)
-        t2.reset(g2)
+        t1.reset()
+        t2.reset()
         var decision = g1.decision()
         print("move", move, decision, sims, player, value, forced, file=log)
         print(g1, file=log)

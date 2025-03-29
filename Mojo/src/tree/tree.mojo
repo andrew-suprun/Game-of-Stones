@@ -30,7 +30,16 @@ struct Tree[Game: Game, c: Score](Stringable, Writable):
     fn best_move(self, out result: Move):
         result = self.root._best_move()
         
-    fn reset(mut self, g: Game):
+    fn play_move(mut self, move: Move):
+        var new_root = Node[Game, c](Move(0, 0, 0, 0), 0)
+        for child in self.root.children:
+            if child[].move == move:
+                new_root = child[]
+                break
+        self.root.children = List[Node[Game, c]]()
+        self.root = new_root
+
+    fn reset(mut self):
         self.root = Node[Game, c](Move(0, 0, 0, 0), 0)
 
     fn __str__(self, out result: String):
@@ -47,7 +56,7 @@ struct Node[Game: Game, c: Score](Copyable, Movable, Stringable, Writable):
     var move: Move
     var value: Score
     var children: List[Self]
-    var n_sims: Int
+    var n_sims: Int32
 
     fn __init__(out self, move: Move, value: Score):
         self.move = move
