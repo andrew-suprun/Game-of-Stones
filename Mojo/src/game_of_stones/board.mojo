@@ -25,13 +25,13 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(max_stones)
+    alias value_table = v.value_table[max_stones, values]()
 
     var places: List[Int8]
     var scores: List[Scores] 
     var score: Score
     var history: List[PlaceScores]
     var history_indices: List[ScoreMark]
-    var value_table: InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]
 
     fn __init__(out self):
         self.places = List[Int8](capacity=size * size)
@@ -42,7 +42,6 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
         self.score = 0
         self.history = List[PlaceScores]()
         self.history_indices = List[ScoreMark]()
-        self.value_table = v.value_table[max_stones, values]()
 
         for y in range(size):
             var v = 1 + min(max_stones - 1, y, size - 1 - y)
