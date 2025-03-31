@@ -14,8 +14,7 @@ fn sift_up[T: CollectionElement, //, less: fn (T, T, out Bool) capturing](mut it
     var child = items[child_idx]
     while child_idx > 0 and less(child, items[(child_idx - 1) // 2]):
         var parent_idx = (child_idx - 1) // 2
-        var parent = items[parent_idx]
-        items[child_idx] = parent
+        items[child_idx] = items[parent_idx]
         child_idx = parent_idx
     items[child_idx] = child
 
@@ -24,14 +23,14 @@ fn sift_down[T: CollectionElement, //, less: fn (T, T, out Bool) capturing](mut 
     var elem = items[idx]
     while True:
         var first = idx
-        var leftChildIdx = idx*2 + 1
-        if leftChildIdx < len(items) and less(items[leftChildIdx], elem):
-            first = leftChildIdx
-        var rightChildIdx = idx*2 + 2
-        if rightChildIdx < len(items) and
-            less(items[rightChildIdx], elem) and
-            less(items[rightChildIdx], items[leftChildIdx]):
-            first = rightChildIdx
+        var left_child_idx = idx*2 + 1
+        if left_child_idx < len(items) and less(items[left_child_idx], elem):
+            first = left_child_idx
+        var right_child_idx = idx*2 + 2
+        if right_child_idx < len(items) and
+            less(items[right_child_idx], elem) and
+            less(items[right_child_idx], items[left_child_idx]):
+            first = right_child_idx
         if idx == first:
             break
         

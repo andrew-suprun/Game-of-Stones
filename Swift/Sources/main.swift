@@ -1,4 +1,4 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
+typealias Score = Float
 
-print("Hello, world!")
+var s: SIMD2<Score> = SIMD2<Score>(1, 2)
+print(s[0] < s[1])

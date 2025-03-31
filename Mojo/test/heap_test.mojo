@@ -21,6 +21,7 @@ def test_heap():
     for i in range(20):
         print(i, items[i])
     for i in range(1, 20):
-        var parent = items[(i - 1) / 2]
+        var parent = items[(i - 1) // 2]
         var child = items[i]
         assert_true(parent < child)
+    assert_true(False)
