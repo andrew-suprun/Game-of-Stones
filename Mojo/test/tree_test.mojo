@@ -18,8 +18,8 @@ def test_tree():
     g.play_move(Move("a3"))
 
     print(g)
-    for i in range(2):
-        _ = t.expand(g)
-        print(i, t)
-    print(t.value())
-    testing.assert_true(is_win(t.value()))
+    _ = t.expand(g)
+    var done = t.expand(g)
+    print(done, t.value())
+    print(t)
+    testing.assert_true(done and is_win(t.value()))

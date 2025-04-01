@@ -16,12 +16,14 @@ struct Tree[Game: Game, c: Score](Stringable, Writable):
             return True
         else:
             self.root._expand(game, self.top_moves)
+        
+        if is_decisive(self.root.value):
+            return True
 
         var undecided = 0
         for child in self.root.children:
             if not is_decisive(child[].value):
                 undecided += 1
-
         return undecided == 1
 
     fn value(self, out result: Score):
