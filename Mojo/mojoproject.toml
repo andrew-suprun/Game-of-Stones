@@ -7,8 +7,15 @@ platforms = ["osx-arm64"]
 version = "0.1.0"
 
 [tasks]
-gomoku = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo gomoku"
-connect6 = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo connect6"
+gomoku = "mojo run -I src apps/game-of-stones.mojo gomoku"
+checked-gomoku = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo gomoku"
+gomoku-bench = "mojo run -I src benches/gomoku_bench.mojo"
+checked-gomoku-bench = "mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo"
+
+connect6 = "mojo run -I src apps/game-of-stones.mojo connect6"
+checked-connect6 = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo connect6"
+connect6-bench = "mojo run -I src benches/connect6_bench.mojo"
+checked-connect6-bench = "mojo run -I src -D ASSERT=all benches/connect6_bench.mojo"
 
 [dependencies]
 max = ">=25.3.0.dev2025032005,<26"
