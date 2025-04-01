@@ -1,4 +1,4 @@
-from tree import Game, Move, Score
+from tree import Game, Move, Score, is_win
 from tree.tree import Tree, Node
 from game_of_stones import Gomoku
 
@@ -17,7 +17,9 @@ def test_tree():
     g.play_move(Move("j11"))
     g.play_move(Move("a3"))
 
-    for _ in range(3):
-        _ = t.expand(g)
     print(g)
-    print(t)
+    for i in range(2):
+        _ = t.expand(g)
+        print(i, t)
+    print(t.value())
+    testing.assert_true(is_win(t.value()))
