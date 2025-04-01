@@ -9,15 +9,13 @@ fn bench():
         r = a < b
 
     var heap = List[Int]()
-    var values = List[Int]()
-    for i in range(100):
-        values.append(100 - i)
 
-    for _ in range(1000):
+    for _ in range(1_000_000):
+        heap.clear()
         for i in range(100):
-            add[Int, 20, less](values[i], heap)
+            add[Int, 20, less](100 - i, heap)
 
 
 fn main() raises:
-    print("\n--- heap (ms/100_000) ---")
-    print("add", benchmark.run[bench]().mean(Unit.ms))
+    print("\n--- heap (s/100_000_000) ---")
+    print("add", benchmark.run[bench]().mean(Unit.s))

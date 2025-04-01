@@ -1,4 +1,6 @@
-public func hash_add<T: Comparable>(
+import Foundation
+
+public func heap_add<T: Comparable>(
     _ item: T, to items: inout [T], maxItems: Int, less: (T, T) -> Bool
 ) {
     if items.count == maxItems {

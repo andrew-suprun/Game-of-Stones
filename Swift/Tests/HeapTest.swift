@@ -1,4 +1,4 @@
-import GameOfStones
+import Heap
 import Testing
 
 @Test func heapTest() {
@@ -11,7 +11,7 @@ import Testing
     values.shuffle()
 
     for i in 0..<100 {
-        hash_add(values[i], to: &items, maxItems: 20) { $0 < $1 }
+        heap_add(values[i], to: &items, maxItems: 20) { $0 < $1 }
     }
 
     for i in 1..<20 {

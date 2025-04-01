@@ -8,18 +8,21 @@ let package = Package(
         .macOS(.v15)
     ],
     products: [
-        .executable(name: "GameOfStones", targets: ["GameOfStones"])
+        .library(name: "Heap", targets: ["Heap"]),
+        .library(name: "Board", targets: ["Board"]),
+        .executable(name: "HeapBench", targets: ["HeapBench"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-testing.git", branch: "main")
     ],
     targets: [
-        .executableTarget(
-            name: "GameOfStones"),
+        .target(name: "Heap"),
+        .target(name: "Board"),
+        .executableTarget(name: "HeapBench", dependencies: ["Heap"]),
         .testTarget(
-            name: "GameOfStonesTests",
+            name: "BenchTests",
             dependencies: [
-                "GameOfStones",
+                "Heap",
                 .product(name: "Testing", package: "swift-testing"),
             ]
         ),
