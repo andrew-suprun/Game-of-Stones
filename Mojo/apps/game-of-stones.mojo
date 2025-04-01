@@ -182,14 +182,14 @@ struct Game:
     fn play_move(mut self, move: Move) raises:
         if self.name == gomoku:
             self.gomoku.play_move(move)
-            self.gomoku_tree.play_move(move)
+            self.gomoku_tree.reset()
             print("move", move, self.gomoku.decision())
             print(self.gomoku)
             if self.gomoku.decision() != "no-decision":
                 self.game_complete = True
         else:
             self.connect6.play_move(move)
-            self.connect6_tree.play_move(move)
+            self.connect6_tree.reset()
             print("move", move, self.connect6.decision())
             print(self.connect6)
             if self.connect6.decision() != "no-decision":

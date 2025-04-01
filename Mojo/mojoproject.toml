@@ -7,7 +7,8 @@ platforms = ["osx-arm64"]
 version = "0.1.0"
 
 [tasks]
-sim = "mojo run -I src apps/sim.mojo"
+gomoku = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo gomoku"
+connect6 = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo connect6"
 
 [dependencies]
 max = ">=25.3.0.dev2025032005,<26"
