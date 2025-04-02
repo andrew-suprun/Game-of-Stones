@@ -1,4 +1,4 @@
-from tree import Score, Scores
+from game import Score, Scores
 
 fn value_table[max_stones: Int, scores: List[Score]](out result: InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]):
     alias result_size = max_stones * max_stones + 1

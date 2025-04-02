@@ -1,7 +1,7 @@
 from benchmark import benchmark, Unit, keep
 from random import random_si64, random_float64
 
-from tree import Score
+from game import Score
 
 
 fn benchInlineArraySIMDInt():

@@ -1,7 +1,7 @@
 from testing import assert_true
 from random import seed, random_si64
 
-from tree import Score, Place
+from game import Score, Place
 from game_of_stones.board import Board
 from game_of_stones.connect6 import Connect6, max_stones, values
 

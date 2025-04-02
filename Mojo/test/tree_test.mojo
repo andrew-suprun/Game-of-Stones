@@ -1,5 +1,5 @@
-from tree import Game, Move, Score, is_win
-from tree.tree import Tree, Node
+from game import Game, Move, Score, is_win
+from tree import Tree, Node
 from game_of_stones import Gomoku
 
 from random import seed, random_si64, random_float64

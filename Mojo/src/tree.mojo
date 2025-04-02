@@ -1,7 +1,7 @@
 from math import log2, sqrt
 from memory import Pointer
 
-from tree import Game, Move, Score
+from game import Game, Move, Score, is_decisive, is_win, is_draw, is_loss, win, draw, loss
 
 struct Tree[Game: Game, c: Score](Stringable, Writable):
     var root: Node[Game, c]

@@ -1,7 +1,7 @@
 from benchmark import benchmark, Unit
 
-from tree import Move, Score
-from tree.tree import Tree
+from game import Move, Score
+from tree import Tree
 from game_of_stones.board import Board, first
 from game_of_stones import Connect6
 

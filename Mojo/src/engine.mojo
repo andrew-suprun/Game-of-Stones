@@ -2,8 +2,8 @@ from sys import argv
 from time import perf_counter_ns
 from builtin.io import _fdopen
 
-from tree.tree import Tree
-from tree import Game, Move, Score
+from tree import Tree
+from game import Game, Move, Score
 
 var log_file = FileHandle()
 var log = False

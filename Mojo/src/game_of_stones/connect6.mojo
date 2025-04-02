@@ -1,4 +1,4 @@
-from tree import Game, Move, Score, win, draw
+from game import Game, Move, Score, win, draw
 
 from .heap import add
 from .board import Board, Place

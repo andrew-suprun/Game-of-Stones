@@ -2,8 +2,8 @@ from sys import env_get_int
 from time import perf_counter_ns
 import random
 
-from tree import Game, Move, Place, Score
-from tree.tree import Tree
+from game import Game, Move, Place, Score
+from tree import Tree
 from game_of_stones import Connect6
 
 alias m1 = env_get_int["M1", 32]()

@@ -5,8 +5,8 @@ import random
 import sys
 
 from game_of_stones import Gomoku, Connect6
-from tree import Move, Place, Score
-from tree.tree import Tree
+from game import Move, Place, Score
+from tree import Tree
 
 alias board_size = 19
 alias window_height = 1000

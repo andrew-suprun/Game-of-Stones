@@ -1,6 +1,6 @@
 from benchmark import benchmark, Unit
 
-from tree import Score, Place
+from game import Score, Place
 from game_of_stones.board import Board, first
 from game_of_stones.connect6 import values, max_stones
 import game_of_stones.values as v
