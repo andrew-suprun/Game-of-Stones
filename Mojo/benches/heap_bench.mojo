@@ -13,9 +13,9 @@ fn bench():
     for _ in range(1_000_000):
         heap.clear()
         for i in range(100):
-            add[Int, 20, less](100 - i, heap)
+            add[Int, 20, less](i * 17 % 100, heap)
 
 
 fn main() raises:
     print("\n--- heap (s/100_000_000) ---")
-    print("add", benchmark.run[bench]().mean(Unit.s))
+    print("add", benchmark.run[bench]().min(Unit.s))
