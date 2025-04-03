@@ -24,4 +24,3 @@ def test_heap():
         var parent = items[(i - 1) // 2]
         var child = items[i]
         assert_true(parent < child)
-    assert_true(False)

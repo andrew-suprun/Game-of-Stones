@@ -7,13 +7,13 @@ platforms = ["osx-arm64"]
 version = "0.1.0"
 
 [tasks]
-gomoku = "mojo run -I src apps/game-of-stones.mojo gomoku"
-checked-gomoku = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo gomoku"
+test = "mojo test -I src"
+
+game = "mojo run -I src apps/game-of-stones.mojo"
+checked-game = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo"
+
 gomoku-bench = "mojo run -I src benches/gomoku_bench.mojo"
 checked-gomoku-bench = "mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo"
-
-connect6 = "mojo run -I src apps/game-of-stones.mojo connect6"
-checked-connect6 = "mojo run -I src -D ASSERT=all apps/game-of-stones.mojo connect6"
 connect6-bench = "mojo run -I src benches/connect6_bench.mojo"
 checked-connect6-bench = "mojo run -I src -D ASSERT=all benches/connect6_bench.mojo"
 
