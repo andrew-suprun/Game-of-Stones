@@ -1,3 +1,5 @@
+const std = @import("std");
+
 pub fn Heap(comptime T: type, comptime size: usize, comptime less: fn (T, T) bool) type {
     return struct {
         const Self = @This();
