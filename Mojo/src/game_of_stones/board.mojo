@@ -34,11 +34,8 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
     var history_indices: List[ScoreMark]
 
     fn __init__(out self):
-        self.places = List[Int8](capacity=size * size)
-        self.scores = List[Scores](capacity=size * size)
-        for _ in range(size * size):
-            self.places.append(Self.empty)
-            self.scores.append(Scores(0, 0))
+        self.places = List[Int8](length = size * size, fill = 0)
+        self.scores = List[Scores](length = size * size, fill = Scores(0, 0))
         self.score = 0
         self.history = List[PlaceScores]()
         self.history_indices = List[ScoreMark]()
