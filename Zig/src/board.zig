@@ -219,10 +219,6 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
 test "updateRow" {
     const B = Board(19, 6);
     var board = B.init(std.testing.allocator);
-    board.placeStone(.{ .x = 0, .y = 0 }, .first);
-    board.placeStone(.{ .x = 0, .y = 18 }, .first);
-    board.placeStone(.{ .x = 18, .y = 0 }, .first);
-    board.placeStone(.{ .x = 18, .y = 18 }, .first);
     board.updateRow(18, 18, 6, B.score_table[0]);
     for (0..19) |y| {
         for (0..19) |x| {
