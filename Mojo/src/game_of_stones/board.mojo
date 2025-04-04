@@ -21,11 +21,11 @@ struct ScoreMark:
     var history_idx: Int
 
 
-struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](Stringable, Writable):
+struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
-    alias white = Int8(max_stones)
-    alias value_table = v.value_table[max_stones, values]()
+    alias white = Int8(win_stones)
+    alias value_table = v.value_table[win_stones, values]()
 
     var places: List[Int8]
     var scores: List[Scores] 
@@ -41,12 +41,12 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
         self.history_indices = List[ScoreMark]()
 
         for y in range(size):
-            var v = 1 + min(max_stones - 1, y, size - 1 - y)
+            var v = 1 + min(win_stones - 1, y, size - 1 - y)
             for x in range(size):
-                var h = 1 + min(max_stones - 1, x, size - 1 - x)
+                var h = 1 + min(win_stones - 1, x, size - 1 - x)
                 var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
-                var t1 = max(0, min(max_stones, m, size - max_stones + 1 - y + x, size - max_stones + 1 - x + y))
-                var t2 = max(0, min(max_stones, m, 2 * size - 1 - max_stones + 1 - y - x, x + y - max_stones + 1 + 1))
+                var t1 = max(0, min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y))
+                var t2 = max(0, min(win_stones, m, 2 * size - 1 - win_stones + 1 - y - x, x + y - win_stones + 1 + 1))
                 var total = v + h + t1 + t2
                 self.setscores(Place(x, y), Scores(total, total))
 
@@ -62,28 +62,28 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
         else:
             self.score -= self.getscores(place)[second]
 
-        var x_start = max(0, x - max_stones + 1)
-        var x_end = min(x + max_stones, size) - max_stones + 1
+        var x_start = max(0, x - win_stones + 1)
+        var x_end = min(x + win_stones, size) - win_stones + 1
         var n = x_end - x_start
         self.update_row(y * size + x_start, 1, n, scores)
 
-        var y_start = max(0, y - max_stones + 1)
-        var y_end = min(y + max_stones, size) - max_stones + 1
+        var y_start = max(0, y - win_stones + 1)
+        var y_end = min(y + win_stones, size) - win_stones + 1
         n = y_end - y_start
         self.update_row(y_start * size + x, size, n, scores)
 
         var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
 
-        n = min(max_stones, m, size - max_stones + 1 - y + x, size - max_stones + 1 - x + y)
+        n = min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y)
         if n > 0:
-            var mn = min(x, y, max_stones - 1)
+            var mn = min(x, y, win_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
             self.update_row(y_start * size + x_start, size + 1, n, scores)
 
-        n = min(max_stones, m, 2 * size - max_stones - y - x, x + y - max_stones + 2)
+        n = min(win_stones, m, 2 * size - win_stones - y - x, x + y - win_stones + 2)
         if n > 0:
-            var mn = min(size - 1 - x, y, max_stones - 1)
+            var mn = min(size - 1 - x, y, win_stones - 1)
             var x_start = x + mn
             var y_start = y - mn
             self.update_row(y_start * size + x_start, size - 1, n, scores)
@@ -94,24 +94,24 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
             self[x, y] = Self.white
     
     @always_inline
-    fn update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, max_stones * max_stones + 1]):
-        for i in range(start, start + delta * (max_stones - 1 + n), delta):
+    fn update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
+        for i in range(start, start + delta * (win_stones - 1 + n), delta):
             self.history.append(PlaceScores(i, self.scores[i]))
 
         var offset = start
         var stones = Int8(0)
 
         @parameter
-        for i in range(max_stones - 1):
+        for i in range(win_stones - 1):
             stones += self.places[offset + i * delta]
 
         for _ in range(n):
-            stones += self.places[offset + delta * (max_stones - 1)]
+            stones += self.places[offset + delta * (win_stones - 1)]
             var scores = scores[stones]
             if scores[0] != 0 or scores[1] != 0:
 
                 @parameter
-                for j in range(max_stones):
+                for j in range(win_stones):
                     self.scores[offset + j * delta] += scores
             stones -= self.places[offset]
             offset += delta
@@ -157,74 +157,74 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
     fn decision(self, out decision: String):
         for y in range(size):
             var stones = SIMD[DType.int64, 2](0, 0)
-            for x in range(max_stones - 1):
+            for x in range(win_stones - 1):
                 stones += self.counts(self[x, y])
-            for x in range(size - max_stones + 1):
-                stones += self.counts(self[x + max_stones - 1, y])
-                if stones[0] == max_stones:
+            for x in range(size - win_stones + 1):
+                stones += self.counts(self[x + win_stones - 1, y])
+                if stones[0] == win_stones:
                     return "first-win"
-                elif stones[1] == max_stones:
+                elif stones[1] == win_stones:
                     return "second-win"
                 stones -= self.counts(self[x, y])
 
         for x in range(size):
             var stones = SIMD[DType.int64, 2](0, 0)
-            for y in range(max_stones - 1):
+            for y in range(win_stones - 1):
                 stones += self.counts(self[x, y])
-            for y in range(size - max_stones + 1):
-                stones += self.counts(self[x, y + max_stones - 1])
-                if stones[0] == max_stones:
+            for y in range(size - win_stones + 1):
+                stones += self.counts(self[x, y + win_stones - 1])
+                if stones[0] == win_stones:
                     return "first-win"
-                elif stones[1] == max_stones:
+                elif stones[1] == win_stones:
                     return "second-win"
                 stones -= self.counts(self[x, y])
 
-        for y in range(size - max_stones + 1):
+        for y in range(size - win_stones + 1):
             var stones = SIMD[DType.int64, 2](0, 0)
-            for x in range(max_stones - 1):
+            for x in range(win_stones - 1):
                 stones += self.counts(self[x, y+x])
-            for x in range(size - max_stones + 1 - y):
-                stones += self.counts(self[x + max_stones - 1, x + y + max_stones - 1])
-                if stones[0] == max_stones:
+            for x in range(size - win_stones + 1 - y):
+                stones += self.counts(self[x + win_stones - 1, x + y + win_stones - 1])
+                if stones[0] == win_stones:
                     return "first-win"
-                elif stones[1] == max_stones:
+                elif stones[1] == win_stones:
                     return "second-win"
                 stones -= self.counts(self[x, x+y])
 
-        for x in range(1, size - max_stones + 1):
+        for x in range(1, size - win_stones + 1):
             var stones = SIMD[DType.int64, 2](0, 0)
-            for y in range(max_stones - 1):
+            for y in range(win_stones - 1):
                 stones += self.counts(self[x + y, y])
-            for y in range(size - max_stones + 1 - x):
-                stones += self.counts(self[x + y + max_stones - 1, y + max_stones - 1])
-                if stones[0] == max_stones:
+            for y in range(size - win_stones + 1 - x):
+                stones += self.counts(self[x + y + win_stones - 1, y + win_stones - 1])
+                if stones[0] == win_stones:
                     return "first-win"
-                elif stones[1] == max_stones:
+                elif stones[1] == win_stones:
                     return "second-win"
                 stones -= self.counts(self[x+y, y])
 
 
-        for y in range(size - max_stones + 1):
+        for y in range(size - win_stones + 1):
             var stones = SIMD[DType.int64, 2](0, 0)
-            for x in range(max_stones - 1):
+            for x in range(win_stones - 1):
                 stones += self.counts(self[size - 1 - x, x + y])
-            for x in range(size - max_stones + 1 - y):
-                stones += self.counts(self[size - x - max_stones, x + y + max_stones - 1])
-                if stones[0] == max_stones:
+            for x in range(size - win_stones + 1 - y):
+                stones += self.counts(self[size - x - win_stones, x + y + win_stones - 1])
+                if stones[0] == win_stones:
                     return "first-win"
-                elif stones[1] == max_stones:
+                elif stones[1] == win_stones:
                     return "second-win"
                 stones -= self.counts(self[size - 1 - x, x + y])
 
-        for x in range(1, size - max_stones + 1):
+        for x in range(1, size - win_stones + 1):
             var stones = SIMD[DType.int64, 2](0, 0)
-            for y in range(max_stones - 1):
+            for y in range(win_stones - 1):
                 stones += self.counts(self[size - 1 - x - y, y])
-            for y in range(size - max_stones + 1 - x):
-                stones += self.counts(self[size - max_stones - x - y, y + max_stones - 1])
-                if stones[0] == max_stones:
+            for y in range(size - win_stones + 1 - x):
+                stones += self.counts(self[size - win_stones - x - y, y + win_stones - 1])
+                if stones[0] == win_stones:
                     return "first-win"
-                elif stones[1] == max_stones:
+                elif stones[1] == win_stones:
                     return "second-win"
                 stones -= self.counts(self[size - 1 - x - y, y])
 
@@ -239,7 +239,7 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
     fn counts(self, stones: Int8, out result: SIMD[DType.int64, 2]):
         if stones == 1:
             return SIMD[DType.int64, 2](1, 0)
-        elif stones == max_stones:
+        elif stones == win_stones:
             return SIMD[DType.int64, 2](0, 1)
         else:
             return SIMD[DType.int64, 2](0, 0)
@@ -358,64 +358,64 @@ struct Board[values: List[Score], size: Int, max_stones: Int, max_places: Int](S
         value = Score(0)
         for y in range(size):
             var stones = Int8(0)
-            for x in range(max_stones - 1):
+            for x in range(win_stones - 1):
                 stones += self[x, y]
-            for x in range(size - max_stones + 1):
-                stones += self[x + max_stones - 1, y]
+            for x in range(size - win_stones + 1):
+                stones += self[x + win_stones - 1, y]
                 value += self.calc_value(stones, scores)
                 stones -= self[x, y]
 
         for x in range(size):
             var stones = Int8(0)
-            for y in range(max_stones - 1):
+            for y in range(win_stones - 1):
                 stones += self[x, y]
-            for y in range(size - max_stones + 1):
-                stones += self[x, y + max_stones - 1]
+            for y in range(size - win_stones + 1):
+                stones += self[x, y + win_stones - 1]
                 value += self.calc_value(stones, scores)
                 stones -= self[x, y]
 
-        for y in range(size - max_stones + 1):
+        for y in range(size - win_stones + 1):
             var stones = Int8(0)
-            for x in range(max_stones - 1):
+            for x in range(win_stones - 1):
                 stones += self[x, y + x]
-            for x in range(size - max_stones + 1 - y):
-                stones += self[x + max_stones - 1, x + y + max_stones - 1]
+            for x in range(size - win_stones + 1 - y):
+                stones += self[x + win_stones - 1, x + y + win_stones - 1]
                 value += self.calc_value(stones, scores)
                 stones -= self[x, x + y]
 
-        for x in range(1, size - max_stones + 1):
+        for x in range(1, size - win_stones + 1):
             var stones = Int8(0)
-            for y in range(max_stones - 1):
+            for y in range(win_stones - 1):
                 stones += self[x + y, y]
-            for y in range(size - max_stones + 1 - x):
-                stones += self[x + y + max_stones - 1, y + max_stones - 1]
+            for y in range(size - win_stones + 1 - x):
+                stones += self[x + y + win_stones - 1, y + win_stones - 1]
                 value += self.calc_value(stones, scores)
                 stones -= self[x + y, y]
 
-        for y in range(size - max_stones + 1):
+        for y in range(size - win_stones + 1):
             var stones = Int8(0)
-            for x in range(max_stones - 1):
+            for x in range(win_stones - 1):
                 stones += self[size - 1 - x, x + y]
-            for x in range(size - max_stones + 1 - y):
+            for x in range(size - win_stones + 1 - y):
                 stones += self[
-                    size - 1 - x - max_stones + 1, x + y + max_stones - 1
+                    size - 1 - x - win_stones + 1, x + y + win_stones - 1
                 ]
                 value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x, x + y]
 
-        for x in range(1, size - max_stones + 1):
+        for x in range(1, size - win_stones + 1):
             var stones = Int8(0)
-            for y in range(max_stones - 1):
+            for y in range(win_stones - 1):
                 stones += self[size - 1 - x - y, y]
-            for y in range(size - max_stones + 1 - x):
-                stones += self[size - max_stones - x - y, y + max_stones - 1]
+            for y in range(size - win_stones + 1 - x):
+                stones += self[size - win_stones - x - y, y + win_stones - 1]
                 value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
     fn calc_value(self, stones: Int8, scores: List[Score], out value: Score):
         value = 0
-        var black = stones % max_stones
-        var white = stones // max_stones
+        var black = stones % win_stones
+        var white = stones // win_stones
         if white == 0:
             return scores[black]
         elif black == 0:

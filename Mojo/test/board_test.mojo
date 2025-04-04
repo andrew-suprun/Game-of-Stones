@@ -37,10 +37,7 @@ def test_place_stone():
                 print(board.str_scores())
                 return
             value += board.getscores(Place(x, y))[turn]
-            if turn == 0:
-                board.place_stone(Place(x, y), turn)
-            else:
-                board.place_stone(Place(x, y), turn)
+            board.place_stone(Place(x, y), turn)
 
 
 def test_top_moves():
