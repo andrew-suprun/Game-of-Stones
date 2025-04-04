@@ -65,28 +65,28 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             self.history_indices.deinit();
         }
 
-        fn placeStone(self: *Self, place: Place, turn: Player) void {
-            const scores = self.value_table[turn];
-            self.history_indices.append(ScoreMark(place, self.score, self.history.len));
+        pub fn placeStone(self: *Self, place: Place, turn: Player) void {
+            const scores = Self.score_table[@intFromEnum(turn)];
+            self.history_indices.append(ScoreMark{ .place = place, .history_idx = self.history.items.len, .score = self.score }) catch {};
 
-            const x = isize(place.x);
-            const y = isize(place.y);
+            const x: usize = @intCast(place.x);
+            const y: usize = @intCast(place.y);
 
             if (turn == .first) {
-                self.score += self.scores[place.y * size + place.x][.first];
+                self.score += self.scores[y * size + x][@intFromEnum(Player.first)];
             } else {
-                self.score -= self.scores[place.y * size + place.x][.second];
+                self.score -= self.scores[y * size + x][@intFromEnum(Player.second)];
             }
 
             {
-                const x_start = @max(0, x - win_stones + 1);
-                const x_end = @min(x + win_stones, size) - win_stones + 1;
+                const x_start: usize = if (x + 1 > win_stones) x + 1 - win_stones else 0;
+                const x_end: usize = @min(x + win_stones, size) - win_stones + 1;
                 const n = x_end - x_start;
                 self.updateRow(y * size + x_start, 1, n, scores);
             }
 
             {
-                const y_start = @max(0, y - win_stones + 1);
+                const y_start = if (y + 1 > win_stones) y + 1 - win_stones else 0;
                 const y_end = @min(y + win_stones, size) - win_stones + 1;
                 const n = y_end - y_start;
                 self.updateRow(y_start * size + x, size, n, scores);
@@ -94,56 +94,32 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
 
             const m = 1 + @min(x, y, size - 1 - x, size - 1 - y);
 
-            const n1 = @min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y);
-            if (n1 > 0) {
+            const c1 = size + 1 + x;
+            const c2 = win_stones + y;
+            const c3 = size + 1 + y;
+            const c4 = win_stones + x;
+            if (c1 >= c2 and c3 >= c4) {
+                const n = @min(win_stones, m, c1 - c2, c3 - c4);
                 const mn = @min(x, y, win_stones - 1);
                 const x_start = x - mn;
                 const y_start = y - mn;
-                self.updateRow(y_start * size + x_start, size + 1, n1, scores);
+                self.updateRow(y_start * size + x_start, size + 1, n, scores);
             }
 
-            const n2 = @min(win_stones, m, 2 * size - win_stones - y - x, x + y - win_stones + 2);
-            if (n2 > 0) {
+            const c5 = win_stones + x + y;
+            const c6 = x + y + 2;
+            if (2 * size >= c5 and c6 >= win_stones) {
+                const n = @min(win_stones, m, 2 * size - c5, c6 - win_stones);
                 const mn = @min(size - 1 - x, y, win_stones - 1);
                 const x_start = x + mn;
                 const y_start = y - mn;
-                self.updateRow(y_start * size + x_start, size - 1, n2, scores);
+                self.updateRow(y_start * size + x_start, size - 1, n, scores);
             }
 
-            if (turn == .first) {
-                self.places[y * size + x] = .black;
-            } else {
-                self.places[y * size + x] = .white;
-            }
+            self.places[y * size + x] = if (turn == .first) .black else .white;
         }
 
-        inline fn updateRow(self: *Self, start: usize, delta: usize, n: usize, scores: [win_stones * win_stones + 1]Scores) void {
-            for (0..win_stones - 1 + n) |ii| {
-                const i = start + ii * delta;
-                self.history.append(.{ .offset = i, .scores = self.scores[i] }) catch {};
-            }
-
-            var offset = start;
-            var stones: i8 = 0;
-
-            inline for (0..win_stones - 1) |i| {
-                stones += @intFromEnum(self.places[offset + i * delta]);
-            }
-
-            for (0..n) |_| {
-                stones += @intFromEnum(self.places[offset + delta * (win_stones - 1)]);
-                const placeScores = scores[@intCast(stones)];
-                if (placeScores[0] != 0 or placeScores[1] != 0) {
-                    inline for (0..win_stones) |j| {
-                        self.scores[offset + j * delta] += placeScores;
-                    }
-                }
-                stones -= @intFromEnum(self.places[offset]);
-                offset += delta;
-            }
-        }
-
-        fn removeStone(self: *Self) void {
+        pub fn removeStone(self: *Self) void {
             const idx = self.history_indices.pop().?;
             self.places[usize(idx.place.y) * size + usize(idx.place.x)] = .empty;
             self.score = idx.score;
@@ -151,6 +127,36 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             while (self.history.len > idx.history_idx) {
                 const h_scores = self.history.pop().?;
                 self.scores[h_scores.offset] = h_scores.scores;
+            }
+        }
+
+        fn getPlaceAsUint(self: Self, offset: usize) usize {
+            return @intCast(@intFromEnum(self.places[offset]));
+        }
+
+        fn updateRow(self: *Self, start: usize, delta: usize, n: usize, scores: [win_stones * win_stones + 1]Scores) void {
+            for (0..win_stones - 1 + n) |ii| {
+                const offset: usize = start + ii * delta;
+                self.history.append(.{ .offset = offset, .scores = self.scores[ii] }) catch {};
+            }
+
+            var offset = start;
+            var stones: usize = 0;
+
+            inline for (0..win_stones - 1) |i| {
+                stones += self.getPlaceAsUint(offset + i * delta);
+            }
+
+            for (0..n) |_| {
+                stones += self.getPlaceAsUint(offset + delta * (win_stones - 1));
+                const placeScores = scores[stones];
+                if (placeScores[0] != 0 or placeScores[1] != 0) {
+                    inline for (0..win_stones) |j| {
+                        self.scores[offset + j * delta] += placeScores;
+                    }
+                }
+                stones -= self.getPlaceAsUint(offset);
+                offset += delta;
             }
         }
 
@@ -213,6 +219,10 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
 test "updateRow" {
     const B = Board(19, 6);
     var board = B.init(std.testing.allocator);
+    board.placeStone(.{ .x = 0, .y = 0 }, .first);
+    board.placeStone(.{ .x = 0, .y = 18 }, .first);
+    board.placeStone(.{ .x = 18, .y = 0 }, .first);
+    board.placeStone(.{ .x = 18, .y = 18 }, .first);
     board.updateRow(18, 18, 6, B.score_table[0]);
     for (0..19) |y| {
         for (0..19) |x| {
