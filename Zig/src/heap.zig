@@ -4,31 +4,31 @@ pub fn Heap(comptime T: type, comptime size: usize, comptime less: fn (T, T) boo
     return struct {
         const Self = @This();
 
-        _items: [size]T,
+        storage: [size]T,
         len: usize,
 
         pub fn init() Self {
             return Self{
-                ._items = undefined,
+                .storage = undefined,
                 .len = 0,
             };
         }
 
         pub fn add(self: *Self, item: T) void {
             if (self.len == size) {
-                if (!less(self._items[0], item)) return;
+                if (!less(self.storage[0], item)) return;
 
-                self._items[0] = item;
+                self.storage[0] = item;
                 self.siftDown();
                 return;
             }
-            self._items[self.len] = item;
+            self.storage[self.len] = item;
             self.len += 1;
             self.siftUp();
         }
 
         pub fn items(self: *Self) []T {
-            return self._items[0..self.len];
+            return self.storage[0..self.len];
         }
 
         pub fn clear(self: *Self) void {
@@ -37,37 +37,37 @@ pub fn Heap(comptime T: type, comptime size: usize, comptime less: fn (T, T) boo
 
         fn siftUp(self: *Self) void {
             var child_idx = self.len - 1;
-            const child = self._items[child_idx];
-            while (child_idx > 0 and less(child, self._items[(child_idx - 1) / 2])) {
+            const child = self.storage[child_idx];
+            while (child_idx > 0 and less(child, self.storage[(child_idx - 1) / 2])) {
                 const parent_idx = (child_idx - 1) / 2;
-                self._items[child_idx] = self._items[parent_idx];
+                self.storage[child_idx] = self.storage[parent_idx];
                 child_idx = parent_idx;
             }
-            self._items[child_idx] = child;
+            self.storage[child_idx] = child;
         }
 
         fn siftDown(self: *Self) void {
             var idx: usize = 0;
-            const elem = self._items[idx];
+            const elem = self.storage[idx];
             while (true) {
                 var first = idx;
                 const left_child_idx = idx * 2 + 1;
-                if (left_child_idx < self.len and less(self._items[left_child_idx], elem)) {
+                if (left_child_idx < self.len and less(self.storage[left_child_idx], elem)) {
                     first = left_child_idx;
                 }
                 const right_child_idx = idx * 2 + 2;
                 if (right_child_idx < self.len and
-                    less(self._items[right_child_idx], elem) and
-                    less(self._items[right_child_idx], self._items[left_child_idx]))
+                    less(self.storage[right_child_idx], elem) and
+                    less(self.storage[right_child_idx], self.storage[left_child_idx]))
                 {
                     first = right_child_idx;
                 }
                 if (idx == first) break;
 
-                self._items[idx] = self._items[first];
+                self.storage[idx] = self.storage[first];
                 idx = first;
             }
-            self._items[idx] = elem;
+            self.storage[idx] = elem;
         }
     };
 }
@@ -104,6 +104,7 @@ pub fn main() !void {
             for (0..100) |i| {
                 heap.add(@intCast(i * 17 % 100));
             }
+            std.mem.doNotOptimizeAway(heap);
         }
         const dur = timer.lap();
         std.debug.print("{d} sec\n", .{@as(f64, @floatFromInt(dur)) / 1_000_000_000});
