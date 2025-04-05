@@ -185,7 +185,39 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
         }
 
         pub fn printScores(self: Self) void {
-            _ = self;
+            self.printScoresForPlayer(.first);
+            self.printScoresForPlayer(.second);
+        }
+
+        pub fn printScoresForPlayer(self: Self, player: Player) void {
+            const idx: usize = @intCast(@intFromEnum(player));
+            pr("\n   │", .{});
+            for (0..size) |i| {
+                const c: u8 = @intCast(i);
+                pr("    {c} ", .{c + 'a'});
+            }
+            pr("│\n───┼" ++ "──────" ** size ++ "┼───\n", .{});
+            for (0..size) |y| {
+                pr("{d:2} │", .{y + 1});
+                for (0..size) |x| {
+                    const stone = self.places[y * size + x];
+                    switch (stone) {
+                        .none => pr("{d:5} ", .{self.scores[y * size + x][idx]}),
+                        .black => pr("    X ", .{}),
+                        .white => pr("    O ", .{}),
+                    }
+                }
+                pr("| {d:2}\n", .{y + 1});
+            }
+            pr("───┼" ++ "──────" ** size ++ "┼───", .{});
+            if (idx == 1) {
+                pr("\n   │", .{});
+                for (0..size) |i| {
+                    const c: u8 = @intCast(i);
+                    pr("    {c} ", .{c + 'a'});
+                }
+                pr("│\n", .{});
+            }
         }
 
         fn getPlace(self: Self, offset: usize) usize {
@@ -386,6 +418,8 @@ test "boardValue" {
 test "placeStone" {
     var rng = std.Random.DefaultPrng.init(0);
     var board = Board(19, 6).init(std.testing.allocator);
+    board.print();
+    board.printScores();
     defer board.deinit();
     var value: Score = 0;
     for (0..200) |_| {
