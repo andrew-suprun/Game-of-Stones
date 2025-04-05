@@ -1,14 +1,14 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
-const print = std.debug.print;
+const pr = std.debug.print;
 
 const Score = f32;
 const Scores = @Vector(2, Score);
 
 const Place = struct {
-    x: i8,
-    y: i8,
+    x: usize,
+    y: usize,
 };
 
 const PlaceScores = struct {
@@ -70,8 +70,8 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             const scores = Self.score_table[@intFromEnum(turn)];
             self.history_indices.append(ScoreMark{ .place = place, .history_idx = self.history.items.len, .score = self.score }) catch {};
 
-            const x: usize = @intCast(place.x);
-            const y: usize = @intCast(place.y);
+            const x: usize = place.x;
+            const y: usize = place.y;
 
             if (turn == .first) {
                 self.score += self.scores[y * size + x][@intFromEnum(Player.first)];
@@ -122,16 +122,73 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
 
         pub fn removeStone(self: *Self) void {
             const idx = self.history_indices.pop().?;
-            self.places[usize(idx.place.y) * size + usize(idx.place.x)] = .empty;
+            self.places[idx.place.y * size + idx.place.x] = .none;
             self.score = idx.score;
 
-            while (self.history.len > idx.history_idx) {
+            while (self.history.items.len > idx.history_idx) {
                 const h_scores = self.history.pop().?;
                 self.scores[h_scores.offset] = h_scores.scores;
             }
         }
 
-        fn getPlaceAsUint(self: Self, offset: usize) usize {
+        pub fn print(self: Self) void {
+            pr("\n  ", .{});
+
+            for (0..size) |i| {
+                const c: u8 = @intCast(i);
+                pr(" {c}", .{c + 'a'});
+            }
+            pr("\n", .{});
+
+            for (0..size) |y| {
+                pr("{:2} ", .{y + 1});
+                for (0..size) |x| {
+                    const stone = self.places[y * size + x];
+                    switch (stone) {
+                        .black => pr(" X", .{}),
+                        .white => pr(" O", .{}),
+                        .none => {
+                            switch (y) {
+                                0 => {
+                                    switch (x) {
+                                        0 => pr(" ┌", .{}),
+                                        size - 1 => pr("─┐", .{}),
+                                        else => pr("─┬", .{}),
+                                    }
+                                },
+                                size - 1 => {
+                                    switch (x) {
+                                        0 => pr(" └", .{}),
+                                        size - 1 => pr("─┘", .{}),
+                                        else => pr("─┴", .{}),
+                                    }
+                                },
+                                else => {
+                                    switch (x) {
+                                        0 => pr(" ├", .{}),
+                                        size - 1 => pr("─┤", .{}),
+                                        else => pr("─┼", .{}),
+                                    }
+                                },
+                            }
+                        },
+                    }
+                }
+                pr("{:2}\n", .{y + 1});
+            }
+            pr("  ", .{});
+            for (0..size) |i| {
+                const c: u8 = @intCast(i);
+                pr(" {c}", .{c + 'a'});
+            }
+            pr("\n", .{});
+        }
+
+        pub fn printScores(self: Self) void {
+            _ = self;
+        }
+
+        fn getPlace(self: Self, offset: usize) usize {
             return @intCast(@intFromEnum(self.places[offset]));
         }
 
@@ -145,18 +202,18 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             var stones: usize = 0;
 
             inline for (0..win_stones - 1) |i| {
-                stones += self.getPlaceAsUint(offset + i * delta);
+                stones += self.getPlace(offset + i * delta);
             }
 
             for (0..n) |_| {
-                stones += self.getPlaceAsUint(offset + delta * (win_stones - 1));
+                stones += self.getPlace(offset + delta * (win_stones - 1));
                 const placeScores = scores[stones];
                 if (placeScores[0] != 0 or placeScores[1] != 0) {
                     inline for (0..win_stones) |j| {
                         self.scores[offset + j * delta] += placeScores;
                     }
                 }
-                stones -= self.getPlaceAsUint(offset);
+                stones -= self.getPlace(offset);
                 offset += delta;
             }
         }
@@ -166,72 +223,72 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             for (0..size) |y| {
                 var stones: usize = 0;
                 for (0..win_stones - 1) |x| {
-                    stones += self.getPlaceAsUint(y * size + x);
+                    stones += self.getPlace(y * size + x);
                 }
                 for (0..size - win_stones + 1) |x| {
-                    stones += self.getPlaceAsUint(y * size + x + win_stones - 1);
+                    stones += self.getPlace(y * size + x + win_stones - 1);
                     value += Self.calcValue(stones);
-                    stones -= self.getPlaceAsUint(y * size + x);
+                    stones -= self.getPlace(y * size + x);
                 }
             }
 
             for (0..size) |x| {
                 var stones: usize = 0;
                 for (0..win_stones - 1) |y| {
-                    stones += self.getPlaceAsUint(y * size + x);
+                    stones += self.getPlace(y * size + x);
                 }
                 for (0..size - win_stones + 1) |y| {
-                    stones += self.getPlaceAsUint((y + win_stones - 1) * size + x);
+                    stones += self.getPlace((y + win_stones - 1) * size + x);
                     value += Self.calcValue(stones);
-                    stones -= self.getPlaceAsUint(y * size + x);
+                    stones -= self.getPlace(y * size + x);
                 }
             }
 
             for (0..size - win_stones + 1) |y| {
                 var stones: usize = 0;
                 for (0..win_stones - 1) |x| {
-                    stones += self.getPlaceAsUint((x + y) * size + x);
+                    stones += self.getPlace((x + y) * size + x);
                 }
                 for (0..size - win_stones + 1 - y) |x| {
-                    stones += self.getPlaceAsUint((x + y + win_stones - 1) * size + x + win_stones - 1);
+                    stones += self.getPlace((x + y + win_stones - 1) * size + x + win_stones - 1);
                     value += Self.calcValue(stones);
-                    stones -= self.getPlaceAsUint((x + y) * size + x);
+                    stones -= self.getPlace((x + y) * size + x);
                 }
             }
 
             for (1..size - win_stones + 1) |x| {
                 var stones: usize = 0;
                 for (0..win_stones - 1) |y| {
-                    stones += self.getPlaceAsUint(y * size + x + y);
+                    stones += self.getPlace(y * size + x + y);
                 }
                 for (0..size - win_stones + 1 - x) |y| {
-                    stones += self.getPlaceAsUint((y + win_stones - 1) * size + x + y + win_stones - 1);
+                    stones += self.getPlace((y + win_stones - 1) * size + x + y + win_stones - 1);
                     value += Self.calcValue(stones);
-                    stones -= self.getPlaceAsUint(y * size + x + y);
+                    stones -= self.getPlace(y * size + x + y);
                 }
             }
 
             for (0..size - win_stones + 1) |y| {
                 var stones: usize = 0;
                 for (0..win_stones - 1) |x| {
-                    stones += self.getPlaceAsUint((x + y) * size + size - 1 - x);
+                    stones += self.getPlace((x + y) * size + size - 1 - x);
                 }
                 for (0..size - win_stones + 1 - y) |x| {
-                    stones += self.getPlaceAsUint((x + y + win_stones - 1) * size + size - 1 - x - win_stones + 1);
+                    stones += self.getPlace((x + y + win_stones - 1) * size + size - 1 - x - win_stones + 1);
                     value += Self.calcValue(stones);
-                    stones -= self.getPlaceAsUint((x + y) * size + size - 1 - x);
+                    stones -= self.getPlace((x + y) * size + size - 1 - x);
                 }
             }
 
             for (1..size - win_stones + 1) |x| {
                 var stones: usize = 0;
                 for (0..win_stones - 1) |y| {
-                    stones += self.getPlaceAsUint(y * size + size - 1 - x - y);
+                    stones += self.getPlace(y * size + size - 1 - x - y);
                 }
                 for (0..size - win_stones + 1 - x) |y| {
-                    stones += self.getPlaceAsUint((y + win_stones - 1) * size + size - win_stones - x - y);
+                    stones += self.getPlace((y + win_stones - 1) * size + size - win_stones - x - y);
                     value += Self.calcValue(stones);
-                    stones -= self.getPlaceAsUint(y * size + size - 1 - x - y);
+                    stones -= self.getPlace(y * size + size - 1 - x - y);
                 }
             }
 
@@ -290,30 +347,30 @@ test "updateRow" {
     board.updateRow(18, 18, 6, B.score_table[0]);
     for (0..19) |y| {
         for (0..19) |x| {
-            print("{d} ", .{board.scores[y * 19 + x][0]});
+            pr("{d:3}", .{board.scores[y * 19 + x][0]});
         }
-        print("\n", .{});
+        pr("\n", .{});
     }
     board.deinit();
 }
 
 test "print_score_table" {
     const board = Board(19, 6).init(std.testing.allocator);
-    print("{any}\n", .{Board(19, 5).score_table});
+    pr("{any}\n", .{Board(19, 5).score_table});
     for (0..19) |y| {
         for (0..19) |x| {
-            print("{d} ", .{board.scores[y * 19 + x][0]});
+            pr("{d:3}", .{board.scores[y * 19 + x][0]});
         }
-        print("\n", .{});
+        pr("\n", .{});
     }
 }
 
 fn testBoardValue(place: Place, player: Board(19, 6).Player, expected: Score) !void {
     const B = Board(19, 6);
     var board = B.init(std.testing.allocator);
+    defer board.deinit();
     board.placeStone(place, player);
     const value = board.boardValue();
-    board.deinit();
     try std.testing.expect(value == expected);
 }
 
@@ -324,6 +381,47 @@ test "boardValue" {
     try testBoardValue(Place{ .x = 0, .y = 18 }, .first, 3);
     try testBoardValue(Place{ .x = 18, .y = 0 }, .first, 3);
     try testBoardValue(Place{ .x = 18, .y = 18 }, .first, 3);
+}
+
+test "placeStone" {
+    var rng = std.Random.DefaultPrng.init(0);
+    var board = Board(19, 6).init(std.testing.allocator);
+    defer board.deinit();
+    var value: Score = 0;
+    for (0..200) |_| {
+        var failure = false;
+        for (0..19) |y| {
+            for (0..19) |x| {
+                if (board.places[y * 19 + x] == .none) {
+                    const actual = board.scores[y * 19 + x];
+                    board.placeStone(Place{ .x = x, .y = y }, .first);
+                    var expected = board.boardValue() - value;
+                    board.removeStone();
+                    if (actual[0] != expected) {
+                        failure = true;
+                    }
+                    board.placeStone(Place{ .x = x, .y = y }, .second);
+                    expected = board.boardValue() - value;
+                    board.removeStone();
+                    if (actual[1] != expected) {
+                        failure = true;
+                    }
+                }
+            }
+        }
+        if (failure) {
+            board.print();
+            board.printScores();
+            return;
+        }
+        const x: usize = rng.next() % 19;
+        const y: usize = rng.next() % 19;
+        if (board.places[y * 19 + x] == .none) {
+            const turn: u1 = @truncate(rng.next());
+            value += board.scores[y * 19 + x][turn];
+            board.placeStone(Place{ .x = x, .y = y }, @enumFromInt(turn));
+        }
+    }
 }
 
 // Benchmarks
@@ -342,6 +440,6 @@ pub fn main() !void {
             std.mem.doNotOptimizeAway(board);
         }
         const dur = timer.lap();
-        print("{d} msec\n", .{@as(f64, @floatFromInt(dur)) / 1_000_000});
+        pr("{d} msec\n", .{@as(f64, @floatFromInt(dur)) / 1_000_000});
     }
 }
