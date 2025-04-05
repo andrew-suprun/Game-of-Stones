@@ -1,4 +1,4 @@
-from benchmark import benchmark, Unit
+from benchmark import benchmark, Unit, keep
 
 from game import Score, Place
 from game_of_stones.board import Board, first
@@ -9,7 +9,8 @@ fn bench_update_row():
     var board = Board[values, 19, max_stones, 8]()
     var vv = v.value_table[6, values]()
     for _ in range(1000):
-        board.update_row(first, board.size + 1, 6, vv[0])
+        board.update_row(0, board.size + 1, 6, vv[0])
+    keep(board.scores[5*20])
 
 fn bench_place_stone():
     var board = Board[values, 19, max_stones, 8]()
@@ -18,12 +19,14 @@ fn bench_place_stone():
         board.place_stone(Place(9, 9), 0)
         score += board.max_score(first)
         board.remove_stone()
+    keep(score)
 
 fn bench_max_score():
     var board = Board[values, 19, max_stones, 8]()
     var score = Score(0)
     for _ in range(1000):
         score +=board.max_score(first)
+    keep(score)
 
 fn bench_top_places():
     var board = Board[values, 19, max_stones, 20]()
