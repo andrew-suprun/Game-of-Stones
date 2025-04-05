@@ -250,6 +250,18 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             }
         }
 
+        fn maxScore(self: Self, player: Player) Score {
+            const idx: usize = @intCast(@intFromEnum(player));
+            var r = -std.math.inf(Score);
+            for (self.scores, 0..) |score, i| {
+                const playerScore = score[idx];
+                if (r < playerScore and self.places[i] == .none) {
+                    r = playerScore;
+                }
+            }
+            return r;
+        }
+
         fn boardValue(self: Self) Score {
             var value: Score = 0;
             for (0..size) |y| {
@@ -430,6 +442,7 @@ pub fn main() !void {
 
     const B = Board(19, 6);
     var board = B.init(allocator);
+    var minDur: u64 = std.math.maxInt(u64);
     var timer = try std.time.Timer.start();
     for (0..10) |_| {
         for (0..1_000) |_| {
@@ -437,6 +450,26 @@ pub fn main() !void {
             std.mem.doNotOptimizeAway(board);
         }
         const dur = timer.lap();
-        pr("{d} msec\n", .{@as(f64, @floatFromInt(dur)) / 1_000_000});
+        if (minDur > dur) {
+            minDur = dur;
+        }
     }
+    pr("updateRow:  {d} msec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000});
+
+    minDur = std.math.maxInt(u64);
+    timer = try std.time.Timer.start();
+    for (0..10) |_| {
+        var score: Score = 0;
+        for (0..1_000) |_| {
+            board.placeStone(Place{ .x = 9, .y = 9 }, .first);
+            score += board.maxScore(.first);
+            board.removeStone();
+            std.mem.doNotOptimizeAway(score);
+        }
+        const dur = timer.lap();
+        if (minDur > dur) {
+            minDur = dur;
+        }
+    }
+    pr("placeStone: {d} msec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000});
 }
