@@ -96,9 +96,10 @@ test "heapAdd" {
 // Benchmark
 pub fn main() !void {
     var heap = Heap(isize, 20, testLess).init();
-    var timer = try std.time.Timer.start();
 
-    for (0..5) |_| {
+    var minDur: u64 = std.math.maxInt(u64);
+    var timer = try std.time.Timer.start();
+    for (0..10) |_| {
         for (0..1_000_000) |_| {
             heap.clear();
             for (0..100) |i| {
@@ -107,6 +108,9 @@ pub fn main() !void {
             std.mem.doNotOptimizeAway(heap);
         }
         const dur = timer.lap();
-        std.debug.print("{d} sec\n", .{@as(f64, @floatFromInt(dur)) / 1_000_000_000});
+        if (minDur > dur) {
+            minDur = dur;
+        }
     }
+    std.debug.print("heap:       {d} sec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000_000});
 }
