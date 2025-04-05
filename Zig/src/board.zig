@@ -27,7 +27,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
         pub const Player = enum { first, second };
 
         const Self = @This();
-        const Stone = enum(i8) { none, black, white = win_stones };
+        const Stone = enum(usize) { none, black, white = win_stones };
         const value_table = Self.valueTable();
         const score_table = Self.scoreTable();
 

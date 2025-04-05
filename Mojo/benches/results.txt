@@ -4,11 +4,17 @@ List        SIMD Int   0.009371578125
 InlineArray SIMD Float 0.012925771739130435
 List        SIMD Float 0.009504345238095239
 
---- board (ms/1000) ---
-update_row  0.04155707043618181
-place_stone 0.1879696
-max_score   0.004164965673388455
-top_places  1.8669559999999998
+--- board (ms/1000) --- unsafe
+update_row  0.03484181881512873
+place_stone 0.37531666145670517
+max_score   0.2000372
+top_places  1.813017
+
+--- board (ms/1000) --- ASSERT=all
+update_row  0.09546080609330372
+place_stone 0.6838504699515807
+max_score   0.1848671
+top_places  2.6929284116331096
 
 --- connect6 (ms/1000) ---
 top_moves 243.6051111111111
