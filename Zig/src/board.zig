@@ -145,8 +145,8 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
                 for (0..size) |x| {
                     const stone = self.places[y * size + x];
                     switch (stone) {
-                        .black => pr(" X", .{}),
-                        .white => pr(" O", .{}),
+                        .black => if (x == 0) pr(" X", .{}) else pr("─X", .{}),
+                        .white => if (x == 0) pr(" O", .{}) else pr("─O", .{}),
                         .none => {
                             switch (y) {
                                 0 => {
@@ -189,7 +189,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             self.printScoresForPlayer(.second);
         }
 
-        pub fn printScoresForPlayer(self: Self, player: Player) void {
+        fn printScoresForPlayer(self: Self, player: Player) void {
             const idx: usize = @intCast(@intFromEnum(player));
             pr("\n   │", .{});
             for (0..size) |i| {
@@ -227,7 +227,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
         fn updateRow(self: *Self, start: usize, delta: usize, n: usize, scores: [win_stones * win_stones + 1]Scores) void {
             for (0..win_stones - 1 + n) |ii| {
                 const offset: usize = start + ii * delta;
-                self.history.append(.{ .offset = offset, .scores = self.scores[ii] }) catch {};
+                self.history.append(.{ .offset = offset, .scores = self.scores[offset] }) catch {};
             }
 
             var offset = start;
@@ -373,56 +373,13 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
     };
 }
 
-test "updateRow" {
-    const B = Board(19, 6);
-    var board = B.init(std.testing.allocator);
-    board.updateRow(18, 18, 6, B.score_table[0]);
-    for (0..19) |y| {
-        for (0..19) |x| {
-            pr("{d:3}", .{board.scores[y * 19 + x][0]});
-        }
-        pr("\n", .{});
-    }
-    board.deinit();
-}
-
-test "print_score_table" {
-    const board = Board(19, 6).init(std.testing.allocator);
-    pr("{any}\n", .{Board(19, 5).score_table});
-    for (0..19) |y| {
-        for (0..19) |x| {
-            pr("{d:3}", .{board.scores[y * 19 + x][0]});
-        }
-        pr("\n", .{});
-    }
-}
-
-fn testBoardValue(place: Place, player: Board(19, 6).Player, expected: Score) !void {
-    const B = Board(19, 6);
-    var board = B.init(std.testing.allocator);
-    defer board.deinit();
-    board.placeStone(place, player);
-    const value = board.boardValue();
-    try std.testing.expect(value == expected);
-}
-
-test "boardValue" {
-    try testBoardValue(Place{ .x = 9, .y = 9 }, .first, 24);
-    try testBoardValue(Place{ .x = 9, .y = 9 }, .second, -24);
-    try testBoardValue(Place{ .x = 0, .y = 0 }, .first, 3);
-    try testBoardValue(Place{ .x = 0, .y = 18 }, .first, 3);
-    try testBoardValue(Place{ .x = 18, .y = 0 }, .first, 3);
-    try testBoardValue(Place{ .x = 18, .y = 18 }, .first, 3);
-}
-
 test "placeStone" {
-    var rng = std.Random.DefaultPrng.init(0);
+    var rng = std.Random.DefaultPrng.init(2);
     var board = Board(19, 6).init(std.testing.allocator);
-    board.print();
-    board.printScores();
     defer board.deinit();
+
     var value: Score = 0;
-    for (0..200) |_| {
+    for (1..360) |_| {
         var failure = false;
         for (0..19) |y| {
             for (0..19) |x| {
@@ -432,12 +389,14 @@ test "placeStone" {
                     var expected = board.boardValue() - value;
                     board.removeStone();
                     if (actual[0] != expected) {
+                        pr("Black: x={d} y={d} actual={d} expected={d}\n", .{ x, y, actual[0], expected });
                         failure = true;
                     }
                     board.placeStone(Place{ .x = x, .y = y }, .second);
-                    expected = board.boardValue() - value;
+                    expected = value - board.boardValue();
                     board.removeStone();
                     if (actual[1] != expected) {
+                        pr("White: x={d} y={d} actual={d} expected={d}\n", .{ x, y, actual[1], expected });
                         failure = true;
                     }
                 }
@@ -446,13 +405,17 @@ test "placeStone" {
         if (failure) {
             board.print();
             board.printScores();
-            return;
+            try std.testing.expect(false);
         }
         const x: usize = rng.next() % 19;
         const y: usize = rng.next() % 19;
         if (board.places[y * 19 + x] == .none) {
             const turn: u1 = @truncate(rng.next());
-            value += board.scores[y * 19 + x][turn];
+            if (turn == 0) {
+                value += board.scores[y * 19 + x][0];
+            } else {
+                value -= board.scores[y * 19 + x][1];
+            }
             board.placeStone(Place{ .x = x, .y = y }, @enumFromInt(turn));
         }
     }
