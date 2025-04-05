@@ -1,6 +1,7 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
+const print = std.debug.print;
 
 const Score = f32;
 const Scores = @Vector(2, Score);
@@ -160,21 +161,88 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
             }
         }
 
-        // fn boardValue(self: Self) Score {
-        //     var value: Score = 0;
-        //     for (0..size) |y| {
-        //         var stones: i8 = 0;
-        //         for (0..win_stones - 1) |x| {
-        //             stones += self.places[y * size + x];
-        //         }
-        //         for (0..size - win_stones + 1) |x| {
-        //             stones += self.places[y * size + x + win_stones - 1];
-        //             value += self.calc_value(stones, self.value_table);
-        //             stones -= self.places[y * size + x];
-        //         }
-        //     }
-        //     return value;
-        // }
+        fn boardValue(self: Self) Score {
+            var value: Score = 0;
+            for (0..size) |y| {
+                var stones: usize = 0;
+                for (0..win_stones - 1) |x| {
+                    stones += self.getPlaceAsUint(y * size + x);
+                }
+                for (0..size - win_stones + 1) |x| {
+                    stones += self.getPlaceAsUint(y * size + x + win_stones - 1);
+                    value += Self.calcValue(stones);
+                    stones -= self.getPlaceAsUint(y * size + x);
+                }
+            }
+
+            for (0..size) |x| {
+                var stones: usize = 0;
+                for (0..win_stones - 1) |y| {
+                    stones += self.getPlaceAsUint(y * size + x);
+                }
+                for (0..size - win_stones + 1) |y| {
+                    stones += self.getPlaceAsUint((y + win_stones - 1) * size + x);
+                    value += Self.calcValue(stones);
+                    stones -= self.getPlaceAsUint(y * size + x);
+                }
+            }
+
+            for (0..size - win_stones + 1) |y| {
+                var stones: usize = 0;
+                for (0..win_stones - 1) |x| {
+                    stones += self.getPlaceAsUint((x + y) * size + x);
+                }
+                for (0..size - win_stones + 1 - y) |x| {
+                    stones += self.getPlaceAsUint((x + y + win_stones - 1) * size + x + win_stones - 1);
+                    value += Self.calcValue(stones);
+                    stones -= self.getPlaceAsUint((x + y) * size + x);
+                }
+            }
+
+            for (1..size - win_stones + 1) |x| {
+                var stones: usize = 0;
+                for (0..win_stones - 1) |y| {
+                    stones += self.getPlaceAsUint(y * size + x + y);
+                }
+                for (0..size - win_stones + 1 - x) |y| {
+                    stones += self.getPlaceAsUint((y + win_stones - 1) * size + x + y + win_stones - 1);
+                    value += Self.calcValue(stones);
+                    stones -= self.getPlaceAsUint(y * size + x + y);
+                }
+            }
+
+            for (0..size - win_stones + 1) |y| {
+                var stones: usize = 0;
+                for (0..win_stones - 1) |x| {
+                    stones += self.getPlaceAsUint((x + y) * size + size - 1 - x);
+                }
+                for (0..size - win_stones + 1 - y) |x| {
+                    stones += self.getPlaceAsUint((x + y + win_stones - 1) * size + size - 1 - x - win_stones + 1);
+                    value += Self.calcValue(stones);
+                    stones -= self.getPlaceAsUint((x + y) * size + size - 1 - x);
+                }
+            }
+
+            for (1..size - win_stones + 1) |x| {
+                var stones: usize = 0;
+                for (0..win_stones - 1) |y| {
+                    stones += self.getPlaceAsUint(y * size + size - 1 - x - y);
+                }
+                for (0..size - win_stones + 1 - x) |y| {
+                    stones += self.getPlaceAsUint((y + win_stones - 1) * size + size - win_stones - x - y);
+                    value += Self.calcValue(stones);
+                    stones -= self.getPlaceAsUint(y * size + size - 1 - x - y);
+                }
+            }
+
+            return value;
+        }
+
+        fn calcValue(stones: usize) Score {
+            const black = stones % win_stones;
+            const white = stones / win_stones;
+            return if (white == 0) Self.value_table[black] else if (black == 0) -Self.value_table[white] else 0;
+        }
 
         fn valueTable() [win_stones + 1]Score {
             return score_blk: {
@@ -222,22 +290,40 @@ test "updateRow" {
     board.updateRow(18, 18, 6, B.score_table[0]);
     for (0..19) |y| {
         for (0..19) |x| {
-            std.debug.print("{d} ", .{board.scores[y * 19 + x][0]});
+            print("{d} ", .{board.scores[y * 19 + x][0]});
         }
-        std.debug.print("\n", .{});
+        print("\n", .{});
     }
     board.deinit();
 }
 
 test "print_score_table" {
     const board = Board(19, 6).init(std.testing.allocator);
-    std.debug.print("{any}\n", .{Board(19, 5).score_table});
+    print("{any}\n", .{Board(19, 5).score_table});
     for (0..19) |y| {
         for (0..19) |x| {
-            std.debug.print("{d} ", .{board.scores[y * 19 + x][0]});
+            print("{d} ", .{board.scores[y * 19 + x][0]});
         }
-        std.debug.print("\n", .{});
+        print("\n", .{});
     }
+}
+
+fn testBoardValue(place: Place, player: Board(19, 6).Player, expected: Score) !void {
+    const B = Board(19, 6);
+    var board = B.init(std.testing.allocator);
+    board.placeStone(place, player);
+    const value = board.boardValue();
+    board.deinit();
+    try std.testing.expect(value == expected);
+}
+
+test "boardValue" {
+    try testBoardValue(Place{ .x = 9, .y = 9 }, .first, 24);
+    try testBoardValue(Place{ .x = 9, .y = 9 }, .second, -24);
+    try testBoardValue(Place{ .x = 0, .y = 0 }, .first, 3);
+    try testBoardValue(Place{ .x = 0, .y = 18 }, .first, 3);
+    try testBoardValue(Place{ .x = 18, .y = 0 }, .first, 3);
+    try testBoardValue(Place{ .x = 18, .y = 18 }, .first, 3);
 }
 
 // Benchmarks
@@ -253,10 +339,9 @@ pub fn main() !void {
     for (0..10) |_| {
         for (0..1_000) |_| {
             board.updateRow(18, 18, 6, B.score_table[0]);
-            // _ = arena.reset(.free_all);
-            // std.mem.doNotOptimizeAway(board);
+            std.mem.doNotOptimizeAway(board);
         }
         const dur = timer.lap();
-        std.debug.print("{d} msec\n", .{@as(f64, @floatFromInt(dur)) / 1_000_000});
+        print("{d} msec\n", .{@as(f64, @floatFromInt(dur)) / 1_000_000});
     }
 }

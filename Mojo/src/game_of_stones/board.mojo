@@ -413,7 +413,6 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 stones -= self[size - 1 - x - y, y]
 
     fn calc_value(self, stones: Int8, scores: List[Score], out value: Score):
-        value = 0
         var black = stones % win_stones
         var white = stones // win_stones
         if white == 0:
