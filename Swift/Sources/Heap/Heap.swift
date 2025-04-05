@@ -1,6 +1,7 @@
 import Foundation
 
-public func heap_add<T: Comparable>(
+ @inlinable 
+ public func heap_add<T: Comparable>(
     _ item: T, to items: inout [T], maxItems: Int, less: (T, T) -> Bool
 ) {
     if items.count == maxItems {
@@ -15,6 +16,7 @@ public func heap_add<T: Comparable>(
     siftUp(&items, less)
 }
 
+@inlinable 
 func siftUp<T: Comparable>(_ items: inout [T], _ less: (T, T) -> Bool) {
     var childIdx = items.count - 1
     let child = items[childIdx]
@@ -26,6 +28,7 @@ func siftUp<T: Comparable>(_ items: inout [T], _ less: (T, T) -> Bool) {
     items[childIdx] = child
 }
 
+@inlinable 
 func siftDown<T: Comparable>(_ items: inout [T], _ less: (T, T) -> Bool) {
     var idx = 0
     let elem = items[idx]
