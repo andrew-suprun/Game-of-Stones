@@ -6,6 +6,7 @@ const pr = std.debug.print;
 const Heap = @import("heap.zig").Heap;
 
 pub const Player = enum { first, second };
+pub const Decision = enum { no_decision, first_win, second_win, draw };
 pub const Score = f32;
 pub const win = std.math.inf(Score);
 pub const loss = -std.math.inf(Score);
@@ -176,6 +177,83 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             return self.heap.items();
         }
 
+        pub fn decision(self: Self) Decision {
+            for (0..size) |a| {
+                var hStones = Scores{ 0, 0 };
+                var vStones = Scores{ 0, 0 };
+                for (0..win_stones - 1) |b| {
+                    hStones += counts(self.places[a * size + b]);
+                    vStones += counts(self.places[b * size + a]);
+                }
+                for (0..size - win_stones + 1) |b| {
+                    hStones += counts(self.places[a * size + b + win_stones - 1]);
+                    vStones += counts(self.places[(b + win_stones - 1) * size + a]);
+                    if (hStones[0] == win_stones or vStones[0] == win_stones) {
+                        return .first_win;
+                    } else if (hStones[1] == win_stones or vStones[1] == win_stones) {
+                        return .second_win;
+                    }
+                    hStones -= counts(self.places[a * size + b]);
+                    vStones -= counts(self.places[b * size + a]);
+                }
+            }
+
+            for (0..size - win_stones + 1) |y| {
+                var stones1 = Scores{ 0, 0 };
+                var stones2 = Scores{ 0, 0 };
+                for (0..win_stones - 1) |x| {
+                    stones1 += counts(self.places[(y + x) * size + x]);
+                    stones2 += counts(self.places[(x + y) * size + size - 1 - x]);
+                }
+                for (0..size - win_stones + 1 - y) |x| {
+                    stones1 += counts(self.places[(x + y + win_stones - 1) * size + x + win_stones - 1]);
+                    stones2 += counts(self.places[(x + y + win_stones - 1) * size + size - x - win_stones]);
+                    if (stones1[0] == win_stones or stones2[0] == win_stones) {
+                        return .first_win;
+                    } else if (stones1[1] == win_stones or stones2[1] == win_stones) {
+                        return .second_win;
+                    }
+                    stones1 -= counts(self.places[(y + x) * size + x]);
+                    stones2 -= counts(self.places[(x + y) * size + size - 1 - x]);
+                }
+            }
+
+            for (1..size - win_stones + 1) |x| {
+                var stones1 = Scores{ 0, 0 };
+                var stones2 = Scores{ 0, 0 };
+                for (0..win_stones - 1) |y| {
+                    stones1 += counts(self.places[y * size + x + y]);
+                    stones2 += counts(self.places[y * size + size - 1 - x - y]);
+                }
+                for (0..size - win_stones + 1 - x) |y| {
+                    stones1 += counts(self.places[(y + win_stones - 1) * size + x + y + win_stones - 1]);
+                    stones2 += counts(self.places[(y + win_stones - 1) * size + size - win_stones - x - y]);
+                    if (stones1[0] == win_stones or stones2[0] == win_stones) {
+                        return .first_win;
+                    } else if (stones1[1] == win_stones or stones2[1] == win_stones) {
+                        return .second_win;
+                    }
+                    stones1 -= counts(self.places[y * size + x + y]);
+                    stones2 -= counts(self.places[y * size + size - 1 - x - y]);
+                }
+            }
+
+            for (0..size * size) |offset| {
+                if (self.places[offset] == .none and self.scores[offset][0] > 1) {
+                    return .no_decision;
+                }
+            }
+            return .no_decision;
+        }
+
+        inline fn counts(stone: Stone) Scores {
+            return switch (stone) {
+                .none => Scores{ 0, 0 },
+                .black => Scores{ 1, 0 },
+                .white => Scores{ 0, 1 },
+            };
+        }
+
         pub fn print(self: Self) void {
             pr("\n  ", .{});
 
@@ -219,7 +297,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
                         },
                     }
                 }
-                pr("{:2}\n", .{y + 1});
+                pr(" {:2}\n", .{y + 1});
             }
             pr("  ", .{});
             for (0..size) |i| {
@@ -492,6 +570,131 @@ test "topPlaces" {
     for (places2) |place| {
         try std.testing.expect(place.score >= 51);
     }
+}
+
+test "decision" {
+    var board = Board(19, 6, 8).init(std.testing.allocator);
+    defer board.deinit();
+    board.placeStone(Place{ .x = 0, .y = 0 }, .first);
+    board.placeStone(Place{ .x = 0, .y = 1 }, .first);
+    board.placeStone(Place{ .x = 0, .y = 2 }, .first);
+    board.placeStone(Place{ .x = 0, .y = 3 }, .first);
+    board.placeStone(Place{ .x = 0, .y = 4 }, .first);
+    board.placeStone(Place{ .x = 1, .y = 1 }, .first);
+    board.placeStone(Place{ .x = 2, .y = 2 }, .first);
+    board.placeStone(Place{ .x = 3, .y = 3 }, .first);
+    board.placeStone(Place{ .x = 4, .y = 4 }, .first);
+    board.placeStone(Place{ .x = 1, .y = 0 }, .first);
+    board.placeStone(Place{ .x = 2, .y = 0 }, .first);
+    board.placeStone(Place{ .x = 3, .y = 0 }, .first);
+    board.placeStone(Place{ .x = 4, .y = 0 }, .first);
+
+    board.placeStone(Place{ .x = 18, .y = 0 }, .second);
+    board.placeStone(Place{ .x = 18, .y = 1 }, .second);
+    board.placeStone(Place{ .x = 18, .y = 2 }, .second);
+    board.placeStone(Place{ .x = 18, .y = 3 }, .second);
+    board.placeStone(Place{ .x = 18, .y = 4 }, .second);
+    board.placeStone(Place{ .x = 17, .y = 1 }, .second);
+    board.placeStone(Place{ .x = 16, .y = 2 }, .second);
+    board.placeStone(Place{ .x = 15, .y = 3 }, .second);
+    board.placeStone(Place{ .x = 14, .y = 4 }, .second);
+    board.placeStone(Place{ .x = 17, .y = 0 }, .second);
+    board.placeStone(Place{ .x = 16, .y = 0 }, .second);
+    board.placeStone(Place{ .x = 15, .y = 0 }, .second);
+    board.placeStone(Place{ .x = 14, .y = 0 }, .second);
+
+    board.placeStone(Place{ .x = 18, .y = 18 }, .first);
+    board.placeStone(Place{ .x = 17, .y = 18 }, .first);
+    board.placeStone(Place{ .x = 16, .y = 18 }, .first);
+    board.placeStone(Place{ .x = 15, .y = 18 }, .first);
+    board.placeStone(Place{ .x = 14, .y = 18 }, .first);
+    board.placeStone(Place{ .x = 18, .y = 17 }, .first);
+    board.placeStone(Place{ .x = 18, .y = 16 }, .first);
+    board.placeStone(Place{ .x = 18, .y = 15 }, .first);
+    board.placeStone(Place{ .x = 18, .y = 14 }, .first);
+    board.placeStone(Place{ .x = 17, .y = 17 }, .first);
+    board.placeStone(Place{ .x = 16, .y = 16 }, .first);
+    board.placeStone(Place{ .x = 15, .y = 15 }, .first);
+    board.placeStone(Place{ .x = 14, .y = 14 }, .first);
+
+    board.placeStone(Place{ .x = 0, .y = 18 }, .second);
+    board.placeStone(Place{ .x = 1, .y = 18 }, .second);
+    board.placeStone(Place{ .x = 2, .y = 18 }, .second);
+    board.placeStone(Place{ .x = 3, .y = 18 }, .second);
+    board.placeStone(Place{ .x = 4, .y = 18 }, .second);
+    board.placeStone(Place{ .x = 1, .y = 17 }, .second);
+    board.placeStone(Place{ .x = 2, .y = 16 }, .second);
+    board.placeStone(Place{ .x = 3, .y = 15 }, .second);
+    board.placeStone(Place{ .x = 4, .y = 14 }, .second);
+    board.placeStone(Place{ .x = 0, .y = 17 }, .second);
+    board.placeStone(Place{ .x = 0, .y = 16 }, .second);
+    board.placeStone(Place{ .x = 0, .y = 15 }, .second);
+    board.placeStone(Place{ .x = 0, .y = 14 }, .second);
+
+    board.print();
+
+    pr("\n 1: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .no_decision);
+
+    board.placeStone(Place{ .x = 0, .y = 5 }, .first);
+    pr(" 2: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .first_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 5, .y = 5 }, .first);
+    pr(" 3: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .first_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 5, .y = 0 }, .first);
+    pr(" 4: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .first_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 18, .y = 5 }, .second);
+    pr(" 5: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .second_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 13, .y = 5 }, .second);
+    pr(" 6: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .second_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 13, .y = 0 }, .second);
+    pr(" 7: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .second_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 13, .y = 18 }, .first);
+    pr(" 8: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .first_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 18, .y = 13 }, .first);
+    pr(" 9: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .first_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 13, .y = 13 }, .first);
+    pr("10: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .first_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 5, .y = 18 }, .second);
+    pr("11: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .second_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 5, .y = 13 }, .second);
+    pr("12: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .second_win);
+    board.removeStone();
+
+    board.placeStone(Place{ .x = 0, .y = 13 }, .second);
+    pr("13: {any}\n", .{board.decision()});
+    try std.testing.expect(board.decision() == .second_win);
+    board.removeStone();
 }
 
 // Benchmarks

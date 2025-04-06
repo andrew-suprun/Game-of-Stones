@@ -70,7 +70,7 @@ fn testLess(i: usize, j: usize) bool {
 }
 
 test "heapAdd" {
-    var heap = Heap(usize, 20, testLess).init();
+    var heap = Heap(usize, 20, testLess){};
 
     for (0..100) |i| {
         const v: usize = i * 17 % 100;
@@ -88,7 +88,7 @@ test "heapAdd" {
 
 // Benchmark
 pub fn main() !void {
-    var heap: Heap(usize, 20, testLess) = .{};
+    var heap = Heap(usize, 20, testLess){};
 
     var minDur: u64 = std.math.maxInt(u64);
     var timer = try std.time.Timer.start();
