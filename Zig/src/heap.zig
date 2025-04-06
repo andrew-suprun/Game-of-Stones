@@ -72,15 +72,15 @@ pub fn Heap(comptime T: type, comptime size: usize, comptime less: fn (T, T) boo
     };
 }
 
-fn testLess(i: isize, j: isize) bool {
+fn testLess(i: usize, j: usize) bool {
     return i < j;
 }
 
 test "heapAdd" {
-    var heap = Heap(isize, 20, testLess).init();
+    var heap = Heap(usize, 20, testLess).init();
 
     for (0..100) |i| {
-        const v: isize = @intCast(i * 17 % 100);
+        const v: usize = i * 17 % 100;
         heap.add(v);
     }
 
@@ -95,7 +95,7 @@ test "heapAdd" {
 
 // Benchmark
 pub fn main() !void {
-    var heap = Heap(isize, 20, testLess).init();
+    var heap = Heap(usize, 20, testLess).init();
 
     var minDur: u64 = std.math.maxInt(u64);
     var timer = try std.time.Timer.start();
@@ -103,7 +103,7 @@ pub fn main() !void {
         for (0..1_000_000) |_| {
             heap.clear();
             for (0..100) |i| {
-                heap.add(@intCast(i * 17 % 100));
+                heap.add(i * 17 % 100);
             }
             std.mem.doNotOptimizeAway(heap);
         }

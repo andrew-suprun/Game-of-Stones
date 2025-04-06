@@ -3,11 +3,11 @@ from benchmark import benchmark, Unit
 from game_of_stones.heap import add, Heap
 
 
-fn bench():
-    @parameter
-    fn less(a: Int, b: Int, out r: Bool):
-        r = a < b
+fn less(a: Int, b: Int, out r: Bool) capturing:
+    r = a < b
 
+
+fn bench():
     var heap = List[Int]()
 
     for _ in range(1_000_000):
@@ -17,10 +17,6 @@ fn bench():
 
 
 fn bench2():
-    @parameter
-    fn less(a: Int, b: Int, out r: Bool):
-        r = a < b
-
     var heap = Heap[Int, 20, less]()
 
     for _ in range(1_000_000):

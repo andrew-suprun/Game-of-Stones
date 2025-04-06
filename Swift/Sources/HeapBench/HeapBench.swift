@@ -8,7 +8,7 @@ for _ in 0..<5 {
     for _ in 0..<1_000_000 {
         heap.removeAll(keepingCapacity: true)
         for i in 0..<100 {
-            heap_add(100 - i, to: &heap, maxItems: 20, less: <)
+            heap_add(i * 17 % 100, to: &heap, maxItems: 20, less: <)
         }
     }
     let end = Date.now
