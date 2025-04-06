@@ -3,8 +3,27 @@ const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 const pr = std.debug.print;
 
-const Score = f32;
-const Scores = @Vector(2, Score);
+pub const Score = f32;
+pub const win = std.math.inf(Score);
+pub const loss = -std.math.inf(Score);
+pub const draw: Score = 0.5;
+pub const Scores = @Vector(2, Score);
+
+pub fn isWin(score: Score) bool {
+    return std.math.isPositiveInf(score);
+}
+
+pub fn isLoss(score: Score) bool {
+    return std.math.isNegativeInf(score);
+}
+
+pub fn isDraw(score: Score) bool {
+    return score == 0.5;
+}
+
+pub fn isDecisive(score: Score) bool {
+    return score == 0.5 or std.math.isInf(score);
+}
 
 const Place = struct {
     x: usize,
@@ -252,7 +271,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
 
         fn maxScore(self: Self, player: Player) Score {
             const idx: usize = @intCast(@intFromEnum(player));
-            var r = -std.math.inf(Score);
+            var r = loss;
             for (self.scores, 0..) |score, i| {
                 const playerScore = score[idx];
                 if (r < playerScore and self.places[i] == .none) {
@@ -353,7 +372,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
                 for (2..win_stones) |i| {
                     list[i] = list[i - 1] * 5;
                 }
-                list[win_stones] = std.math.inf(Score);
+                list[win_stones] = win;
                 break :score_blk list;
             };
         }
