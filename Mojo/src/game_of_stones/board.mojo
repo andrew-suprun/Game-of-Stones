@@ -155,78 +155,55 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 r = score
 
     fn decision(self, out decision: String):
-        for y in range(size):
-            var stones = SIMD[DType.int64, 2](0, 0)
-            for x in range(win_stones - 1):
-                stones += self.counts(self[x, y])
-            for x in range(size - win_stones + 1):
-                stones += self.counts(self[x + win_stones - 1, y])
-                if stones[0] == win_stones:
+        for a in range(size):
+            var h_stones = SIMD[DType.int64, 2](0, 0)
+            var v_stones = SIMD[DType.int64, 2](0, 0)
+            for b in range(win_stones - 1):
+                h_stones += self.counts(self[b, a])
+                v_stones += self.counts(self[a, b])
+                print("1:", b, a, h_stones)
+            for b in range(size - win_stones + 1):
+                h_stones += self.counts(self[b + win_stones - 1, a])
+                v_stones += self.counts(self[a, b + win_stones - 1])
+                print("2:", b, a + win_stones - 1, h_stones)
+                if h_stones[0] == win_stones or v_stones[0] == win_stones:
                     return "first-win"
-                elif stones[1] == win_stones:
+                elif h_stones[1] == win_stones or v_stones[1] == win_stones:
                     return "second-win"
-                stones -= self.counts(self[x, y])
-
-        for x in range(size):
-            var stones = SIMD[DType.int64, 2](0, 0)
-            for y in range(win_stones - 1):
-                stones += self.counts(self[x, y])
-            for y in range(size - win_stones + 1):
-                stones += self.counts(self[x, y + win_stones - 1])
-                if stones[0] == win_stones:
-                    return "first-win"
-                elif stones[1] == win_stones:
-                    return "second-win"
-                stones -= self.counts(self[x, y])
+                h_stones -= self.counts(self[b, a])
+                v_stones -= self.counts(self[a, b])
 
         for y in range(size - win_stones + 1):
-            var stones = SIMD[DType.int64, 2](0, 0)
+            var stones1 = SIMD[DType.int64, 2](0, 0)
+            var stones2 = SIMD[DType.int64, 2](0, 0)
             for x in range(win_stones - 1):
-                stones += self.counts(self[x, y+x])
+                stones1 += self.counts(self[x, y+x])
+                stones2 += self.counts(self[size - 1 - x, x + y])
             for x in range(size - win_stones + 1 - y):
-                stones += self.counts(self[x + win_stones - 1, x + y + win_stones - 1])
-                if stones[0] == win_stones:
+                stones1 += self.counts(self[x + win_stones - 1, x + y + win_stones - 1])
+                stones2 += self.counts(self[size - x - win_stones, x + y + win_stones - 1])
+                if stones1[0] == win_stones or stones2[0] == win_stones:
                     return "first-win"
-                elif stones[1] == win_stones:
+                elif stones1[1] == win_stones or stones2[1] == win_stones:
                     return "second-win"
-                stones -= self.counts(self[x, x+y])
+                stones1 -= self.counts(self[x, x+y])
+                stones2 -= self.counts(self[size - 1 - x, x + y])
 
         for x in range(1, size - win_stones + 1):
-            var stones = SIMD[DType.int64, 2](0, 0)
+            var stones1 = SIMD[DType.int64, 2](0, 0)
+            var stones2 = SIMD[DType.int64, 2](0, 0)
             for y in range(win_stones - 1):
-                stones += self.counts(self[x + y, y])
+                stones1 += self.counts(self[x + y, y])
+                stones2 += self.counts(self[size - 1 - x - y, y])
             for y in range(size - win_stones + 1 - x):
-                stones += self.counts(self[x + y + win_stones - 1, y + win_stones - 1])
-                if stones[0] == win_stones:
+                stones1 += self.counts(self[x + y + win_stones - 1, y + win_stones - 1])
+                stones2 += self.counts(self[size - win_stones - x - y, y + win_stones - 1])
+                if stones1[0] == win_stones or stones2[0] == win_stones:
                     return "first-win"
-                elif stones[1] == win_stones:
+                elif stones1[1] == win_stones or stones2[1] == win_stones:
                     return "second-win"
-                stones -= self.counts(self[x+y, y])
-
-
-        for y in range(size - win_stones + 1):
-            var stones = SIMD[DType.int64, 2](0, 0)
-            for x in range(win_stones - 1):
-                stones += self.counts(self[size - 1 - x, x + y])
-            for x in range(size - win_stones + 1 - y):
-                stones += self.counts(self[size - x - win_stones, x + y + win_stones - 1])
-                if stones[0] == win_stones:
-                    return "first-win"
-                elif stones[1] == win_stones:
-                    return "second-win"
-                stones -= self.counts(self[size - 1 - x, x + y])
-
-        for x in range(1, size - win_stones + 1):
-            var stones = SIMD[DType.int64, 2](0, 0)
-            for y in range(win_stones - 1):
-                stones += self.counts(self[size - 1 - x - y, y])
-            for y in range(size - win_stones + 1 - x):
-                stones += self.counts(self[size - win_stones - x - y, y + win_stones - 1])
-                if stones[0] == win_stones:
-                    return "first-win"
-                elif stones[1] == win_stones:
-                    return "second-win"
-                stones -= self.counts(self[size - 1 - x - y, y])
+                stones1 -= self.counts(self[x + y, y])
+                stones2 -= self.counts(self[size - 1 - x - y, y])
 
         for y in range(size):
             for x in range(size):
@@ -419,4 +396,5 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
             return scores[black]
         elif black == 0:
             return -scores[white]
+        return 0
 
