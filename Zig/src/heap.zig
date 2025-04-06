@@ -4,15 +4,8 @@ pub fn Heap(comptime T: type, comptime size: usize, comptime less: fn (T, T) boo
     return struct {
         const Self = @This();
 
-        storage: [size]T,
-        len: usize,
-
-        pub fn init() Self {
-            return Self{
-                .storage = undefined,
-                .len = 0,
-            };
-        }
+        storage: [size]T = undefined,
+        len: usize = 0,
 
         pub fn add(self: *Self, item: T) void {
             if (self.len == size) {
@@ -95,7 +88,7 @@ test "heapAdd" {
 
 // Benchmark
 pub fn main() !void {
-    var heap = Heap(usize, 20, testLess).init();
+    var heap: Heap(usize, 20, testLess) = .{};
 
     var minDur: u64 = std.math.maxInt(u64);
     var timer = try std.time.Timer.start();

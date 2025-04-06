@@ -3,6 +3,9 @@ const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 const pr = std.debug.print;
 
+const Heap = @import("heap.zig").Heap;
+
+pub const Player = enum { first, second };
 pub const Score = f32;
 pub const win = std.math.inf(Score);
 pub const loss = -std.math.inf(Score);
@@ -41,10 +44,17 @@ const ScoreMark = struct {
     history_idx: usize,
 };
 
-pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) type {
-    return struct {
-        pub const Player = enum { first, second };
+pub const PlaceScore = struct {
+    place: Place,
+    score: Score,
+};
 
+fn less(a: PlaceScore, b: PlaceScore) bool {
+    return a.score < b.score;
+}
+
+pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max_places: comptime_int) type {
+    return struct {
         const Self = @This();
         const Stone = enum(usize) { none, black, white = win_stones };
         const value_table = Self.valueTable();
@@ -72,6 +82,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
         },
         history: ArrayList(PlaceScores),
         history_indices: ArrayList(ScoreMark),
+        heap: Heap(PlaceScore, max_places, less) = .{},
 
         pub fn init(allocator: Allocator) Self {
             return Self{
@@ -148,6 +159,21 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
                 const h_scores = self.history.pop().?;
                 self.scores[h_scores.offset] = h_scores.scores;
             }
+        }
+
+        pub fn topPlaces(self: *Self, comptime turn: Player) []PlaceScore {
+            self.heap.clear();
+            for (0..size) |y| {
+                for (0..size) |x| {
+                    const offset = y * size + x;
+                    const scores = self.scores[offset];
+                    const score = if (turn == .first) scores[0] else scores[1];
+                    if (self.places[offset] == .none and score > 0) {
+                        self.heap.add(PlaceScore{ .place = Place{ .x = x, .y = y }, .score = score });
+                    }
+                }
+            }
+            return self.heap.items();
         }
 
         pub fn print(self: Self) void {
@@ -406,7 +432,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int) typ
 
 test "placeStone" {
     var rng = std.Random.DefaultPrng.init(2);
-    var board = Board(19, 6).init(std.testing.allocator);
+    var board = Board(19, 6, 8).init(std.testing.allocator);
     defer board.deinit();
 
     var value: Score = 0;
@@ -452,6 +478,22 @@ test "placeStone" {
     }
 }
 
+test "topPlaces" {
+    var board = Board(19, 6, 8).init(std.testing.allocator);
+    defer board.deinit();
+    board.placeStone(Place{ .x = 9, .y = 9 }, .first);
+    board.placeStone(Place{ .x = 8, .y = 9 }, .second);
+    board.placeStone(Place{ .x = 9, .y = 8 }, .second);
+    const places = board.topPlaces(.first);
+    for (places) |place| {
+        try std.testing.expect(place.score >= 36);
+    }
+    const places2 = board.topPlaces(.second);
+    for (places2) |place| {
+        try std.testing.expect(place.score >= 51);
+    }
+}
+
 // Benchmarks
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -459,7 +501,7 @@ pub fn main() !void {
 
     const allocator = arena.allocator();
 
-    const B = Board(19, 6);
+    const B = Board(19, 6, 20);
     var board = B.init(allocator);
     var minDur: u64 = std.math.maxInt(u64);
     var timer = try std.time.Timer.start();
@@ -491,4 +533,18 @@ pub fn main() !void {
         }
     }
     pr("placeStone: {d} msec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000});
+
+    minDur = std.math.maxInt(u64);
+    timer = try std.time.Timer.start();
+    for (0..10) |_| {
+        for (0..1_000) |_| {
+            const places = board.topPlaces(.first);
+            std.mem.doNotOptimizeAway(places);
+        }
+        const dur = timer.lap();
+        if (minDur > dur) {
+            minDur = dur;
+        }
+    }
+    pr("topPlaces : {d} msec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000});
 }

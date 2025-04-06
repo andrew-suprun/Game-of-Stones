@@ -1,13 +1,15 @@
 let boardSize = 19
 
-struct Board<Score: SIMDScalar & Numeric> {
+typealias Score = Float32
+
+struct Board {
     var places: [Int8] = Array(repeating: 0, count: boardSize * boardSize)
     var score = Score.zero
     let valueTable: ([SIMD2<Score>], [SIMD2<Score>])
-    let maxStones: Int  // TODO: compare performance vs. maxStones as static constant; both gomoku and connect6
+    let winStones: Int
 
     init(maxStones: Int, values: [Score]) {
-        self.maxStones = maxStones
+        self.winStones = maxStones
         self.valueTable = calcValueTable(values)
     }
 
