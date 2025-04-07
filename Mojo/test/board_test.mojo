@@ -40,7 +40,7 @@ fn test_place_stone() raises:
             board.place_stone(Place(x, y), turn)
 
 
-fn test_top_moves() raises:
+fn test_top_places() raises:
     var board = Board[values, 19, max_stones, 20]()
     board.place_stone(Place(9, 9), 0)
     board.place_stone(Place(8, 9), 1)

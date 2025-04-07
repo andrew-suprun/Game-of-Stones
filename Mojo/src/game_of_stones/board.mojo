@@ -161,11 +161,9 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
             for b in range(win_stones - 1):
                 h_stones += self.counts(self[b, a])
                 v_stones += self.counts(self[a, b])
-                print("1:", b, a, h_stones)
             for b in range(size - win_stones + 1):
                 h_stones += self.counts(self[b + win_stones - 1, a])
                 v_stones += self.counts(self[a, b + win_stones - 1])
-                print("2:", b, a + win_stones - 1, h_stones)
                 if h_stones[0] == win_stones or v_stones[0] == win_stones:
                     return "first-win"
                 elif h_stones[1] == win_stones or v_stones[1] == win_stones:
