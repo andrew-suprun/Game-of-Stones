@@ -3,10 +3,11 @@ const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 const pr = std.debug.print;
 
+const game = @import("game.zig");
+const Player = game.Player;
+const Decision = game.Decision;
 const Heap = @import("heap.zig").Heap;
 
-pub const Player = enum { first, second };
-pub const Decision = enum { no_decision, first_win, second_win, draw };
 pub const Score = f32;
 pub const win = std.math.inf(Score);
 pub const loss = -std.math.inf(Score);
@@ -29,7 +30,7 @@ pub fn isDecisive(score: Score) bool {
     return score == 0.5 or std.math.isInf(score);
 }
 
-const Place = struct {
+pub const Place = struct {
     x: usize,
     y: usize,
 };
@@ -56,11 +57,6 @@ fn less(a: PlaceScore, b: PlaceScore) bool {
 
 pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max_places: comptime_int) type {
     return struct {
-        const Self = @This();
-        const Stone = enum(usize) { none, black, white = win_stones };
-        const value_table = Self.valueTable();
-        const score_table = Self.scoreTable();
-
         score: Score = 0,
         places: [size * size]Stone = [1]Stone{.none} ** (size * size),
         scores: [size * size]Scores = scores_blk: {
@@ -84,6 +80,11 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
         history: ArrayList(PlaceScores),
         history_indices: ArrayList(ScoreMark),
         heap: Heap(PlaceScore, max_places, less) = .{},
+
+        const Self = @This();
+        const Stone = enum(usize) { none, black, white = win_stones };
+        const value_table = Self.valueTable();
+        const score_table = Self.scoreTable();
 
         pub fn init(allocator: Allocator) Self {
             return Self{
@@ -345,6 +346,10 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
 
         fn getPlace(self: Self, offset: usize) usize {
             return @intCast(@intFromEnum(self.places[offset]));
+        }
+
+        pub inline fn getScores(self: Self, place: Place) Scores {
+            return self.scores[place.y * size + place.x];
         }
 
         fn updateRow(self: *Self, start: usize, delta: usize, n: usize, scores: [win_stones * win_stones + 1]Scores) void {
