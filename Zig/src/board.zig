@@ -33,7 +33,34 @@ pub fn isDecisive(score: Score) bool {
 pub const Place = struct {
     x: usize,
     y: usize,
+
+    pub fn init(text: []const u8) !Place {
+        if (text.len < 2 or text.len > 3) return error.ParseError;
+        if (text[0] < 'a' or text[0] > 't') return error.ParseError;
+        const x: usize = text[0] - 'a';
+        const y: usize = std.fmt.parseUnsigned(usize, text[1..], 10) catch return error.ParseError;
+        return .{ .x = x, .y = y };
+    }
+
+    pub fn str(self: Place, buf: []u8) []u8 {
+        std.debug.assert(buf.len >= 3);
+        buf[0] = @as(u8, @intCast(self.x)) + 'a';
+        const y = std.fmt.bufPrint(buf[1..], "{d}", .{self.y}) catch unreachable;
+        return buf[0 .. y.len + 1];
+    }
 };
+
+test "parsePlace" {
+    const place = try Place.init("t19");
+    std.debug.print("{d}\n", .{place.x});
+    std.debug.print("{d}\n", .{place.y});
+    try std.testing.expect(place.x == 19);
+    try std.testing.expect(place.y == 19);
+    var buf: [3]u8 = undefined;
+    const str = place.str(buf[0..]);
+    std.debug.print("{s}\n", .{str});
+    try std.testing.expect(std.mem.eql(u8, "t19", str));
+}
 
 const PlaceScores = struct {
     offset: usize,
@@ -564,9 +591,9 @@ test "placeStone" {
 test "topPlaces" {
     var board = Board(19, 6, 8).init(std.testing.allocator);
     defer board.deinit();
-    board.placeStone(Place{ .x = 9, .y = 9 }, .first);
-    board.placeStone(Place{ .x = 8, .y = 9 }, .second);
-    board.placeStone(Place{ .x = 9, .y = 8 }, .second);
+    board.placeStone(try Place.init("j10"), .first);
+    board.placeStone(try Place.init("i10"), .second);
+    board.placeStone(try Place.init("j9"), .second);
     const places = board.topPlaces(.first);
     for (places) |place| {
         try std.testing.expect(place.score >= 36);

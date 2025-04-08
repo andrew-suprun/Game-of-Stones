@@ -45,7 +45,7 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
 
         pub fn playMove(self: *Self, move: Move) void {
             self.board.placeStone(move.place1, self.turn);
-            if (move.place1.x != move.place2.x or move.place1.y != move.place2.y) {
+            if (move.place1.x != move.place2.x or move.place1.y != move.place2.y) { // TODO use Move.eql()
                 self.board.placeStone(move.place2, self.turn);
             }
             self.turn = opponent(self.turn);
