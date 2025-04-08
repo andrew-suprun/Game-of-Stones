@@ -109,7 +109,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
         heap: Heap(PlaceScore, max_places, less) = .{},
 
         const Self = @This();
-        const Stone = enum(usize) { none, black, white = win_stones };
+        const Stone = enum(u8) { none, black, white = win_stones };
         const value_table = Self.valueTable();
         const score_table = Self.scoreTable();
 
@@ -129,8 +129,8 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             const scores = Self.score_table[@intFromEnum(turn)];
             self.history_indices.append(ScoreMark{ .place = place, .history_idx = self.history.items.len, .score = self.score }) catch {};
 
-            const x: usize = place.x;
-            const y: usize = place.y;
+            const x = place.x;
+            const y = place.y;
 
             if (turn == .first) {
                 self.score += self.scores[y * size + x][@intFromEnum(Player.first)];
@@ -139,8 +139,8 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             }
 
             {
-                const x_start: usize = if (x + 1 > win_stones) x + 1 - win_stones else 0;
-                const x_end: usize = @min(x + win_stones, size) - win_stones + 1;
+                const x_start = if (x + 1 > win_stones) x + 1 - win_stones else 0;
+                const x_end = @min(x + win_stones, size) - win_stones + 1;
                 const n = x_end - x_start;
                 self.updateRow(y * size + x_start, 1, n, scores);
             }
@@ -341,7 +341,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
         }
 
         fn printScoresForPlayer(self: Self, player: Player) void {
-            const idx: usize = @intCast(@intFromEnum(player));
+            const idx = @intFromEnum(player);
             pr("\n   │", .{});
             for (0..size) |i| {
                 const c: u8 = @intCast(i);
@@ -381,12 +381,12 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
 
         fn updateRow(self: *Self, start: usize, delta: usize, n: usize, scores: [win_stones * win_stones + 1]Scores) void {
             for (0..win_stones - 1 + n) |ii| {
-                const offset: usize = start + ii * delta;
+                const offset = start + ii * delta;
                 self.history.append(.{ .offset = offset, .scores = self.scores[offset] }) catch {};
             }
 
             var offset = start;
-            var stones: usize = 0;
+            var stones = 0;
 
             inline for (0..win_stones - 1) |i| {
                 stones += self.getPlace(offset + i * delta);
@@ -406,7 +406,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
         }
 
         pub fn maxScore(self: Self, player: Player) Score {
-            const idx: usize = @intCast(@intFromEnum(player));
+            const idx = @intFromEnum(player);
             var r = loss;
             for (self.scores, 0..) |score, i| {
                 const playerScore = score[idx];
