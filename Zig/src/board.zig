@@ -8,27 +8,35 @@ const Player = game.Player;
 const Decision = game.Decision;
 const Heap = @import("heap.zig").Heap;
 
-pub const Score = f32;
-pub const win = std.math.inf(Score);
-pub const loss = -std.math.inf(Score);
-pub const draw: Score = 0.5;
-pub const Scores = @Vector(2, Score);
+pub const Score = struct {
+    value: f32,
 
-pub fn isWin(score: Score) bool {
-    return std.math.isPositiveInf(score);
-}
+    pub const win = Score{ .value = std.math.inf(f32) };
+    pub const loss = Score{ .value = -std.math.inf(f32) };
+    pub const draw = Score{ .value = 0.5 };
 
-pub fn isLoss(score: Score) bool {
-    return std.math.isNegativeInf(score);
-}
+    pub fn init(value: f32) Score {
+        return Score{ .value = value };
+    }
 
-pub fn isDraw(score: Score) bool {
-    return score == 0.5;
-}
+    pub fn isWin(score: Score) bool {
+        return std.math.isPositiveInf(score.value);
+    }
 
-pub fn isDecisive(score: Score) bool {
-    return score == 0.5 or std.math.isInf(score);
-}
+    pub fn isLoss(score: Score) bool {
+        return std.math.isNegativeInf(score.value);
+    }
+
+    pub fn isDraw(score: Score) bool {
+        return score.value == 0.5;
+    }
+
+    pub fn isDecisive(score: Score) bool {
+        return score.value == 0.5 or std.math.isInf(score.value);
+    }
+};
+
+const Scores = @Vector(2, f32);
 
 pub const Place = struct {
     x: usize,
@@ -69,13 +77,13 @@ const PlaceScores = struct {
 
 const ScoreMark = struct {
     place: Place,
-    score: Score,
+    score: f32,
     history_idx: usize,
 };
 
-pub const PlaceScore = struct {
+const PlaceScore = struct {
     place: Place,
-    score: Score,
+    score: f32,
 };
 
 fn less(a: PlaceScore, b: PlaceScore) bool {
@@ -84,22 +92,22 @@ fn less(a: PlaceScore, b: PlaceScore) bool {
 
 pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max_places: comptime_int) type {
     return struct {
-        score: Score = 0,
+        score: f32 = 0,
         places: [size * size]Stone = [1]Stone{.none} ** (size * size),
         scores: [size * size]Scores = scores_blk: {
             var values = [1]Scores{.{ 0, 0 }} ** (size * size);
             for (0..size) |yy| {
-                const y: Score = @floatFromInt(yy);
+                const y: isize = @intCast(yy);
                 const v = @min(win_stones, y + 1, size - y);
                 for (0..size) |xx| {
-                    const x: Score = @floatFromInt(xx);
-                    const stones: Score = win_stones;
-                    const h: Score = @min(stones, x + 1, size - x);
-                    const m: Score = @min(x + 1, y + 1, size - x, size - y);
-                    const t1: Score = @max(0, @min(stones, m, size - stones + 1 - y + x, size - stones + 1 - x + y));
-                    const t2: Score = @max(0, @min(stones, m, 2 * size - 1 - stones + 1 - y - x, x + y - stones + 1 + 1));
-                    const total = v + h + t1 + t2;
-                    values[yy * size + xx] = Scores{ total, total };
+                    const x: isize = @intCast(xx);
+                    const stones: isize = win_stones;
+                    const h: isize = @min(stones, x + 1, size - x);
+                    const m: isize = @min(x + 1, y + 1, size - x, size - y);
+                    const t1 = @max(0, @min(stones, m, size - stones + 1 - y + x, size - stones + 1 - x + y));
+                    const t2 = @max(0, @min(stones, m, 2 * size - 1 - stones + 1 - y - x, x + y - stones + 2));
+                    const total: f32 = @floatFromInt(v + h + t1 + t2);
+                    values[y * size + x] = Scores{ total, total };
                 }
             }
             break :scores_blk values;
@@ -386,7 +394,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             }
 
             var offset = start;
-            var stones = 0;
+            var stones: usize = 0;
 
             inline for (0..win_stones - 1) |i| {
                 stones += self.getPlace(offset + i * delta);
@@ -407,7 +415,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
 
         pub fn maxScore(self: Self, player: Player) Score {
             const idx = @intFromEnum(player);
-            var r = loss;
+            var r = Score.loss.value;
             for (self.scores, 0..) |score, i| {
                 const playerScore = score[idx];
                 if (r < playerScore and self.places[i] == .none) {
@@ -417,8 +425,8 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             return r;
         }
 
-        fn boardValue(self: Self) Score {
-            var value: Score = 0;
+        fn boardValue(self: Self) f32 {
+            var value: f32 = 0;
             for (0..size) |y| {
                 var stones: usize = 0;
                 for (0..win_stones - 1) |x| {
@@ -494,21 +502,21 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             return value;
         }
 
-        fn calcValue(stones: usize) Score {
+        fn calcValue(stones: usize) f32 {
             const black = stones % win_stones;
             const white = stones / win_stones;
             return if (white == 0) Self.value_table[black] else if (black == 0) -Self.value_table[white] else 0;
         }
 
-        fn valueTable() [win_stones + 1]Score {
+        fn valueTable() [win_stones + 1]f32 {
             return score_blk: {
-                var list: [win_stones + 1]Score = undefined;
+                var list: [win_stones + 1]f32 = undefined;
                 list[0] = 0;
                 list[1] = 1;
                 for (2..win_stones) |i| {
                     list[i] = list[i - 1] * 5;
                 }
-                list[win_stones] = win;
+                list[win_stones] = Score.win.value;
                 break :score_blk list;
             };
         }
@@ -545,7 +553,7 @@ test "placeStone" {
     var board = Board(19, 6, 8).init(std.testing.allocator);
     defer board.deinit();
 
-    var value: Score = 0;
+    var value: f32 = 0;
     for (1..360) |_| {
         var failure = false;
         for (0..19) |y| {

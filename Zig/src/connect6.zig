@@ -8,7 +8,9 @@ const Decision = game.Decision;
 const board = @import("board.zig");
 const Heap = @import("heap.zig").Heap;
 
-const Move = struct {
+pub const Score = board.Score;
+
+pub const Move = struct {
     place1: board.Place,
     place2: board.Place,
 
@@ -19,6 +21,10 @@ const Move = struct {
         const place1 = try board.Place.init(token1);
         const place2 = try board.Place.init(token2);
         return .{ .place1 = place1, .place2 = place2 };
+    }
+
+    pub fn dummy() Move {
+        return Move{ .place1 = .{ .x = 0, .y = 0 }, .place2 = .{ .x = 0, .y = 0 } };
     }
 
     pub fn str(self: Move, buf: []u8) []u8 {

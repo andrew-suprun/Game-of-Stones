@@ -8,6 +8,8 @@ const Decision = game.Decision;
 const board = @import("board.zig");
 const Heap = @import("heap.zig").Heap;
 
+pub const Score = board.Score;
+
 pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) type {
     return struct {
         board: Board,
