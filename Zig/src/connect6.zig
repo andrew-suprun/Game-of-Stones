@@ -8,6 +8,49 @@ const Decision = game.Decision;
 const board = @import("board.zig");
 const Heap = @import("heap.zig").Heap;
 
+const Move = struct {
+    place1: board.Place,
+    place2: board.Place,
+
+    pub fn init(text: []const u8) !Move {
+        var it = std.mem.tokenizeScalar(u8, text, '-');
+        const token1 = it.next() orelse return error.ParseError;
+        const token2 = it.next() orelse token1;
+        const place1 = try board.Place.init(token1);
+        const place2 = try board.Place.init(token2);
+        return .{ .place1 = place1, .place2 = place2 };
+    }
+
+    pub fn str(self: Move, buf: []u8) []u8 {
+        std.debug.assert(buf.len >= 7);
+        const p1 = self.place1.str(buf);
+        if (self.place1.eql(self.place2)) {
+            return p1;
+        }
+        buf[p1.len] = '-';
+        const p2 = self.place2.str(buf[p1.len + 1 ..]);
+        return buf[0 .. p1.len + p2.len + 1];
+    }
+
+    pub fn eql(a: Move, b: Move) bool {
+        return a.place1.eql(b.place1) and a.place2.eql(b.place2) or
+            a.place1.eql(b.place2) and a.place2.eql(b.place1);
+    }
+};
+
+test "parsePlace" {
+    var move = try Move.init("s19");
+    try std.testing.expect(move.place1.x == 18);
+    try std.testing.expect(move.place2.y == 18);
+    var buf: [7]u8 = undefined;
+    var str = move.str(buf[0..]);
+    try std.testing.expect(std.mem.eql(u8, "s19", str));
+    move = try Move.init("a1-s19");
+    str = move.str(buf[0..]);
+    try std.testing.expect(move.eql(Move{ .place1 = .{ .x = 0, .y = 0 }, .place2 = .{ .x = 18, .y = 18 } }));
+    try std.testing.expect(std.mem.eql(u8, "a1-s19", str));
+}
+
 pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, comptime max_places: comptime_int) type {
     return struct {
         board: Board,
@@ -16,11 +59,6 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
 
         const Self = @This();
         const Board = board.Board(size, 6, max_places);
-
-        const Move = struct {
-            place1: board.Place,
-            place2: board.Place,
-        };
 
         const MoveScore = struct {
             move: Move,

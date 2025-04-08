@@ -38,28 +38,28 @@ pub const Place = struct {
         if (text.len < 2 or text.len > 3) return error.ParseError;
         if (text[0] < 'a' or text[0] > 't') return error.ParseError;
         const x: usize = text[0] - 'a';
-        const y: usize = std.fmt.parseUnsigned(usize, text[1..], 10) catch return error.ParseError;
-        return .{ .x = x, .y = y };
+        const y1: usize = std.fmt.parseUnsigned(usize, text[1..], 10) catch return error.ParseError;
+        return .{ .x = x, .y = y1 - 1 };
     }
 
     pub fn str(self: Place, buf: []u8) []u8 {
         std.debug.assert(buf.len >= 3);
         buf[0] = @as(u8, @intCast(self.x)) + 'a';
-        const y = std.fmt.bufPrint(buf[1..], "{d}", .{self.y}) catch unreachable;
+        const y = std.fmt.bufPrint(buf[1..], "{d}", .{self.y + 1}) catch unreachable;
         return buf[0 .. y.len + 1];
+    }
+
+    pub fn eql(a: Place, b: Place) bool {
+        return a.x == b.x and a.y == b.y;
     }
 };
 
 test "parsePlace" {
-    const place = try Place.init("t19");
-    std.debug.print("{d}\n", .{place.x});
-    std.debug.print("{d}\n", .{place.y});
-    try std.testing.expect(place.x == 19);
-    try std.testing.expect(place.y == 19);
+    const place = try Place.init("s19");
+    try std.testing.expect(place.eql(Place{ .x = 18, .y = 18 }));
     var buf: [3]u8 = undefined;
     const str = place.str(buf[0..]);
-    std.debug.print("{s}\n", .{str});
-    try std.testing.expect(std.mem.eql(u8, "t19", str));
+    try std.testing.expect(std.mem.eql(u8, "s19", str));
 }
 
 const PlaceScores = struct {
