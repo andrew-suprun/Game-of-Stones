@@ -42,12 +42,12 @@ pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) typ
 
         pub fn playMove(self: *Self, move: Move) void {
             self.board.placeStone(move, self.turn);
-            self.switchTurn();
+            self.turn = opponent(self.turn);
         }
 
         pub fn undoMove(self: *Self) void {
             self.board.removeStone();
-            self.switchTurn();
+            self.turn = opponent(self.turn);
         }
 
         pub fn topMoves(self: *Self) []MoveScore {
@@ -55,25 +55,25 @@ pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) typ
             const top_places = if (self.turn == .first) self.board.topPlaces(.first) else self.board.topPlaces(.second);
 
             if (top_places.len == 0) {
-                self.heap.add(MoveScore(.{}, .{}), board.draw);
+                self.heap.add(MoveScore{ .move = .{ .x = 0, .y = 0 }, .score = board.draw });
                 return self.heap.items();
             }
+            const turn_idx: usize = @intCast(@intFromEnum(self.turn));
             for (top_places) |place| {
-                const score = self.board.getScores(place.place)[self.turn];
+                const score = self.board.getScores(place.place)[turn_idx];
                 if (score == board.win) {
                     self.heap.clear();
-                    self.heap.add(MoveScore{ .move = place, .score = board.win });
-                    return self.heap.items;
+                    self.heap.add(MoveScore{ .move = place.place, .score = board.win });
+                    return self.heap.items();
                 } else if (score == 0) {
-                    self.heap.add(MoveScore{ .move = place, .score = board.draw });
+                    self.heap.add(MoveScore{ .move = place.place, .score = board.draw });
                 } else {
-                    self.board.placeStone(place, self.turn);
-                    const opp_score = self.board.maxScore(1 - self.turn);
-                    const coeff = 1 - 2 * self.turn;
+                    self.board.placeStone(place.place, self.turn);
+                    const opp_score = self.board.maxScore(opponent(self.turn));
+                    const coeff: board.Score = @floatFromInt(1 - 2 * turn_idx);
                     const move_score = coeff * self.board.score - opp_score / 2;
                     self.board.removeStone();
-                    self.heap.add(MoveScore{ .move = place, .score = move_score });
-                    self.board.removeStone();
+                    self.heap.add(MoveScore{ .move = place.place, .score = move_score });
                 }
             }
 
@@ -92,8 +92,8 @@ pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) typ
             self.board.printScores();
         }
 
-        fn switchTurn(self: *Self) void {
-            self.turn = if (self.turn == .first) .second else .first;
+        fn opponent(player: Player) Player {
+            return if (player == .first) .second else .first;
         }
     };
 }
@@ -107,4 +107,23 @@ test "topMoves" {
     gomoku.printScores();
 }
 
-pub fn main() void {}
+const benchmark = @import("benchmark.zig").benchmark;
+
+fn c6TopMovesBench() void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    const G = Gomoku(19, 32);
+    var gomoku = G.init(allocator);
+    defer gomoku.deinit();
+    gomoku.playMove(G.Move{ .x = 9, .y = 9 });
+    gomoku.playMove(G.Move{ .x = 8, .y = 8 });
+    for (0..1000) |_| {
+        _ = gomoku.topMoves();
+    }
+}
+
+pub fn main() !void {
+    std.debug.print("gomokuTopMoves: {d:.3} msec\n", .{benchmark(c6TopMovesBench)});
+}

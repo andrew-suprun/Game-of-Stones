@@ -48,13 +48,13 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
             if (move.place1.x != move.place2.x or move.place1.y != move.place2.y) {
                 self.board.placeStone(move.place2, self.turn);
             }
-            self.switchTurn();
+            self.turn = opponent(self.turn);
         }
 
         pub fn undoMove(self: *Self) void {
             self.board.removeStone();
             self.board.removeStone();
-            self.switchTurn();
+            self.turn = opponent(self.turn);
         }
 
         pub fn topMoves(self: *Self) []MoveScore {
@@ -64,41 +64,42 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
             if (top_places.len < 2) {
                 if (top_places.len == 1) {
                     const top_place = top_places[0];
-                    self.heap.add(MoveScore(top_place, top_place), board.draw);
+                    self.heap.add(MoveScore{ .move = Move{ .place1 = top_place.place, .place2 = top_place.place }, .score = board.draw });
                 } else {
-                    self.heap.add(MoveScore(.{}, .{}), board.draw);
+                    self.heap.add(MoveScore{ .move = Move{ .place1 = .{ .x = 0, .y = 0 }, .place2 = .{ .x = 0, .y = 0 } }, .score = board.draw });
                 }
                 return self.heap.items();
             }
+            const turn_idx: usize = @intCast(@intFromEnum(self.turn));
             for (0..top_places.len - 1) |i| {
                 const place1 = top_places[i];
-                const score1 = self.board.getScores(place1.place)[self.turn];
+                const score1 = self.board.getScores(place1.place)[turn_idx];
                 if (score1 == board.win) {
                     self.heap.clear();
-                    self.heap.add(MoveScore{ .move = Move{ .place1 = place1, .place2 = place1 }, .score = board.win });
-                    return self.heap.items;
+                    self.heap.add(MoveScore{ .move = Move{ .place1 = place1.place, .place2 = place1.place }, .score = board.win });
+                    return self.heap.items();
                 }
 
-                self.board.placeStone(place1, self.turn);
+                self.board.placeStone(place1.place, self.turn);
 
                 for (i + 1..top_places.len - 1) |j| {
                     const place2 = top_places[j];
-                    const score2 = self.board.getScores(place2)[self.turn];
+                    const score2 = self.board.getScores(place2.place)[turn_idx];
 
                     if (score2 == board.win) {
                         self.heap.clear();
-                        self.heap.add(MoveScore{ .move = Move{ .place1 = place1, .place2 = place2 }, .score = board.win });
+                        self.heap.add(MoveScore{ .move = Move{ .place1 = place1.place, .place2 = place2.place }, .score = board.win });
                         self.board.removeStone();
-                        return self.heap.items;
+                        return self.heap.items();
                     } else if (score1 + score2 == 0) {
-                        self.heap.add(MoveScore{ .move = Move{ .place1 = place1, .place2 = place2 }, .score = board.draw });
+                        self.heap.add(MoveScore{ .move = Move{ .place1 = place1.place, .place2 = place2.place }, .score = board.draw });
                     } else {
-                        self.board.placeStone(place2, self.turn);
-                        const opp_score = self.board.maxScore(1 - self.turn);
-                        const coeff = 1 - 2 * self.turn;
+                        self.board.placeStone(place2.place, self.turn);
+                        const opp_score = self.board.maxScore(opponent(self.turn));
+                        const coeff: board.Score = @floatFromInt(1 - 2 * turn_idx);
                         const move_score = coeff * self.board.score - opp_score;
                         self.board.removeStone();
-                        self.heap.add(MoveScore{ .move = Move{ .place1 = place1, .place2 = place2 }, .score = move_score });
+                        self.heap.add(MoveScore{ .move = Move{ .place1 = place1.place, .place2 = place2.place }, .score = move_score });
                     }
                 }
                 self.board.removeStone();
@@ -119,8 +120,8 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
             self.board.printScores();
         }
 
-        fn switchTurn(self: *Self) void {
-            self.turn = if (self.turn == .first) .second else .first;
+        fn opponent(player: Player) Player {
+            return if (player == .first) .second else .first;
         }
     };
 }
@@ -134,4 +135,24 @@ test "topMoves" {
     c6.printScores();
 }
 
-pub fn main() void {}
+// Benchmark
+const benchmark = @import("benchmark.zig").benchmark;
+
+fn c6TopMovesBench() void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    const C6 = Connect6(19, 60, 32);
+    var c6 = C6.init(allocator);
+    defer c6.deinit();
+    c6.playMove(C6.Move{ .place1 = board.Place{ .x = 9, .y = 9 }, .place2 = board.Place{ .x = 9, .y = 9 } });
+    c6.playMove(C6.Move{ .place1 = board.Place{ .x = 9, .y = 8 }, .place2 = board.Place{ .x = 9, .y = 10 } });
+    for (0..1000) |_| {
+        _ = c6.topMoves();
+    }
+}
+
+pub fn main() !void {
+    std.debug.print("connect6TopMoves: {d:.3} msec\n", .{benchmark(c6TopMovesBench)});
+}

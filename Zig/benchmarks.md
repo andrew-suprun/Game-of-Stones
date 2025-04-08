@@ -13,3 +13,15 @@ zig run -O ReleaseFast src/board.zig
 updateRow:  0.171 µsec
 placeStone: 0.456 µsec
 topPlaces:  1.795 µsec
+
+zig run -O ReleaseSafe src/connect6.zig
+connect6TopMoves: 0.350 msec
+
+zig run -O ReleaseFast src/connect6.zig
+connect6TopMoves: 0.340 msec
+
+zig run -O ReleaseSafe src/gomoku.zig
+gomokuTopMoves: 0.022 msec
+
+zig run -O ReleaseFast src/gomoku.zig
+gomokuTopMoves: 0.022 msec

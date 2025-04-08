@@ -378,7 +378,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             }
         }
 
-        fn maxScore(self: Self, player: Player) Score {
+        pub fn maxScore(self: Self, player: Player) Score {
             const idx: usize = @intCast(@intFromEnum(player));
             var r = loss;
             for (self.scores, 0..) |score, i| {
