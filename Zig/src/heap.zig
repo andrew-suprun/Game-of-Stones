@@ -87,23 +87,19 @@ test "heapAdd" {
 }
 
 // Benchmark
-pub fn main() !void {
-    var heap = Heap(usize, 20, testLess){};
+const benchmark = @import("benchmark.zig").benchmark;
 
-    var minDur: u64 = std.math.maxInt(u64);
-    var timer = try std.time.Timer.start();
-    for (0..10) |_| {
-        for (0..1_000_000) |_| {
-            heap.clear();
-            for (0..100) |i| {
-                heap.add(i * 17 % 100);
-            }
-            std.mem.doNotOptimizeAway(heap);
+fn heapBench() void {
+    var heap = Heap(usize, 20, testLess){};
+    for (0..1_000_000) |_| {
+        heap.clear();
+        for (0..100) |i| {
+            heap.add(i * 17 % 100);
         }
-        const dur = timer.lap();
-        if (minDur > dur) {
-            minDur = dur;
-        }
+        std.mem.doNotOptimizeAway(heap);
     }
-    std.debug.print("heap:       {d} sec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000_000});
+}
+
+pub fn main() !void {
+    std.debug.print("heap: {d:.5} µsec\n", .{benchmark(heapBench) / 100});
 }

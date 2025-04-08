@@ -703,56 +703,55 @@ test "decision" {
 }
 
 // Benchmarks
-pub fn main() !void {
+const benchmark = @import("benchmark.zig").benchmark;
+
+fn updateRowBench() void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
-
     const allocator = arena.allocator();
-
     const B = Board(19, 6, 20);
     var board = B.init(allocator);
-    var minDur: u64 = std.math.maxInt(u64);
-    var timer = try std.time.Timer.start();
-    for (0..10) |_| {
-        for (0..1_000) |_| {
-            board.updateRow(18, 18, 6, B.score_table[0]);
-            std.mem.doNotOptimizeAway(board);
-        }
-        const dur = timer.lap();
-        if (minDur > dur) {
-            minDur = dur;
-        }
-    }
-    pr("updateRow:  {d} msec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000});
+    defer board.deinit();
 
-    minDur = std.math.maxInt(u64);
-    timer = try std.time.Timer.start();
-    for (0..10) |_| {
-        var score: Score = 0;
-        for (0..1_000) |_| {
-            board.placeStone(Place{ .x = 9, .y = 9 }, .first);
-            score += board.maxScore(.first);
-            board.removeStone();
-            std.mem.doNotOptimizeAway(score);
-        }
-        const dur = timer.lap();
-        if (minDur > dur) {
-            minDur = dur;
-        }
+    for (0..1_000_000) |_| {
+        board.updateRow(18, 18, 6, B.score_table[0]);
+        std.mem.doNotOptimizeAway(board);
     }
-    pr("placeStone: {d} msec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000});
+}
 
-    minDur = std.math.maxInt(u64);
-    timer = try std.time.Timer.start();
-    for (0..10) |_| {
-        for (0..1_000) |_| {
-            const places = board.topPlaces(.first);
-            std.mem.doNotOptimizeAway(places);
-        }
-        const dur = timer.lap();
-        if (minDur > dur) {
-            minDur = dur;
-        }
+fn placeStoneBench() void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    const B = Board(19, 6, 20);
+    var board = B.init(allocator);
+    defer board.deinit();
+
+    var score: Score = 0;
+    for (0..1_000_000) |_| {
+        board.placeStone(Place{ .x = 9, .y = 9 }, .first);
+        score += board.maxScore(.first);
+        board.removeStone();
+        std.mem.doNotOptimizeAway(score);
     }
-    pr("topPlaces : {d} msec\n", .{@as(f64, @floatFromInt(minDur)) / 1_000_000});
+}
+
+fn topPlacesBench() void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    const B = Board(19, 6, 20);
+    var board = B.init(allocator);
+    defer board.deinit();
+
+    for (0..1_000_000) |_| {
+        const places = board.topPlaces(.first);
+        std.mem.doNotOptimizeAway(places);
+    }
+}
+
+pub fn main() !void {
+    pr("updateRow:  {d:.3} µsec\n", .{benchmark(updateRowBench)});
+    pr("placeStone: {d:.3} µsec\n", .{benchmark(placeStoneBench)});
+    pr("topPlaces:  {d:.3} µsec\n", .{benchmark(topPlacesBench)});
 }
