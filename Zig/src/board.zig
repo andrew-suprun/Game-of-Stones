@@ -4,37 +4,10 @@ const Allocator = std.mem.Allocator;
 const pr = std.debug.print;
 
 const game = @import("game.zig");
+const score = @import("score.zig");
 const Player = game.Player;
 const Decision = game.Decision;
 const Heap = @import("heap.zig").Heap;
-
-pub const Score = struct {
-    value: f32,
-
-    pub const win = Score{ .value = std.math.inf(f32) };
-    pub const loss = Score{ .value = -std.math.inf(f32) };
-    pub const draw = Score{ .value = 0.5 };
-
-    pub fn init(value: f32) Score {
-        return Score{ .value = value };
-    }
-
-    pub fn isWin(score: Score) bool {
-        return std.math.isPositiveInf(score.value);
-    }
-
-    pub fn isLoss(score: Score) bool {
-        return std.math.isNegativeInf(score.value);
-    }
-
-    pub fn isDraw(score: Score) bool {
-        return score.value == 0.5;
-    }
-
-    pub fn isDecisive(score: Score) bool {
-        return score.value == 0.5 or std.math.isInf(score.value);
-    }
-};
 
 const Scores = @Vector(2, f32);
 
@@ -204,9 +177,9 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
                 for (0..size) |x| {
                     const offset = y * size + x;
                     const scores = self.scores[offset];
-                    const score = if (turn == .first) scores[0] else scores[1];
-                    if (self.places[offset] == .none and score > 0) {
-                        self.heap.add(PlaceScore{ .place = Place{ .x = x, .y = y }, .score = score });
+                    const place_score = if (turn == .first) scores[0] else scores[1];
+                    if (self.places[offset] == .none and place_score > 0) {
+                        self.heap.add(PlaceScore{ .place = Place{ .x = x, .y = y }, .score = place_score });
                     }
                 }
             }
@@ -413,11 +386,11 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             }
         }
 
-        pub fn maxScore(self: Self, player: Player) Score {
+        pub fn maxScore(self: Self, player: Player) f32 {
             const idx = @intFromEnum(player);
-            var r = Score.loss.value;
-            for (self.scores, 0..) |score, i| {
-                const playerScore = score[idx];
+            var r = score.loss;
+            for (self.scores, 0..) |place_score, i| {
+                const playerScore = place_score[idx];
                 if (r < playerScore and self.places[i] == .none) {
                     r = playerScore;
                 }
@@ -516,7 +489,7 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
                 for (2..win_stones) |i| {
                     list[i] = list[i - 1] * 5;
                 }
-                list[win_stones] = Score.win.value;
+                list[win_stones] = score.win;
                 break :score_blk list;
             };
         }
@@ -762,12 +735,12 @@ fn placeStoneBench() void {
     var board = B.init(allocator);
     defer board.deinit();
 
-    var score: Score = 0;
+    var s: f32 = 0;
     for (0..1_000_000) |_| {
         board.placeStone(Place{ .x = 9, .y = 9 }, .first);
-        score += board.maxScore(.first);
+        s += board.maxScore(.first);
         board.removeStone();
-        std.mem.doNotOptimizeAway(score);
+        std.mem.doNotOptimizeAway(s);
     }
 }
 

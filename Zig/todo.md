@@ -1,2 +1,3 @@
-* benchmark Stone = enum(usize)
-* check decision() in calcValue()
+* tree tests
+* tree benchmarks
+* tree printing

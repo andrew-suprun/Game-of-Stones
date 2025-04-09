@@ -3,12 +3,13 @@ const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 
 const game = @import("game.zig");
+const score = @import("score.zig");
 const Player = game.Player;
 const Decision = game.Decision;
 const board = @import("board.zig");
 const Heap = @import("heap.zig").Heap;
 
-pub const Score = board.Score;
+pub const Score = score.Score;
 
 pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) type {
     return struct {
@@ -18,13 +19,9 @@ pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) typ
 
         const Self = @This();
         const Board = board.Board(size, 5, max_moves);
+        const MoveScore = score.MoveScore(Move);
 
         const Move = board.Place;
-
-        const MoveScore = struct {
-            move: Move,
-            score: board.Score,
-        };
 
         fn less(a: MoveScore, b: MoveScore) bool {
             return a.score < b.score;
@@ -57,22 +54,22 @@ pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) typ
             const top_places = if (self.turn == .first) self.board.topPlaces(.first) else self.board.topPlaces(.second);
 
             if (top_places.len == 0) {
-                self.heap.add(MoveScore{ .move = .{ .x = 0, .y = 0 }, .score = board.draw });
+                self.heap.add(MoveScore{ .move = .{ .x = 0, .y = 0 }, .score = score.draw });
                 return self.heap.items();
             }
             const turn_idx: usize = @intCast(@intFromEnum(self.turn));
             for (top_places) |place| {
-                const score = self.board.getScores(place.place)[turn_idx];
-                if (score == board.win) {
+                const place_score = self.board.getScores(place.place)[turn_idx];
+                if (place_score == score.win) {
                     self.heap.clear();
-                    self.heap.add(MoveScore{ .move = place.place, .score = board.win });
+                    self.heap.add(MoveScore{ .move = place.place, .score = score.win });
                     return self.heap.items();
-                } else if (score == 0) {
-                    self.heap.add(MoveScore{ .move = place.place, .score = board.draw });
+                } else if (place_score == 0) {
+                    self.heap.add(MoveScore{ .move = place.place, .score = score.draw });
                 } else {
                     self.board.placeStone(place.place, self.turn);
                     const opp_score = self.board.maxScore(opponent(self.turn));
-                    const coeff: board.Score = @floatFromInt(1 - 2 * turn_idx);
+                    const coeff: score.Score = @floatFromInt(1 - 2 * turn_idx);
                     const move_score = coeff * self.board.score - opp_score / 2;
                     self.board.removeStone();
                     self.heap.add(MoveScore{ .move = place.place, .score = move_score });

@@ -15,13 +15,13 @@ placeStone: 0.456 µsec
 topPlaces:  1.795 µsec
 
 zig run -O ReleaseSafe src/connect6.zig
-connect6TopMoves: 0.350 msec
+connect6TopMoves: 0.298 msec
 
 zig run -O ReleaseFast src/connect6.zig
-connect6TopMoves: 0.340 msec
+connect6TopMoves: 0.297 msec
 
 zig run -O ReleaseSafe src/gomoku.zig
-gomokuTopMoves: 0.022 msec
+gomokuTopMoves: 0.019 msec
 
 zig run -O ReleaseFast src/gomoku.zig
-gomokuTopMoves: 0.022 msec
+gomokuTopMoves: 0.019 msec
