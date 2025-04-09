@@ -121,7 +121,7 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
 
                 self.board.placeStone(place1.place, self.turn);
 
-                for (i + 1..top_places.len - 1) |j| {
+                for (i + 1..top_places.len) |j| {
                     const place2 = top_places[j];
                     const score2 = self.board.getScores(place2.place)[turn_idx];
 
