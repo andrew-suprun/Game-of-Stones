@@ -135,7 +135,7 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
                     } else {
                         self.board.placeStone(place2.place, self.turn);
                         const opp_score = self.board.maxScore(opponent(self.turn));
-                        const coeff: score.Score = @floatFromInt(1 - 2 * turn_idx);
+                        const coeff: score.Score = 1 - 2 * @as(score.Score, @floatFromInt(turn_idx));
                         const move_score = coeff * self.board.score - opp_score;
                         self.board.removeStone();
                         self.heap.add(MoveScore{ .move = Move{ .place1 = place1.place, .place2 = place2.place }, .score = move_score });
