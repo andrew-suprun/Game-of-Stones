@@ -55,7 +55,7 @@ struct Move(Movable, Copyable, EqualityComparable, Representable, Stringable, Wr
         r = String(self)
 
     fn __str__(self, out r: String):
-        r = String(self)
+        r = String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         if self.p1 != self.p2:
@@ -85,7 +85,7 @@ struct Place(KeyElement, Stringable, Writable):
         return hash(self.x) + hash(self.y) * 41
 
     fn __str__(self, out result: String):
-        result = String(self)
+        return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
