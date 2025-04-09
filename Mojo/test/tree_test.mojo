@@ -1,24 +1,19 @@
 from game import Game, Move, Score, is_win
 from tree import Tree, Node
-from game_of_stones import Gomoku
+from game_of_stones import Connect6
 
 from random import seed, random_si64, random_float64
 import testing
 
-alias G = Gomoku[19, 32]
+alias C6 = Connect6[19, 20, 10]
 
 def test_tree():
-    var g = G()
-    var t = Tree[G, 20]()
+    var g = C6()
+    var t = Tree[C6, 30]()
     g.play_move(Move("j10"))
-    g.play_move(Move("a1"))
-    g.play_move(Move("j9"))
-    g.play_move(Move("a2"))
-    g.play_move(Move("j11"))
-    g.play_move(Move("a3"))
+    g.play_move(Move("i9-i10"))
 
     print(g)
-    _ = t.expand(g)
     var done = t.expand(g)
     print(done, t.value())
     print(t)

@@ -169,7 +169,7 @@ test "topMoves" {
     const C6 = Connect6(19, 20, 10);
     var c6 = C6.init(std.testing.allocator);
     defer c6.deinit();
-    c6.playMove(C6.Move{ .place1 = board.Place{ .x = 9, .y = 9 }, .place2 = board.Place{ .x = 9, .y = 9 } });
+    c6.playMove(Move{ .place1 = board.Place{ .x = 9, .y = 9 }, .place2 = board.Place{ .x = 9, .y = 9 } });
     c6.print();
     c6.printScores();
 }
