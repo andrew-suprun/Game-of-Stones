@@ -1,6 +1,6 @@
 const std = @import("std");
-const tree = @import("tree.zig");
 
+const tree = @import("tree.zig");
 const Gomoku = @import("gomoku.zig").Gomoku;
 const GMove = @import("gomoku.zig").Move;
 

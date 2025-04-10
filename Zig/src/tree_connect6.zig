@@ -1,6 +1,6 @@
 const std = @import("std");
-const tree = @import("tree.zig");
 
+const tree = @import("tree.zig");
 const Connect6 = @import("connect6.zig").Connect6;
 const C6Move = @import("connect6.zig").Move;
 
