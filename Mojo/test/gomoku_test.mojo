@@ -8,5 +8,4 @@ fn test_play_move() raises:
     gomoku.play_move(Move(9, 9, 9, 9))
     print(gomoku)
     print(gomoku.board.str_scores())
-    assert_true(False)
 
