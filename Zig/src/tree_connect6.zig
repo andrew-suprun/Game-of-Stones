@@ -10,13 +10,13 @@ test "connect6-tree" {
     defer c6.deinit();
     c6.playMove(try C6Move.init("j10"));
     c6.playMove(try C6Move.init("i9-i10"));
-    c6.print();
-    c6.printScores();
     var c6_tree = tree.Tree(C6Move, 30).init(std.testing.allocator);
     defer c6_tree.deinit();
 
-    _ = c6_tree.expand(&c6);
-    c6_tree.printTree();
+    for (0..1000) |_| {
+        _ = c6_tree.expand(&c6);
+    }
+    std.debug.assert(c6_tree.current_score() == -2);
 }
 
 pub fn main() void {

@@ -14,7 +14,6 @@ def test_tree():
     g.play_move(Move("i9-i10"))
 
     print(g)
-    var done = t.expand(g)
-    print(done, t.value())
-    print(t)
-    testing.assert_true(done and is_win(t.value()))
+    for _ in range(1000):
+        _ = t.expand(g)
+    testing.assert_true(t.value() == -2)
