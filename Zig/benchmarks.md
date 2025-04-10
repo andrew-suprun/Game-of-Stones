@@ -25,3 +25,9 @@ gomokuTopMoves: 0.019 msec
 
 zig run -O ReleaseFast src/gomoku.zig
 gomokuTopMoves: 0.019 msec
+
+zig run -O ReleaseSafe src/tree_connect6.zig
+c6Expand: 0.326 msec
+
+zig run -O ReleaseFast src/tree_connect6.zig
+c6Expand: 0.319 msec

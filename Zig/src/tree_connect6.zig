@@ -19,10 +19,29 @@ test "connect6-tree" {
     std.debug.assert(c6_tree.current_score() == -2);
 }
 
-pub fn main() void {
+// Benchmark
+const benchmark = @import("benchmark.zig").benchmark;
+
+fn c6ExpandBench() void {
     var da = std.heap.DebugAllocator(.{}).init;
     defer _ = da.deinit();
     const allocator = da.allocator();
 
-    _ = tree.Tree(C6Move).init(allocator);
+    const C6 = Connect6(19, 60, 32);
+    var c6 = C6.init(allocator);
+    defer c6.deinit();
+    c6.playMove(C6Move.init("j10") catch unreachable);
+    c6.playMove(C6Move.init("i9-i10") catch unreachable);
+    var c6_tree = tree.Tree(C6Move, 20).init(allocator);
+    defer c6_tree.deinit();
+
+    for (0..1000) |_| {
+        _ = c6_tree.expand(&c6);
+    }
+    const score = c6_tree.current_score();
+    std.mem.doNotOptimizeAway(score);
+}
+
+pub fn main() void {
+    std.debug.print("c6Expand: {d:.3} msec\n", .{benchmark(c6ExpandBench)});
 }

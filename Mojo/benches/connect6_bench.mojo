@@ -11,7 +11,7 @@ fn bench_top_moves():
     var c6 = C6()
     try:
         c6.play_move(Move("j10"))
-        c6.play_move(Move("i9-i11"))
+        c6.play_move(Move("i9-i10"))
     except:
         pass
     var moves = List[(Move, Score)]()
@@ -34,6 +34,6 @@ fn bench_extend():
             break
 
 fn main() raises:
-    print("\n--- connect6 (ms/1000) ---")
-    print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
-    print("extend   ", benchmark.run[bench_extend]().mean(Unit.ms))
+    print("\n--- connect6 ---")
+    print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.s), "msec")
+    print("extend   ", benchmark.run[bench_extend]().mean(Unit.s), "msec")
