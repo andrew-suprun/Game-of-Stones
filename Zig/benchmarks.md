@@ -31,3 +31,9 @@ c6Expand: 0.326 msec
 
 zig run -O ReleaseFast src/tree_connect6.zig
 c6Expand: 0.319 msec
+
+zig run -O ReleaseSafe src/tree_gomoku.zig
+gomokuExpand: 0.00930 msec
+
+zig run -O ReleaseFast src/tree_gomoku.zig
+gomokuExpand: 0.00913 msec

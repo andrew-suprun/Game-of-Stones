@@ -33,6 +33,10 @@ pub const Place = struct {
     pub fn eql(a: Place, b: Place) bool {
         return a.x == b.x and a.y == b.y;
     }
+
+    pub fn dummy() Place {
+        return Place{ .x = 0, .y = 0 };
+    }
 };
 
 test "parsePlace" {

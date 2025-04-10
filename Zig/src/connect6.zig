@@ -23,7 +23,7 @@ pub const Move = struct {
     }
 
     pub fn dummy() Move {
-        return Move{ .place1 = .{ .x = 0, .y = 0 }, .place2 = .{ .x = 0, .y = 0 } };
+        return Move{ .place1 = board.Place.dummy(), .place2 = board.Place.dummy() };
     }
 
     pub fn str(self: Move, buf: []u8) []u8 {

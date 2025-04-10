@@ -16,7 +16,7 @@ test "connect6-tree" {
     for (0..1000) |_| {
         _ = c6_tree.expand(&c6);
     }
-    std.debug.assert(c6_tree.current_score() == -2);
+    try std.testing.expect(c6_tree.current_score() == -2);
 }
 
 // Benchmark

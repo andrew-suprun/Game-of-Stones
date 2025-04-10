@@ -9,6 +9,7 @@ const Decision = game.Decision;
 const board = @import("board.zig");
 const Heap = @import("heap.zig").Heap;
 
+pub const Move = board.Place;
 pub const Score = score.Score;
 
 pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) type {
@@ -20,8 +21,6 @@ pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) typ
         const Self = @This();
         const Board = board.Board(size, 5, max_moves);
         const MoveScore = score.MoveScore(Move);
-
-        const Move = board.Place;
 
         fn less(a: MoveScore, b: MoveScore) bool {
             return a.score < b.score;
@@ -69,7 +68,7 @@ pub fn Gomoku(comptime size: comptime_int, comptime max_moves: comptime_int) typ
                 } else {
                     self.board.placeStone(place.place, self.turn);
                     const opp_score = self.board.maxScore(opponent(self.turn));
-                    const coeff: score.Score = @floatFromInt(1 - 2 * turn_idx);
+                    const coeff: score.Score = 1 - 2 * @as(score.Score, @floatFromInt(turn_idx));
                     const move_score = coeff * self.board.score - opp_score / 2;
                     self.board.removeStone();
                     self.heap.add(MoveScore{ .move = place.place, .score = move_score });
