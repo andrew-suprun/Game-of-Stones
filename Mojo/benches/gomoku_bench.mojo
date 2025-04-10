@@ -18,7 +18,7 @@ fn bench_top_moves():
         game.top_moves(moves)
     _ = moves
 
-fn bench_extend():
+fn bench_expand():
     var game = G()
     var tree = Tree[G, 20]()
     try:
@@ -33,6 +33,5 @@ fn bench_extend():
             break
 
 fn main() raises:
-    print("\n--- gomoku (ms/1000) ---")
-    print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.ms))
-    print("extend   ", benchmark.run[bench_extend]().mean(Unit.ms))
+    print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.s), "msec")
+    print("expand   ", benchmark.run[bench_expand]().mean(Unit.s), "msec")

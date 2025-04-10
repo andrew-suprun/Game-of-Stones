@@ -16,13 +16,21 @@ place_stone 0.6838504699515807
 max_score   0.1848671
 top_places  2.6929284116331096
 
---- connect6 (ms/1000) ---
-top_moves 243.6051111111111
-extend    260.63944444444445
+magic run mojo run -I src -D ASSERT=all benches/connect6_bench.mojo
+top_moves 0.403 msec
+expand    0.418 msec
 
---- gomoku (ms/1000) ---
-top_moves 2.7017357222844347
-extend    5.1692564655172415
+magic run mojo run -I src benches/connect6_bench.mojo
+top_moves 0.219 msec
+expand    0.244 msec
+
+magic run mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo
+top_moves 0.0257 msec
+expand    0.0300 msec
+
+magic run mojo run -I src benches/gomoku_bench.mojo      
+top_moves 0.015 msec
+expand    0.019 msec
 
 --- heap (ms/100_000) ---
 add  0.576486

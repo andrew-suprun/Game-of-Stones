@@ -19,7 +19,7 @@ fn bench_top_moves():
         c6.top_moves(moves)
     _ = moves
 
-fn bench_extend():
+fn bench_expand():
     var game = C6()
     var tree = Tree[C6, 20]()
     try:
@@ -34,6 +34,5 @@ fn bench_extend():
             break
 
 fn main() raises:
-    print("\n--- connect6 ---")
     print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.s), "msec")
-    print("extend   ", benchmark.run[bench_extend]().mean(Unit.s), "msec")
+    print("expand   ", benchmark.run[bench_expand]().mean(Unit.s), "msec")
