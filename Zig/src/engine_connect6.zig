@@ -9,10 +9,10 @@ pub fn main() !void {
     defer _ = da.deinit();
     const allocator = da.allocator();
 
-    const Game = Connect6(19, 60, 32);
+    const Game = Connect6(19, 32, 16);
     var game = Game.init(allocator);
     defer game.deinit();
-    var game_tree = tree.Tree(Game.Move, 20).init(allocator);
+    var game_tree = tree.Tree(Game.Move, 30).init(allocator);
     defer game_tree.deinit();
 
     try run(Game, 30, allocator);

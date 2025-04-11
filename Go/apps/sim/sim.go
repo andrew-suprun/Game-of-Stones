@@ -128,7 +128,7 @@ func playOpening(blackProc, whiteProc string, ui *Cmd, uiChan chan []string, log
 	}
 
 	fmt.Println("stats", stats)
-	<-time.After(5 * time.Second)
+	<-time.After(3 * time.Second)
 	ui.send("clear")
 }
 
@@ -235,10 +235,9 @@ func runLogger(log *bufio.Reader, logChan chan string, name string) {
 		if err == io.EOF {
 			return
 		}
-		if err != nil {
-			panic(err)
+		if err == nil {
+			logChan <- name + ": " + line
 		}
-		logChan <- name + ": " + line
 	}
 }
 

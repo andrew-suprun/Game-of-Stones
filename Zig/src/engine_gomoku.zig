@@ -9,7 +9,7 @@ pub fn main() !void {
     defer _ = da.deinit();
     const allocator = da.allocator();
 
-    const Game = Gomoku(19, 32);
+    const Game = Gomoku(19, 12);
     var game = Game.init(allocator);
     defer game.deinit();
     var game_tree = tree.Tree(Game.Move, 20).init(allocator);

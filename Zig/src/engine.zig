@@ -1,5 +1,4 @@
 const std = @import("std");
-const print = std.debug.print;
 const Allocator = std.mem.Allocator;
 const eql = std.mem.eql;
 const trim = std.mem.trim;
@@ -28,6 +27,7 @@ pub fn run(comptime Game: type, comptime exp_factor: score.Score, allocator: All
 
     var game = Game.init(allocator);
     var game_tree = tree.Tree(Game.Move, exp_factor).init(allocator);
+    var out = std.io.getStdOut().writer();
 
     while (true) {
         const line = try reader.readUntilDelimiterOrEof(&buf, '\n') orelse "";
@@ -38,11 +38,11 @@ pub fn run(comptime Game: type, comptime exp_factor: score.Score, allocator: All
         var terms = std.mem.tokenizeScalar(u8, line, ' ');
         const cmd = terms.next() orelse "";
         if (eql(u8, cmd, "game-name")) {
-            print("game-name {s}\n", .{game.name()});
+            try out.print("game-name {s}\n", .{game.name()});
         } else if (eql(u8, cmd, "move")) {
             const move_str = terms.next() orelse "";
             const move = Game.Move.init(move_str) catch {
-                print("Error: invalid 'move' command\n", .{});
+                try out.print("Error: invalid 'move' command\n", .{});
                 continue;
             };
             game.playMove(move);
@@ -59,7 +59,7 @@ pub fn run(comptime Game: type, comptime exp_factor: score.Score, allocator: All
         } else if (eql(u8, cmd, "respond")) {
             const duration_slice = terms.next() orelse "";
             const duration = std.fmt.parseInt(isize, duration_slice, 10) catch {
-                print("Error: invalid 'respond' command\n", .{});
+                try out.print("Error: invalid 'respond' command\n", .{});
                 continue;
             };
             const deadline = std.time.milliTimestamp() + duration;
@@ -78,7 +78,7 @@ pub fn run(comptime Game: type, comptime exp_factor: score.Score, allocator: All
             game_tree.reset();
             var move_buf: [64]u8 = undefined;
             const move_str = move.str(&move_buf);
-            print("move {s} {s} {d}\n", .{ move_str, game.decision().str(), sims });
+            try out.print("move {s} {s} {d}\n", .{ move_str, game.decision().str(), sims });
         } else if (eql(u8, cmd, "stop")) {
             return;
         } else {
