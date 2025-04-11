@@ -267,92 +267,98 @@ pub fn Board(comptime size: comptime_int, comptime win_stones: comptime_int, max
             };
         }
 
-        pub fn print(self: Self) void {
-            pr("\n  ", .{});
+        pub fn str(self: Self, buf: []u8) []u8 {
+            var stream = std.io.fixedBufferStream(buf);
+            var writer = stream.writer();
+            writer.print("\n  ", .{}) catch {};
 
             for (0..size) |i| {
                 const c: u8 = @intCast(i);
-                pr(" {c}", .{c + 'a'});
+                writer.print(" {c}", .{c + 'a'}) catch {};
             }
-            pr("\n", .{});
+            writer.print("\n", .{}) catch {};
 
             for (0..size) |y| {
-                pr("{:2} ", .{y + 1});
+                writer.print("{:2} ", .{y + 1}) catch {};
                 for (0..size) |x| {
                     const stone = self.places[y * size + x];
                     switch (stone) {
-                        .black => if (x == 0) pr(" X", .{}) else pr("─X", .{}),
-                        .white => if (x == 0) pr(" O", .{}) else pr("─O", .{}),
+                        .black => if (x == 0) writer.print(" X", .{}) catch {} else writer.print("─X", .{}) catch {},
+                        .white => if (x == 0) writer.print(" O", .{}) catch {} else writer.print("─O", .{}) catch {},
                         .none => {
                             switch (y) {
                                 0 => {
                                     switch (x) {
-                                        0 => pr(" ┌", .{}),
-                                        size - 1 => pr("─┐", .{}),
-                                        else => pr("─┬", .{}),
+                                        0 => writer.print(" ┌", .{}) catch {},
+                                        size - 1 => writer.print("─┐", .{}) catch {},
+                                        else => writer.print("─┬", .{}) catch {},
                                     }
                                 },
                                 size - 1 => {
                                     switch (x) {
-                                        0 => pr(" └", .{}),
-                                        size - 1 => pr("─┘", .{}),
-                                        else => pr("─┴", .{}),
+                                        0 => writer.print(" └", .{}) catch {},
+                                        size - 1 => writer.print("─┘", .{}) catch {},
+                                        else => writer.print("─┴", .{}) catch {},
                                     }
                                 },
                                 else => {
                                     switch (x) {
-                                        0 => pr(" ├", .{}),
-                                        size - 1 => pr("─┤", .{}),
-                                        else => pr("─┼", .{}),
+                                        0 => writer.print(" ├", .{}) catch {},
+                                        size - 1 => writer.print("─┤", .{}) catch {},
+                                        else => writer.print("─┼", .{}) catch {},
                                     }
                                 },
                             }
                         },
                     }
                 }
-                pr(" {:2}\n", .{y + 1});
+                writer.print(" {:2}\n", .{y + 1}) catch {};
             }
-            pr("  ", .{});
+            writer.print("  ", .{}) catch {};
             for (0..size) |i| {
                 const c: u8 = @intCast(i);
-                pr(" {c}", .{c + 'a'});
+                writer.print(" {c}", .{c + 'a'}) catch {};
             }
-            pr("\n", .{});
+            writer.print("\n", .{}) catch {};
+            return buf[0..stream.pos];
         }
 
-        pub fn printScores(self: Self) void {
-            self.printScoresForPlayer(.first);
-            self.printScoresForPlayer(.second);
+        pub fn scoresStr(self: Self, buf: []u8) []u8 {
+            var stream = std.io.fixedBufferStream(buf);
+            const writer = stream.writer();
+            self.printScoresForPlayer(.first, writer);
+            self.printScoresForPlayer(.second, writer);
+            return buf[0..stream.pos];
         }
 
-        fn printScoresForPlayer(self: Self, player: Player) void {
+        fn printScoresForPlayer(self: Self, player: Player, writer: anytype) void {
             const idx = @intFromEnum(player);
-            pr("\n   │", .{});
+            writer.print("\n   │", .{}) catch {};
             for (0..size) |i| {
                 const c: u8 = @intCast(i);
-                pr("    {c} ", .{c + 'a'});
+                writer.print("    {c} ", .{c + 'a'}) catch {};
             }
-            pr("│\n───┼" ++ "──────" ** size ++ "┼───\n", .{});
+            writer.print("│\n───┼" ++ "──────" ** size ++ "┼───\n", .{}) catch {};
             for (0..size) |y| {
-                pr("{d:2} │", .{y + 1});
+                writer.print("{d:2} │", .{y + 1}) catch {};
                 for (0..size) |x| {
                     const stone = self.places[y * size + x];
                     switch (stone) {
-                        .none => pr("{d:5} ", .{self.scores[y * size + x][idx]}),
-                        .black => pr("    X ", .{}),
-                        .white => pr("    O ", .{}),
+                        .none => writer.print("{d:5} ", .{self.scores[y * size + x][idx]}) catch {},
+                        .black => writer.print("    X ", .{}) catch {},
+                        .white => writer.print("    O ", .{}) catch {},
                     }
                 }
-                pr("| {d:2}\n", .{y + 1});
+                writer.print("| {d:2}\n", .{y + 1}) catch {};
             }
-            pr("───┼" ++ "──────" ** size ++ "┼───", .{});
+            writer.print("───┼" ++ "──────" ** size ++ "┼───", .{}) catch {};
             if (idx == 1) {
-                pr("\n   │", .{});
+                writer.print("\n   │", .{}) catch {};
                 for (0..size) |i| {
                     const c: u8 = @intCast(i);
-                    pr("    {c} ", .{c + 'a'});
+                    writer.print("    {c} ", .{c + 'a'}) catch {};
                 }
-                pr("│\n", .{});
+                writer.print("│\n", .{}) catch {};
             }
         }
 
@@ -555,8 +561,9 @@ test "placeStone" {
             }
         }
         if (failure) {
-            board.print();
-            board.printScores();
+            var buf: [2048]u8 = undefined;
+            std.debug.print("{s}\n", .{board.str(&buf)});
+            std.debug.print("{s}\n", .{board.scoresStr(&buf)});
             try std.testing.expect(false);
         }
         const x: usize = rng.next() % 19;
@@ -648,7 +655,9 @@ test "decision" {
     board.placeStone(Place{ .x = 0, .y = 15 }, .second);
     board.placeStone(Place{ .x = 0, .y = 14 }, .second);
 
-    board.print();
+    var buf: [8192]u8 = undefined;
+    std.debug.print("{s}\n", .{board.str(&buf)});
+    std.debug.print("{s}\n", .{board.scoresStr(&buf)});
 
     pr("\n 1: {any}\n", .{board.decision()});
     try std.testing.expect(board.decision() == .no_decision);

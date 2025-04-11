@@ -137,12 +137,12 @@ pub fn Connect6(comptime size: comptime_int, comptime max_moves: comptime_int, c
             return self.board.decision();
         }
 
-        pub fn print(self: Self) void {
-            self.board.print();
+        pub fn str(self: Self, buf: []u8) []u8 {
+            return self.board.str(buf);
         }
 
-        pub fn printScores(self: Self) void {
-            self.board.printScores();
+        pub fn scoresStr(self: Self, buf: []u8) []u8 {
+            self.board.scoresStr(buf);
         }
 
         fn opponent(player: Player) Player {
