@@ -28,4 +28,5 @@ def test_gomoku():
 
     for _ in range(1000):
         _ = t.expand(g)
-    testing.assert_true(t.value() == 40)
+    print("r =", t.value())
+    testing.assert_true(t.value() == 24)

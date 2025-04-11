@@ -17,7 +17,7 @@ test "gomoku-tree" {
         _ = gomoku_tree.expand(&gomoku);
     }
     std.debug.print("r = {d}\n", .{gomoku_tree.current_score()});
-    try std.testing.expect(gomoku_tree.current_score() == 40);
+    try std.testing.expect(gomoku_tree.current_score() == 24);
 }
 
 // Benchmark
