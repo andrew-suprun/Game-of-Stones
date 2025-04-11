@@ -53,8 +53,8 @@ pub fn Tree(comptime Move: type, comptime C: score.Score) type {
             return self.root.bestMove();
         }
 
-        fn reset(self: *Self) void {
-            self.root = Node.init(Move.dummy(), score.Score.init(0));
+        pub fn reset(self: *Self) void {
+            self.root = Node.init(Move.dummy(), 0);
         }
 
         pub fn printTree(self: Self) void {
@@ -149,7 +149,7 @@ fn TreeNode(comptime Move: type, comptime C: score.Score) type {
         fn bestMove(self: Self) Move {
             std.debug.assert(self.children.len > 0);
             var bestChild = &self.children[0];
-            for (self.children) |child| {
+            for (self.children) |*child| {
                 if (bestChild.score < child.score) {
                     bestChild = child;
                 } else if (score.isLoss(bestChild.score) and bestChild.n_sims < child.n_sims) {
