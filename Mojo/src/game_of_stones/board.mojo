@@ -123,7 +123,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         for i in range(len(self.history)-1, idx.history_idx-1, -1):
             var h_scores = self.history[i]
             self.scores[h_scores.offset] = h_scores.scores
-        self.history.resize(idx.history_idx)
+        self.history.shrink(idx.history_idx)
 
     fn top_places(self, turn: Int, mut top_places: List[Place]):
         @parameter

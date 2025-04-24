@@ -66,7 +66,7 @@ struct Gomoku[size: Int, max_moves: Int](Game):
             return
 
         self.turn = 1 - self.turn
-        self.history.resize(len(self.history)-1)
+        self.history.shrink(len(self.history)-1)
         self.board.remove_stone()
 
     fn decision(self, out decision: String):

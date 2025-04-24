@@ -203,8 +203,8 @@ struct Game:
         self.window.fill(color_background)
 
         for i in range(1, board_size+1):
-            self.pygame.draw.line(self.window, color_line, (d, i*d), (board_size*d, i*d))
-            self.pygame.draw.line(self.window, color_line, (i*d, d), (i*d, board_size*d))
+            self.pygame.draw.line(self.window, color_line, PythonObject.tuple(d, i*d), PythonObject.tuple(board_size*d, i*d))
+            self.pygame.draw.line(self.window, color_line, PythonObject.tuple(i*d, d), PythonObject.tuple(i*d, board_size*d))
 
         for turn in range(2):
             var color = color_black if turn == black else color_white
@@ -290,8 +290,8 @@ fn first_white_move(name: Int, out move: Move):
         move = Move(places[0], places[1])
 
 
-fn board_to_window(x: Int8, y: Int8, out result: (Int, Int)):
-    result = ((Int(x) + 1) * d, (Int(y) + 1) * d)
+fn board_to_window(x: Int8, y: Int8, out result: PythonObject):
+    result = PythonObject.tuple((Int(x) + 1) * d, (Int(y) + 1) * d)
 
 struct App:
     var pygame: PythonObject
@@ -302,7 +302,7 @@ struct App:
         self.name = name
         self.pygame = Python.import_module("pygame")
         self.pygame.init()
-        self.window = self.pygame.display.set_mode((window_height, window_width))
+        self.window = self.pygame.display.set_mode(PythonObject.tuple(window_height, window_width))
         if name == gomoku:
             self.pygame.display.set_caption("Game of Stones - Gomoku")
         else:
