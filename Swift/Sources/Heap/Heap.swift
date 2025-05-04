@@ -1,26 +1,24 @@
 import Foundation
 
  @inlinable 
- public func heap_add<T: Comparable>(
-    _ item: T, to items: inout [T], maxItems: Int, less: (T, T) -> Bool
-) {
+ public func heap_add<T: Comparable>(_ item: T, to items: inout [T], maxItems: Int) {
     if items.count == maxItems {
-        if !less(items[0], item) {
+        if item < items[0] {
             return
         }
         items[0] = item
-        siftDown(&items, less)
+        siftDown(&items)
         return
     }
     items.append(item)
-    siftUp(&items, less)
+    siftUp(&items)
 }
 
 @inlinable 
-func siftUp<T: Comparable>(_ items: inout [T], _ less: (T, T) -> Bool) {
+func siftUp<T: Comparable>(_ items: inout [T]) {
     var childIdx = items.count - 1
     let child = items[childIdx]
-    while childIdx > 0 && less(child, items[(childIdx - 1) / 2]) {
+    while childIdx > 0 && child < items[(childIdx - 1) / 2] {
         let parentIdx = (childIdx - 1) / 2
         items[childIdx] = items[parentIdx]
         childIdx = parentIdx
@@ -29,19 +27,19 @@ func siftUp<T: Comparable>(_ items: inout [T], _ less: (T, T) -> Bool) {
 }
 
 @inlinable 
-func siftDown<T: Comparable>(_ items: inout [T], _ less: (T, T) -> Bool) {
+func siftDown<T: Comparable>(_ items: inout [T]) {
     var idx = 0
     let elem = items[idx]
     while true {
         var first = idx
         let leftChildIdx = idx * 2 + 1
-        if leftChildIdx < items.count && less(items[leftChildIdx], elem) {
+        if leftChildIdx < items.count && items[leftChildIdx] < elem {
             first = leftChildIdx
         }
         let rightChildIdx = idx * 2 + 2
         if rightChildIdx < items.count
-            && less(items[rightChildIdx], elem)
-            && less(items[rightChildIdx], items[leftChildIdx])
+            && items[rightChildIdx] < elem
+            && items[rightChildIdx] < items[leftChildIdx]
         {
             first = rightChildIdx
         }
