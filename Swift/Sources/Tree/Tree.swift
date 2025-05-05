@@ -1,9 +1,11 @@
 import Foundation
 
+typealias Score = Float
+
 protocol Game {
     associatedtype M: Move
     
-    mutating func topMoves(_: [(M, Float)])
+    mutating func topMoves(_: [(M, Score)])
     mutating func playMove(_ move: M)
     mutating func undoMove()
 }
@@ -12,34 +14,19 @@ protocol Move {
     init()
 }
 
-// protocol Score: Comparable {
-//     init(_ value: Float)
-//     static var loss: Self {get}
-//     static var win: Self {get}
-//     static var draw: Self {get}
-
-//     var isWin: Bool { get }
-//     var isLoss: Bool { get }
-//     var isDraw: Bool { get }
-//     var isDecisive: Bool {get}
-
-//     var value: Float {get}
-// }
-
-
-let win = Float.infinity
-let loss = -Float.infinity
-let draw = Float(0.25)
+let win = Score.infinity
+let loss = -Score.infinity
+let draw = Score(0.25)
 
 struct Tree<G: Game> {
     var game: G
-    var c: Float
+    var c: Score
     var root: Node<G> = Node<G>((G.M(), 0))
-    var topMoves: [(G.M, Float)] = []
-    var score: Float { -root.score }
+    var topMoves: [(G.M, Score)] = []
+    var score: Score { -root.score }
     var bestMove: G.M { root.bestMove }
 
-    init(game: G, c: Float) {
+    init(game: G, c: Score) {
         self.game = game
         self.c = c
     }
@@ -71,11 +58,11 @@ struct Tree<G: Game> {
 
 struct Node<G: Game> {
     var move: G.M
-    var score: Float
+    var score: Score
     var children: [Self] = []
     var nSims: Int32 = 1
 
-    init(_ moveScore: (G.M, Float)) {
+    init(_ moveScore: (G.M, Score)) {
         self.move = moveScore.0
         self.score = moveScore.1
     }
@@ -85,7 +72,7 @@ struct Node<G: Game> {
     var isDraw: Bool { get { score == draw } }
     var isDecisive: Bool { get { score.isInfinite || score == draw}}
 
-    mutating func expand(_ game: inout G, _ c: Float, _ topMoves: inout [(G.M, Float)]) {
+    mutating func expand(_ game: inout G, _ c: Score, _ topMoves: inout [(G.M, Score)]) {
         if children.isEmpty {
             game.topMoves(topMoves)
             assert(!topMoves.isEmpty, "Function top<oves(...) returns empty result.")
@@ -97,13 +84,13 @@ struct Node<G: Game> {
         } else {
             var selectedChildIdx = 0
             let nSims = nSims
-            let logParentSims = log2f(Float(nSims))
-            var maxV = -Float.infinity
+            let logParentSims = log2f(Score(nSims))
+            var maxV = -Score.infinity
             for childIdx in children.indices {
                 if children[childIdx].isDecisive {
                     continue
                 }
-                let v = children[childIdx].score + c * sqrt(logParentSims / Float(children[childIdx].nSims))
+                let v = children[childIdx].score + c * sqrt(logParentSims / Score(children[childIdx].nSims))
                 if v > maxV {
                     maxV = v
                     selectedChildIdx = childIdx
@@ -115,7 +102,7 @@ struct Node<G: Game> {
         }
 
         nSims = 0
-        score = Float.infinity
+        score = Score.infinity
         var hasDraw = false
         var allDraws = true
         for child in children {
