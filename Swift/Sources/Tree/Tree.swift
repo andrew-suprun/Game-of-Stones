@@ -1,9 +1,8 @@
 import Foundation
 
-typealias Score = Float
-
 protocol Game {
     associatedtype M: Move
+    typealias Score = Float
     
     mutating func topMoves(_: [(M, Score)])
     mutating func playMove(_ move: M)
@@ -14,19 +13,19 @@ protocol Move {
     init()
 }
 
-let win = Score.infinity
-let loss = -Score.infinity
-let draw = Score(0.25)
+let win = Game.Score.infinity
+let loss = -Game.Score.infinity
+let draw = Game.Score(0.25)
 
 struct Tree<G: Game> {
     var game: G
-    var c: Score
+    let c: Game.Score
     var root: Node<G> = Node<G>((G.M(), 0))
-    var topMoves: [(G.M, Score)] = []
-    var score: Score { -root.score }
+    var topMoves: [(G.M, G.Score)] = []
+    var score: G.Score { -root.score }
     var bestMove: G.M { root.bestMove }
 
-    init(game: G, c: Score) {
+    init(game: G, c: G.Score) {
         self.game = game
         self.c = c
     }
@@ -58,11 +57,11 @@ struct Tree<G: Game> {
 
 struct Node<G: Game> {
     var move: G.M
-    var score: Score
+    var score: G.Score
     var children: [Self] = []
     var nSims: Int32 = 1
 
-    init(_ moveScore: (G.M, Score)) {
+    init(_ moveScore: (G.M, G.Score)) {
         self.move = moveScore.0
         self.score = moveScore.1
     }
@@ -72,7 +71,7 @@ struct Node<G: Game> {
     var isDraw: Bool { get { score == draw } }
     var isDecisive: Bool { get { score.isInfinite || score == draw}}
 
-    mutating func expand(_ game: inout G, _ c: Score, _ topMoves: inout [(G.M, Score)]) {
+    mutating func expand(_ game: inout G, _ c: G.Score, _ topMoves: inout [(G.M, G.Score)]) {
         if children.isEmpty {
             game.topMoves(topMoves)
             assert(!topMoves.isEmpty, "Function top<oves(...) returns empty result.")
@@ -84,13 +83,13 @@ struct Node<G: Game> {
         } else {
             var selectedChildIdx = 0
             let nSims = nSims
-            let logParentSims = log2f(Score(nSims))
-            var maxV = -Score.infinity
+            let logParentSims = log2f(G.Score(nSims))
+            var maxV = -G.Score.infinity
             for childIdx in children.indices {
                 if children[childIdx].isDecisive {
                     continue
                 }
-                let v = children[childIdx].score + c * sqrt(logParentSims / Score(children[childIdx].nSims))
+                let v = children[childIdx].score + c * sqrt(logParentSims / G.Score(children[childIdx].nSims))
                 if v > maxV {
                     maxV = v
                     selectedChildIdx = childIdx
@@ -102,7 +101,7 @@ struct Node<G: Game> {
         }
 
         nSims = 0
-        score = Score.infinity
+        score = G.Score.infinity
         var hasDraw = false
         var allDraws = true
         for child in children {
