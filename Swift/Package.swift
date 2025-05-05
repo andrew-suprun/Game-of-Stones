@@ -9,6 +9,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Heap", targets: ["Heap"]),
+        .library(name: "Tree", targets: ["Tree"]),
         .library(name: "Board", targets: ["Board"]),
         .executable(name: "HeapBench", targets: ["HeapBench"]),
     ],
@@ -17,12 +18,14 @@ let package = Package(
     ],
     targets: [
         .target(name: "Heap"),
+        .target(name: "Tree"),
         .target(name: "Board"),
         .executableTarget(name: "HeapBench", dependencies: ["Heap"]),
         .testTarget(
             name: "BenchTests",
             dependencies: [
                 "Heap",
+                "Tree",
                 .product(name: "Testing", package: "swift-testing"),
             ]
         ),
