@@ -3,14 +3,56 @@ let boardSize = 19
 public typealias Score = Float
 public typealias Scores = SIMD2<Score>
 
+enum Turn { case first, second }
+
+struct PlaceScores {
+    var offset: Int
+    var scores: Scores
+}
+
+struct ScoreMark {
+    var place: Place
+    var score: Score
+    var historyIdx: Int
+}
+
+
+struct Place: Equatable, Hashable, CustomStringConvertible {
+    let x, y: UInt8
+
+    init?(_ place: String) {
+        let bytes = Array(place.utf8)
+        let a = Array("a".utf8).first!
+        if let first = bytes.first {
+            let x  = first - a
+            if let rest = String(validating: bytes.dropFirst(), as: UTF8.self) {
+                if let y = UInt8(rest) {
+                    self.x = x
+                    self.y = y - 1
+                    if x < boardSize && y < boardSize {
+                        return
+                    }
+                }
+            }
+        }
+        return nil
+    }
+
+    var description: String {
+        let x = String(validating: [Array("a".utf8).first! + x], as: UTF8.self)
+        let y = String(y + 1)
+        return x!+y
+    }
+}
+
 struct Board {
     var places: [Int8] = Array(repeating: 0, count: boardSize * boardSize)
     var score = Score.zero
     let valueTable: ([SIMD2<Score>], [SIMD2<Score>])
     let winStones: Int
 
-    init(maxStones: Int, values: [Score]) {
-        self.winStones = maxStones
+    init(values: [Score]) {
+        self.winStones = values.count - 1
         self.valueTable = calcValuesTable(values)
     }
 

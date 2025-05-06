@@ -1,7 +1,7 @@
 @testable import Board
 import Testing
 
-@Test func calcValueTableTest() throws {
+@Test func testCalcValueTable() throws {
     let (black, white) = calcValuesTable([0, 1, 5, 25, 125, Score.infinity])
     
     print(black.count)
@@ -18,4 +18,11 @@ import Testing
         }
         print()
     }
+}
+
+@Test func testPlace() throws {
+    print("Place = \(Place("a1")!)")
+    print("Place = \(Place("a19")!)")
+    print("Place = \(Place("s1")!)")
+    print("Place = \(Place("s19")!)")
 }
