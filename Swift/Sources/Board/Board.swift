@@ -27,9 +27,9 @@ struct Place: Equatable, Hashable, CustomStringConvertible {
             let x  = first - a
             if let rest = String(validating: bytes.dropFirst(), as: UTF8.self) {
                 if let y = UInt8(rest) {
-                    self.x = x
-                    self.y = y - 1
-                    if x < boardSize && y < boardSize {
+                    if x < boardSize && y <= boardSize {
+                        self.x = x
+                        self.y = y - 1
                         return
                     }
                 }
@@ -39,9 +39,9 @@ struct Place: Equatable, Hashable, CustomStringConvertible {
     }
 
     var description: String {
-        let x = String(validating: [Array("a".utf8).first! + x], as: UTF8.self)
+        let x = String(validating: [Array("a".utf8).first! + x], as: UTF8.self)!
         let y = String(y + 1)
-        return x!+y
+        return x+y
     }
 }
 
