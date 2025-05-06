@@ -26,6 +26,7 @@ let package = Package(
             dependencies: [
                 "Heap",
                 "Tree",
+                "Board",
                 .product(name: "Testing", package: "swift-testing"),
             ]
         ),
