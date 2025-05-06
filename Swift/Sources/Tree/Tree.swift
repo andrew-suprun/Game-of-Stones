@@ -1,49 +1,50 @@
 import Foundation
 
-protocol Game {
-    associatedtype M: Move
-    typealias Score = Float
+protocol GameProtocol {
+    associatedtype Move: MoveProtocol
     
-    mutating func topMoves(_: [(M, Score)])
-    mutating func playMove(_ move: M)
+    mutating func topMoves(_: [Move])
+    mutating func playMove(_ move: Move)
     mutating func undoMove()
 }
 
-protocol Move {
+protocol MoveProtocol: Comparable {
     init()
+
+    var value: Float { get set }
+
+    var isWin: Bool { get set }
+    var isLoss: Bool { get set }
+    var isDraw: Bool { get set }
+    var isDecisive: Bool { get }
 }
 
-let win = Game.Score.infinity
-let loss = -Game.Score.infinity
-let draw = Game.Score(0.25)
+struct Tree<Game: GameProtocol> {
+    var game: Game
+    let c: Float
+    var root: Node<Game> = Node<Game>(Game.Move())
+    var topMoves: [Game.Move] = []
+    var bestMove: Game.Move { root.bestMove }
 
-struct Tree<G: Game> {
-    var game: G
-    let c: Game.Score
-    var root: Node<G> = Node<G>((G.M(), 0))
-    var topMoves: [(G.M, G.Score)] = []
-    var score: G.Score { -root.score }
-    var bestMove: G.M { root.bestMove }
-
-    init(game: G, c: G.Score) {
+    init(game: Game, c: Float) {
         self.game = game
         self.c = c
     }
 
     mutating func expand() -> Bool {
-        if root.isDecisive {
+        if root.move.isDecisive {
             return true
         } else {
             root.expand(&game, c, &topMoves)
         }
         
-        if root.isDecisive {
+        if root.move.isDecisive {
             return true
         }
 
         var undecided = 0
         for child in root.children {
-            if !child.isDecisive {
+            if !child.move.isDecisive {
                 undecided += 1
             }
         }
@@ -51,27 +52,20 @@ struct Tree<G: Game> {
     }
 
     mutating func reset() {
-        root = Node<G>((G.M(), 0))
+        root = Node<Game>(Game.Move())
     }
 }
 
-struct Node<G: Game> {
-    var move: G.M
-    var score: G.Score
+struct Node<Game: GameProtocol> {
+    var move: Game.Move
     var children: [Self] = []
     var nSims: Int32 = 1
 
-    init(_ moveScore: (G.M, G.Score)) {
-        self.move = moveScore.0
-        self.score = moveScore.1
+    init(_ move: Game.Move) {
+        self.move = move
     }
 
-    var isWin: Bool { get { score == win } }
-    var isLoss: Bool { get { score == loss } }
-    var isDraw: Bool { get { score == draw } }
-    var isDecisive: Bool { get { score.isInfinite || score == draw}}
-
-    mutating func expand(_ game: inout G, _ c: G.Score, _ topMoves: inout [(G.M, G.Score)]) {
+    mutating func expand(_ game: inout Game, _ c: Float, _ topMoves: inout [Game.Move]) {
         if children.isEmpty {
             game.topMoves(topMoves)
             assert(!topMoves.isEmpty, "Function top<oves(...) returns empty result.")
@@ -83,13 +77,13 @@ struct Node<G: Game> {
         } else {
             var selectedChildIdx = 0
             let nSims = nSims
-            let logParentSims = log2f(G.Score(nSims))
-            var maxV = -G.Score.infinity
+            let logParentSims = log2f(Float(nSims))
+            var maxV = -Float.infinity
             for childIdx in children.indices {
-                if children[childIdx].isDecisive {
+                if children[childIdx].move.isDecisive {
                     continue
                 }
-                let v = children[childIdx].score + c * sqrt(logParentSims / G.Score(children[childIdx].nSims))
+                let v = children[childIdx].move.value + c * sqrt(logParentSims / Float(children[childIdx].nSims))
                 if v > maxV {
                     maxV = v
                     selectedChildIdx = childIdx
@@ -101,40 +95,40 @@ struct Node<G: Game> {
         }
 
         nSims = 0
-        score = G.Score.infinity
+        move.value = Float.infinity
         var hasDraw = false
         var allDraws = true
         for child in children {
-            if child.isWin {
-                score = -child.score
+            if child.move.isWin {
+                move.isLoss = true
                 return
-            } else if child.isDraw {
+            } else if child.move.isDraw {
                 hasDraw = true
                 continue
             }
             allDraws = false
-            if child.isLoss {
+            if child.move.isLoss {
                 continue
             }
             nSims += child.nSims
-            if score >= -child.score {
-                score = -child.score
+            if move.value >= -child.move.value {
+                move.value = -child.move.value
             }
         }
         if allDraws {
-            score = draw
-        } else if hasDraw && score > 0 {
-            score = 0
+            move.isDraw = true
+        } else if hasDraw && move.value > 0 {
+            move.value = 0
         }
     }
 
-    var bestMove: G.M {
+    var bestMove: Game.Move {
         assert(!children.isEmpty, "Function node.bestMove() is called with no children.")
         var bestChildIdx = 0
         for childIdx in children.indices {
-            if children[bestChildIdx].score < children[childIdx].score {
+            if children[bestChildIdx].move.value < children[childIdx].move.value {
                 bestChildIdx = childIdx
-            } else if children[bestChildIdx].isLoss && children[bestChildIdx].nSims < children[childIdx].nSims {
+            } else if children[bestChildIdx].move.isLoss && children[bestChildIdx].nSims < children[childIdx].nSims {
                 bestChildIdx = childIdx
             }
         }
