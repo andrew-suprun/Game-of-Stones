@@ -34,3 +34,8 @@ import Testing
     print("p4 = \(p4)")
     assert(p4.x == 18 && p4.y == 18)
 }
+
+@Test func testScores() throws {
+    let board = Board(values: [0, 1, 5, 25, 625, Score.infinity])
+    print("board:" + board.strScores())
+}
