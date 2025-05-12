@@ -36,6 +36,7 @@ import Testing
 }
 
 @Test func testScores() throws {
-    let board = Board(values: [0, 1, 5, 25, 625, Score.infinity])
-    print("board:" + board.strScores())
+    let board = Board(values: [0, 1, 5, 25, 625, 3125, Score.infinity])
+    print("board:", board)
+    print("board:", board.strScores())
 }

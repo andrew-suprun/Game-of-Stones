@@ -24,7 +24,7 @@ struct Place: Equatable, Hashable, CustomStringConvertible {
 
     init?(_ place: String) {
         let bytes = Array(place.utf8)
-        let a = Array("a".utf8).first!
+        let a = "a".utf8.first!
         if let first = bytes.first {
             let x  = first - a
             if let rest = String(validating: bytes.dropFirst(), as: UTF8.self) {
@@ -41,13 +41,13 @@ struct Place: Equatable, Hashable, CustomStringConvertible {
     }
 
     var description: String {
-        let x = String(validating: [Array("a".utf8).first! + x], as: UTF8.self)!
+        let x = String(format: "%c", "a".utf8.first! + x)
         let y = String(y + 1)
         return x+y
     }
 }
 
-struct Board {
+struct Board: CustomStringConvertible {
     var places: [Int8] = Array(repeating: 0, count: boardSize * boardSize)
     var scores: [Scores] = Array(repeating: Scores(0, 0), count: boardSize * boardSize)
     var history: [PlaceScores] = []
@@ -91,6 +91,45 @@ struct Board {
         scores[y * boardSize + x] = value
     }
 
+    var description: String {
+        var str = "\n  "
+
+        for i in 0..<UInt8(boardSize) {
+            str += String(format: " %c", "a".utf8.first! + i)
+        }
+        str += "\n"
+
+        for y in 0..<boardSize {
+            str += String(format: "%2d",y + 1)
+            for x in 0..<boardSize {
+                let stone = self[x, y]
+                if stone == 1 {
+                    str += x == 0 ? " X" : "─X"
+                } else if stone == winStones {
+                    str += x == 0 ? " O" : "─O"
+                } else {
+                    if y == 0 {
+                        str += x == 0 ? " ┌" : x == boardSize - 1 ? "─┐" : "─┬"
+                    } else if y == boardSize - 1 {
+                        str += x == 0 ? " └" : x == boardSize - 1 ? "─┘" : "─┴"
+                    } else {
+                        str += x == 0 ? " ├" : x == boardSize - 1 ? "─┤" : "─┼"
+                    }
+                }
+            }
+            str += String(format: "%3d\n",y + 1)
+        }
+
+        str += "  "
+
+        for i in 0..<UInt8(boardSize) {
+            str += String(format: " %c", "a".utf8.first! + i)
+        }
+        str += "\n"
+
+        return str
+    }
+
     func strScores() -> String {
         var str = strScores(forPlayer: 0)
         str += strScores(forPlayer: 1)
@@ -100,7 +139,7 @@ struct Board {
     func strScores(forPlayer player: Int) -> String {
         var str = String("\n   │")
         for i in 0..<UInt8(boardSize) {
-            str += "    " + String(validating: [Array("a".utf8).first! + i], as: UTF8.self)! + " "
+            str += "    " + String(format: "%c", "a".utf8.first! + i) + " "
         }
         str += "│\n───┼"
         for _ in 0..<boardSize {
@@ -138,7 +177,7 @@ struct Board {
         if player == 1 {
             str += String("\n   │")
             for i in 0..<UInt8(boardSize) {
-                str += "    " + String(validating: [Array("a".utf8).first! + i], as: UTF8.self)! + " "
+                str += "    " + String(format: "%c", "a".utf8.first! + i) + " "
             }
             str += "│\n"
         }
