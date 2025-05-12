@@ -292,12 +292,12 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
     fn str_scores(self, out str: String):
         try:
-            str = self.str_scores_raises(0, skip_footer=True)
+            str = self.str_scores_raises(0)
             str += self.str_scores_raises(1)
         except:
             str = ""
 
-    fn str_scores_raises(self, table_idx: Int, skip_footer: Bool = False, out str: String) raises:
+    fn str_scores_raises(self, table_idx: Int, out str: String) raises:
         str = String("\n   │")
         for i in range(size):
             str += String.format("    {} ", chr(i + ord("a")))
@@ -323,7 +323,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                         str += String(Int(value)).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
         str += "───┼" + "──────" * size + "┼───"
-        if not skip_footer:
+        if not table_idx:
             str += "\n   │"
             for i in range(size):
                 str += String.format("    {} ", chr(i + ord("a")))
