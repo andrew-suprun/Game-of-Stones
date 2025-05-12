@@ -1,6 +1,8 @@
 import Foundation
 
 let boardSize = 19
+let first = 0
+let second = 1
 
 public typealias Score = Float
 public typealias Scores = SIMD2<Score>
@@ -51,7 +53,7 @@ struct Board: CustomStringConvertible {
     var places: [Int8] = Array(repeating: 0, count: boardSize * boardSize)
     var scores: [Scores] = Array(repeating: Scores(0, 0), count: boardSize * boardSize)
     var history: [PlaceScores] = []
-    var history_indices: [ScoreMark] = []
+    var historyIndices: [ScoreMark] = []
     var score = Score.zero
     let valueTable: ([SIMD2<Score>], [SIMD2<Score>])
     let winStones: Int
@@ -71,6 +73,81 @@ struct Board: CustomStringConvertible {
                 let score = Float(total)
                 setScores(x, y, Scores(score, score))
             }
+        }
+    }
+
+    mutating func placeStone(place: Place, turn: Int) {
+        let scores = turn == first ? valueTable.0 : valueTable.1
+        historyIndices.append(ScoreMark(place: place, score: self.score, historyIdx: history.count))
+
+        let x = Int(place.x)
+        let y = Int(place.y)
+
+        if turn == first {
+            score += getScores(x, y)[first]
+        } else {
+            score -= getScores(x, y)[second]
+        }
+
+        let xStart = max(0, x - winStones + 1)
+        let xEnd = min(x + winStones, boardSize) - winStones + 1
+        var n = xEnd - xStart
+        updateRow(start: y * boardSize + xStart, delta: 1, n, scores)
+
+        let yStart = max(0, y - winStones + 1)
+        let yEnd = min(y + winStones, boardSize) - winStones + 1
+        n = yEnd - yStart
+        updateRow(start: yStart * boardSize + x, delta: boardSize, n, scores)
+
+        let m = 1 + min(x, y, boardSize - 1 - x, boardSize - 1 - y)
+
+        n = min(winStones, m, boardSize - winStones + 1 - y + x, boardSize - winStones + 1 - x + y)
+        if n > 0 {
+            let mn = min(x, y, winStones - 1)
+            let x_start = x - mn
+            let y_start = y - mn
+            updateRow(start: y_start * boardSize + x_start, delta: boardSize + 1, n, scores)
+        }
+
+        n = min(winStones, m, 2 * boardSize - winStones - y - x, x + y - winStones + 2)
+        if n > 0 {
+            let mn = min(boardSize - 1 - x, y, winStones - 1)
+            let x_start = x + mn
+            let y_start = y - mn
+            updateRow(start: y_start * boardSize + x_start, delta: boardSize - 1, n, scores)
+        }
+
+        if turn == first {
+            self[x, y] = 1
+        } else {
+            self[x, y] = Int8(winStones)
+        }
+    }
+
+    mutating func updateRow(start: Int, delta: Int, _ n: Int, _ scores: [SIMD2<Score>]) {
+        var i = start
+        while i < start + delta * (winStones - 1 + n) {
+            history.append(PlaceScores(offset: i, scores: self.scores[i]))
+            i += delta
+        }
+
+        var offset = start
+        var stones = 0
+
+        for i in 0..<winStones - 1 {
+            stones += Int(places[offset + i * delta])
+        }
+
+        for _ in 0..<n {
+            stones += Int(places[offset + delta * (winStones - 1)])
+            let scores = scores[stones]
+            if scores[0] != 0 || scores[1] != 0 {
+                for j in 0..<winStones {
+                    self.scores[offset + j * delta] += scores
+                }
+            }
+            stones -= Int(places[offset])
+            offset += delta
         }
     }
 
