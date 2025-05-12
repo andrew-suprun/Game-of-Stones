@@ -69,7 +69,7 @@ struct Board {
                 let t2 = max(0, min(winStones, m, 2 * boardSize - 1 - winStones + 1 - y - x, x + y - winStones + 1 + 1))
                 let total = v + h + t1 + t2
                 let score = Float(total)
-                self.setScores(x, y, Scores(score, score))
+                setScores(x, y, Scores(score, score))
             }
         }
     }
@@ -117,13 +117,13 @@ struct Board {
                 } else if stone == winStones {
                     str += "    O "
                 } else {
-                    let value = self.getScores(x, y)[player]
+                    let value = getScores(x, y)[player]
                     if value.isInfinite {
                         str += "  Win "
                     } else if value == 0.25 {
                         str += " Draw "
                     } else {
-                        str += String(format: "%5d ", value)
+                        str += String(format: "%5.0f ", value)
                     }
                 }
             }
