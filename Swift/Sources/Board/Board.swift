@@ -1,4 +1,5 @@
 import Foundation
+import Heap
 
 let boardSize = 19
 let first = 0
@@ -23,6 +24,11 @@ struct ScoreMark {
 
 struct Place: Equatable, Hashable, CustomStringConvertible {
     let x, y: UInt8
+
+    init(_ x: Int, _ y: Int) {
+        self.x = UInt8(x)
+        self.y = UInt8(y)
+    }
 
     init?(_ place: String) {
         let bytes = Array(place.utf8)
@@ -57,8 +63,10 @@ struct Board: CustomStringConvertible {
     var score = Score.zero
     let valueTable: ([SIMD2<Score>], [SIMD2<Score>])
     let winStones: Int
+    let maxPlaces: Int
 
-    init(values: [Score]) {
+    init(maxPlaces: Int, values: [Score]) {
+        self.maxPlaces = maxPlaces
         winStones = values.count - 1
         valueTable = calcValuesTable(values)
 
@@ -76,7 +84,7 @@ struct Board: CustomStringConvertible {
         }
     }
 
-    mutating func placeStone(place: Place, turn: Int) {
+    public mutating func placeStone(place: Place, turn: Int) {
         let scores = turn == first ? valueTable.0 : valueTable.1
         historyIndices.append(ScoreMark(place: place, score: self.score, historyIdx: history.count))
 
@@ -124,7 +132,7 @@ struct Board: CustomStringConvertible {
         }
     }
 
-    mutating func updateRow(start: Int, delta: Int, _ n: Int, _ scores: [SIMD2<Score>]) {
+    public mutating func updateRow(start: Int, delta: Int, _ n: Int, _ scores: [SIMD2<Score>]) {
         var i = start
         while i < start + delta * (winStones - 1 + n) {
             history.append(PlaceScores(offset: i, scores: self.scores[i]))
@@ -149,6 +157,68 @@ struct Board: CustomStringConvertible {
             stones -= Int(places[offset])
             offset += delta
         }
+    }
+
+    public mutating func removeStone() {
+        let idx = historyIndices.removeLast()
+        self[Int(idx.place.x), Int(idx.place.y)] = 0
+        score = idx.score
+        while history.count > idx.historyIdx {
+            let h_scores = self.history.removeLast()
+            scores[h_scores.offset] = h_scores.scores
+        }
+    }
+
+    public func topPlaces(turn: Int, topPlaces: inout [Place]) {
+        func lessFirst(a: Place, b: Place) -> Bool {
+            return getScores(Int(a.x), Int(a.y))[0] < self.getScores(Int(b.x), Int(b.y))[0]
+        }
+
+        func lessSecond(a: Place, b: Place) -> Bool {
+            return getScores(Int(a.x), Int(a.y))[1] < self.getScores(Int(b.x), Int(b.y))[1]
+        }
+
+        topPlaces.removeAll(keepingCapacity: true)
+
+        if turn == first {
+            for y in 0..<boardSize {
+                for x in 0..<boardSize {
+                    if self[x, y] == 0 && getScores(x, y)[first] > 0 {
+                        heapAdd(Place(x, y), to: &topPlaces, maxItems: maxPlaces) {
+                            getScores(Int($0.x), Int($0.y))[0] < self.getScores(Int($1.x), Int($1.y))[0]
+                        }
+                    }
+                }
+            }
+        } else {
+            for y in 0..<boardSize {
+                for x in 0..<boardSize {
+                    if self[x, y] == 0 && getScores(x, y)[second] > 0 {
+                        heapAdd(Place(x, y), to: &topPlaces, maxItems: maxPlaces) {
+                            getScores(Int($0.x), Int($0.y))[1] < self.getScores(Int($1.x), Int($1.y))[1]
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public func maxScore(player: Int) -> Score {
+        var r = -Score.infinity
+        if player == 0 {
+            for (i, scores) in scores.enumerated() {
+                if r < scores[0] && places[i] == 0 {
+                    r = score
+                }
+            }
+        } else {
+            for (i, scores) in scores.enumerated() {
+                if r < scores[1] && places[i] == 0 {
+                    r = score
+                }
+            }
+        }
+        return r
     }
 
     subscript(_ x: Int, _ y: Int) -> Int8 {
