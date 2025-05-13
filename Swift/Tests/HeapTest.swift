@@ -11,7 +11,7 @@ import Testing
     values.shuffle()
 
     for i in 0..<100 {
-        heap_add(values[i], to: &items, maxItems: 20)
+        heapAdd(values[i], to: &items, maxItems: 20) { $0 < $1 }
     }
 
     for i in 1..<20 {
