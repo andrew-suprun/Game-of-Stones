@@ -19,7 +19,7 @@ let package = Package(
     targets: [
         .target(name: "Heap"),
         .target(name: "Tree"),
-        .target(name: "Board", dependencies: ["Heap"]),
+        .target(name: "Board", dependencies: ["Tree", "Heap"]),
         .executableTarget(name: "HeapBench", dependencies: ["Heap"]),
         .testTarget(
             name: "BenchTests",

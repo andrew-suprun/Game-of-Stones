@@ -6,6 +6,20 @@ protocol GameProtocol {
     mutating func topMoves(_: [Move])
     mutating func playMove(_ move: Move)
     mutating func undoMove()
+    func decision() -> Decision
+}
+
+public enum Decision: CustomStringConvertible { 
+    case NoDecision, FirstWin, SecondWin, Draw
+
+    public var description: String {
+        return switch self {
+            case .NoDecision: "no-decision"
+            case .FirstWin: "first-win"
+            case .SecondWin: "second-win"
+            case .Draw: "draw"
+        }
+    }
 }
 
 protocol MoveProtocol: Comparable {

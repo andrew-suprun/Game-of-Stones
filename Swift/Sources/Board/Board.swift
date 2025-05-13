@@ -1,4 +1,5 @@
 import Foundation
+import Tree
 import Heap
 
 let boardSize = 19
@@ -219,6 +220,86 @@ struct Board: CustomStringConvertible {
             }
         }
         return r
+    }
+
+    public func decision() -> Decision {
+        for a in 0..<boardSize {
+            var hStones = SIMD2<Int>(0, 0)
+            var vStones = SIMD2<Int>(0, 0)
+            for b in 0..<winStones - 1 {
+                hStones &+= counts(self[b, a])
+                vStones &+= counts(self[a, b])
+            }
+            for b in 0 ..< boardSize - winStones + 1 {
+                hStones &+= counts(self[b + winStones - 1, a])
+                vStones &+= counts(self[a, b + winStones - 1])
+                if hStones[0] == winStones || vStones[0] == winStones {
+                    return .FirstWin
+                } else if hStones[1] == winStones || vStones[1] == winStones {
+                    return .SecondWin
+                }
+                hStones &-= counts(self[b, a])
+                vStones &-= counts(self[a, b])
+            }
+        }
+
+        for y in 0 ..< boardSize - winStones + 1 {
+            var stones1 = SIMD2<Int>(0, 0)
+            var stones2 = SIMD2<Int>(0, 0)
+            for x in 0 ..< winStones - 1 {
+                stones1 &+= counts(self[x, y+x])
+                stones2 &+= counts(self[boardSize - 1 - x, x + y])
+            }
+            for x in 0 ..< boardSize - winStones + 1 - y {
+                stones1 &+= counts(self[x + winStones - 1, x + y + winStones - 1])
+                stones2 &+= counts(self[boardSize - x - winStones, x + y + winStones - 1])
+                if stones1[0] == winStones || stones2[0] == winStones {
+                    return .FirstWin
+                } else if stones1[1] == winStones || stones2[1] == winStones {
+                    return .SecondWin
+                }
+                stones1 &-= counts(self[x, x+y])
+                stones2 &-= counts(self[boardSize - 1 - x, x + y])
+            }
+        }
+
+        for x in 1 ..< boardSize - winStones + 1 {
+            var stones1 = SIMD2<Int>(0, 0)
+            var stones2 = SIMD2<Int>(0, 0)
+            for y in 0 ..< winStones - 1 {
+                stones1 &+= counts(self[x + y, y])
+                stones2 &+= counts(self[boardSize - 1 - x - y, y])
+            }
+            for y in 0 ..< boardSize - winStones + 1 - x {
+                stones1 &+= counts(self[x + y + winStones - 1, y + winStones - 1])
+                stones2 &+= counts(self[boardSize - winStones - x - y, y + winStones - 1])
+                if stones1[0] == winStones || stones2[0] == winStones {
+                    return .FirstWin
+                }else if stones1[1] == winStones || stones2[1] == winStones {
+                    return .SecondWin
+                }
+                stones1 &-= counts(self[x + y, y])
+                stones2 &-= counts(self[boardSize - 1 - x - y, y])
+            }
+        }
+
+        for y in 0 ..< boardSize {
+            for x in 0 ..< boardSize {
+                if self[x, y] == 0 && getScores(x, y)[0] > 1 {
+                    return .NoDecision
+                }
+            }
+        }
+
+        return .Draw
+    }
+
+    func counts(_ stones: Int8) -> SIMD2<Int> {
+        return switch Int(stones) {
+            case 1:         SIMD2<Int>(1, 0)
+            case winStones: SIMD2<Int>(0, 1)
+            default:        SIMD2<Int>(0, 0)
+        }
     }
 
     subscript(_ x: Int, _ y: Int) -> Int8 {
