@@ -372,9 +372,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
             for x in range(win_stones - 1):
                 stones += self[size - 1 - x, x + y]
             for x in range(size - win_stones + 1 - y):
-                stones += self[
-                    size - 1 - x - win_stones + 1, x + y + win_stones - 1
-                ]
+                stones += self[size - 1 - x - win_stones + 1, x + y + win_stones - 1]
                 value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x, x + y]
 

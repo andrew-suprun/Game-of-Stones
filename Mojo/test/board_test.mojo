@@ -5,40 +5,40 @@ from game import Score, Place
 from game_of_stones.board import Board, first, second
 from game_of_stones.connect6 import Connect6, max_stones, values
 
-
 fn test_place_stone() raises:
     seed(0)
     var board = Board[values, 19, max_stones, 20]()
     var value = Score(0)
     for _ in range(200):
         var turn = Int(random_si64(0, 1))
-        var x = Int(random_si64(0, board.size - 1))
-        var y = Int(random_si64(0, board.size - 1))
-        if board[x, y] == board.empty:
-            var failure = False
+        var xx = Int(random_si64(0, board.size - 1))
+        var yy = Int(random_si64(0, board.size - 1))
+        if board[xx, yy] == board.empty:
             for y in range(board.size):
                 for x in range(board.size):
                     if board[x, y] == board.empty:
                         var actual = board.getscores(Place(x, y))
-                        turn = 0
-                        board.place_stone(Place(x, y), turn)
+                        board.place_stone(Place(x, y), first)
                         var expected = board.board_value(values) - value
                         board.remove_stone()
                         if actual[0] != expected:
-                            failure = True
-                        turn = 1
-                        board.place_stone(Place(x, y), turn)
-                        expected = board.board_value(values) - value
+                            print(Place(x, y), "actual:", actual, "first:", expected)
+                            print(board)
+                            print(board.str_scores())
+                            assert_true(False)
+                        board.place_stone(Place(x, y), second)
+                        expected = value - board.board_value(values)
                         board.remove_stone()
                         if actual[1] != expected:
-                            failure = True
-            if failure:
-                print(board)
-                print(board.str_scores())
-                return
-            value += board.getscores(Place(x, y))[turn]
-            board.place_stone(Place(x, y), turn)
-
+                            print(Place(x, y), "actual:", actual, "second:", expected)
+                            print(board)
+                            print(board.str_scores())
+                            assert_true(False)
+            if turn == first:
+                value += board.getscores(Place(xx, yy))[turn]
+            else:
+                value -= board.getscores(Place(xx, yy))[turn]
+            board.place_stone(Place(xx, yy), turn)
 
 fn test_top_places() raises:
     var board = Board[values, 19, max_stones, 20]()
