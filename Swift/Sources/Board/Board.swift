@@ -87,7 +87,7 @@ struct Board: CustomStringConvertible {
 
     public mutating func placeStone(place: Place, turn: Int) {
         let scores = turn == first ? valueTable.0 : valueTable.1
-        historyIndices.append(ScoreMark(place: place, score: self.score, historyIdx: history.count))
+        historyIndices.append(ScoreMark(place: place, score: score, historyIdx: history.count))
 
         let x = Int(place.x)
         let y = Int(place.y)
@@ -136,7 +136,7 @@ struct Board: CustomStringConvertible {
     public mutating func updateRow(start: Int, delta: Int, _ n: Int, _ scores: [SIMD2<Score>]) {
         var i = start
         while i < start + delta * (winStones - 1 + n) {
-            history.append(PlaceScores(offset: i, scores: self.scores[i]))
+            history.append(PlaceScores(offset: i, scores: scores[i]))
             i += delta
         }
 
@@ -165,18 +165,18 @@ struct Board: CustomStringConvertible {
         self[Int(idx.place.x), Int(idx.place.y)] = 0
         score = idx.score
         while history.count > idx.historyIdx {
-            let h_scores = self.history.removeLast()
+            let h_scores = history.removeLast()
             scores[h_scores.offset] = h_scores.scores
         }
     }
 
     public func topPlaces(turn: Int, topPlaces: inout [Place]) {
         func lessFirst(a: Place, b: Place) -> Bool {
-            return getScores(Int(a.x), Int(a.y))[0] < self.getScores(Int(b.x), Int(b.y))[0]
+            return getScores(Int(a.x), Int(a.y))[0] < getScores(Int(b.x), Int(b.y))[0]
         }
 
         func lessSecond(a: Place, b: Place) -> Bool {
-            return getScores(Int(a.x), Int(a.y))[1] < self.getScores(Int(b.x), Int(b.y))[1]
+            return getScores(Int(a.x), Int(a.y))[1] < getScores(Int(b.x), Int(b.y))[1]
         }
 
         topPlaces.removeAll(keepingCapacity: true)
@@ -186,7 +186,7 @@ struct Board: CustomStringConvertible {
                 for x in 0..<boardSize {
                     if self[x, y] == 0 && getScores(x, y)[first] > 0 {
                         heapAdd(Place(x, y), to: &topPlaces, maxItems: maxPlaces) {
-                            getScores(Int($0.x), Int($0.y))[0] < self.getScores(Int($1.x), Int($1.y))[0]
+                            getScores(Int($0.x), Int($0.y))[0] < getScores(Int($1.x), Int($1.y))[0]
                         }
                     }
                 }
@@ -196,7 +196,7 @@ struct Board: CustomStringConvertible {
                 for x in 0..<boardSize {
                     if self[x, y] == 0 && getScores(x, y)[second] > 0 {
                         heapAdd(Place(x, y), to: &topPlaces, maxItems: maxPlaces) {
-                            getScores(Int($0.x), Int($0.y))[1] < self.getScores(Int($1.x), Int($1.y))[1]
+                            getScores(Int($0.x), Int($0.y))[1] < getScores(Int($1.x), Int($1.y))[1]
                         }
                     }
                 }
@@ -412,6 +412,94 @@ struct Board: CustomStringConvertible {
 
         return str
     }
+
+    public func boardValue(scores: [Score]) -> Score {
+        var value = Score(0)
+        for y in 0..<boardSize {
+            var stones = Int8(0)
+            for x in 0..<winStones - 1 {
+                stones += self[x, y]
+            }
+            for x in 0..<boardSize - winStones + 1 {
+                stones += self[x + winStones - 1, y]
+                value += calcValue(stones, scores)
+                stones -= self[x, y]
+            }
+        }
+
+        for x in 0..<boardSize {
+            var stones = Int8(0)
+            for y in 0..<winStones - 1 {
+                stones += self[x, y]
+            }
+            for y in 0..<boardSize - winStones + 1 {
+                stones += self[x, y + winStones - 1]
+                value += calcValue(stones, scores)
+                stones -= self[x, y]
+            }
+        }
+
+        for y in 0..<boardSize - winStones + 1 {
+            var stones = Int8(0)
+            for x in 0..<winStones - 1 {
+                stones += self[x, y + x]
+            }
+            for x in 0..<boardSize - winStones + 1 - y {
+                stones += self[x + winStones - 1, x + y + winStones - 1]
+                value += calcValue(stones, scores)
+                stones -= self[x, x + y]
+            }
+        }
+
+        for x in 1..<boardSize - winStones + 1 {
+            var stones = Int8(0)
+            for y in 0..<winStones - 1 {
+                stones += self[x + y, y]
+            }
+            for y in 0..<boardSize - winStones + 1 - x {
+                stones += self[x + y + winStones - 1, y + winStones - 1]
+                value += calcValue(stones, scores)
+                stones -= self[x + y, y]
+            }
+        }
+
+        for y in 0..<boardSize - winStones + 1 {
+            var stones = Int8(0)
+            for x in 0..<winStones - 1 {
+                stones += self[boardSize - 1 - x, x + y]
+            }
+            for x in 0..<boardSize - winStones + 1 - y {
+                stones += self[boardSize - 1 - x - winStones + 1, x + y + winStones - 1]
+                value += calcValue(stones, scores)
+                stones -= self[boardSize - 1 - x, x + y]
+            }
+        }
+
+        for x in 1..<boardSize - winStones + 1 {
+            var stones = Int8(0)
+            for y in 0..<winStones - 1 {
+                stones += self[boardSize - 1 - x - y, y]
+            }
+            for y in 0..<boardSize - winStones + 1 - x {
+                stones += self[boardSize - winStones - x - y, y + winStones - 1]
+                value += calcValue(stones, scores)
+                stones -= self[boardSize - 1 - x - y, y]
+            }
+        }
+
+        return value
+    }
+
+    func calcValue(_ stones: Int8, _ scores: [Score]) -> Score {
+        let black = Int(stones) % winStones
+        let white = Int(stones) / winStones
+        if white == 0 {
+            return scores[black]
+        } else if black == 0 {
+            return -scores[white]
+        }
+        return 0
+    }
 }
 
 func calcValuesTable(_ scores: [Score]) -> ([SIMD2<Score>], [SIMD2<Score>]) {
@@ -437,3 +525,4 @@ func calcValuesTable(_ scores: [Score]) -> ([SIMD2<Score>], [SIMD2<Score>]) {
 
     return result
 }
+
