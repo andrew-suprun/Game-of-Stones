@@ -97,3 +97,129 @@ import Testing
     }
 }
 
+
+@Test func testDecition() {
+    let values = [0, 1, 5, 25, 625, 3125, Score.infinity]
+    var board = Board(maxPlaces: 20, values: values)
+
+    board.placeStone(place: Place(0, 0), turn: first)
+    board.placeStone(place: Place(0, 1), turn: first)
+    board.placeStone(place: Place(0, 2), turn: first)
+    board.placeStone(place: Place(0, 3), turn: first)
+    board.placeStone(place: Place(0, 4), turn: first)
+    board.placeStone(place: Place(1, 1), turn: first)
+    board.placeStone(place: Place(2, 2), turn: first)
+    board.placeStone(place: Place(3, 3), turn: first)
+    board.placeStone(place: Place(4, 4), turn: first)
+    board.placeStone(place: Place(1, 0), turn: first)
+    board.placeStone(place: Place(2, 0), turn: first)
+    board.placeStone(place: Place(3, 0), turn: first)
+    board.placeStone(place: Place(4, 0), turn: first)
+
+    board.placeStone(place: Place(18, 0), turn: second)
+    board.placeStone(place: Place(18, 1), turn: second)
+    board.placeStone(place: Place(18, 2), turn: second)
+    board.placeStone(place: Place(18, 3), turn: second)
+    board.placeStone(place: Place(18, 4), turn: second)
+    board.placeStone(place: Place(17, 1), turn: second)
+    board.placeStone(place: Place(16, 2), turn: second)
+    board.placeStone(place: Place(15, 3), turn: second)
+    board.placeStone(place: Place(14, 4), turn: second)
+    board.placeStone(place: Place(17, 0), turn: second)
+    board.placeStone(place: Place(16, 0), turn: second)
+    board.placeStone(place: Place(15, 0), turn: second)
+    board.placeStone(place: Place(14, 0), turn: second)
+
+    board.placeStone(place: Place(18, 18), turn: first)
+    board.placeStone(place: Place(17, 18), turn: first)
+    board.placeStone(place: Place(16, 18), turn: first)
+    board.placeStone(place: Place(15, 18), turn: first)
+    board.placeStone(place: Place(14, 18), turn: first)
+    board.placeStone(place: Place(18, 17), turn: first)
+    board.placeStone(place: Place(18, 16), turn: first)
+    board.placeStone(place: Place(18, 15), turn: first)
+    board.placeStone(place: Place(18, 14), turn: first)
+    board.placeStone(place: Place(17, 17), turn: first)
+    board.placeStone(place: Place(16, 16), turn: first)
+    board.placeStone(place: Place(15, 15), turn: first)
+    board.placeStone(place: Place(14, 14), turn: first)
+    
+    board.placeStone(place: Place(0, 18), turn: second)
+    board.placeStone(place: Place(1, 18), turn: second)
+    board.placeStone(place: Place(2, 18), turn: second)
+    board.placeStone(place: Place(3, 18), turn: second)
+    board.placeStone(place: Place(4, 18), turn: second)
+    board.placeStone(place: Place(1, 17), turn: second)
+    board.placeStone(place: Place(2, 16), turn: second)
+    board.placeStone(place: Place(3, 15), turn: second)
+    board.placeStone(place: Place(4, 14), turn: second)
+    board.placeStone(place: Place(0, 17), turn: second)
+    board.placeStone(place: Place(0, 16), turn: second)
+    board.placeStone(place: Place(0, 15), turn: second)
+    board.placeStone(place: Place(0, 14), turn: second)
+
+    print(board)
+
+    print(board.decision())
+    assert(board.decision() == .NoDecision)
+
+    board.placeStone(place: Place(0, 5), turn: first)
+    print(board.decision())
+    assert(board.decision() == .FirstWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(5, 5), turn: first)
+    print(board.decision())
+    assert(board.decision() == .FirstWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(5, 0), turn: first)
+    print(board.decision())
+    assert(board.decision() == .FirstWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(18, 5), turn: second)
+    print(board.decision())
+    assert(board.decision() == .SecondWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(13, 5), turn: second)
+    print(board.decision())
+    assert(board.decision() == .SecondWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(13, 0), turn: second)
+    print(board.decision())
+    assert(board.decision() == .SecondWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(13, 18), turn: first)
+    print(board.decision())
+    assert(board.decision() == .FirstWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(18, 13), turn: first)
+    print(board.decision())
+    assert(board.decision() == .FirstWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(13, 13), turn: first)
+    print(board.decision())
+    assert(board.decision() == .FirstWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(5, 18), turn: second)
+    print(board.decision())
+    assert(board.decision() == .SecondWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(5, 13), turn: second)
+    print(board.decision())
+    assert(board.decision() == .SecondWin)
+    board.removeStone()
+
+    board.placeStone(place: Place(0, 13), turn: second)
+    print(board.decision())
+    assert(board.decision() == .SecondWin)
+    board.removeStone()
+}
