@@ -136,7 +136,7 @@ struct Board: CustomStringConvertible {
     public mutating func updateRow(start: Int, delta: Int, _ n: Int, _ scores: [SIMD2<Score>]) {
         var i = start
         while i < start + delta * (winStones - 1 + n) {
-            history.append(PlaceScores(offset: i, scores: scores[i]))
+            history.append(PlaceScores(offset: i, scores: self.scores[i]))
             i += delta
         }
 
@@ -307,7 +307,7 @@ struct Board: CustomStringConvertible {
             return places[y * boardSize + x]
         }
         set {
-            places[y * boardSize + y] = newValue
+            places[y * boardSize + x] = newValue
         }
     }
 
@@ -413,16 +413,17 @@ struct Board: CustomStringConvertible {
         return str
     }
 
-    public func boardValue(scores: [Score]) -> Score {
-        var value = Score(0)
+    public func boardValue(_ values: [Score]) -> Score {
+        var score = Score(0)
         for y in 0..<boardSize {
             var stones = Int8(0)
             for x in 0..<winStones - 1 {
                 stones += self[x, y]
+                // print("### x=\(x) y=\(y) stones=\(stones) stone=\(self.places[y*boardSize+x])")
             }
             for x in 0..<boardSize - winStones + 1 {
                 stones += self[x + winStones - 1, y]
-                value += calcValue(stones, scores)
+                score += calcValue(stones, values)
                 stones -= self[x, y]
             }
         }
@@ -434,7 +435,7 @@ struct Board: CustomStringConvertible {
             }
             for y in 0..<boardSize - winStones + 1 {
                 stones += self[x, y + winStones - 1]
-                value += calcValue(stones, scores)
+                score += calcValue(stones, values)
                 stones -= self[x, y]
             }
         }
@@ -446,7 +447,7 @@ struct Board: CustomStringConvertible {
             }
             for x in 0..<boardSize - winStones + 1 - y {
                 stones += self[x + winStones - 1, x + y + winStones - 1]
-                value += calcValue(stones, scores)
+                score += calcValue(stones, values)
                 stones -= self[x, x + y]
             }
         }
@@ -458,7 +459,7 @@ struct Board: CustomStringConvertible {
             }
             for y in 0..<boardSize - winStones + 1 - x {
                 stones += self[x + y + winStones - 1, y + winStones - 1]
-                value += calcValue(stones, scores)
+                score += calcValue(stones, values)
                 stones -= self[x + y, y]
             }
         }
@@ -470,7 +471,7 @@ struct Board: CustomStringConvertible {
             }
             for x in 0..<boardSize - winStones + 1 - y {
                 stones += self[boardSize - 1 - x - winStones + 1, x + y + winStones - 1]
-                value += calcValue(stones, scores)
+                score += calcValue(stones, values)
                 stones -= self[boardSize - 1 - x, x + y]
             }
         }
@@ -482,12 +483,12 @@ struct Board: CustomStringConvertible {
             }
             for y in 0..<boardSize - winStones + 1 - x {
                 stones += self[boardSize - winStones - x - y, y + winStones - 1]
-                value += calcValue(stones, scores)
+                score += calcValue(stones, values)
                 stones -= self[boardSize - 1 - x - y, y]
             }
         }
 
-        return value
+        return score
     }
 
     func calcValue(_ stones: Int8, _ scores: [Score]) -> Score {
@@ -497,8 +498,9 @@ struct Board: CustomStringConvertible {
             return scores[black]
         } else if black == 0 {
             return -scores[white]
+        } else {
+            return 0
         }
-        return 0
     }
 }
 

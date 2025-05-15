@@ -35,8 +35,50 @@ import Testing
     assert(p4.x == 18 && p4.y == 18)
 }
 
-@Test func testScores() throws {
-    let board = Board(maxPlaces: 20, values: [0, 1, 5, 25, 625, 3125, Score.infinity])
-    print("board:", board)
-    print("board:", board.strScores())
+@Test func testPlaceStone() throws {
+    let values = [0, 1, 5, 25, 625, 3125, Score.infinity]
+    var board = Board(maxPlaces: 20, values: values)
+    var value = Score(0)
+
+    for _ in 0..<200 {
+        let turn = Int.random(in: 0...1)
+        let x = Int.random(in: 0...boardSize - 1)
+        let y = Int.random(in: 0...boardSize - 1)
+        if board[x, y] == 0 {
+            var failed = false
+            for y in 0..<boardSize {
+                for x in 0..<boardSize {
+                    if board[x, y] == 0 {
+                        let actual = board.getScores(x, y)
+                        board.placeStone(place: Place(x, y), turn: first)
+                        var expected = board.boardValue(values) - value
+                        board.removeStone()
+                        if actual[0] != expected {
+                            failed = true
+                            print("first:  \(Place(x, y)): actual \(actual[0]) expected \(expected)")
+                        }
+                        board.placeStone(place: Place(x, y), turn: second)
+                        expected = value - board.boardValue(values)
+                        board.removeStone()
+                        if actual[1] != expected {
+                            failed = true
+                            print("second: \(Place(x, y)): actual \(actual[0]) expected \(expected)")
+                        }
+                    }
+                }
+            }
+            if failed {
+                print(board)
+                print(board.strScores())
+                try #require(!failed)
+            }
+            if turn == first {
+                value += board.getScores(x, y)[turn]
+            } else {
+                value -= board.getScores(x, y)[turn]
+            }
+            board.placeStone(place: Place(x, y), turn: turn)
+            print(board)
+        }
+    }
 }
