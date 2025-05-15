@@ -82,3 +82,18 @@ import Testing
         }
     }
 }
+
+@Test func testTopPlaces() {
+    let values = [0, 1, 5, 25, 625, 3125, Score.infinity]
+    var board = Board(maxPlaces: 20, values: values)
+    board.placeStone(place: Place(9, 9), turn: first)
+    board.placeStone(place: Place(8, 9), turn: second)
+    var topPlaces = [Place]()
+    board.topPlaces(turn: first, topPlaces: &topPlaces)
+    for i in 1..<20 {
+        let parent = topPlaces[(i - 1) / 2]
+        let child = topPlaces[i]
+        assert(board.getScores(Int(parent.x), Int(parent.y))[0] <= board.getScores(Int(child.x), Int(child.y))[0])
+    }
+}
+

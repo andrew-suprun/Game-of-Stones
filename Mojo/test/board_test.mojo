@@ -47,7 +47,7 @@ fn test_top_places() raises:
     var top_places = List[Place]()
     board.top_places(0, top_places)
     for i in range(1, 20):
-        var parent = top_places[(i - 1) / 2]
+        var parent = top_places[(i - 1) // 2]
         var child = top_places[i]
         assert_true(board.getscores(parent)[0] <= board.getscores(child)[0])
 
