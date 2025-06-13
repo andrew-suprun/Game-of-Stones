@@ -9,8 +9,9 @@ fn test_place_stone() raises:
     seed(0)
     var board = Board[values, 19, max_stones, 20]()
     var value = Score(0)
-    for _ in range(200):
-        var turn = Int(random_si64(0, 1))
+    var n = 0
+    for i in range(200):
+        var turn = i % 2
         var xx = Int(random_si64(0, board.size - 1))
         var yy = Int(random_si64(0, board.size - 1))
         if board[xx, yy] == board.empty:
@@ -39,6 +40,10 @@ fn test_place_stone() raises:
             else:
                 value -= board.getscores(Place(xx, yy))[turn]
             board.place_stone(Place(xx, yy), turn)
+            n += 1
+    for _ in range(n):
+        board.remove_stone()
+    assert_true(board.score == 0)
 
 fn test_top_places() raises:
     var board = Board[values, 19, max_stones, 20]()
