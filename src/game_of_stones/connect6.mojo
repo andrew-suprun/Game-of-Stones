@@ -10,11 +10,13 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
     var board: Board[values, size, max_stones, max_places]
     var turn: Int
     var top_places: List[Place]
+    var history: List[Move]
 
     fn __init__(out self):
         self.board = Board[values, size, max_stones, max_places]()
         self.turn = 0
         self.top_places = List[Place]()
+        self.history = List[Move]()
 
     fn name(self, out name: String):
         name = "connect6"
@@ -54,22 +56,23 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                     move_scores.append((Move, Score)(Move(place1, place2), win))
                     self.board.remove_stone()
                     return
-                elif score1 + score2 == 0:
-                    add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), draw), move_scores)
-                else:
-                    add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), score1 + score2), move_scores)
+                var score = score1 + score2 if score1 + score2 == 0 else draw
+                add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), score), move_scores)
 
             self.board.remove_stone()
 
     fn play_move(mut self, move: Move):
+        self.history.append(move)
         self.board.place_stone(move.p1, self.turn)
         if move.p1 != move.p2:
             self.board.place_stone(move.p2, self.turn)
         self.turn = 1 - self.turn
 
     fn undo_move(mut self):
+        var move = self.history.pop()
         self.board.remove_stone()
-        self.board.remove_stone()
+        if move.p1 != move.p2:
+            self.board.remove_stone()
         self.turn = 1 - self.turn
 
     fn decision(self, out decision: String):

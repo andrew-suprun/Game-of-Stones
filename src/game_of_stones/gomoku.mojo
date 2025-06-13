@@ -10,13 +10,11 @@ struct Gomoku[size: Int, max_moves: Int](Game):
     var board: Board[values, size, max_stones, max_moves]
     var turn: Int
     var top_places: List[Place]
-    var history: List[Move]
 
     fn __init__(out self):
         self.board = Board[values, size, max_stones, max_moves]()
         self.turn = 0
         self.top_places = List[Place]()
-        self.history = List[Move]()
 
     fn name(self, out name: String):
         name = "gomoku"
@@ -50,17 +48,11 @@ struct Gomoku[size: Int, max_moves: Int](Game):
                 add[(Move, Score), max_moves, less]((Move, Score)(Move(place, place), score), move_scores)
 
     fn play_move(mut self, move: Move):
-        self.history.append(move)
-
         self.board.place_stone(move.p1, self.turn)
         self.turn = 1 - self.turn
 
     fn undo_move(mut self):
-        if len(self.history) == 0:
-            return
-
         self.turn = 1 - self.turn
-        self.history.shrink(len(self.history)-1)
         self.board.remove_stone()
 
     fn decision(self, out decision: String):
