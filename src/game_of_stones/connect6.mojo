@@ -57,12 +57,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](Game):
                 elif score1 + score2 == 0:
                     add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), draw), move_scores)
                 else:
-                    self.board.place_stone(place2, self.turn)
-                    var opp_score = self.board.max_score(1 - self.turn)
-                    var coeff = 1 - 2 * self.turn
-                    var move_score = coeff * self.board.score - opp_score
-                    self.board.remove_stone()
-                    add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), move_score), move_scores)
+                    add[(Move, Score), max_moves, less]((Move, Score)(Move(place1, place2), score1 + score2), move_scores)
 
             self.board.remove_stone()
 

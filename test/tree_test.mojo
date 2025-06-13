@@ -14,8 +14,10 @@ def test_connect6():
     g.play_move(Move("i9-i10"))
 
     print(g)
+    print(g.board.str_scores())
     for _ in range(1000):
         _ = t.expand(g)
+    print("r =", t.value())
     testing.assert_true(t.value() == -2)
 
 alias G = Gomoku[19, 10]
@@ -26,6 +28,8 @@ def test_gomoku():
     g.play_move(Move("j10"))
     g.play_move(Move("i9"))
 
+    print(g)
+    print(g.board.str_scores())
     for _ in range(1000):
         _ = t.expand(g)
     print("r =", t.value())

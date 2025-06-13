@@ -47,12 +47,7 @@ struct Gomoku[size: Int, max_moves: Int](Game):
                     add[(Move, Score), max_moves, less]((Move, Score)(Move(place, place), draw), move_scores)
                     has_draw = True
             else:
-                self.board.place_stone(place, self.turn)
-                var opp_score = self.board.max_score(1 - self.turn)
-                var coeff = 1 - 2 * self.turn
-                var move_score = coeff * self.board.score - opp_score / 2
-                self.board.remove_stone()
-                add[(Move, Score), max_moves, less]((Move, Score)(Move(place, place), move_score), move_scores)
+                add[(Move, Score), max_moves, less]((Move, Score)(Move(place, place), score), move_scores)
 
     fn play_move(mut self, move: Move):
         self.history.append(move)
