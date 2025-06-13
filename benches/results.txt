@@ -1,0 +1,36 @@
+--- basic (ms/10_000) ---
+InlineArray SIMD Int   0.009500944444444446
+List        SIMD Int   0.009371578125
+InlineArray SIMD Float 0.012925771739130435
+List        SIMD Float 0.009504345238095239
+
+--- board (ms/1000) --- unsafe
+update_row  0.03484181881512873
+place_stone 0.37531666145670517
+max_score   0.2000372
+top_places  1.813017
+
+--- board (ms/1000) --- ASSERT=all
+update_row  0.09546080609330372
+place_stone 0.6838504699515807
+max_score   0.1848671
+top_places  2.6929284116331096
+
+magic run mojo run -I src -D ASSERT=all benches/connect6_bench.mojo
+top_moves 0.403 msec
+expand    0.418 msec
+
+magic run mojo run -I src benches/connect6_bench.mojo
+top_moves 0.219 msec
+expand    0.244 msec
+
+magic run mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo
+top_moves 0.0257 msec
+expand    0.0300 msec
+
+magic run mojo run -I src benches/gomoku_bench.mojo      
+top_moves 0.015 msec
+expand    0.019 msec
+
+--- heap (ms/100_000) ---
+add  0.576486
