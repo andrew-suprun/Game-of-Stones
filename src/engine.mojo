@@ -3,9 +3,10 @@ from time import perf_counter_ns
 from builtin.io import _fdopen
 
 from tree import Tree
-from game import Game, Move, Score
+from game import TGame
+import game
 
-fn run[G: Game, exp_factor: Score]() raises:
+fn run[Game: TGame, exp_factor: Float32]() raises:
     var log_file = FileHandle()
     var log = False
 
@@ -16,8 +17,8 @@ fn run[G: Game, exp_factor: Score]() raises:
 
     var stdin = _fdopen["r"](FileDescriptor(0))
 
-    var game = G()
-    var tree = Tree[G, exp_factor]()
+    var game = Game()
+    var tree = Tree[Game, exp_factor]()
 
     while True:
         var line: String
@@ -37,7 +38,7 @@ fn run[G: Game, exp_factor: Score]() raises:
         if terms[0] == "game-name":
             print("game-name", game.name())
         elif terms[0] == "move":
-            var move = Move(terms[1])
+            var move = Game.Move(terms[1])
             game.play_move(move)
             tree.reset()
             if log:

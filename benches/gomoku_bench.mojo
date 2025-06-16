@@ -13,7 +13,7 @@ fn bench_top_moves():
         game.play_move(Move("i9"))
     except:
         pass
-    var moves = List[(Move, Score)]()
+    var moves = List[Move]()
     for _ in range(1000):
         game.top_moves(moves)
     _ = moves

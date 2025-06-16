@@ -1,36 +1,62 @@
-from game import Game, Move, Score, is_win
+from game import TGame, TMove
 from tree import Tree, Node
-from game_of_stones import Connect6, Gomoku
 
 from random import seed, random_si64, random_float64
 import testing
 
-alias C6 = Connect6[19, 20, 10]
+var __id: Int = 0
 
-def test_connect6():
-    var g = C6()
-    var t = Tree[C6, 30]()
-    g.play_move(Move("j10"))
-    g.play_move(Move("i9-i10"))
+@fieldwise_init
+struct TestMove(TMove):
+    var _id: Int
+    var _score: Float32
+    var _decisive: Bool
 
-    print(g)
-    print(g.board.str_scores())
-    for _ in range(1000):
-        _ = t.expand(g)
-    print("r =", t.value())
-    testing.assert_true(t.value() == -2)
+    fn __init__(out self):
+        self._id = __id
+        self._score = 0
+        self._decisive = False
 
-alias G = Gomoku[19, 10]
+    fn get_score(self) -> Float32:
+        return self._score
 
-def test_gomoku():
-    var g = G()
-    var t = Tree[G, 30]()
-    g.play_move(Move("j10"))
-    g.play_move(Move("i9"))
+    fn set_score(mut self, score: Float32):
+        self._score = score
 
-    print(g)
-    print(g.board.str_scores())
-    for _ in range(1000):
-        _ = t.expand(g)
-    print("r =", t.value())
-    testing.assert_true(t.value() == 24)
+    fn is_decisive(self) -> Bool:
+        return self._decisive
+
+    fn set_decisive(mut self):
+        self._decisive = True
+
+    fn __str__(self, out r: String):
+        r = String.write(self)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(self._id, " ", self._score, " ", self._decisive)
+
+
+struct TestGame(TGame):
+    alias Move = TestMove
+
+    fn __init__(out self):
+        pass
+
+    fn name(self) -> String:
+        return "test game"
+
+    fn top_moves(mut self, mut move_scores: List[self.Move]):
+        ...
+
+    fn play_move(mut self, move: self.Move):
+        pass
+
+    fn undo_move(mut self):
+        pass
+
+
+def test_tree():
+    var g = TestGame()
+    var t = Tree[TestGame, 2]()
+    g.play_move(TestMove(0, 0, False))
+    _ = t.expand(g)

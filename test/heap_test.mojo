@@ -16,7 +16,7 @@ def test_heap():
 
     shuffle(values)
     for i in range(100):
-        add[Int, 20, less](values[i], items)
+        heap_add[Int, 20, less](values[i], items)
 
     for i in range(20):
         print(i, items[i])

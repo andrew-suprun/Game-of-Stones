@@ -2,7 +2,7 @@ from sys import env_get_int
 from time import perf_counter_ns
 import random
 
-from game import Game, Move, Place, Score
+from game import TMove
 from tree import Tree
 from game_of_stones import Connect6
 
@@ -40,7 +40,7 @@ fn main() raises:
 alias black = True
 alias white = False
 
-fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
+fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
     var g1 = Game1()
     var g2 = Game2()
     var t1 = Tree1()
@@ -116,7 +116,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
     print(__first_wins, ":", __second_wins, " (", __draws, ")", sep="")
 
 
-fn opening_moves(out moves: List[Move]):
+fn opening_moves[Move: TMove](out moves: List[Move]):
     var places = List[Place]()
     for j in range(7, 12):
         for i in range(7, 12):

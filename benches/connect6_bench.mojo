@@ -14,7 +14,7 @@ fn bench_top_moves():
         c6.play_move(Move("i9-i10"))
     except:
         pass
-    var moves = List[(Move, Score)]()
+    var moves = List[Move]()
     for _ in range(1000):
         c6.top_moves(moves)
     _ = moves

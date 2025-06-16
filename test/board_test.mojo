@@ -1,14 +1,13 @@
 from testing import assert_true
 from random import seed, random_si64
 
-from game import Score, Place
-from game_of_stones.board import Board, first, second
-from game_of_stones.connect6 import Connect6, max_stones, values
+from board import Board, first, second
+from connect6 import Connect6, max_stones, values
 
 fn test_place_stone() raises:
     seed(0)
     var board = Board[values, 19, max_stones, 20]()
-    var value = Score(0)
+    var value = Float32(0)
     var n = 0
     for i in range(200):
         var turn = i % 2

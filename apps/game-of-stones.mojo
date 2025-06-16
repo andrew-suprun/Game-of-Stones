@@ -5,7 +5,6 @@ import random
 import sys
 
 from game_of_stones import Gomoku, Connect6
-from game import Move, Place, Score
 from tree import Tree
 
 alias board_size = 19
@@ -35,6 +34,12 @@ alias C6 = Connect6[19, 48, 24]
 
 alias TG = Tree[G, 30]
 alias TC6 = Tree[C6, 30]
+
+@fieldwise_init
+@register_passable("trivial")
+struct Place(Copyable, Movable):
+    var x: Int8
+    var y: Int8
 
 struct Game:
     var name: Int
