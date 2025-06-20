@@ -1,9 +1,6 @@
-trait TMove(Copyable, Movable, Stringable, Writable):
-    
-    # TODO: fields in traits are not supported yet
-    # var _score: Score
-    # fn score(mut self) -> ref[self._score] Score:
+from score import Score
 
+trait TMove(Copyable, Movable, Stringable, Writable):
     fn __init__(out self):
         ...
 
@@ -15,10 +12,6 @@ trait TMove(Copyable, Movable, Stringable, Writable):
 
     fn is_decisive(self) -> Bool:
         ...
-
-    fn set_decisive(mut self):
-        ...
-
 
 trait TGame(Copyable):
     alias Move: TMove

@@ -1,7 +1,9 @@
-from game import TGame, TMove
+from utils.numerics import inf, isinf
 
-from .heap import add
-from .board import Board, Place, win
+from score import Score
+from game import TGame, TMove
+from heap import heap_add
+from board import Board, Place
 
 alias max_stones = 6
 alias values = List[Score](0, 1, 5, 25, 125, 625)
@@ -11,17 +13,22 @@ alias values = List[Score](0, 1, 5, 25, 125, 625)
 struct Move(TMove):
     var p1: Place
     var p2: Place
-    var score: Score
+    var _score: Score
 
     fn __init__(out self):
         self.p1 = Place()
         self.p2 = Place()
-        self.score = 0
+        self._score = 0
 
-    fn __init__(out self, x1: Int, y1: Int, x2: Int, y2: Int):
-        self.p1 = Place(x1, y1)
-        self.p2 = Place(x2, y2)
-        self.score = 0
+    fn __init__(out self, p1: Place, p2, Place):
+        self.p1 = p1
+        self.p2 = p2
+        self._score = 0
+
+    # fn __init__(out self, x1: Int, y1: Int, x2: Int, y2: Int):
+    #     self.p1 = Place(x1, y1)
+    #     self.p2 = Place(x2, y2)
+    #     self._score = 0
 
     fn __init__(out self, move: String) raises:
         var tokens = move.split("-")
@@ -30,16 +37,16 @@ struct Move(TMove):
             self.p2 = Place(tokens[1])
         else:
             self.p2 = self.p1
-        self.score = 0
+        self._score = 0
 
     @always_inline
     fn score(self) -> Score:
-        return self.score
+        return self._score
 
 
     @always_inline
     fn set_score(mut self, score: Score):
-        self.score = score
+        self._score = score
 
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
@@ -78,7 +85,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     fn top_moves(mut self, mut move_scores: List[self.Move]):
         @parameter
         fn less(a: self.Move, b: self.Move, out r: Bool):
-            r = a.score[1] < b.score[1]
+            r = a.score() < b.score()
 
         move_scores.clear()
         self.board.top_places(self.turn, self.top_places)
@@ -94,7 +101,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         for i in range(len(self.top_places) - 1):
             var place1 = self.top_places[i]
             var score1 = self.board.getscores(place1)[self.turn]
-            if score1 == win:
+            if isinf(score1) and score1 > 0:
                 move_scores.clear()
                 move_scores.append(Move(Move(place1, place1), win))
                 return
@@ -105,12 +112,12 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                 var place2 = self.top_places[j]
                 var score2 = self.board.getscores(place2)[self.turn]
 
-                if score2 == win:
+                if isinf(score2) and score2 > 0:
                     move_scores.clear()
                     move_scores.append(Move(Move(place1, place2), win))
                     self.board.remove_stone()
                     return
-                var score = -self.score + score1 + score2 if score1 + score2 == 0 else draw
+                var score = -self._score + score1 + score2 if score1 + score2 == 0 else Score.draw
                 heap_add[Move, max_moves, less](Move(Move(place1, place2), score), move_scores)
 
             self.board.remove_stone()

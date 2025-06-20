@@ -1,5 +1,6 @@
 from utils.numerics import inf, neg_inf, nan, isfinite, isinf, isnan
 
+@fieldwise_init("implicit")
 @register_passable("trivial")
 struct Score(Copyable, LessThanComparable, Stringable, Writable):
     alias win = Score(inf[DType.float32]())
@@ -7,14 +8,6 @@ struct Score(Copyable, LessThanComparable, Stringable, Writable):
     alias draw = Score(nan[DType.float32]())
 
     var score: Float32
-
-    @implicit
-    fn __init__(out self, score: Score):
-        self.score = score.score
-
-    @implicit
-    fn __init__(out self, score: Float32):
-        self.score = score
 
     @implicit
     fn __init__(out self, score: FloatLiteral):
