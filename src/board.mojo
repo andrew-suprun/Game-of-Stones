@@ -1,3 +1,5 @@
+from memory import memcpy
+
 from score import Score
 from game import TMove
 from heap import heap_add
@@ -18,7 +20,7 @@ struct PlaceScores(Copyable, Movable):
 @register_passable("trivial")
 struct ScoreMark(Copyable, Movable):
     var place: Place
-    var score: Float32
+    var score: Score
     var history_idx: Int
 
 @fieldwise_init
@@ -49,7 +51,7 @@ struct Place(Copyable, Movable, Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
+struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -57,7 +59,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
 
     var places: List[Int8]
     var scores: List[Scores] 
-    var score: Float32
+    var score: Score
     var history: List[PlaceScores]
     var history_indices: List[ScoreMark]
 
@@ -77,6 +79,18 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 var t2 = max(0, min(win_stones, m, 2 * size - 1 - win_stones + 1 - y - x, x + y - win_stones + 1 + 1))
                 var total = v + h + t1 + t2
                 self.setscores(Place(x, y), Scores(total, total))
+
+    fn __copyinit__(out self, existing: Self, /):
+
+        self.places = List[Int8](unsafe_uninit_length = size * size)
+        memcpy(self.places.data, existing.places.data, size * size)
+        self.places.capacity = size * size
+
+        self.scores = List[Scores](unsafe_uninit_length = size * size)
+        memcpy(self.scores.data, existing.scores.data, size * size)
+        self.scores.capacity = size * size
+
+        self.score = existing.score
 
     fn place_stone(mut self, place: Place, turn: Int):
         var scores = self.value_table[turn]
@@ -175,7 +189,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                     if self[x, y] == self.empty and self.getscores(Place(x, y))[second] > 0:
                         heap_add[Place, max_places, less_second](Place(x, y), top_places)
 
-    fn max_score(self, player: Int) -> Float32:
+    fn max_score(self, player: Int) -> Score:
         var max_score = Score.loss
         for i in range(len(self.scores)):
             var score = self.scores[i][player]
@@ -358,7 +372,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
-    fn board_value(self, scores: List[Float32], out value: Float32):
+    fn board_value(self, scores: List[Score], out value: Score):
         value = 0.0
         for y in range(size):
             var stones = Int8(0)
@@ -414,7 +428,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
-    fn calc_value(self, stones: Int8, scores: List[Float32], out value: Float32):
+    fn calc_value(self, stones: Int8, scores: List[Score], out value: Score):
         var black = stones % win_stones
         var white = stones // win_stones
         if white == 0:

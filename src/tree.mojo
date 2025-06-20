@@ -4,7 +4,7 @@ from memory import Pointer
 
 from game import TGame
 
-struct Tree[Game: TGame, c: Float32](Stringable, Writable):
+struct Tree[Game: TGame, c: Score](Stringable, Writable):
     var root: Node[Game, c]
     var top_moves: List[Game.Move]
 
@@ -27,7 +27,7 @@ struct Tree[Game: TGame, c: Float32](Stringable, Writable):
                 undecided += 1
         return undecided == 1
 
-    fn value(self, out result: Float32):
+    fn value(self, out result: Score):
         result = -self.root.value
         
     fn best_move(self, out result: Game.Move):
@@ -46,7 +46,7 @@ struct Tree[Game: TGame, c: Float32](Stringable, Writable):
         self.root.debug_print_root_children()
 
 @fieldwise_init
-struct Node[Game: TGame, c: Float32](Copyable, Movable, Stringable, Writable):
+struct Node[Game: TGame, c: Score](Copyable, Movable, Stringable, Writable):
     var move: Game.Move
     var children: List[Self]
     var n_sims: Int32
@@ -67,12 +67,12 @@ struct Node[Game: TGame, c: Float32](Copyable, Movable, Stringable, Writable):
         else:
             ref selected_child = self.children[0]
             var n_sims = self.n_sims
-            var log_parent_sims = log2(Float32(n_sims))
+            var log_parent_sims = log2(Score(n_sims))
             var maxV = neg_inf[DType.float32]()
             for ref child in self.children:
                 if child.move.is_decisive():
                     continue
-                var v = child.move.get_score() + self.c * sqrt(log_parent_sims / Float32(child.n_sims))
+                var v = child.move.score() + self.c * sqrt(log_parent_sims / Score(child.n_sims))
                 if v > maxV:
                     maxV = v
                     selected_child = child
@@ -82,30 +82,30 @@ struct Node[Game: TGame, c: Float32](Copyable, Movable, Stringable, Writable):
             g.undo_move()
 
         self.n_sims = 0
-        self.move.set_score(1)
-        self.move.set_decisive()
         var score = inf[DType.float32]()
         var has_draw = False
         var all_draws = True
         for child in self.children:
-            if child.move.is_decisive() and child.move.get_score() > 0:
+            if child.move.is_decisive() and child.move.score() > 0:
                 self.move.set_decisive()
                 self.move.set_score(-1)
+                print("#1#")
                 return
-            elif child.move.is_decisive() and child.move.get_score() == 0:
+            elif child.move.is_decisive() and child.move.score() == 0:
                 has_draw = True
                 continue
             all_draws = False
-            if child.move.is_decisive() and child.move.get_score() < 0:
+            if child.move.is_decisive() and child.move.score() < 0:
                 continue
             self.n_sims += child.n_sims
-            var child_score = child.move.get_score()
+            var child_score = child.move.score()
             if score >= -child_score:
                 score = -child_score
         if all_draws:
             self.move.set_score(0)
             self.move.set_decisive()
-        elif has_draw and self.move.get_score() > 0:
+            print("#2#")
+        elif has_draw and self.move.score() > 0:
             self.move.set_score(0)
         else:
             self.move.set_score(score)
@@ -124,7 +124,7 @@ struct Node[Game: TGame, c: Float32](Copyable, Movable, Stringable, Writable):
         result = String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write(self.move, " v: ", self.move.get_score(), " s: ", self.n_sims)
+        writer.write(self.move, " v: ", self.move.score(), " s: ", self.n_sims)
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write("|   " * depth, self, "\n")

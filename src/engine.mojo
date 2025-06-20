@@ -6,7 +6,7 @@ from tree import Tree
 from game import TGame
 import game
 
-fn run[Game: TGame, exp_factor: Float32]() raises:
+fn run[Game: TGame, exp_factor: Score]() raises:
     var log_file = FileHandle()
     var log = False
 

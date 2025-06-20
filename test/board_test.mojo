@@ -7,7 +7,7 @@ from connect6 import Connect6, max_stones, values
 fn test_place_stone() raises:
     seed(0)
     var board = Board[values, 19, max_stones, 20]()
-    var value = Float32(0)
+    var value = Score(0)
     var n = 0
     for i in range(200):
         var turn = i % 2

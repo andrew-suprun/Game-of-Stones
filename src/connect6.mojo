@@ -4,14 +4,14 @@ from .heap import add
 from .board import Board, Place, win
 
 alias max_stones = 6
-alias values = List[Float32](0, 1, 5, 25, 125, 625)
+alias values = List[Score](0, 1, 5, 25, 125, 625)
 
 @fieldwise_init
 @register_passable("trivial")
 struct Move(TMove):
     var p1: Place
     var p2: Place
-    var score: Float32
+    var score: Score
 
     fn __init__(out self):
         self.p1 = Place()
@@ -33,12 +33,12 @@ struct Move(TMove):
         self.score = 0
 
     @always_inline
-    fn get_score(self) -> Float32:
+    fn score(self) -> Score:
         return self.score
 
 
     @always_inline
-    fn set_score(mut self, score: Float32):
+    fn set_score(mut self, score: Score):
         self.score = score
 
     @always_inline
@@ -49,25 +49,6 @@ struct Move(TMove):
     @always_inline
     fn __ne__(self, other: Self) -> Bool:
         return not (self == other)
-
-    @always_inline
-    fn is_decisive(self) -> Bool:
-        return not isfinite(self.score) or is_draw(self.score)
-
-
-    @always_inline
-    fn is_win(self) -> Bool:
-        return isinf(self.score) and v > 0
-
-
-    @always_inline
-    fn is_loss(self) -> Bool:
-        return isinf(self.score) and v < 0
-
-
-    @always_inline
-    fn is_draw(self) -> Bool:
-        return v == draw
 
     fn __str__(self, out r: String):
         r = String.write(self)
@@ -129,7 +110,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                     move_scores.append(Move(Move(place1, place2), win))
                     self.board.remove_stone()
                     return
-                var score = score1 + score2 if score1 + score2 == 0 else draw
+                var score = -self.score + score1 + score2 if score1 + score2 == 0 else draw
                 heap_add[Move, max_moves, less](Move(Move(place1, place2), score), move_scores)
 
             self.board.remove_stone()

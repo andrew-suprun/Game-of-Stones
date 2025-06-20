@@ -1,86 +1,65 @@
-# TODO: Remove this module
-
-from utils.numerics import inf, neg_inf, isfinite, isinf
+from utils.numerics import inf, neg_inf, nan, isfinite, isinf, isnan
 
 @register_passable("trivial")
-struct Score(Copyable, Movable, Comparable, Stringable, Writable):
+struct Score(Copyable, LessThanComparable, Stringable, Writable):
     alias win = Score(inf[DType.float32]())
     alias loss = Score(neg_inf[DType.float32]())
-    alias draw = Score(Float32(0.25))
+    alias draw = Score(nan[DType.float32]())
 
-    var _score: Float32
-
-    @implicit
-    fn __init__(out self, v: Float32):
-        self._score = v
+    var score: Float32
 
     @implicit
-    fn __init__(out self, v: FloatLiteral):
-        self._score = v
+    fn __init__(out self, score: Score):
+        self.score = score.score
 
     @implicit
-    fn __init__(out self, v: IntLiteral):
-        self._score = v
+    fn __init__(out self, score: Float32):
+        self.score = score
 
-    @always_inline
-    fn score(self) -> Float32:
-        return self._score if not self.is_draw() else 0
+    @implicit
+    fn __init__(out self, score: FloatLiteral):
+        self.score = score
 
-    @always_inline
-    fn is_win(self) -> Bool:
-        return isinf(self._score) and self._score > 0
+    @implicit
+    fn __init__(out self, score: IntLiteral):
+        self.score = score
 
-    @always_inline
-    fn is_loss(self) -> Bool:
-        return isinf(self._score) and self._score < 0
+    fn __lt__(self, other: Self) -> Bool:
+        return self.score < other.score
 
-    @always_inline
-    fn is_draw(self) -> Bool:
-        return self._score == 0.25
+    fn __neg__(self) -> Self:
+        return -self.score
 
-    @always_inline
     fn is_decisive(self) -> Bool:
-        return not isfinite(self._score) or self.is_draw()
+        return not isfinite(self.score) or self.is_draw()
 
-    @always_inline
-    fn negate(self) -> Score:
-        return Score(-self._score)
+    fn is_win(self) -> Bool:
+        return isinf(self.score) and self.score > 0
 
-    @always_inline
-    fn __eq__(self, other: Self) -> Bool:
-        return self._score == other._score
+    fn is_loss(self) -> Bool:
+        return isinf(self.score) and self.score < 0
 
-    @always_inline
-    fn __ne__(self, other: Self) -> Bool:
-        return self._score != other._score
-
-    @always_inline
-    fn __lt__(self: Self, other: Self) -> Bool:
-        return self._score < other._score
-
-    @always_inline
-    fn __le__(self: Self, other: Self) -> Bool:
-        return self._score <= other._score
-
-    @always_inline
-    fn __gt__(self: Self, other: Self) -> Bool:
-        return self._score > other._score
-
-    @always_inline
-    fn __ge__(self: Self, other: Self) -> Bool:
-        return self._score >= other._score
+    fn is_draw(self) -> Bool:
+        return isnan(self.score)
 
     fn __str__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write(self._score)
+        if self.is_win():
+            writer.write("win")
+        elif self.is_loss():
+            writer.write("loss")
+        elif self.is_draw():
+            writer.write("draw")
+        else:
+            writer.write(self.score)
 
 
 def main():
     var s: Score = 5
-    print(s._score)
-    var t = s.negate()
+    var t = -s
     var u = Score.win
-    var v = u.negate()
-    print(s, t, u, v, s < t, s > t, s == t.negate())
+    var v = -u
+    var x = Score.draw
+    print(s, t, u, v, x, s < t)

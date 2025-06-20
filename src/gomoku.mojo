@@ -4,14 +4,14 @@ from heap import heap_add
 from board import Board, Place, is_decisive, is_win, is_loss, is_draw
 
 alias max_stones = 5
-alias values = List[Float32](0, 1, 5, 25, 125)
+alias values = List[Score](0, 1, 5, 25, 125)
 
 @fieldwise_init
 @register_passable("trivial")
 struct Move(TMove):
     var p1: Place
     var p2: Place
-    var score: Float32
+    var score: Score
 
     fn __init__(out self):
         self.p1 = Place()
@@ -33,11 +33,11 @@ struct Move(TMove):
         self.score = 0
 
     @always_inline
-    fn get_score(self) -> Float32:
+    fn score(self) -> Score:
         return self.score
 
     @always_inline
-    fn set_score(mut self, score: Float32):
+    fn set_score(mut self, score: Score):
         self.score = score
 
     @always_inline
@@ -57,11 +57,9 @@ struct Move(TMove):
     fn is_win(self) -> Bool:
         return is_win(self.score)
 
-
     @always_inline
     fn is_loss(self) -> Bool:
         return is_loss (self.score)
-
 
     @always_inline
     fn is_draw(self) -> Bool:
@@ -116,7 +114,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
                     heap_add[Move, max_moves, less](Move(Move(place, place), draw), move_scores)
                     has_draw = True
             else:
-                heap_add[Move, max_moves, less](Move(Move(place, place), score), move_scores)
+                heap_add[Move, max_moves, less](Move(Move(place, place), self.score + score), move_scores)
 
     fn play_move(mut self, move: self.Move):
         self.board.place_stone(move.p1, self.turn)

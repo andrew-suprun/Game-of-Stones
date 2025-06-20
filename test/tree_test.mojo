@@ -2,25 +2,26 @@ from game import TGame, TMove
 from tree import Tree, Node
 
 from random import seed, random_si64, random_float64
-import testing
+from testing import assert_true
 
 var __id: Int = 0
 
 @fieldwise_init
 struct TestMove(TMove):
     var _id: Int
-    var _score: Float32
+    var _score: Score
     var _decisive: Bool
 
     fn __init__(out self):
         self._id = __id
         self._score = 0
         self._decisive = False
+        __id += 1
 
-    fn get_score(self) -> Float32:
+    fn score(self) -> Score:
         return self._score
 
-    fn set_score(mut self, score: Float32):
+    fn set_score(mut self, score: Score):
         self._score = score
 
     fn is_decisive(self) -> Bool:
@@ -45,8 +46,14 @@ struct TestGame(TGame):
     fn name(self) -> String:
         return "test game"
 
-    fn top_moves(mut self, mut move_scores: List[self.Move]):
-        ...
+    fn top_moves(mut self, mut moves: List[self.Move]):
+        var n_moves = random_si64(2, 5)
+        moves.clear()
+        for _ in range(n_moves):
+            var move = TestMove()
+            move._score = Score(random_si64(-10, 10))
+            move._decisive = random_si64(0, 10) % 10 == 0
+            moves.append(move)
 
     fn play_move(mut self, move: self.Move):
         pass
@@ -56,7 +63,12 @@ struct TestGame(TGame):
 
 
 def test_tree():
+    seed(0)
     var g = TestGame()
     var t = Tree[TestGame, 2]()
     g.play_move(TestMove(0, 0, False))
+    print(t)
     _ = t.expand(g)
+    _ = t.expand(g)
+    print(t)
+    assert_true(False)

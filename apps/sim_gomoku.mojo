@@ -4,7 +4,7 @@ import random
 
 from game import TMove
 from tree import Tree
-from game_of_stones import Gomoku
+from gomoku import Gomoku
 
 alias m1 = env_get_int["M1", 16]()
 alias c1 = env_get_int["C1", 30]()

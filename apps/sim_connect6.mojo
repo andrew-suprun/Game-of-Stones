@@ -4,7 +4,7 @@ import random
 
 from game import TMove
 from tree import Tree
-from game_of_stones import Connect6
+from connect6 import Connect6
 
 alias m1 = env_get_int["M1", 32]()
 alias p1 = env_get_int["P1", 16]()
