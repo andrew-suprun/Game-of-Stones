@@ -76,6 +76,7 @@ struct Move(TMove):
 
 struct Gomoku[size: Int, max_moves: Int](TGame):
     alias Move = Move
+
     var board: Board[values, size, max_stones, max_moves]
     var turn: Int
     var top_places: List[Place]

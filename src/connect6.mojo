@@ -8,7 +8,6 @@ from board import Board, Place
 alias max_stones = 6
 alias values = List[Score](0, 1, 5, 25, 125, 625)
 
-@fieldwise_init
 @register_passable("trivial")
 struct Move(TMove):
     var p1: Place
@@ -16,19 +15,14 @@ struct Move(TMove):
     var _score: Score
 
     fn __init__(out self):
-        self.p1 = Place()
-        self.p2 = Place()
+        self.p1 = Place(0, 0)
+        self.p2 = Place(0, 0)
         self._score = 0
 
-    fn __init__(out self, p1: Place, p2, Place):
+    fn __init__(out self, p1: Place = Place(0, 0), p2: Place = Place(0, 0), score: Score = 0):
         self.p1 = p1
         self.p2 = p2
         self._score = 0
-
-    # fn __init__(out self, x1: Int, y1: Int, x2: Int, y2: Int):
-    #     self.p1 = Place(x1, y1)
-    #     self.p2 = Place(x2, y2)
-    #     self._score = 0
 
     fn __init__(out self, move: String) raises:
         var tokens = move.split("-")
@@ -49,13 +43,8 @@ struct Move(TMove):
         self._score = score
 
     @always_inline
-    fn __eq__(self, other: Self) -> Bool:
-        result = self.p1 == other.p1 and self.p2 == other.p2 or
-            self.p1 == other.p2 and self.p1 == other.p1
-
-    @always_inline
-    fn __ne__(self, other: Self) -> Bool:
-        return not (self == other)
+    fn is_decisive(self) -> Bool:
+        return self._score.is_decisive()
 
     fn __str__(self, out r: String):
         r = String.write(self)
@@ -91,11 +80,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         self.board.top_places(self.turn, self.top_places)
 
         if len(self.top_places) < 2:
-            if len(self.top_places) == 1:
-                var top_place = self.top_places[0]
-                move_scores.append(Move(Move(top_place, top_place), draw))
-            else:
-                move_scores.append(Move(Move(0, 0, 0, 0), draw))
+            move_scores.append(Move(score = Score.draw))
             return
 
         for i in range(len(self.top_places) - 1):
@@ -103,7 +88,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
             var score1 = self.board.getscores(place1)[self.turn]
             if isinf(score1) and score1 > 0:
                 move_scores.clear()
-                move_scores.append(Move(Move(place1, place1), win))
+                move_scores.append(Move(place1, place1, Score.win))
                 return
 
             self.board.place_stone(place1, self.turn)
@@ -114,11 +99,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
                 if isinf(score2) and score2 > 0:
                     move_scores.clear()
-                    move_scores.append(Move(Move(place1, place2), win))
+                    move_scores.append(Move(place1, place2, Score.win))
                     self.board.remove_stone()
                     return
-                var score = -self._score + score1 + score2 if score1 + score2 == 0 else Score.draw
-                heap_add[Move, max_moves, less](Move(Move(place1, place2), score), move_scores)
+                var score = -self.board.score.score + score1 + score2 if score1 + score2 == 0 else Score.draw
+                heap_add[Move, max_moves, less](Move(place1, place2, score), move_scores)
 
             self.board.remove_stone()
 

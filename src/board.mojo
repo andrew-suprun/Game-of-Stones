@@ -1,6 +1,6 @@
+from utils.numerics import inf, neg_inf, isinf, isnan
 from memory import memcpy
 
-from score import Score
 from game import TMove
 from heap import heap_add
 
@@ -20,7 +20,7 @@ struct PlaceScores(Copyable, Movable):
 @register_passable("trivial")
 struct ScoreMark(Copyable, Movable):
     var place: Place
-    var score: Score
+    var score: Float32
     var history_idx: Int
 
 @fieldwise_init
@@ -51,7 +51,7 @@ struct Place(Copyable, Movable, Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
+struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -59,16 +59,12 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
     var places: List[Int8]
     var scores: List[Scores] 
-    var score: Score
-    var history: List[PlaceScores]
-    var history_indices: List[ScoreMark]
+    var score: Float32
 
     fn __init__(out self):
         self.places = List[Int8](length = size * size, fill = 0)
         self.scores = List[Scores](length = size * size, fill = Scores(0, 0))
         self.score = 0
-        self.history = List[PlaceScores]()
-        self.history_indices = List[ScoreMark]()
 
         for y in range(size):
             var v = 1 + min(win_stones - 1, y, size - 1 - y)
@@ -81,7 +77,6 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 self.setscores(Place(x, y), Scores(total, total))
 
     fn __copyinit__(out self, existing: Self, /):
-
         self.places = List[Int8](unsafe_uninit_length = size * size)
         memcpy(self.places.data, existing.places.data, size * size)
         self.places.capacity = size * size
@@ -94,7 +89,6 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
     fn place_stone(mut self, place: Place, turn: Int):
         var scores = self.value_table[turn]
-        self.history_indices.append(ScoreMark(place, self.score, len(self.history)))
 
         var x = Int(place.x)
         var y = Int(place.y)
@@ -137,8 +131,6 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
     
     @always_inline
     fn update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
-        for i in range(start, start + delta * (win_stones - 1 + n), delta):
-            self.history.append(PlaceScores(i, self.scores[i]))
 
         var offset = start
         var stones = Int8(0)
@@ -157,15 +149,6 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                     self.scores[offset + j * delta] += scores
             stones -= self.places[offset]
             offset += delta
-
-    fn remove_stone(mut self):
-        var idx = self.history_indices.pop()
-        self[Int(idx.place.x), Int(idx.place.y)] = self.empty
-        self.score = idx.score
-        for i in range(len(self.history)-1, idx.history_idx-1, -1):
-            var h_scores = self.history[i]
-            self.scores[h_scores.offset] = h_scores.scores
-        self.history.shrink(idx.history_idx)
 
     fn top_places(self, turn: Int, mut top_places: List[Place]):
         @parameter
@@ -189,8 +172,8 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                     if self[x, y] == self.empty and self.getscores(Place(x, y))[second] > 0:
                         heap_add[Place, max_places, less_second](Place(x, y), top_places)
 
-    fn max_score(self, player: Int) -> Score:
-        var max_score = Score.loss
+    fn max_score(self, player: Int) -> Float32:
+        var max_score = neg_inf[DType.float32]()
         for i in range(len(self.scores)):
             var score = self.scores[i][player]
             if max_score < score and self.places[i] == self.empty:
@@ -355,15 +338,15 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 elif stone == Self.white:
                     str += "    O "
                 else:
-                    var value = self.getscores(Place(x, y))[table_idx]
-                    if is_win(value):
+                    var score = self.getscores(Place(x, y))[table_idx]
+                    if isinf(score) and score > 0:
                         str += " WinX "
-                    elif is_loss(value):
+                    elif isinf(score) and score < 0:
                         str += " WinO "
-                    elif is_draw(value):
+                    elif isnan(score):
                         str += " Draw "
                     else:
-                        str += String(Int(value)).rjust(5, " ") + " "
+                        str += String(Int(score)).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
         str += "───┼" + "──────" * size + "┼───"
         if not table_idx:
@@ -372,7 +355,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
-    fn board_value(self, scores: List[Score], out value: Score):
+    fn board_value(self, scores: List[Float32], out value: Float32):
         value = 0.0
         for y in range(size):
             var stones = Int8(0)
@@ -428,7 +411,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 value += self.calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
-    fn calc_value(self, stones: Int8, scores: List[Score], out value: Score):
+    fn calc_value(self, stones: Int8, scores: List[Float32], out value: Float32):
         var black = stones % win_stones
         var white = stones // win_stones
         if white == 0:
@@ -438,11 +421,11 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         return 0
 
 
-fn value_table[max_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]:
+fn value_table[max_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]:
     alias result_size = max_stones * max_stones + 1
 
     var s = scores
-    s.append(Score.win)
+    s.append(inf[DType.float32]())
     v2 = List[Scores](Scores(1, -1))
     for i in range(max_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
@@ -454,3 +437,4 @@ fn value_table[max_stones: Int, scores: List[Score]]() -> InlineArray[InlineArra
         result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
         result[1][i] = Scores(-v2[i][0], v2[i][1])
         result[1][i * max_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
+    return result

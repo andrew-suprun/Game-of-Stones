@@ -14,11 +14,12 @@ struct Tree[Game: TGame, c: Score](Stringable, Writable):
         self.root = Node[Game, c](Game.Move())
         self.top_moves = List[Game.Move]()
 
-    fn expand(mut self, mut game: Game, out done: Bool):
+    fn expand(mut self, game: Game, out done: Bool):
         if self.root.move.score().is_decisive():
             return True
         else:
-            self.root._expand(game, self.top_moves)
+            var g = game
+            self.root._expand(g, self.top_moves)
         
         if self.root.move.score().is_decisive():
             return True
