@@ -10,10 +10,10 @@ trait TGame(Copyable, Defaultable):
 trait TMove(Copyable, Movable, Defaultable, Stringable, Writable):
     alias Score: TScore
 
-    fn score(self) -> Score:
+    fn score(self) -> Self.Score:
         ...
 
-    fn set_score(mut self, score: Score):
+    fn set_score(mut self, score: Self.Score):
         ...
 
 trait TScore(Copyable, LessThanComparable, Defaultable, Stringable, Writable):

@@ -63,6 +63,15 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Stringable, Writ
             self.children.reserve(len(top_moves))
             for move in top_moves:
                 self.children.append(Node[Game, c](move))
+            for ref child_node in self.children:
+                var child_game = game
+                child_game.play_move(child_node.move)
+                var child_moves = child_game.top_moves()
+                child_node.children.reserve(len(child_moves))
+                for child_move in child_moves:
+                    child_node.children.append(Node[Game, c](child_move))
+                child_node._update_state()
+            self._update_state()
         else:
             ref selected_child = self.children[0]
             var n_sims = self.n_sims
