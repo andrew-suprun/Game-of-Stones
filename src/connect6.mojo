@@ -1,12 +1,12 @@
 from utils.numerics import inf, isinf
 
-from score import Score
+from score import Score, win, draw, is_win, is_decisive, less
 from game import TGame, TMove
 from heap import heap_add
 from board import Board, Place
 
 alias max_stones = 6
-alias values = List[Score](0, 1, 5, 25, 125, 625)
+alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
 @register_passable("trivial")
 struct Move(TMove):
@@ -15,9 +15,7 @@ struct Move(TMove):
     var _score: Score
 
     fn __init__(out self):
-        self.p1 = Place(0, 0)
-        self.p2 = Place(0, 0)
-        self._score = 0
+        self = Self.__init__(Place(0, 0), Place(0, 0), 0)
 
     fn __init__(out self, p1: Place = Place(0, 0), p2: Place = Place(0, 0), score: Score = 0):
         self.p1 = p1
@@ -44,7 +42,7 @@ struct Move(TMove):
 
     @always_inline
     fn is_decisive(self) -> Bool:
-        return self._score.is_decisive()
+        return is_decisive(self._score)
 
     fn __str__(self, out r: String):
         r = String.write(self)
@@ -73,22 +71,22 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
     fn top_moves(mut self, mut move_scores: List[self.Move]):
         @parameter
-        fn less(a: self.Move, b: self.Move, out r: Bool):
-            r = a.score() < b.score()
+        fn move_less(a: self.Move, b: self.Move, out r: Bool):
+            r = less(a.score(), b.score())
 
         move_scores.clear()
         self.board.top_places(self.turn, self.top_places)
 
         if len(self.top_places) < 2:
-            move_scores.append(Move(score = Score.draw))
+            move_scores.append(Move(score = draw))
             return
 
         for i in range(len(self.top_places) - 1):
             var place1 = self.top_places[i]
             var score1 = self.board.getscores(place1)[self.turn]
-            if isinf(score1) and score1 > 0:
+            if is_win(score1):
                 move_scores.clear()
-                move_scores.append(Move(place1, place1, Score.win))
+                move_scores.append(Move(place1, place1, win))
                 return
 
             self.board.place_stone(place1, self.turn)
@@ -99,26 +97,17 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
                 if isinf(score2) and score2 > 0:
                     move_scores.clear()
-                    move_scores.append(Move(place1, place2, Score.win))
-                    self.board.remove_stone()
+                    move_scores.append(Move(place1, place2, win))
                     return
-                var score = -self.board.score.score + score1 + score2 if score1 + score2 == 0 else Score.draw
-                heap_add[Move, max_moves, less](Move(place1, place2, score), move_scores)
+                var score = -self.board.score + score1 + score2 if score1 + score2 == 0 else draw
+                heap_add[Move, max_moves, move_less](Move(place1, place2, score), move_scores)
 
-            self.board.remove_stone()
 
     fn play_move(mut self, move: self.Move):
         self.history.append(move)
         self.board.place_stone(move.p1, self.turn)
         if move.p1 != move.p2:
             self.board.place_stone(move.p2, self.turn)
-        self.turn = 1 - self.turn
-
-    fn undo_move(mut self):
-        var move = self.history.pop()
-        self.board.remove_stone()
-        if move.p1 != move.p2:
-            self.board.remove_stone()
         self.turn = 1 - self.turn
 
     fn decision(self, out decision: String):
