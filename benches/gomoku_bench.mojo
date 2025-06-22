@@ -1,29 +1,28 @@
-from benchmark import benchmark, Unit
+from benchmark import benchmark, Unit, keep
 
-from game import Move, Score
+from game import TMove, TScore
 from tree import Tree
-from game_of_stones import Gomoku
+from gomoku import Gomoku
 
-alias G = Gomoku[19, 32]
+alias G = Gomoku[19, 22]
 
 fn bench_moves():
     var game = G()
     try:
-        game.play_move(Move("j10"))
-        game.play_move(Move("i9"))
+        game.play_move(Gomoku.Move("j10"))
+        game.play_move(Gomoku.Move("i9"))
     except:
         pass
-    var moves = List[Move]()
     for _ in range(1000):
-        game.moves(moves)
-    _ = moves
+        var moves = game.moves()
+        keep(moves[0])
 
 fn bench_expand():
     var game = G()
     var tree = Tree[G, 20]()
     try:
-        game.play_move(Move("j10"))
-        game.play_move(Move("i9"))
+        game.play_move(Gomoku.Move("j10"))
+        game.play_move(Gomoku.Move("i9"))
     except:
         pass
     for _ in range(1000):
@@ -31,7 +30,8 @@ fn bench_expand():
         if done:
             print("done")
             break
+    print(tree.root.n_sims)
 
 fn main() raises:
-    print("moves", benchmark.run[bench_moves]().mean(Unit.s), "msec")
-    print("expand   ", benchmark.run[bench_expand]().mean(Unit.s), "msec")
+    # print("moves ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")
+    print("expand", benchmark.run[bench_expand]().mean(Unit.ms), "msec")

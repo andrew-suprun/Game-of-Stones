@@ -1,89 +1,85 @@
-from game import TGame, TMove
-
-from score import Score, is_win, win, draw, is_decisive, less
+from score import Score
 from game import TGame, TMove
 from heap import heap_add
 from board import Board, Place
 
 alias max_stones = 5
-alias values = List[Float32](0, 1, 5, 25, 125)
+alias values = List[Score](0, 1, 5, 25, 125)
 
 @register_passable("trivial")
 struct Move(TMove):
-    var place: Place
+    alias Score = Score
+
+    var _place: Place
     var _score: Score
 
     fn __init__(out self):
-        self = Self.__init__(Place(0, 0), 0)
+        self = Self.__init__(Place(), 0)
 
     fn __init__(out self, place: Place = Place(0, 0), score: Score = 0):
-        self.place = place
+        self._place = place
         self._score = 0
 
     fn __init__(out self, move: String) raises:
-        self.place = Place(move)
+        self._place = Place(move)
         self._score = 0
 
-    fn score(self) -> Score:
+    fn score(self) -> Self.Score:
         return self._score
 
-    fn set_score(mut self, score: Score):
+    fn set_score(mut self, score: Self.Score):
         self._score = score
 
-    fn is_decisive(self) -> Bool:
-        return is_decisive(self._score)
+    fn __str__(self) -> String:
+        return String.write(self)
 
-    fn __str__(self, out r: String):
-        r = String.write(self)
+    fn __repr__(self) -> String:
+        return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write(self.place)
+        writer.write(self._place)
 
 struct Gomoku[size: Int, max_moves: Int](TGame):
     alias Move = Move
 
     var board: Board[values, size, max_stones, max_moves]
     var turn: Int
-    var top_places: List[Place]
 
     fn __init__(out self):
         self.board = Board[values, size, max_stones, max_moves]()
         self.turn = 0
-        self.top_places = List[Place]()
 
     fn name(self, out name: String):
         name = "gomoku"
 
-    fn moves(mut self, mut move_scores: List[Move]):
+    fn moves(self) -> List[Move]:
         @parameter
         fn move_less(a: self.Move, b: self.Move, out r: Bool):
-            r = less(a.score(), b.score())
+            r = a.score() < b.score()
 
-        move_scores.clear()
-        self.board.top_places(self.turn, self.top_places)
+        var places = self.board.places(self.turn)
 
-        if not self.top_places:
-            move_scores.append(Move(score = draw))
-            return
+        if not places:
+            return [Move(score = Score.draw())]
 
+        var moves = List[Move](capacity = len(places))
         var has_draw = False
 
-        for place in self.top_places:
-            var score = self.board.getscores(place)[self.turn]
+        for place in places:
+            var score = Score(self.board.getscores(place)[self.turn])
 
-            if is_win(score):
-                move_scores.clear()
-                move_scores.append(Move(place, win))
-                return
-            elif score == 0:
+            if score.is_win():
+                return [Move(place, Score.win())]
+            elif score.value() == 0:
                 if not has_draw:
-                    heap_add[Move, max_moves, move_less](Move(place, draw), move_scores)
+                    heap_add[Move, max_moves, move_less](Move(place, Score.draw()), moves)
                     has_draw = True
             else:
-                heap_add[Move, max_moves, move_less](Move(place, self.board.score + score), move_scores)
+                heap_add[Move, max_moves, move_less](Move(place, self.board._score + score), moves)
+        return moves
 
     fn play_move(mut self, move: self.Move):
-        self.board.place_stone(move.place, self.turn)
+        self.board.place_stone(move._place, self.turn)
         self.turn = 1 - self.turn
 
     fn decision(self, out decision: String):

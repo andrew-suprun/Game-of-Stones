@@ -49,7 +49,6 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
         self.n_sims = 1
 
     fn _expand(mut self, mut game: Game):
-        print("expand", self)
         alias Score = Game.Move.Score
 
         if not self.children:
@@ -59,7 +58,6 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Node[Game, c](move))
-            print(self)
             for ref child_node in self.children:
                 var child_game = game
                 child_game.play_move(child_node.move)

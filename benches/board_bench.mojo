@@ -11,7 +11,7 @@ fn bench_update_row():
     var vv = _value_table[6, values]()
     for _ in range(1000):
         board._update_row(0, board.size + 1, 6, vv[0])
-    keep(board.scores[5*20])
+    keep(board._scores[5*20])
 
 fn bench_place_stone():
     var board = Board[values, 19, max_stones, 8]()
@@ -19,17 +19,16 @@ fn bench_place_stone():
     for _ in range(1000):
         var new_board = board
         new_board.place_stone(Place(9, 9), 0)
-        score += new_board.score
+        score += new_board._score
     keep(score)
 
-fn bench_top_places():
+fn bench_places():
     var board = Board[values, 19, max_stones, 20]()
-    var top_places = List[Place]()
     for _ in range(1000):
-        board.top_places(first, top_places)
+        _ = board.places(first)
 
 fn main() raises:
     print("\n--- board (ms/1000) ---")
     print("update_row ", benchmark.run[bench_update_row]().mean(Unit.ms))
     print("place_stone", benchmark.run[bench_place_stone]().mean(Unit.ms))
-    print("top_places ", benchmark.run[bench_top_places]().mean(Unit.ms))
+    print("places ", benchmark.run[bench_places]().mean(Unit.ms))

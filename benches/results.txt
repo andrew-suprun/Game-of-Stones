@@ -7,28 +7,35 @@ List        SIMD Float 0.009504345238095239
 --- board (ms/1000) --- unsafe
 update_row  0.028871137061337506
 place_stone 0.17874602819422689
-top_places  2.303576
+places  2.303576
 
 --- board (ms/1000) --- ASSERT=all
 update_row  0.028972805649266634
 place_stone 0.17864259149062778
-top_places  2.672253079507279
+places  2.672253079507279
 
 magic run mojo run -I src -D ASSERT=all benches/connect6_bench.mojo
 moves 0.403 msec
 expand    0.418 msec
 
 magic run mojo run -I src benches/connect6_bench.mojo
-moves 0.219 msec
-expand    0.244 msec
+moves  219 msec
+expand 244 msec
 
 magic run mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo
 moves 0.0257 msec
 expand    0.0300 msec
 
 magic run mojo run -I src benches/gomoku_bench.mojo      
-moves 0.015 msec
-expand    0.019 msec
+moves  3.2993865199449792 msec
+expand 13624.584 msec
 
 --- heap (ms/100_000) ---
 add  0.576486
+
+
+pixi run mojo run -I src benches/gomoku_bench.mojo
+483001
+483001
+483001
+expand 7388.04 msec

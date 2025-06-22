@@ -6,7 +6,7 @@ from heap import heap_add
 from board import Board, Place
 
 alias max_stones = 6
-alias values = List[Float32](0, 1, 5, 25, 125, 625)
+alias values = List[Score](0, 1, 5, 25, 125, 625)
 
 @register_passable("trivial")
 struct Move(TMove):
@@ -54,13 +54,13 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     alias Move = Move
     var board: Board[values, size, max_stones, max_places]
     var turn: Int
-    var top_places: List[Place]
+    var places: List[Place]
     var history: List[Self.Move]
 
     fn __init__(out self):
         self.board = Board[values, size, max_stones, max_places]()
         self.turn = 0
-        self.top_places = List[Place]()
+        self.places = List[Place]()
         self.history = List[Self.Move]()
 
     fn name(self, out name: String):
@@ -72,14 +72,14 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
             r = less(a.score(), b.score())
 
         move_scores.clear()
-        self.board.top_places(self.turn, self.top_places)
+        self.board.places(self.turn, self.places)
 
-        if len(self.top_places) < 2:
+        if len(self.places) < 2:
             move_scores.append(Move(score = draw))
             return
 
-        for i in range(len(self.top_places) - 1):
-            var place1 = self.top_places[i]
+        for i in range(len(self.places) - 1):
+            var place1 = self.places[i]
             var score1 = self.board.getscores(place1)[self.turn]
             if is_win(score1):
                 move_scores.clear()
@@ -88,8 +88,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
             self.board.place_stone(place1, self.turn)
 
-            for j in range(i + 1, len(self.top_places)):
-                var place2 = self.top_places[j]
+            for j in range(i + 1, len(self.places)):
+                var place2 = self.places[j]
                 var score2 = self.board.getscores(place2)[self.turn]
 
                 if isinf(score2) and score2 > 0:
