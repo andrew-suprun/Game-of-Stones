@@ -5,18 +5,16 @@ from game import TGame
 
 struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
     var root: Node[Game, c]
-    var top_moves: List[Game.Move]
 
     fn __init__(out self):
         self.root = Node[Game, c](Game.Move())
-        self.top_moves = List[Game.Move]()
-
+        
     fn expand(mut self, game: Game, out done: Bool):
         if self.root.move.score().is_decisive():
             return True
         else:
             var g = game
-            self.root._expand(g, self.top_moves)
+            self.root._expand(g)
         
         if self.root.move.score().is_decisive():
             return True
@@ -37,13 +35,10 @@ struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        self.root.write_to(writer, 0)
-
-    fn debug_print_root_children(self):
-        self.root.debug_print_root_children()
+        self.root.write_to(writer)
 
 @fieldwise_init
-struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Stringable, Writable):
+struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, Stringable, Writable):
     var move: Game.Move
     var children: List[Self]
     var n_sims: Int32
@@ -53,41 +48,42 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Stringable, Writ
         self.children = List[Self]()
         self.n_sims = 1
 
-    fn _expand(mut self, mut game: Game, mut top_moves: List[Game.Move]):
+    fn _expand(mut self, mut game: Game):
+        print("expand", self)
         alias Score = Game.Move.Score
 
         if not self.children:
-            var top_moves = game.top_moves()
-            debug_assert(len(top_moves) > 0, "Function top_moves(...) returns empty result.")
+            var moves = game.moves()
+            debug_assert(len(moves) > 0, "Function moves(...) returns empty result.")
 
-            self.children.reserve(len(top_moves))
-            for move in top_moves:
+            self.children.reserve(len(moves))
+            for move in moves:
                 self.children.append(Node[Game, c](move))
+            print(self)
             for ref child_node in self.children:
                 var child_game = game
                 child_game.play_move(child_node.move)
-                var child_moves = child_game.top_moves()
+                var child_moves = child_game.moves()
                 child_node.children.reserve(len(child_moves))
                 for child_move in child_moves:
                     child_node.children.append(Node[Game, c](child_move))
                 child_node._update_state()
-            self._update_state()
         else:
-            ref selected_child = self.children[0]
-            var n_sims = self.n_sims
-            var log_parent_sims = log2(Float32(n_sims))
+            var selected_child_idx = 0
+            var log_parent_sims = log2(Float32(self.n_sims))
             var maxV = Score.loss().value()
-            for ref child in self.children:
+            for child_idx in range(len(self.children)):
+                var child = self.children[child_idx]
                 if child.move.score().is_win():
                     continue
                 var v = child.move.score().value() + self.c.value() * sqrt(log_parent_sims / Float32(child.n_sims))
                 if maxV < v:
                     maxV = v
-                    selected_child = child
-            var move = selected_child.move
-            game.play_move(move)
-            selected_child._expand(game, top_moves)
-            self._update_state()
+                    selected_child_idx = child_idx
+            ref selected_child = self.children[selected_child_idx]
+            game.play_move(selected_child.move)
+            selected_child._expand(game)
+        self._update_state()
 
     fn _update_state(mut self):
         alias Score = Game.Move.Score
@@ -126,19 +122,17 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Stringable, Writ
                 best_child = Pointer(to = child)
         result = best_child[].move
 
-    fn __str__(self, out result: String):
-        result = String.write(self)
+    fn __str__(self) -> String:
+        return String.write(self)
+
+    fn __repr__(self) -> String:
+        return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write(self.move, " v: ", self.move.score(), " s: ", self.n_sims)
+        self.write_to(writer, 0)
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self, "\n")
+        writer.write("|   " * depth, self.move, " v: ", self.move.score(), " s: ", self.n_sims, "\n")
         if self.children:
             for ref child in self.children:
                 child.write_to(writer, depth + 1)
-
-    fn debug_print_root_children(self):
-        print(self)
-        for child in self.children:
-            print("  ", child)

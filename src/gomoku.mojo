@@ -56,7 +56,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
     fn name(self, out name: String):
         name = "gomoku"
 
-    fn top_moves(mut self, mut move_scores: List[Move]):
+    fn moves(mut self, mut move_scores: List[Move]):
         @parameter
         fn move_less(a: self.Move, b: self.Move, out r: Bool):
             r = less(a.score(), b.score())

@@ -38,6 +38,9 @@ struct TestMove(TMove):
     fn __str__(self, out r: String):
         r = String.write(self)
 
+    fn __repr__(self, out r: String):
+        r = String.write(self)
+
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._id, " ", self._score, " ", self._decisive)
 
@@ -51,7 +54,7 @@ struct TestGame(TGame):
     fn name(self) -> String:
         return "test game"
 
-    fn top_moves(self) -> List[self.Move]:
+    fn moves(self) -> List[self.Move]:
         var n_moves = random_si64(2, 5)
         print("moves", n_moves)
         var moves = List[self.Move]()
@@ -70,7 +73,7 @@ struct TestGame(TGame):
 
 
 def test_tree():
-    seed(0)
+    seed(100)
     var g = TestGame()
     var t = Tree[TestGame, 2]()
     g.play_move(TestMove(0, 0, False))
@@ -79,4 +82,6 @@ def test_tree():
     print(t)
     _ = t.expand(g)
     print(t)
-    assert_true(False)
+    _ = t.expand(g)
+    print(t)
+    assert_true(t.root.move.score().value() == 5)

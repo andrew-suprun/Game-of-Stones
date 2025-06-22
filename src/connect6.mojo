@@ -69,7 +69,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     fn name(self, out name: String):
         name = "connect6"
 
-    fn top_moves(mut self, mut move_scores: List[self.Move]):
+    fn moves(mut self, mut move_scores: List[self.Move]):
         @parameter
         fn move_less(a: self.Move, b: self.Move, out r: Bool):
             r = less(a.score(), b.score())

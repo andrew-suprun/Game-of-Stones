@@ -17,19 +17,19 @@ max_score   0.1848671
 top_places  2.6929284116331096
 
 magic run mojo run -I src -D ASSERT=all benches/connect6_bench.mojo
-top_moves 0.403 msec
+moves 0.403 msec
 expand    0.418 msec
 
 magic run mojo run -I src benches/connect6_bench.mojo
-top_moves 0.219 msec
+moves 0.219 msec
 expand    0.244 msec
 
 magic run mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo
-top_moves 0.0257 msec
+moves 0.0257 msec
 expand    0.0300 msec
 
 magic run mojo run -I src benches/gomoku_bench.mojo      
-top_moves 0.015 msec
+moves 0.015 msec
 expand    0.019 msec
 
 --- heap (ms/100_000) ---

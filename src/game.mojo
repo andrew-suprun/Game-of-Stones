@@ -1,13 +1,13 @@
 trait TGame(Copyable, Defaultable):
     alias Move: TMove
 
-    fn top_moves(self) -> List[Self.Move]:
+    fn moves(self) -> List[Self.Move]:
         ...
 
     fn play_move(mut self, move: Self.Move):
         ...
 
-trait TMove(Copyable, Movable, Defaultable, Stringable, Writable):
+trait TMove(Copyable, Movable, Defaultable, Stringable, Representable, Writable):
     alias Score: TScore
 
     fn score(self) -> Self.Score:

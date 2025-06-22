@@ -6,7 +6,7 @@ from game_of_stones import Gomoku
 
 alias G = Gomoku[19, 32]
 
-fn bench_top_moves():
+fn bench_moves():
     var game = G()
     try:
         game.play_move(Move("j10"))
@@ -15,7 +15,7 @@ fn bench_top_moves():
         pass
     var moves = List[Move]()
     for _ in range(1000):
-        game.top_moves(moves)
+        game.moves(moves)
     _ = moves
 
 fn bench_expand():
@@ -33,5 +33,5 @@ fn bench_expand():
             break
 
 fn main() raises:
-    print("top_moves", benchmark.run[bench_top_moves]().mean(Unit.s), "msec")
+    print("moves", benchmark.run[bench_moves]().mean(Unit.s), "msec")
     print("expand   ", benchmark.run[bench_expand]().mean(Unit.s), "msec")
