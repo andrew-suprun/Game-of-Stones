@@ -1,6 +1,6 @@
 from memory import memcpy
 
-from score import Score, is_win, is_loss, is_draw, win
+from score import Score
 from game import TMove
 from heap import heap_add
 
@@ -18,7 +18,7 @@ struct PlaceScores(Copyable, Movable):
 @register_passable("trivial")
 struct ScoreMark(Copyable, Movable):
     var place: Place
-    var score: Float32
+    var score: Score
     var history_idx: Int
 
 @fieldwise_init
@@ -49,7 +49,7 @@ struct Place(Copyable, Movable, Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
+struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -57,7 +57,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
 
     var places: List[Int8]
     var scores: List[Scores] 
-    var score: Float32
+    var score: Score
 
     fn __init__(out self):
         self.places = List[Int8](length = size * size, fill = 0)
@@ -77,11 +77,9 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
     fn __copyinit__(out self, existing: Self, /):
         self.places = List[Int8](unsafe_uninit_length = size * size)
         memcpy(self.places.data, existing.places.data, size * size)
-        self.places.capacity = size * size
 
         self.scores = List[Scores](unsafe_uninit_length = size * size)
         memcpy(self.scores.data, existing.scores.data, size * size)
-        self.scores.capacity = size * size
 
         self.score = existing.score
 
@@ -328,15 +326,15 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 elif stone == Self.white:
                     str += "    O "
                 else:
-                    var score = self.getscores(Place(x, y))[table_idx]
-                    if is_win(score):
+                    var score = Score(self.getscores(Place(x, y))[table_idx])
+                    if score.is_win():
                         str += " WinX "
-                    elif is_loss(score):
+                    elif score.is_loss():
                         str += " WinO "
-                    elif is_draw(score):
+                    elif score.is_draw():
                         str += " Draw "
                     else:
-                        str += String(Int(score)).rjust(5, " ") + " "
+                        str += String(Int(score.value())).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
         str += "───┼" + "──────" * size + "┼───"
         if not table_idx:
@@ -345,7 +343,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
-    fn board_value(self, scores: List[Float32], out value: Float32):
+    fn board_value(self, scores: List[Score], out value: Score):
         value = 0.0
         for y in range(size):
             var stones = Int8(0)
@@ -401,7 +399,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 value += self._calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
-    fn _calc_value(self, stones: Int8, scores: List[Float32], out value: Float32):
+    fn _calc_value(self, stones: Int8, scores: List[Score], out value: Score):
         var black = stones % win_stones
         var white = stones // win_stones
         if white == 0:
@@ -411,14 +409,14 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
         return 0
 
 
-fn _value_table[max_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]:
+fn _value_table[max_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]:
     alias result_size = max_stones * max_stones + 1
 
     var s = scores
-    s.append(win)
+    s.append(Score.win())
     v2 = List[Scores](Scores(1, -1))
     for i in range(max_stones - 1):
-        v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
+        v2.append(Scores(s[i + 2].value() - s[i + 1].value(), -s[i + 1].value()))
 
     var result = InlineArray[InlineArray[Scores, result_size], 2](InlineArray[Scores, result_size](0))
 

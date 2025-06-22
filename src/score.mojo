@@ -38,6 +38,12 @@ struct Score(TScore):
     fn min(self, other: Score) -> Score:
         return Score(min(self._value, other._value))
 
+    fn __iadd__(mut self, other: Score):
+        self._value += other._value
+
+    fn __isub__(mut self, other: Score):
+        self._value -= other._value
+
     fn __lt__(self, other: Score) -> Bool:
         return self._value < other._value
 
