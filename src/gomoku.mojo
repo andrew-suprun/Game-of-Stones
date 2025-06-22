@@ -24,11 +24,9 @@ struct Move(TMove):
         self.place = Place(move)
         self._score = 0
 
-    @always_inline
     fn score(self) -> Score:
         return self._score
 
-    @always_inline
     fn set_score(mut self, score: Score):
         self._score = score
 

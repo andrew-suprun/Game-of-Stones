@@ -35,11 +35,9 @@ struct Place(Copyable, Movable, Stringable, Writable):
         self.x = ord(place[0]) - ord("a")
         self.y = Int(place[1:]) - 1
 
-    @always_inline
     fn __eq__(self, other: Self, out result: Bool):
         result = self.x == other.x and self.y == other.y
 
-    @always_inline
     fn __ne__(self, other: Self, out result: Bool):
         result = not (self == other)
 
@@ -55,13 +53,13 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
     alias white = Int8(win_stones)
     alias value_table = _value_table[win_stones, values]()
 
-    var places: List[Int8]
-    var scores: List[Scores] 
+    var places: InlineArray[Int8, size * size]
+    var scores: InlineArray[Scores, size * size] 
     var score: Score
 
     fn __init__(out self):
-        self.places = List[Int8](length = size * size, fill = 0)
-        self.scores = List[Scores](length = size * size, fill = Scores(0, 0))
+        self.places = InlineArray[Int8, size * size](fill = 0)
+        self.scores = InlineArray[Scores, size * size](uninitialized=True)
         self.score = 0
 
         for y in range(size):
@@ -75,11 +73,11 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 self.setscores(Place(x, y), Scores(total, total))
 
     fn __copyinit__(out self, existing: Self, /):
-        self.places = List[Int8](unsafe_uninit_length = size * size)
-        memcpy(self.places.data, existing.places.data, size * size)
+        self.places = InlineArray[Int8, size * size](uninitialized=True)
+        memcpy(self.places.unsafe_ptr(), existing.places.unsafe_ptr(), size * size)
 
-        self.scores = List[Scores](unsafe_uninit_length = size * size)
-        memcpy(self.scores.data, existing.scores.data, size * size)
+        self.scores = InlineArray[Scores, size * size](uninitialized=True)
+        memcpy(self.scores.unsafe_ptr(), existing.scores.unsafe_ptr(), size * size)
 
         self.score = existing.score
 
@@ -125,9 +123,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         else:
             self[x, y] = Self.white
     
-    @always_inline
     fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
-
         var offset = start
         var stones = Int8(0)
 
@@ -160,12 +156,12 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         if turn == first:
             for y in range(size):
                 for x in range(size):
-                    if self[x, y] == self.empty and self.getscores(Place(x, y))[first] > 0:
+                    if self[x, y] == self.empty:
                         heap_add[Place, max_places, less_first](Place(x, y), top_places)
         else:
             for y in range(size):
                 for x in range(size):
-                    if self[x, y] == self.empty and self.getscores(Place(x, y))[second] > 0:
+                    if self[x, y] == self.empty:
                         heap_add[Place, max_places, less_second](Place(x, y), top_places)
 
     fn decision(self, out decision: String):
@@ -224,7 +220,6 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
         return "draw"
 
-    @always_inline
     fn _counts(self, stones: Int8, out result: SIMD[DType.int64, 2]):
         if stones == 1:
             return SIMD[DType.int64, 2](1, 0)
@@ -234,19 +229,15 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
             return SIMD[DType.int64, 2](0, 0)
     
 
-    @always_inline
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self.places[y * size + x]
 
-    @always_inline
     fn __setitem__(mut self, x: Int, y: Int, value: Int8):
         self.places[y * size + x] = value
 
-    @always_inline
     fn getscores(self, place: Place, out result: Scores):
         result = self.scores[Int(place.y) * size + Int(place.x)]
 
-    @always_inline
     fn setscores(mut self, place: Place, value: Scores):
         self.scores[Int(place.y) * size + Int(place.x)] = value
 

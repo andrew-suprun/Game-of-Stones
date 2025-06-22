@@ -31,16 +31,13 @@ struct Move(TMove):
             self.p2 = self.p1
         self._score = 0
 
-    @always_inline
     fn score(self) -> Score:
         return self._score
 
 
-    @always_inline
     fn set_score(mut self, score: Score):
         self._score = score
 
-    @always_inline
     fn is_decisive(self) -> Bool:
         return is_decisive(self._score)
 
