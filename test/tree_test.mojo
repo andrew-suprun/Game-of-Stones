@@ -51,9 +51,6 @@ struct TestGame(TGame):
     fn __init__(out self):
         pass
 
-    fn name(self) -> String:
-        return "test game"
-
     fn moves(self) -> List[self.Move]:
         var n_moves = random_si64(2, 5)
         print("moves", n_moves)

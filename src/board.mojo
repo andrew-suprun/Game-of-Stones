@@ -88,9 +88,9 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         var y = Int(place.y)
 
         if turn == first:
-            self._score += self.getscores(place)[first]
+            self._score += self.getscore(place, first)
         else:
-            self._score -= self.getscores(place)[second]
+            self._score -= self.getscore(place, second)
 
         var x_start = max(0, x - win_stones + 1)
         var x_end = min(x + win_stones, size) - win_stones + 1
@@ -145,11 +145,11 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
     fn places(self, turn: Int) -> List[Place]:
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
-            r = self.getscores(a)[0] < self.getscores(b)[0]
+            r = self.getscore(a, first) < self.getscore(b, first)
 
         @parameter
         fn less_second(a: Place, b: Place, out r: Bool):
-            r = self.getscores(a)[1] < self.getscores(b)[1]
+            r = self.getscore(a, second) < self.getscore(b, second)
 
         var places = List[Place](capacity = max_places)
 
@@ -216,7 +216,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
         for y in range(size):
             for x in range(size):
-                if self[x, y] == self.empty and self.getscores(Place(x, y))[0] > 1:
+                if self[x, y] == self.empty and self.getscore(Place(x, y), first).value() > 1:
                     return "no-decision"
 
         return "draw"
@@ -236,8 +236,8 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
     fn __setitem__(mut self, x: Int, y: Int, value: Int8):
         self._places[y * size + x] = value
 
-    fn getscores(self, place: Place, out result: Scores):
-        result = self._scores[Int(place.y) * size + Int(place.x)]
+    fn getscore(self, place: Place, turn: Int) -> Score:
+        return self._scores[Int(place.y) * size + Int(place.x)][turn]
 
     fn setscores(mut self, place: Place, value: Scores):
         self._scores[Int(place.y) * size + Int(place.x)] = value
@@ -318,7 +318,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 elif stone == Self.white:
                     str += "    O "
                 else:
-                    var score = Score(self.getscores(Place(x, y))[table_idx])
+                    var score = self.getscore(Place(x, y), table_idx)
                     if score.is_win():
                         str += " WinX "
                     elif score.is_loss():

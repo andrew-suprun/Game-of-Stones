@@ -1,6 +1,4 @@
-from utils.numerics import inf, isinf
-
-from score import Score, win, draw, is_win, is_decisive, less
+from score import Score
 from game import TGame, TMove
 from heap import heap_add
 from board import Board, Place
@@ -10,101 +8,90 @@ alias values = List[Score](0, 1, 5, 25, 125, 625)
 
 @register_passable("trivial")
 struct Move(TMove):
-    var p1: Place
-    var p2: Place
+    alias Score = Score
+
+    var _p1: Place
+    var _p2: Place
     var _score: Score
 
     fn __init__(out self):
-        self = Self.__init__(Place(0, 0), Place(0, 0), 0)
+        self = Self.__init__(Place(), Place(), 0)
 
     fn __init__(out self, p1: Place = Place(0, 0), p2: Place = Place(0, 0), score: Score = 0):
-        self.p1 = p1
-        self.p2 = p2
+        self._p1 = p1
+        self._p2 = p2
         self._score = 0
 
     fn __init__(out self, move: String) raises:
         var tokens = move.split("-")
-        self.p1 = Place(tokens[0])
+        self._p1 = Place(tokens[0])
         if len(tokens) == 2:
-            self.p2 = Place(tokens[1])
+            self._p2 = Place(tokens[1])
         else:
-            self.p2 = self.p1
+            self._p2 = self._p1
         self._score = 0
 
-    fn score(self) -> Score:
+    fn score(self) -> Self.Score:
         return self._score
 
-
-    fn set_score(mut self, score: Score):
+    fn set_score(mut self, score: Self.Score):
         self._score = score
 
-    fn is_decisive(self) -> Bool:
-        return is_decisive(self._score)
+    fn __str__(self) -> String:
+        return String.write(self)
 
-    fn __str__(self, out r: String):
-        r = String.write(self)
+    fn __repr__(self) -> String:
+        return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        if self.p1 != self.p2:
-            writer.write(self.p1, "-", self.p2)
+        if self._p1 != self._p2:
+            writer.write(self._p1, "-", self._p2)
         else:
-            writer.write(self.p1)
-
+            writer.write(self._p1)
 struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     alias Move = Move
     var board: Board[values, size, max_stones, max_places]
     var turn: Int
-    var places: List[Place]
-    var history: List[Self.Move]
 
     fn __init__(out self):
         self.board = Board[values, size, max_stones, max_places]()
         self.turn = 0
-        self.places = List[Place]()
-        self.history = List[Self.Move]()
 
-    fn name(self, out name: String):
-        name = "connect6"
-
-    fn moves(mut self, mut move_scores: List[self.Move]):
+    fn moves(self) -> List[self.Move]:
         @parameter
-        fn move_less(a: self.Move, b: self.Move, out r: Bool):
-            r = less(a.score(), b.score())
+        fn move_less(a: self.Move, b: self.Move) -> Bool:
+            return a.score() < b.score()
 
-        move_scores.clear()
-        self.board.places(self.turn, self.places)
+        var places = self.board.places(self.turn)
 
-        if len(self.places) < 2:
-            move_scores.append(Move(score = draw))
-            return
+        if len(places) < 2:
+            return [Move(score = Score.draw())]
 
-        for i in range(len(self.places) - 1):
-            var place1 = self.places[i]
-            var score1 = self.board.getscores(place1)[self.turn]
-            if is_win(score1):
-                move_scores.clear()
-                move_scores.append(Move(place1, place1, win))
-                return
+        var board = self.board
+        var moves = List[Move](capacity = max_moves)
+        for i in range(len(places) - 1):
+            var place1 = places[i]
+            var score1 = self.board.getscore(place1, self.turn)
+            if score1.is_win():
+                return [Move(place1, place1, Score.win())]
 
-            self.board.place_stone(place1, self.turn)
+            board.place_stone(place1, self.turn)
 
-            for j in range(i + 1, len(self.places)):
-                var place2 = self.places[j]
-                var score2 = self.board.getscores(place2)[self.turn]
+            for j in range(i + 1, len(places)):
+                var place2 = places[j]
+                var score2 = board.getscore(place2, self.turn)
 
-                if isinf(score2) and score2 > 0:
-                    move_scores.clear()
-                    move_scores.append(Move(place1, place2, win))
-                    return
-                var score = -self.board.score + score1 + score2 if score1 + score2 == 0 else draw
-                heap_add[Move, max_moves, move_less](Move(place1, place2, score), move_scores)
+                if score2.is_win():
+                    return [Move(place1, place2, Score.win())]
+                var score = -self.board._score + score1 + score2 if score2.value() == 0 else Score.draw()
+                heap_add[Move, max_moves, move_less](Move(place1, place2, score), moves)
 
+        return moves
 
     fn play_move(mut self, move: self.Move):
-        self.history.append(move)
-        self.board.place_stone(move.p1, self.turn)
-        if move.p1 != move.p2:
-            self.board.place_stone(move.p2, self.turn)
+        self.board.place_stone(move._p1, self.turn)
+        if move._p1 != move._p2:
+            self.board.place_stone(move._p2, self.turn)
         self.turn = 1 - self.turn
 
     fn decision(self, out decision: String):

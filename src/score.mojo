@@ -53,6 +53,9 @@ struct Score(TScore):
     fn __lt__(self, other: Score) -> Bool:
         return self._value < other._value
 
+    fn __le__(self, other: Score) -> Bool:
+        return self._value <= other._value
+
     fn __neg__(self) -> Score:
         return Score(-self._value)
 

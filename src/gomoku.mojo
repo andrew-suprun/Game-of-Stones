@@ -49,9 +49,6 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
         self.board = Board[values, size, max_stones, max_moves]()
         self.turn = 0
 
-    fn name(self, out name: String):
-        name = "gomoku"
-
     fn moves(self) -> List[Move]:
         @parameter
         fn move_less(a: self.Move, b: self.Move, out r: Bool):
@@ -66,7 +63,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
         var has_draw = False
 
         for place in places:
-            var score = Score(self.board.getscores(place)[self.turn])
+            var score = self.board.getscore(place, self.turn)
 
             if score.is_win():
                 return [Move(place, Score.win())]
