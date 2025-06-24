@@ -1,7 +1,7 @@
 from random import shuffle
 from testing import assert_true
 
-from game_of_stones.heap import add
+from heap import heap_add
 
 
 def test_heap():

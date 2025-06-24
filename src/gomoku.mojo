@@ -1,7 +1,7 @@
 from score import Score
 from game import TGame, TMove
 from heap import heap_add
-from board import Board, Place
+from board import Board, Place, first
 
 alias max_stones = 5
 alias values = List[Score](0, 1, 5, 25, 125)
@@ -18,9 +18,15 @@ struct Move(TMove):
 
     fn __init__(out self, place: Place = Place(0, 0), score: Score = 0):
         self._place = place
+        self._score = score
+
+    @implicit
+    fn __init__(out self, move: String) raises:
+        self._place = Place(move)
         self._score = 0
 
-    fn __init__(out self, move: String) raises:
+    @implicit
+    fn __init__(out self, move: StringLiteral) raises:
         self._place = Place(move)
         self._score = 0
 
@@ -39,7 +45,7 @@ struct Move(TMove):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
 
-struct Gomoku[size: Int, max_moves: Int](TGame):
+struct Gomoku[size: Int, max_moves: Int](TGame, Writable):
     alias Move = Move
 
     var board: Board[values, size, max_stones, max_moves]
@@ -47,7 +53,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
 
     fn __init__(out self):
         self.board = Board[values, size, max_stones, max_moves]()
-        self.turn = 0
+        self.turn = first
 
     fn moves(self) -> List[Move]:
         @parameter
@@ -55,24 +61,13 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
             r = a.score() < b.score()
 
         var places = self.board.places(self.turn)
-
         if not places:
             return [Move(score = Score.draw())]
 
         var moves = List[Move](capacity = len(places))
-        var has_draw = False
-
+        var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
-            var score = self.board.getscore(place, self.turn)
-
-            if score.is_win():
-                return [Move(place, Score.win())]
-            elif score.value() == 0:
-                if not has_draw:
-                    heap_add[Move, max_moves, move_less](Move(place, Score.draw()), moves)
-                    has_draw = True
-            else:
-                heap_add[Move, max_moves, move_less](Move(place, self.board._score + score), moves)
+            moves.append(Move(place, board_score + self.board.getscore(place, self.turn)))
         return moves
 
     fn play_move(mut self, move: self.Move):
@@ -87,4 +82,3 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
-

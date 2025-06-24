@@ -49,7 +49,7 @@ fn test_places() raises:
     var board = Board[values, 19, max_stones, 20]()
     board.place_stone(Place(9, 9), 0)
     board.place_stone(Place(8, 9), 1)
-    var places = board.places(0)
+    var places = board.places(first)
     
     for i in range(1, 20):
         var parent = places[(i - 1) // 2]

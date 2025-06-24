@@ -7,8 +7,6 @@ from tree import Tree, Node
 
 var __id: Int = 0
 
-
-
 @fieldwise_init
 struct TestMove(TMove):
     alias Score = score.Score
