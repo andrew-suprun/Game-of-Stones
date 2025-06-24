@@ -30,8 +30,7 @@ fn bench_expand():
         if done:
             print("done")
             break
-    print(tree.root.n_sims)
 
 fn main() raises:
-    # print("moves ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")
+    print("moves ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")
     print("expand", benchmark.run[bench_expand]().mean(Unit.ms), "msec")

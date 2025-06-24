@@ -71,7 +71,7 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
             var log_parent_sims = log2(Float32(self.n_sims))
             var maxV = Score.loss().value()
             for child_idx in range(len(self.children)):
-                var child = self.children[child_idx]
+                ref child = self.children[child_idx]
                 if child.move.score().is_win():
                     continue
                 var v = child.move.score().value() + self.c.value() * sqrt(log_parent_sims / Float32(child.n_sims))
@@ -132,5 +132,5 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write("|   " * depth, self.move, " v: ", self.move.score(), " s: ", self.n_sims, "\n")
         if self.children:
-            for ref child in self.children:
+            for child in self.children:
                 child.write_to(writer, depth + 1)

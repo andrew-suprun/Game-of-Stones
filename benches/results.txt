@@ -35,7 +35,5 @@ add  0.576486
 
 
 pixi run mojo run -I src benches/gomoku_bench.mojo
-483001
-483001
-483001
-expand 7388.04 msec
+moves  2.384857 msec
+expand 92.84564 msec
