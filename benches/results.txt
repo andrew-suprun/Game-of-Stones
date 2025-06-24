@@ -23,17 +23,17 @@ moves  219 msec
 expand 244 msec
 
 magic run mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo
-moves 0.0257 msec
-expand    0.0300 msec
+moves  4.183 msec
+expand 216.6 msec
 
 magic run mojo run -I src benches/gomoku_bench.mojo      
-moves  3.2993865199449792 msec
-expand 13624.584 msec
+moves  3.448 msec
+expand 185.7 msec
 
 --- heap (ms/100_000) ---
 add  0.576486
 
 
 pixi run mojo run -I src benches/gomoku_bench.mojo
-moves  2.384857 msec
-expand 92.84564 msec
+moves  3.448338301043219 msec
+expand 185.75016666666667 msec

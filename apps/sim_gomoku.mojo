@@ -2,9 +2,11 @@ from sys import env_get_int
 from time import perf_counter_ns
 import random
 
-from game import TMove
 from tree import Tree
-from gomoku import Gomoku
+from game import TMove
+from score import Score
+from gomoku import Gomoku, Move
+from board import Place
 
 alias m1 = env_get_int["M1", 16]()
 alias c1 = env_get_int["C1", 30]()
@@ -13,8 +15,8 @@ alias c2 = env_get_int["C2", 30]()
 
 alias Game1 = Gomoku[19, m1]
 alias Game2 = Gomoku[19, m2]
-alias Tree1 = Tree[Game1, c1]
-alias Tree2 = Tree[Game2, c2]
+alias Tree1 = Tree[Game1, Score(c1)]
+alias Tree2 = Tree[Game2, Score(c2)]
 
 var __first_wins = 0
 var __second_wins = 0
@@ -38,7 +40,7 @@ fn main() raises:
 alias black = True
 alias white = False
 
-fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
+fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
     var g1 = Game1()
     var g2 = Game2()
     var t1 = Tree1()
@@ -72,7 +74,7 @@ fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t1.best_move()
-            value = t1.value()
+            value = t1.score()
             player = n1
         else:
             while perf_counter_ns() < deadline:
@@ -81,13 +83,13 @@ fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t2.best_move()
-            value = t2.value()
+            value = t2.score()
             player = n2
         turn = not turn
         g1.play_move(move)
         g2.play_move(move)
-        t1.reset()
-        t2.reset()
+        t1 = Tree1()
+        t2 = Tree2()
         var decision = g1.decision()
         print("move", move, decision, sims, player, value, forced, file=log)
         print(g1, file=log)
@@ -122,9 +124,9 @@ fn opening_moves(out moves: List[Move]):
                 places.append(Place(Int8(i), Int8(j)))
     random.shuffle(places)
 
-    moves = List(Move(Place(9, 9), Place(9, 9)))
-    moves.append(Move(places[0], places[0]))
-    moves.append(Move(places[1], places[1]))
-    moves.append(Move(places[2], places[2]))
-    moves.append(Move(places[3], places[3]))
-    moves.append(Move(places[4], places[4]))
+    moves = List(Move(Place(9, 9)))
+    moves.append(Move(places[0]))
+    moves.append(Move(places[1]))
+    moves.append(Move(places[2]))
+    moves.append(Move(places[3]))
+    # moves.append(Move(places[4]))

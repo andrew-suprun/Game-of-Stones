@@ -4,7 +4,7 @@ from game import TMove, TScore
 from tree import Tree
 from gomoku import Gomoku
 
-alias G = Gomoku[19, 22]
+alias G = Gomoku[19, 32]
 
 fn bench_moves():
     var game = G()

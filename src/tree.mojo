@@ -26,7 +26,7 @@ struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
         return undecided == 1
 
     fn score(self) -> Game.Move.Score:
-        return self.root.move.score()
+        return -self.root.move.score()
         
     fn best_move(self) -> Game.Move:
         return self.root.best_move()
