@@ -37,6 +37,12 @@ struct Move(TMove):
     fn set_score(mut self, score: Self.Score):
         self._score = score
 
+    fn __eq__(self, other: Move) -> Bool:
+        return self._p1 == other._p1 and self._p2 == other._p2
+
+    fn __ne__(self, other: Move) -> Bool:
+        return self._p1 != other._p1 or self._p2 != other._p2
+
     fn __str__(self) -> String:
         return String.write(self)
 

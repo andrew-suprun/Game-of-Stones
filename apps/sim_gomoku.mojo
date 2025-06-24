@@ -26,7 +26,7 @@ fn main() raises:
     var n1 = String.write(m1,  "-", c1)
     var n2 = String.write(m2,  "-", c2)
     print(n1, "vs.", n2)
-    with open("log-gomoku.log", "w") as log_file:
+    with open("sim-gomoku.log", "w") as log_file:
         for i in range(1, 11):
             random.seed(perf_counter_ns())
             var opening = opening_moves()

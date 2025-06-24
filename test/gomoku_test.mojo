@@ -11,6 +11,8 @@ fn test_gomoku() raises:
     game.play_move("i9")
     game.play_move("i10")
     print(game)
-    for _ in range(3):
+    for _ in range(4):
         _ = tree.expand(game)
+        print(tree)
+    print("score", tree.score())
     assert_true(tree.score().value() == 30)

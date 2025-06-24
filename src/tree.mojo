@@ -26,7 +26,7 @@ struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
         return undecided == 1
 
     fn score(self) -> Game.Move.Score:
-        return -self.root.move.score()
+        return self.root.move.score()
         
     fn best_move(self) -> Game.Move:
         return self.root.best_move()
@@ -113,10 +113,8 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
     fn best_move(self, out result: Game.Move):
         debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
         var best_child = Pointer(to = self.children[0])
-        for child in self.children:
-            if best_child[].move.score() < child.move.score():
-                best_child = Pointer(to = child)
-            elif best_child[].move.score().is_loss() and best_child[].n_sims < child.n_sims:
+        for ref child in self.children:
+            if not best_child[].move.score().is_win() and best_child[].n_sims < child.n_sims:
                 best_child = Pointer(to = child)
         result = best_child[].move
 
