@@ -1,7 +1,7 @@
 from sys import env_get_int
 
 from engine import run
-from game_of_stones import Connect6
+from connect6 import Connect6
 
 alias board_size = env_get_int["BOARD_SIZE", 19]()
 alias max_moves = env_get_int["MAX_MOVES", 32]()

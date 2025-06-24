@@ -80,7 +80,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame, Writable):
         self.board.place_stone(move._place, self.turn)
         self.turn = 1 - self.turn
 
-    fn decision(self, out decision: String):
+    fn decision(self) -> StaticString:
         return self.board.decision()
 
     fn __str__(self, out str: String):

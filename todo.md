@@ -1,4 +1,6 @@
-* when board.places() return less then max_places return empty places
 * test handling of draws
-* experiment with 'var' -> 'ref' change and 'for' -> 'for ref'
-* make game_of_stones accept env parameter to choose between gomoku and connect6
+* engine: cut search time when one move dominates
+* engine: reimplement undo in engine.moj
+* engine: switch to standard Logger
+* when board.places() return less then max_places return empty places
+* make game-of-stones accept env parameter to choose between gomoku and connect6

@@ -2,11 +2,11 @@ from sys import argv
 from time import perf_counter_ns
 from builtin.io import _fdopen
 
-from tree import Tree
 from game import TGame
-import game
+from score import Score
+from tree import Tree
 
-fn run[Game: TGame, exp_factor: Score]() raises:
+fn run[Game: TGame, exp_factor: Game.Move.Score]() raises:
     var log_file = FileHandle()
     var log = False
 
@@ -35,17 +35,15 @@ fn run[Game: TGame, exp_factor: Score]() raises:
         if log:
             print("got", line, file=log_file)
         var terms = line.split(" ")
-        if terms[0] == "game-name":
-            print("game-name", game.name())
-        elif terms[0] == "move":
+        if terms[0] == "move":
             var move = Game.Move(terms[1])
             game.play_move(move)
-            tree.reset()
+            tree = Tree[Game, exp_factor]()
             if log:
                 print(game, file=log_file)
         elif terms[0] == "undo":
-            game.undo_move()
-            tree.reset()
+            # TODO implement undo
+            tree = Tree[Game, exp_factor]()
             if log:
                 print(game, file=log_file)
         elif terms[0] == "respond":
@@ -59,7 +57,7 @@ fn run[Game: TGame, exp_factor: Score]() raises:
                 sims += 1
             var move = tree.best_move()
             game.play_move(move)
-            tree.reset()
+            tree = Tree[Game, exp_factor]()
             print("move", move, game.decision(), sims)
             if log:
                 print("move", move, file=log_file)

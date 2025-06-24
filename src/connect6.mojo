@@ -54,6 +54,7 @@ struct Move(TMove):
             writer.write(self._p1, "-", self._p2)
         else:
             writer.write(self._p1)
+
 struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     alias Move = Move
     var board: Board[values, size, max_stones, max_places]
@@ -100,7 +101,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
             self.board.place_stone(move._p2, self.turn)
         self.turn = 1 - self.turn
 
-    fn decision(self, out decision: String):
+    fn decision(self) -> StaticString:
         return self.board.decision()
 
     fn __str__(self, out str: String):
