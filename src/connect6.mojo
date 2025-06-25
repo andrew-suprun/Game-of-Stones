@@ -79,7 +79,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.getscore(place1, self.turn)
-            if score1.is_win():
+            if score1.iswin():
                 return [Move(place1, place1, Score.win())]
 
             board.place_stone(place1, self.turn)
@@ -88,7 +88,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                 var place2 = places[j]
                 var score2 = board.getscore(place2, self.turn)
 
-                if score2.is_win():
+                if score2.iswin():
                     return [Move(place1, place2, Score.win())]
                 var score = -self.board._score + score1 + score2 if score2.value() == 0 else Score.draw()
                 heap_add[Move, max_moves, move_less](Move(place1, place2, score), moves)

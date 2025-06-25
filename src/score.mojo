@@ -62,24 +62,24 @@ struct Score(TScore):
     fn __neg__(self) -> Score:
         return Score(-self._value) if self._value != 0 else self
 
-    fn is_win(self) -> Bool:
+    fn iswin(self) -> Bool:
         return isinf(self._value) and self._value > 0
 
-    fn is_loss(self) -> Bool:
+    fn isloss(self) -> Bool:
         return isinf(self._value) and self._value < 0
 
-    fn is_draw(self) -> Bool:
+    fn isdraw(self) -> Bool:
         return self._value == 0.5
 
     fn is_decisive(self) -> Bool:
-        return isinf(self._value) or self.is_draw()
+        return isinf(self._value) or self.isdraw()
 
     fn __str__(self) -> String:
-        if self.is_win():
+        if self.iswin():
             return "win"
-        elif self.is_loss():
+        elif self.isloss():
             return "loss"
-        elif self.is_draw():
+        elif self.isdraw():
             return "draw"
         else:
             return String(self._value)

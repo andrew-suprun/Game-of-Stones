@@ -319,11 +319,11 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                     str += "    O "
                 else:
                     var score = self.getscore(Place(x, y), table_idx)
-                    if score.is_win():
+                    if score.iswin():
                         str += " WinX "
-                    elif score.is_loss():
+                    elif score.isloss():
                         str += " WinO "
-                    elif score.is_draw():
+                    elif score.isdraw():
                         str += " Draw "
                     else:
                         str += String(Int(score.value())).rjust(5, " ") + " "

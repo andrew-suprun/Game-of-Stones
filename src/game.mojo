@@ -47,13 +47,13 @@ trait TScore(Copyable, LessThanComparable, Defaultable, Stringable, Writable):
     fn __neg__(self) -> Self:
         ...
 
-    fn is_win(self) -> Bool:
+    fn iswin(self) -> Bool:
         ...
 
-    fn is_loss(self) -> Bool:
+    fn isloss(self) -> Bool:
         ...
 
-    fn is_draw(self) -> Bool:
+    fn isdraw(self) -> Bool:
         ...
 
     fn is_decisive(self) -> Bool:
