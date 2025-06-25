@@ -62,7 +62,7 @@ struct TestGame(TGame, Writable):
             var move = TestMove()
             move._score = score.Score(Float32(random_si64(-10, 10)))
             move._decisive = random_si64(0, 10) % 10 == 0
-            if move._id > 28:
+            if move._id > 28 and move._id < 40:
                 move._decisive = True
                 move._score = 0.5
                 if move._id == 37:
@@ -84,11 +84,10 @@ struct TestGame(TGame, Writable):
         pass
 
 def test_tree():
-    seed(100)
+    seed(0)
     var g = TestGame()
     var t = Tree[TestGame, 2]()
-    for _ in range(3):
+    for _ in range(5):
         _ = t.expand(g)
-        print(t)
-    assert_true(t.root.move.score().value() == 5)
-    assert_true(False)
+    print(t)
+    assert_true(t.root.move.score().value() == -2)
