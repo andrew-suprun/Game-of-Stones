@@ -1,7 +1,6 @@
 from memory import memcpy
 
-from score import Score
-from game import TMove
+from game import Score
 from heap import heap_add
 
 alias first = 0
@@ -216,7 +215,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
         for y in range(size):
             for x in range(size):
-                if self[x, y] == self.empty and self.getscore(Place(x, y), first).value() > 1:
+                if self[x, y] == self.empty and self.getscore(Place(x, y), first) > 1:
                     return "no-decision"
 
         return "draw"

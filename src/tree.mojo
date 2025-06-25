@@ -1,9 +1,9 @@
 from math import log2, sqrt
 from memory import Pointer
 
-from game import TGame
+from game import TGame, Score
 
-struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
+struct Tree[Game: TGame, c: Score](Stringable, Writable):
     var root: Node[Game, c]
 
     fn __init__(out self):
@@ -25,7 +25,7 @@ struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
                 undecided += 1
         return undecided == 1
 
-    fn score(self) -> Game.Move.Score:
+    fn score(self) -> Score:
         return self.root.move.score()
         
     fn best_move(self) -> Game.Move:
@@ -38,7 +38,7 @@ struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
         self.root.write_to(writer)
 
 @fieldwise_init
-struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, Stringable, Writable):
+struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable, Writable):
     var move: Game.Move
     var children: List[Self]
     var n_sims: Int32
@@ -49,7 +49,6 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
         self.n_sims = 1
 
     fn _expand(mut self, mut game: Game):
-        alias Score = Game.Move.Score
 
         if not self.children:
             var moves = game.moves()
@@ -69,12 +68,12 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
         else:
             var selected_child_idx = 0
             var log_parent_sims = log2(Float32(self.n_sims))
-            var maxV = Score.loss().value()
+            var maxV = Score.loss()
             for child_idx in range(len(self.children)):
                 ref child = self.children[child_idx]
                 if child.move.score().iswin():
                     continue
-                var v = child.move.score().value() + self.c.value() * sqrt(log_parent_sims / Float32(child.n_sims))
+                var v = child.move.score() + self.c * Score(sqrt(log_parent_sims / Float32(child.n_sims)))
                 if maxV < v:
                     maxV = v
                     selected_child_idx = child_idx
@@ -84,8 +83,6 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
         self._update_states()
 
     fn _update_states(mut self):
-        alias Score = Game.Move.Score
-
         self.n_sims = 0
         var max_score = Score.loss()
         var all_draws = True

@@ -2,11 +2,10 @@ from sys import argv
 from time import perf_counter_ns
 from builtin.io import _fdopen
 
-from game import TGame
-from score import Score
+from game import TGame, Score
 from tree import Tree
 
-fn run[Game: TGame, exp_factor: Game.Move.Score]() raises:
+fn run[Game: TGame, exp_factor: Score]() raises:
     var log_file = FileHandle()
     var log = False
 

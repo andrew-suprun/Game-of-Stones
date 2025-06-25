@@ -1,6 +1,6 @@
 from benchmark import benchmark, Unit, keep
 
-from game import TMove, TScore
+from game import TMove, Score
 from tree import Tree
 from gomoku import Gomoku
 

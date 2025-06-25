@@ -1,5 +1,4 @@
-from score import Score
-from game import TGame, TMove
+from game import TGame, TMove, Score
 from heap import heap_add
 from board import Board, Place, first
 

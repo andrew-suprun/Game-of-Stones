@@ -2,7 +2,7 @@ from sys import env_get_int
 from time import perf_counter_ns
 
 from tree import Tree
-from score import Score
+from game import Score
 from gomoku import Gomoku, Move
 from board import Place
 

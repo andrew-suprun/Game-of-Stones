@@ -3,8 +3,7 @@ from time import perf_counter_ns
 import random
 
 from tree import Tree
-from game import TMove
-from score import Score
+from game import Score
 from gomoku import Gomoku, Move
 from board import Place
 
