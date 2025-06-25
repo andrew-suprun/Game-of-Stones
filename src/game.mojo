@@ -21,7 +21,7 @@ trait TMove(Copyable, Movable, Defaultable, Stringable, Representable, Writable)
     fn set_score(mut self, score: Score):
         ...
 
-from utils.numerics import FPUtils, inf, neg_inf, nan, isfinite, isinf, isnan
+from utils.numerics import FPUtils, inf, neg_inf, isinf
 
 @fieldwise_init("implicit")
 @register_passable("trivial")
