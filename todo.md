@@ -1,4 +1,3 @@
-* test handling of draws
 * engine: cut search time when one move dominates
 * engine: reimplement undo in engine.moj
 * engine: switch to standard Logger

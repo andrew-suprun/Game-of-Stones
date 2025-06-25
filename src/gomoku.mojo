@@ -66,7 +66,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame, Writable):
             r = a.score() < b.score()
 
         var places = self.board.places(self.turn)
-        if not places:
+        if len(places) < max_moves:
             return [Move(score = Score.draw())]
 
         var moves = List[Move](capacity = len(places))

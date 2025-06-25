@@ -1,6 +1,6 @@
 from game import TGame, TMove, Score
 from heap import heap_add
-from board import Board, Place
+from board import Board, Place, first
 
 alias max_stones = 6
 alias values = List[Score](0, 1, 5, 25, 125, 625)
@@ -70,7 +70,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
         var places = self.board.places(self.turn)
 
-        if len(places) < 2:
+        if len(places) < max_places:
             return [Move(score = Score.draw())]
 
         var board = self.board
@@ -89,7 +89,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
                 if score2.iswin():
                     return [Move(place1, place2, Score.win())]
-                var score = -self.board._score + score1 + score2 if score2.value() == 0 else Score.draw()
+                var board_score = self.board._score if self.turn == first else -self.board._score
+                var score = board_score + score1 + score2 if score2 == 0 else Score.draw()
                 heap_add[Move, max_moves, move_less](Move(place1, place2, score), moves)
 
         return moves
