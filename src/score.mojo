@@ -38,6 +38,9 @@ struct Score(TScore):
     fn min(self, other: Score) -> Score:
         return Score(min(self._value, other._value))
 
+    fn max(self, other: Score) -> Score:
+        return Score(max(self._value, other._value))
+
     fn __add__(self, other: Score) -> Score:
         return self._value + other._value
 
@@ -57,7 +60,7 @@ struct Score(TScore):
         return self._value <= other._value
 
     fn __neg__(self) -> Score:
-        return Score(-self._value)
+        return Score(-self._value) if self._value != 0 else self
 
     fn is_win(self) -> Bool:
         return isinf(self._value) and self._value > 0

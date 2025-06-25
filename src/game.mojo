@@ -41,6 +41,9 @@ trait TScore(Copyable, LessThanComparable, Defaultable, Stringable, Writable):
     fn min(self, other: Self) -> Self:
         ...
 
+    fn max(self, other: Self) -> Self:
+        ...
+
     fn __neg__(self) -> Self:
         ...
 

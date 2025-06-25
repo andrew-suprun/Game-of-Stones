@@ -65,7 +65,7 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
                 child_node.children.reserve(len(child_moves))
                 for child_move in child_moves:
                     child_node.children.append(Node[Game, c](child_move))
-                child_node._update_state()
+                child_node._update_states()
         else:
             var selected_child_idx = 0
             var log_parent_sims = log2(Float32(self.n_sims))
@@ -81,34 +81,31 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
             ref selected_child = self.children[selected_child_idx]
             game.play_move(selected_child.move)
             selected_child._expand(game)
-        self._update_state()
+        self._update_states()
 
-    fn _update_state(mut self):
+    fn _update_states(mut self):
         alias Score = Game.Move.Score
 
         self.n_sims = 0
-        var score = Score.win()
-        var has_draw = False
+        var max_score = Score.loss()
         var all_draws = True
         for child in self.children:
+            self.n_sims += child.n_sims
             if child.move.score().is_win():
                 self.move.set_score(Score.loss())
                 return
             elif child.move.score().is_draw():
-                has_draw = True
+                max_score = max_score.max(Score())
                 continue
             all_draws = False
             if child.move.score().is_loss():
                 continue
-            self.n_sims += child.n_sims
             var child_score = child.move.score()
-            score = score.min(-child_score)
+            max_score = max_score.max(child_score)
         if all_draws:
             self.move.set_score(Score.draw())
-        elif has_draw:
-            self.move.set_score(self.move.score().min(Score()))
         else:
-            self.move.set_score(score)
+            self.move.set_score(-max_score)
 
     fn best_move(self, out result: Game.Move):
         debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")

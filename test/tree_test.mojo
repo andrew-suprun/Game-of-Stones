@@ -21,6 +21,12 @@ struct TestMove(TMove):
         self._decisive = False
         __id += 1
 
+    fn __init__(out self, text: String) raises:
+        self._id = __id
+        self._score = 0
+        self._decisive = False
+        __id += 1
+
     fn score(self) -> Self.Score:
         return self._score
 
@@ -40,10 +46,10 @@ struct TestMove(TMove):
         r = String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write(self._id, " ", self._score, " ", self._decisive)
+        writer.write("<", self._id, ">")
 
 
-struct TestGame(TGame):
+struct TestGame(TGame, Writable):
     alias Move = TestMove
 
     fn __init__(out self):
@@ -51,21 +57,31 @@ struct TestGame(TGame):
 
     fn moves(self) -> List[self.Move]:
         var n_moves = random_si64(2, 5)
-        print("moves", n_moves)
         var moves = List[self.Move]()
         for _ in range(n_moves):
             var move = TestMove()
             move._score = score.Score(Float32(random_si64(-10, 10)))
             move._decisive = random_si64(0, 10) % 10 == 0
+            if move._id > 28:
+                move._decisive = True
+                move._score = 0.5
+                if move._id == 37:
+                    move._decisive = True
+                    move._score = score.Score.loss()
+                elif move._id == 38:
+                    move._decisive = False
+                    move._score = -5
             moves.append(move)
         return moves
 
     fn play_move(mut self, move: self.Move):
         pass
 
-    fn undo_move(mut self):
-        pass
+    fn decision(self) -> StaticString:
+        return "no-decision"
 
+    fn write_to[W: Writer](self, mut writer: W):
+        pass
 
 def test_tree():
     seed(100)
@@ -75,3 +91,4 @@ def test_tree():
         _ = t.expand(g)
         print(t)
     assert_true(t.root.move.score().value() == 5)
+    assert_true(False)
