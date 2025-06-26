@@ -9,19 +9,6 @@ alias Scores = SIMD[DType.float32, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct PlaceScores(Copyable, Movable):
-    var offset: Int
-    var scores: Scores
-
-@fieldwise_init
-@register_passable("trivial")
-struct ScoreMark(Copyable, Movable):
-    var place: Place
-    var score: Score
-    var history_idx: Int
-
-@fieldwise_init
-@register_passable("trivial")
 struct Place(Copyable, Movable, Defaultable, Stringable, Writable):
     var x: Int8
     var y: Int8
