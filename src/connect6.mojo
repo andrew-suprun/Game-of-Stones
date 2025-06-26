@@ -101,7 +101,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
                 if score2.iswin():
                     return [Move(place1, place2, Score.win())]
-                heap_add[Move, max_moves, move_less](Move(place1, place2, board_score + score1 + score2), moves)
+                heap_add[max_moves, move_less](Move(place1, place2, board_score + score1 + score2), moves)
 
         return moves
 

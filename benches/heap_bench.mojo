@@ -13,7 +13,7 @@ fn bench():
     for _ in range(1_000_000):
         heap.clear()
         for i in range(100):
-            heap_add[Int, 20, less](i * 17 % 100, heap)
+            heap_add[20, less](i * 17 % 100, heap)
 
 
 fn main() raises:

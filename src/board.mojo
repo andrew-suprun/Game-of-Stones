@@ -149,12 +149,12 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        heap_add[Place, max_places, less_first](Place(x, y), places)
+                        heap_add[max_places, less_first](Place(x, y), places)
         else:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        heap_add[Place, max_places, less_second](Place(x, y), places)
+                        heap_add[max_places, less_second](Place(x, y), places)
         return places^
 
     fn decision(self) -> StaticString:
