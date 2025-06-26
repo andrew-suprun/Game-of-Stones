@@ -1,18 +1,15 @@
 from random import seed, random_si64, random_float64
 from testing import assert_true
 
-import score
-from game import TGame, TMove
+from game import TGame, TMove, Score
 from tree import Tree, Node
 
 var __id: Int = 0
 
 @fieldwise_init
 struct TestMove(TMove):
-    alias Score = score.Score
-
     var _id: Int
-    var _score: Self.Score
+    var _score: Score
     var _decisive: Bool
 
     fn __init__(out self):
@@ -27,10 +24,10 @@ struct TestMove(TMove):
         self._decisive = False
         __id += 1
 
-    fn score(self) -> Self.Score:
+    fn score(self) -> Score:
         return self._score
 
-    fn set_score(mut self, score: Self.Score):
+    fn set_score(mut self, score: Score):
         self._score = score
 
     fn is_decisive(self) -> Bool:
@@ -60,14 +57,14 @@ struct TestGame(TGame, Writable):
         var moves = List[self.Move]()
         for _ in range(n_moves):
             var move = TestMove()
-            move._score = score.Score(Float32(random_si64(-10, 10)))
+            move._score = Score(Float32(random_si64(-10, 10)))
             move._decisive = random_si64(0, 10) % 10 == 0
             if move._id > 28 and move._id < 40:
                 move._decisive = True
                 move._score = 0.5
                 if move._id == 37:
                     move._decisive = True
-                    move._score = score.Score.loss()
+                    move._score = Score.loss()
                 elif move._id == 38:
                     move._decisive = False
                     move._score = -5

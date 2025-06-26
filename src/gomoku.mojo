@@ -7,8 +7,6 @@ alias values = List[Score](0, 1, 5, 25, 125)
 
 @register_passable("trivial")
 struct Move(TMove):
-    alias Score = Score
-
     var _place: Place
     var _score: Score
 
@@ -29,10 +27,10 @@ struct Move(TMove):
         self._place = Place(move)
         self._score = 0
 
-    fn score(self) -> Self.Score:
+    fn score(self) -> Score:
         return self._score
 
-    fn set_score(mut self, score: Self.Score):
+    fn set_score(mut self, score: Score):
         self._score = score
 
     fn __eq__(self, other: Move) -> Bool:
