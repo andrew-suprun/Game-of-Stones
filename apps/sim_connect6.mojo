@@ -2,9 +2,10 @@ from sys import env_get_int
 from time import perf_counter_ns
 import random
 
-from game import TMove
+from board import Place
+from game import TMove, Score
 from tree import Tree
-from connect6 import Connect6
+from connect6 import Connect6, Move
 
 alias m1 = env_get_int["M1", 32]()
 alias p1 = env_get_int["P1", 16]()
@@ -40,7 +41,7 @@ fn main() raises:
 alias black = True
 alias white = False
 
-fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
+fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
     var g1 = Game1()
     var g2 = Game2()
     var t1 = Tree1()
@@ -74,7 +75,7 @@ fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t1.best_move()
-            value = t1.value()
+            value = t1.score()
             player = n1
         else:
             while perf_counter_ns() < deadline:
@@ -83,13 +84,13 @@ fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t2.best_move()
-            value = t2.value()
+            value = t2.score()
             player = n2
         turn = not turn
         g1.play_move(move)
         g2.play_move(move)
-        t1.reset()
-        t2.reset()
+        t1 = Tree1()
+        t2 = Tree2()
         var decision = g1.decision()
         print("move", move, decision, sims, player, value, forced, file=log)
         print(g1, file=log)
@@ -116,7 +117,7 @@ fn play_opening(opening: List[TMove], g1_black: Bool, log: FileHandle):
     print(__first_wins, ":", __second_wins, " (", __draws, ")", sep="")
 
 
-fn opening_moves[Move: TMove](out moves: List[Move]):
+fn opening_moves() -> List[Move]:
     var places = List[Place]()
     for j in range(7, 12):
         for i in range(7, 12):
@@ -128,3 +129,4 @@ fn opening_moves[Move: TMove](out moves: List[Move]):
     moves.append(Move(places[0], places[1]))
     moves.append(Move(places[2], places[3]))
     moves.append(Move(places[4], places[5]))
+    return moves

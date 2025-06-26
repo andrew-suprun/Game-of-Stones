@@ -51,6 +51,10 @@ struct Score(Copyable, Comparable, Defaultable, Stringable, Writable):
     fn __init__(out self, value: IntLiteral):
         self._value = value
 
+    @implicit
+    fn __init__(out self, value: Int):
+        self._value = value
+
     fn value(self) -> Float32:
         return self._value
 

@@ -115,7 +115,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
     print(__first_wins, ":", __second_wins, " (", __draws, ")", sep="")
 
 
-fn opening_moves(out moves: List[Move]):
+fn opening_moves() -> List[Move]:
     var places = List[Place]()
     for j in range(7, 12):
         for i in range(7, 12):
@@ -129,3 +129,4 @@ fn opening_moves(out moves: List[Move]):
     moves.append(Move(places[2]))
     moves.append(Move(places[3]))
     # moves.append(Move(places[4]))
+    return moves

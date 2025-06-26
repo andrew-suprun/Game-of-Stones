@@ -1,4 +1,3 @@
-* connect6: sim
 * connect6: bench
 * engine: cut search time when one move dominates
 * engine: reimplement undo in engine.mojo
