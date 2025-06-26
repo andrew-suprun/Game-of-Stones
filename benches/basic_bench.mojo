@@ -8,7 +8,7 @@ fn benchInlineArraySIMDInt():
     var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
         a[i] = SIMD[DType.float32, 2](
-            Score(random_si64(0, 10)), Score(random_float64(0, 10))
+            rand(), rand()
         )
     var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
@@ -23,7 +23,7 @@ fn benchListSIMDInt():
     for _ in range(1100):
         a.append(
             SIMD[DType.float32, 2](
-                Score(random_si64(0, 10)), Score(random_float64(0, 10))
+                rand(), rand()
             )
         )
     var s: SIMD[DType.float32, 2] = 0
@@ -38,7 +38,7 @@ fn benchInlineArraySIMDFloat():
     var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
         a[i] = SIMD[DType.float32, 2](
-            Score(random_float64(0, 10)), Score(random_float64(0, 10))
+            rand(), rand()
         )
     var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
@@ -52,7 +52,7 @@ fn benchListSIMDFloat():
     var a = InlineArray[SIMD[DType.float32, 2], 1100](0)
     for i in range(1100):
         a[i] = SIMD[DType.float32, 2](
-            Score(random_float64(0, 10)), Score(random_float64(0, 10))
+            rand(), rand()
         )
     var s: SIMD[DType.float32, 2] = 0
     for _ in range(10_000):
@@ -61,6 +61,9 @@ fn benchListSIMDFloat():
             s += a[j]
     keep(s)
 
+
+fn rand() -> Float32:
+    return Float32(random_float64(0, 10))
 
 fn main() raises:
     print("\n--- basic (ms/10_000) ---")
