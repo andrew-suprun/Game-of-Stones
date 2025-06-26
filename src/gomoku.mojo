@@ -72,7 +72,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame, Writable):
         var moves = List[Move](capacity = len(places))
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
-            moves.append(Move(place, board_score + self.board.getscore(place, self.turn)))
+            moves.append(Move(place, board_score + self.board.score(place, self.turn)))
         return moves
 
     fn play_move(mut self, move: self.Move):

@@ -88,7 +88,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
             var place1 = places[i]
-            var score1 = self.board.getscore(place1, self.turn)
+            var score1 = self.board.score(place1, self.turn)
             if score1.iswin():
                 return [Move(place1, place1, Score.win())]
 
@@ -97,7 +97,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j]
-                var score2 = board.getscore(place2, self.turn)
+                var score2 = board.score(place2, self.turn)
 
                 if score2.iswin():
                     return [Move(place1, place2, Score.win())]

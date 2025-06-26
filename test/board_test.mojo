@@ -20,7 +20,7 @@ fn test_place_stone() raises:
             for y in range(board.size):
                 for x in range(board.size):
                     if board[x, y] == board.empty:
-                        var actual = board.getscore(Place(x, y), first)
+                        var actual = board.score(Place(x, y), first)
                         var b = board
                         b.place_stone(Place(x, y), first)
                         var expected = b.board_value(values) - value
@@ -29,7 +29,7 @@ fn test_place_stone() raises:
                             print(b)
                             print(b.str_scores())
                             assert_true(False)
-                        actual = board.getscore(Place(x, y), second)
+                        actual = board.score(Place(x, y), second)
                         b = board
                         b.place_stone(Place(x, y), second)
                         expected = value - b.board_value(values)
@@ -39,9 +39,9 @@ fn test_place_stone() raises:
                             print(b.str_scores())
                             assert_true(False)
             if turn == first:
-                value += board.getscore(Place(xx, yy), turn)
+                value += board.score(Place(xx, yy), turn)
             else:
-                value -= board.getscore(Place(xx, yy), turn)
+                value -= board.score(Place(xx, yy), turn)
             board.place_stone(Place(xx, yy), turn)
             n += 1
 
@@ -54,7 +54,7 @@ fn test_places() raises:
     for i in range(1, 20):
         var parent = places[(i - 1) // 2]
         var child = places[i]
-        assert_true(board.getscore(parent, first) <= board.getscore(child, first))
+        assert_true(board.score(parent, first) <= board.score(child, first))
 
 fn test_decision() raises:
     var board = Board[values, 19, max_stones, 20]()
