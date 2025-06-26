@@ -30,9 +30,15 @@ struct Place(Copyable, Movable, Defaultable, Stringable, Writable):
         self.x = 0
         self.y = 0
 
+    @implicit
     fn __init__(out self, place: String) raises:
         self.x = ord(place[0]) - ord("a")
         self.y = Int(place[1:]) - 1
+
+    @implicit
+    fn __init__(out self, place: StringLiteral) raises:
+        self.x = ord(place[0]) - ord("a")
+        self.y = Int(String(place)[1:]) - 1
 
     fn __eq__(self, other: Self, out result: Bool):
         result = self.x == other.x and self.y == other.y

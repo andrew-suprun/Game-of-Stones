@@ -16,13 +16,25 @@ struct Move(TMove):
     fn __init__(out self):
         self = Self.__init__(Place(), Place(), 0)
 
+
     fn __init__(out self, p1: Place = Place(0, 0), p2: Place = Place(0, 0), score: Score = 0):
         self._p1 = p1
         self._p2 = p2
-        self._score = 0
+        self._score = score
 
+    @implicit
     fn __init__(out self, move: String) raises:
         var tokens = move.split("-")
+        self._p1 = Place(tokens[0])
+        if len(tokens) == 2:
+            self._p2 = Place(tokens[1])
+        else:
+            self._p2 = self._p1
+        self._score = 0
+
+    @implicit
+    fn __init__(out self, move: StringLiteral) raises:
+        var tokens = String(move).split("-")
         self._p1 = Place(tokens[0])
         if len(tokens) == 2:
             self._p2 = Place(tokens[1])
@@ -69,18 +81,18 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
             return a.score() < b.score()
 
         var places = self.board.places(self.turn)
-
         if len(places) < max_places:
             return [Move(score = Score.draw())]
 
-        var board = self.board
         var moves = List[Move](capacity = max_moves)
+        var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.getscore(place1, self.turn)
             if score1.iswin():
                 return [Move(place1, place1, Score.win())]
 
+            var board = self.board
             board.place_stone(place1, self.turn)
 
             for j in range(i + 1, len(places)):
@@ -89,9 +101,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
                 if score2.iswin():
                     return [Move(place1, place2, Score.win())]
-                var board_score = self.board._score if self.turn == first else -self.board._score
-                var score = board_score + score1 + score2 if score2 == 0 else Score.draw()
-                heap_add[Move, max_moves, move_less](Move(place1, place2, score), moves)
+                heap_add[Move, max_moves, move_less](Move(place1, place2, board_score + score1 + score2), moves)
 
         return moves
 
