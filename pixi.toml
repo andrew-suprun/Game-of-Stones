@@ -9,3 +9,4 @@ version = "0.1.0"
 
 [dependencies]
 modular = ">=25.4.0.dev2025061222,<26"
+pygame = ">=2.6.1,<3"

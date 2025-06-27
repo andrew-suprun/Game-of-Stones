@@ -11,7 +11,6 @@ trait TGame(Copyable, Defaultable, Writable):
         ...
 
 trait TMove(Copyable, Movable, Defaultable, Stringable, Representable, Writable):
-
     fn __init__(out self, text: String) raises:
         ...
 
