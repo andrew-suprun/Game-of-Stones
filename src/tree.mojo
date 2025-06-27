@@ -10,18 +10,18 @@ struct Tree[Game: TGame, c: Score](Stringable, Writable):
         self.root = Node[Game, c](Game.Move())
         
     fn expand(mut self, game: Game, out done: Bool):
-        if self.root.move.score().is_decisive():
+        if self.root.move.score().isdecisive():
             return True
         else:
             var g = game
             self.root._expand(g)
         
-        if self.root.move.score().is_decisive():
+        if self.root.move.score().isdecisive():
             return True
 
         var undecided = 0
         for child in self.root.children:
-            if not child.move.score().is_decisive():
+            if not child.move.score().isdecisive():
                 undecided += 1
         return undecided == 1
 
@@ -37,6 +37,10 @@ struct Tree[Game: TGame, c: Score](Stringable, Writable):
     fn write_to[W: Writer](self, mut writer: W):
         self.root.write_to(writer)
 
+    fn debug_best_moves(self):
+        for ref node in self.root.children:
+            print("  ", node.move, node.move.score(), node.n_sims)
+            
 @fieldwise_init
 struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable, Writable):
     var move: Game.Move
@@ -57,6 +61,9 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Node[Game, c](move))
+                self._update_states()
+                if self.move.score().isdecisive():
+                    return
             for ref child_node in self.children:
                 var child_game = game
                 child_game.play_move(child_node.move)

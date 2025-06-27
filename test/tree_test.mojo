@@ -30,7 +30,7 @@ struct TestMove(TMove):
     fn set_score(mut self, score: Score):
         self._score = score
 
-    fn is_decisive(self) -> Bool:
+    fn isdecisive(self) -> Bool:
         return self._decisive
 
     fn set_decisive(mut self):

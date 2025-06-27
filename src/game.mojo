@@ -108,7 +108,7 @@ struct Score(Copyable, Comparable, Defaultable, Stringable, Writable):
     fn isdraw(self) -> Bool:
         return self._value == 0 and FPUtils.get_sign(self._value)
 
-    fn is_decisive(self) -> Bool:
+    fn isdecisive(self) -> Bool:
         return isinf(self._value) or self.isdraw()
 
     fn __str__(self) -> String:

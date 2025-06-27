@@ -114,7 +114,7 @@ struct GameOfStones[Game: TGame, c: Score, stones_per_move: Int]:
                         self.game_complete_confirmed = True
                         return
                     # turn the table on first white move
-                    if len(self.moves) == 1:
+                    if len(self.moves) == 1 and not self.selected:
                         return
                     if len(self.selected) == self.stones_per_move:
                         var move: Game.Move
@@ -134,7 +134,6 @@ struct GameOfStones[Game: TGame, c: Score, stones_per_move: Int]:
                     return
                 var x = Int(event.pos[0]-r)//d
                 var y = Int(event.pos[1]-r)//d
-                print(len(self.selected), self.stones_per_move)
                 if x >=0 and x < board_size and y >= 0 and y < board_size:
                     var place = Place(x, y)
                     if place in self.selected:
@@ -167,7 +166,11 @@ struct GameOfStones[Game: TGame, c: Score, stones_per_move: Int]:
             while not done and perf_counter_ns() < deadline2:
                 done = self.expand_tree()
                 sim += 1
-        print("sims", sim)
+        print("sims", sim, "score", self.tree.score())
+        if sim < 20:
+            print(self.tree)
+        else:
+            self.tree.debug_best_moves()
 
         var move = self.tree.best_move()
         self.play_move(move)
