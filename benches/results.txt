@@ -1,15 +1,15 @@
 pixi run mojo run -I src -D Assert=all benches/basic_bench.mojo
 --- basic (ms/10_000) ---
-InlineArray SIMD Int   0.0093
-List        SIMD Int   0.0093
-InlineArray SIMD Float 0.0093
+InlineArray SIMD Int   0.0063
+List        SIMD Int   0.0079
+InlineArray SIMD Float 0.0094
 List        SIMD Float 0.0093
 
 pixi run mojo run -I src benches/basic_bench.mojo
 --- basic (ms/10_000) ---
-InlineArray SIMD Int   0.0094
-List        SIMD Int   0.0094
-InlineArray SIMD Float 0.0094
+InlineArray SIMD Int   0.0063
+List        SIMD Int   0.0069
+InlineArray SIMD Float 0.0093
 List        SIMD Float 0.0093
 
 pixi run mojo run -I src -D Assert=all benches/board_bench.mojo 
