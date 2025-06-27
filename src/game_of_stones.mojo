@@ -28,47 +28,67 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
-struct GameOfStones[Game: TGame, c: Score, max_selected: Int]:
-    var places: List[List[Place]]
-    var selected: List[List[Place]]
+fn game_of_stones[name: StaticString, Game: TGame, c: Score, stones_per_move: Int]() raises -> Bool:
+    var pygame = Python.import_module("pygame")
+    pygame.init()
+    var window = pygame.display.set_mode(Python.tuple(window_height, window_width))
+    pygame.display.set_caption("Game of Stones - " + name)
+
+    var done = False
+    while not done:
+        var game = GameOfStones[Game, c, stones_per_move](pygame, window)
+        done = game.run()
+    return done
+
+struct GameOfStones[Game: TGame, c: Score, stones_per_move: Int]:
+    var pygame: PythonObject
+    var window: PythonObject
+    var moves: List[Game.Move]
+    var selected: List[Place]
     var game: Game
     var tree: Tree[Game, c]
     var turn: Int
     var search_complete: Bool
     var game_complete: Bool
-    var pygame: PythonObject
-    var window: PythonObject
-    var app_complete: Bool
     var game_complete_confirmed: Bool
+    var app_complete: Bool
     var played_moves: List[Game.Move]
 
-    fn __init__(out self, name: String) raises:
-        self.places = List(List[Place](), List[Place]())
-        self.selected = List(List[Place](), List[Place]())
+    fn __init__(out self, pygame: PythonObject, window: PythonObject):
+        self.pygame = pygame
+        self.window = window
+        self.moves = List[Game.Move]()
+        self.selected = List[Place]()
         self.game = Game()
         self.tree = Tree[Game, c]()
         self.turn = black
         self.search_complete = False
         self.game_complete = False
-        self.app_complete = False
         self.game_complete_confirmed = False
+        self.app_complete = False
         self.played_moves = List[Game.Move]()
-        self.pygame = Python.import_module("pygame")
-        self.pygame.init()
-        self.window = self.pygame.display.set_mode(Python.tuple(window_height, window_width))
-        self.pygame.display.set_caption("Game of Stones - " + name)
 
     fn run(mut self) raises -> Bool:
         var move = Game.Move("j10")
-        self.add_stones(move)
         self.play_move(move)
 
         while not self.app_complete and not self.game_complete_confirmed:
             self.human_move()
             self.engine_move()
-        if self.app_complete:
-            self.pygame.quit()
         return self.app_complete
+
+    fn play_move(mut self, move: Game.Move) raises:
+        self.moves.append(move)
+        self.selected.clear()
+        self.game.play_move(move)
+        self.tree = Tree[Game, c]()
+        print("move", move, self.game.decision())
+        print(self.game)
+        if self.game.decision() != "no-decision":
+            self.game_complete = True
+
+        self.turn = 1 - self.turn
+        self.search_complete = False
 
     fn human_move(mut self) raises:
         while True:
@@ -79,42 +99,33 @@ struct GameOfStones[Game: TGame, c: Score, max_selected: Int]:
             
             elif event.type == self.pygame.KEYDOWN:
                 if event.key == self.pygame.K_ESCAPE:
-                    var stones = len(self.places[black]) + len(self.places[white]) - len(self.selected[self.turn])
-                    if stones <= self.max_selected + 1:
-                        continue
-                    for stone in range(2):
-                        while self.selected[stone]:
-                            var place = self.selected[stone].pop()
-                            var idx = self.places[stone].index(place)
-                            _ = self.places[stone].pop(idx)
-
-                    for _ in range(self.max_selected):
-                        var place = self.places[self.turn][-1]
-                        self.remove_place(place)
-
-                    for i in range(self.max_selected):
-                        var place = self.places[1-self.turn][-1 - i]
-                        self.selected[1 - self.turn].append(place)
-
+                    _ = self.moves.pop()
+                    _ = self.moves.pop()
+                    self.selected.clear()
                     self.game_complete = False
-
-                    self.undo_moves()
+                    self.tree = Tree[Game, c]()
+                    self.game = Game()
+                    var moves = self.moves
+                    for move in moves:
+                        self.play_move(move)
 
                 elif event.key == self.pygame.K_RETURN:
                     if self.game_complete:
                         self.game_complete_confirmed = True
                         return
                     # turn the table on first white move
-                    if not self.places[white]:
+                    if len(self.moves) == 1:
                         return
-                    if len(self.selected[self.turn]) == self.max_selected:
-                        var place1 = self.selected[self.turn][-1]
-                        if self.max_selected == 1:
-                            self.play_move(Game.Move(String(place1)))
+                    if len(self.selected) == self.stones_per_move:
+                        var move: Game.Move
+                        var place1 = self.selected[0]
+                        if self.stones_per_move == 1:
+                            move = Game.Move(String(place1))
                         else:
-                            var place2 = self.selected[self.turn][-2]
-                            self.play_move(Game.Move(String(place1) + "-" + String(place2)))
-                        
+                            var place2 = self.selected[1]
+                            move = Game.Move(String(place1) + "-" + String(place2))
+                        self.play_move(move)
+                        self.selected.clear()
                         self.draw()
                         return
 
@@ -123,23 +134,23 @@ struct GameOfStones[Game: TGame, c: Score, max_selected: Int]:
                     return
                 var x = Int(event.pos[0]-r)//d
                 var y = Int(event.pos[1]-r)//d
+                print(len(self.selected), self.stones_per_move)
                 if x >=0 and x < board_size and y >= 0 and y < board_size:
                     var place = Place(x, y)
-                    if place in self.places[1 - self.turn]:
-                        continue
-                    if place in self.selected[self.turn]:
-                        self.remove_place(place)
-                    elif len(self.selected[self.turn]) < self.max_selected and
-                            place not in self.places[self.turn]:
-                        self.add_selected(place)
+                    if place in self.selected:
+                        if place == self.selected[0]:
+                            _ = self.selected.pop(0)
+                        elif len(self.selected) == 2:
+                            _ = self.selected.pop(1)
+                    elif len(self.selected) < self.stones_per_move:
+                        self.selected.append(place)
             self.draw()
 
     fn engine_move(mut self) raises:
         if self.app_complete or self.game_complete: return
 
-        if not self.places[white] and not self.selected[white]:
+        if len(self.moves) == 1:
             var move = Self.first_white_move()
-            self.add_stones(move)
             self.play_move(move)
             self.draw()
             return
@@ -159,26 +170,8 @@ struct GameOfStones[Game: TGame, c: Score, max_selected: Int]:
         print("sims", sim)
 
         var move = self.tree.best_move()
-        self.add_stones(move)
         self.play_move(move)
         self.draw()
-
-    fn add_stones(mut self, move: Game.Move) raises:
-        var places = String(move).split("-")
-        for place in places:
-            self.add_selected(Place(place))
-
-    fn play_move(mut self, move: Game.Move) raises:
-        self.game.play_move(move)
-        self.tree = Tree[Game, c]()
-        print("move", move, self.game.decision())
-        print(self.game)
-        if self.game.decision() != "no-decision":
-            self.game_complete = True
-
-        self.turn = 1 - self.turn
-        self.selected[self.turn].clear()
-        self.search_complete = False
 
     fn draw(self) raises:
         self.window.fill(color_background)
@@ -186,19 +179,35 @@ struct GameOfStones[Game: TGame, c: Score, max_selected: Int]:
         for i in range(1, board_size+1):
             self.pygame.draw.line(self.window, color_line, Python.tuple(d, i*d), Python.tuple(board_size*d, i*d))
             self.pygame.draw.line(self.window, color_line, Python.tuple(i*d, d), Python.tuple(i*d, board_size*d))
-
-        for turn in range(2):
-            var color = color_black if turn == black else color_white
-            for place in self.places[turn]:
+        
+        var turn = black
+        var color: String
+        for move in self.moves:
+            color = color_black if turn == black else color_white
+            var places = String(move).split("-")
+            for place_str in places:
+                var place = Place(place_str)
                 self.pygame.draw.circle(self.window, color, board_to_window(place.x, place.y), r - 2)
-            for place in self.selected[turn]:
-                self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r//5)
+            turn = 1 - turn
+
+        var last_move = self.moves[-1]
+        var places = String(last_move).split("-")
+        for place_str in places:
+            var place = Place(place_str)
+            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r//5)
+
+        color = color_black if turn == black else color_white
+        for place in self.selected:
+            self.pygame.draw.circle(self.window, color, board_to_window(place.x, place.y), r - 2)
+            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r//5)
 
         self.pygame.display.flip()
 
 
     fn undo_moves(mut self):
-            # TODO: implement undo_move()
+            _ = self.moves.pop(-1)
+            _ = self.moves.pop(-1)
+            self.selected.clear()
             self.tree = Tree[Game, c]()
             print("undo")
             print(self.game)
@@ -211,31 +220,6 @@ struct GameOfStones[Game: TGame, c: Score, max_selected: Int]:
             self.search_complete = self.tree.expand(self.game)
         return self.search_complete
 
-    fn add_selected(mut self, place: Place):
-        self.places[self.turn].append(place)
-        self.selected[self.turn].append(place)
-
-    fn remove_place(mut self, place: Place):
-        try:
-            var idx = self.places[self.turn].index(place)
-            _ = self.places[self.turn].pop(idx)
-            idx = self.selected[self.turn].index(place)
-            _ = self.selected[self.turn].pop(idx)
-        except:
-            pass
-
-    fn debug_print(self):
-        print("  black")
-        for place in self.places[black]:
-            print("    place", place.x, place.y)
-        for place in self.selected[black]:
-            print("      selected", place.x, place.y)
-        print("  white")
-        for place in self.places[white]:
-            print("    place", place.x, place.y)
-        for place in self.selected[white]:
-            print("      selected", place.x, place.y)
-
     @staticmethod
     fn first_white_move() raises -> Game.Move:
         var places = List[Place]()
@@ -246,7 +230,7 @@ struct GameOfStones[Game: TGame, c: Score, max_selected: Int]:
         random.seed()
         random.shuffle(places)
 
-        if max_selected == 1:
+        if stones_per_move == 1:
             return Game.Move(String(places[0]))
         else:
             return Game.Move(String(places[0]) + "-" + String(places[1]))

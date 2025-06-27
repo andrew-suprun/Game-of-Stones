@@ -1,8 +1,7 @@
-from game_of_stones import GameOfStones
+from game_of_stones import game_of_stones
 from gomoku import Gomoku
 
 fn main() raises:
     var done = False
     while not done:
-        var game = GameOfStones[Gomoku[size = 19, max_moves = 20], c = 30, max_selected = 1]("Gomoku")
-        done = game.run()
+        done = game_of_stones["Gomoku", Gomoku[size = 19, max_moves = 20], c = 30, stones_per_move = 1]()
