@@ -3,13 +3,13 @@ from random import seed, random_si64
 
 from board import Board, Place, Score, first, second
 
-alias max_stones = 6
+alias win_stones = 6
 alias values = List[Score](0, 1, 5, 25, 125, 625)
 
 
 fn test_place_stone() raises:
     seed(7)
-    var board = Board[values, 19, max_stones, 20]()
+    var board = Board[values, 19, win_stones, 20]()
     var value = Score(0)
     var n = 0
     for i in range(200):
@@ -46,7 +46,7 @@ fn test_place_stone() raises:
             n += 1
 
 fn test_places() raises:
-    var board = Board[values, 19, max_stones, 20]()
+    var board = Board[values, 19, win_stones, 20]()
     board.place_stone(Place(9, 9), 0)
     board.place_stone(Place(8, 9), 1)
     var places = board.places(first)
@@ -57,7 +57,7 @@ fn test_places() raises:
         assert_true(board.score(parent, first) <= board.score(child, first))
 
 fn test_decision() raises:
-    var board = Board[values, 19, max_stones, 20]()
+    var board = Board[values, 19, win_stones, 20]()
 
     board.place_stone(Place(0, 0), first)
     board.place_stone(Place(0, 1), first)

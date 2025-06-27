@@ -2,7 +2,7 @@ from game import TGame, TMove, Score
 from heap import heap_add
 from board import Board, Place, first
 
-alias max_stones = 5
+alias win_stones = 5
 alias values = List[Score](0, 1, 5, 25, 125)
 
 @register_passable("trivial")
@@ -51,11 +51,11 @@ struct Move(TMove):
 struct Gomoku[size: Int, max_moves: Int](TGame, Writable):
     alias Move = Move
 
-    var board: Board[values, size, max_stones, max_moves]
+    var board: Board[values, size, win_stones, max_moves]
     var turn: Int
 
     fn __init__(out self):
-        self.board = Board[values, size, max_stones, max_moves]()
+        self.board = Board[values, size, win_stones, max_moves]()
         self.turn = first
 
     fn moves(self) -> List[Move]:

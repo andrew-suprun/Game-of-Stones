@@ -2,7 +2,7 @@ from game import TGame, TMove, Score
 from heap import heap_add
 from board import Board, Place, first
 
-alias max_stones = 6
+alias win_stones = 6
 alias values = List[Score](0, 1, 5, 25, 125, 625)
 
 @register_passable("trivial")
@@ -66,11 +66,11 @@ struct Move(TMove):
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     alias Move = Move
-    var board: Board[values, size, max_stones, max_places]
+    var board: Board[values, size, win_stones, max_places]
     var turn: Int
 
     fn __init__(out self):
-        self.board = Board[values, size, max_stones, max_places]()
+        self.board = Board[values, size, win_stones, max_places]()
         self.turn = 0
 
     fn moves(self) -> List[self.Move]:

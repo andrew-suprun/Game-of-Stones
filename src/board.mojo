@@ -393,20 +393,20 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         return 0
 
 
-fn _value_table[max_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, max_stones * max_stones + 1], 2]:
-    alias result_size = max_stones * max_stones + 1
+fn _value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+    alias result_size = win_stones * win_stones + 1
 
     var s = scores
     s.append(Score.win())
     v2 = List[Scores](Scores(1, -1))
-    for i in range(max_stones - 1):
+    for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2].value() - s[i + 1].value(), -s[i + 1].value()))
 
     var result = InlineArray[InlineArray[Scores, result_size], 2](InlineArray[Scores, result_size](0))
 
-    for i in range(max_stones - 1):
-        result[0][i * max_stones] = Scores(v2[i][1], -v2[i][0])
+    for i in range(win_stones - 1):
+        result[0][i * win_stones] = Scores(v2[i][1], -v2[i][0])
         result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
         result[1][i] = Scores(-v2[i][0], v2[i][1])
-        result[1][i * max_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
+        result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
     return result
