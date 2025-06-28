@@ -40,7 +40,7 @@ struct Tree[Game: TGame, c: Score](Stringable, Writable):
     fn debug_best_moves(self):
         for ref node in self.root.children:
             print("  ", node.move, node.move.score(), node.n_sims)
-            
+
 @fieldwise_init
 struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable, Writable):
     var move: Game.Move
@@ -93,29 +93,35 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
         self.n_sims = 0
         var max_score = Score.loss()
         var all_draws = True
+        var has_draw = False
         for child in self.children:
             self.n_sims += child.n_sims
-            if child.move.score().iswin():
+            if child.move.score().isloss():
+                continue
+            elif child.move.score().iswin():
                 self.move.set_score(Score.loss())
                 return
             elif child.move.score().isdraw():
+                has_draw = True
                 max_score = max_score.max(Score())
                 continue
             all_draws = False
-            if child.move.score().isloss():
-                continue
-            var child_score = child.move.score()
-            max_score = max_score.max(child_score)
-        if all_draws:
+            max_score = max_score.max(child.move.score())
+        if has_draw and all_draws:
+            print("all draws: max score:", max_score)
             self.move.set_score(Score.draw())
         else:
             self.move.set_score(-max_score)
 
     fn best_move(self, out result: Game.Move):
         debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
-        var best_child = Pointer(to = self.children[0])
+        var best_child = Pointer(to = self.children[-1])
         for ref child in self.children:
-            if not best_child[].move.score().iswin() and best_child[].n_sims < child.n_sims:
+            if child.move.score().isloss():
+                continue
+            if child.move.score().iswin():
+                return child.move
+            if best_child[].n_sims < child.n_sims:
                 best_child = Pointer(to = child)
         result = best_child[].move
 

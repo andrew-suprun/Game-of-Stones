@@ -1,5 +1,6 @@
 from random import seed, random_si64, random_float64
 from testing import assert_true
+from utils.numerics import inf, neg_inf
 
 from game import TGame, TMove, Score
 from tree import Tree, Node
@@ -58,16 +59,15 @@ struct TestGame(TGame, Writable):
         for _ in range(n_moves):
             var move = TestMove()
             move._score = Score(Float32(random_si64(-10, 10)))
-            move._decisive = random_si64(0, 10) % 10 == 0
-            if move._id > 28 and move._id < 40:
+            if move._id > 28:
                 move._decisive = True
-                move._score = 0.5
-                if move._id == 37:
-                    move._decisive = True
-                    move._score = Score.loss()
-                elif move._id == 38:
-                    move._decisive = False
-                    move._score = -5
+                var rand = random_si64(0, 8)
+                if rand == 0:
+                    move._score = inf[DType.float32]()
+                elif rand == 1:
+                    move._score = neg_inf[DType.float32]()
+                elif rand == 2:
+                    move._score = -0.0
             moves.append(move)
         return moves
 
@@ -81,10 +81,11 @@ struct TestGame(TGame, Writable):
         pass
 
 def test_tree():
-    seed(0)
+    seed(2)
     var g = TestGame()
     var t = Tree[TestGame, 2]()
     for _ in range(5):
         _ = t.expand(g)
     print(t)
     assert_true(t.root.move.score().value() == -2)
+    assert_true(False)

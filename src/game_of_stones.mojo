@@ -167,10 +167,6 @@ struct GameOfStones[Game: TGame, c: Score, stones_per_move: Int]:
                 done = self.expand_tree()
                 sim += 1
         print("sims", sim, "score", self.tree.score())
-        if sim < 20:
-            print(self.tree)
-        else:
-            self.tree.debug_best_moves()
 
         var move = self.tree.best_move()
         self.play_move(move)
