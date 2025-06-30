@@ -48,7 +48,7 @@ struct Move(TMove):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
 
-struct Gomoku[size: Int, max_moves: Int](TGame, Writable):
+struct Gomoku[size: Int, max_moves: Int](TGame):
     alias Move = Move
 
     var board: Board[values, size, win_stones, max_moves]

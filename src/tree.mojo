@@ -26,10 +26,15 @@ struct Tree[Game: TGame, c: Score](Stringable, Writable):
         return undecided == 1
 
     fn score(self) -> Score:
-        return self.root.move.score()
+        return -self.root.move.score()
         
     fn best_move(self) -> Game.Move:
         return self.root.best_move()
+        
+    fn principal_variation(self) -> List[Game.Move]:
+        var result = List[Game.Move]()
+        self.root._principal_variation(result)
+        return result
         
     fn __str__(self) -> String:
         return String.write(self)
@@ -53,7 +58,6 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
         self.n_sims = 1
 
     fn _expand(mut self, mut game: Game):
-
         if not self.children:
             var moves = game.moves()
             debug_assert(len(moves) > 0, "Function moves(...) returns empty result.")
@@ -63,7 +67,7 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
                 self.children.append(Node[Game, c](move))
                 self._update_states()
                 if self.move.score().isdecisive():
-                    return
+                    continue
             for ref child_node in self.children:
                 var child_game = game
                 child_game.play_move(child_node.move)
@@ -117,13 +121,31 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
         debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
         var best_child = Pointer(to = self.children[-1])
         for ref child in self.children:
-            if child.move.score().isloss():
-                continue
-            if child.move.score().iswin():
-                return child.move
-            if best_child[].n_sims < child.n_sims:
+            if best_child[].move.score() < child.move.score():
                 best_child = Pointer(to = child)
         result = best_child[].move
+
+    # fn best_move(self, out result: Game.Move):
+    #     debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
+    #     var best_child = Pointer(to = self.children[-1])
+    #     for ref child in self.children:
+    #         if child.move.score().isloss():
+    #             continue
+    #         if child.move.score().iswin():
+    #             return child.move
+    #         if best_child[].n_sims < child.n_sims:
+    #             best_child = Pointer(to = child)
+    #     result = best_child[].move
+
+    fn _principal_variation(self, mut result: List[Game.Move]):
+        var value = self.move.score().value()
+        for ref child_node in self.children:
+            if child_node.move.score().value() == -value:
+                result.append(child_node.move)
+                child_node._principal_variation(result)
+                return
+        if self.children:
+            print("###")
 
     fn __str__(self) -> String:
         return String.write(self)
