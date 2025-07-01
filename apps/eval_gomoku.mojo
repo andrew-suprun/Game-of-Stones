@@ -7,7 +7,7 @@ from gomoku import Gomoku, Move
 from board import Place
 
 alias max_moves = 8
-alias c = 10
+alias c = 0
 alias Game = Gomoku[19, max_moves]
 
 fn main() raises:
@@ -20,21 +20,18 @@ fn main() raises:
     game.play_move("g9")
     game.play_move("h9")
 
-    var score = Score(0)
-    for sims in range(1):
+    var score = Score()
+    for sims in range(20_000):
         if tree.expand(game):
             break
-        var new_score = tree.score()
-        if score != new_score:
-            score = new_score
+        var pv_moves = tree.principal_variation()
+        # if score != tree.score():
+        if True:
+            score = tree.score()
             var pv = String()
             # TODO: cannot print List[Game.Move]
-            var pv_moves = tree.principal_variation()
             for move in pv_moves:
                 move.write_to(pv)
                 " ".write_to(pv)
-            var best_move = tree.best_move()
-            print(sims, best_move, best_move.score(), "pv: [", len(pv_moves), "]", pv)
-            print("tree", tree)
-            # tree.debug_best_moves()
-    # print("tree", tree)
+            print(sims, tree.score(), "pv: [", len(pv_moves), "]", pv)
+            tree.debug_best_moves()

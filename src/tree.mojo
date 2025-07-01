@@ -44,7 +44,9 @@ struct Tree[Game: TGame, c: Score](Stringable, Writable):
 
     fn debug_best_moves(self):
         for ref node in self.root.children:
-            print("  ", node.move, node.move.score(), node.n_sims)
+            var log_parent_sims = log2(Float32(self.root.n_sims))
+            var v = node.move.score() + self.c * Score(sqrt(log_parent_sims / Float32(node.n_sims)))
+            print("  ", node.move, node.move.score(), node.n_sims, v)
 
 @fieldwise_init
 struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable, Writable):
@@ -114,14 +116,6 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
             self.move.setscore(Score.draw())
         else:
             self.move.setscore(-max_score)
-
-    # fn best_move(self, out result: Game.Move):
-    #     debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
-    #     var best_child = Pointer(to = self.children[-1])
-    #     for ref child in self.children:
-    #         if best_child[].move.score() < child.move.score():
-    #             best_child = Pointer(to = child)
-    #     result = best_child[].move
 
     fn best_move(self, out result: Game.Move):
         debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
