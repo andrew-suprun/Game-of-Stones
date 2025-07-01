@@ -103,7 +103,7 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
             if child.move.score().isloss():
                 continue
             elif child.move.score().iswin():
-                self.move.set_score(Score.loss())
+                self.move.setscore(Score.loss())
                 return
             elif child.move.score().isdraw():
                 has_draw = True
@@ -112,9 +112,9 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
             all_draws = False
             max_score = max_score.max(child.move.score())
         if has_draw and all_draws:
-            self.move.set_score(Score.draw())
+            self.move.setscore(Score.draw())
         else:
-            self.move.set_score(-max_score)
+            self.move.setscore(-max_score)
 
     # fn best_move(self, out result: Game.Move):
     #     debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")

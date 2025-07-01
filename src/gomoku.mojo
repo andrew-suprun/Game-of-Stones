@@ -30,7 +30,7 @@ struct Move(TMove):
     fn score(self) -> Score:
         return self._score
 
-    fn set_score(mut self, score: Score):
+    fn setscore(mut self, score: Score):
         self._score = score
 
     fn __eq__(self, other: Move) -> Bool:
