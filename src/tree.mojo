@@ -65,8 +65,7 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Node[Game, c](move))
-                self._update_states()
-                if self.move.score().isdecisive():
+                if move.score().isdecisive():
                     continue
             for ref child_node in self.children:
                 var child_game = game
