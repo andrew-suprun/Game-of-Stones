@@ -166,7 +166,6 @@ struct GameOfStones[Game: TGame, c: Score, stones_per_move: Int]:
             while not done and perf_counter_ns() < deadline2:
                 done = self.expand_tree()
                 sim += 1
-        self.tree.debug_best_moves()
         var pv_moves = self.tree.principal_variation()
         var pv = String()
         # TODO: cannot print List[Game.Move]

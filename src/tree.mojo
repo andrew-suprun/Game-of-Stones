@@ -69,14 +69,6 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
                 self.children.append(Node[Game, c](move))
                 if move.score().isdecisive():
                     continue
-            for ref child_node in self.children:
-                var child_game = game
-                child_game.play_move(child_node.move)
-                var child_moves = child_game.moves()
-                child_node.children.reserve(len(child_moves))
-                for child_move in child_moves:
-                    child_node.children.append(Node[Game, c](child_move))
-                child_node._update_states()
         else:
             var selected_child_idx = 0
             var log_parent_sims = log2(Float32(self.n_sims))
@@ -92,9 +84,7 @@ struct Node[Game: TGame, c: Score](Copyable, Movable, Representable, Stringable,
             ref selected_child = self.children[selected_child_idx]
             game.play_move(selected_child.move)
             selected_child._expand(game)
-        self._update_states()
 
-    fn _update_states(mut self):
         self.n_sims = 0
         var max_score = Score.loss()
         var all_draws = True

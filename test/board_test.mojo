@@ -1,4 +1,4 @@
-from testing import assert_true
+from testing import assert_true, assert_false
 from random import seed, random_si64
 
 from board import Board, Place, Score, first, second
@@ -179,3 +179,10 @@ fn test_decision() raises:
     b.place_stone(Place(0, 13), second)
     print(b.decision())
     assert_true(b.decision() == "second-win")
+
+fn test_connected_to() raises:
+    assert_false(Place(2, 5).connected_to[5](Place(7, 5)))
+    assert_true(Place(2, 5).connected_to[6](Place(7, 5)))
+    assert_true(Place(2, 5).connected_to[6](Place(7, 10)))
+    assert_true(Place(2, 5).connected_to[6](Place(3, 4)))
+    assert_false(Place(2, 5).connected_to[6](Place(3, 7)))

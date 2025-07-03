@@ -90,16 +90,22 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
             if score1.iswin():
                 return [Move(place1, place1, Score.win())]
 
-            var board = self.board
-            board.place_stone(place1, self.turn)
+            var board1 = self.board
+            board1.place_stone(place1, self.turn)
+            var (max_opp_score, max_opp_place) = board1.max_score(1 - self.turn)
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j]
-                var score2 = board.score(place2, self.turn)
+                var score2 = board1.score(place2, self.turn)
 
                 if score2.iswin():
                     return [Move(place1, place2, Score.win())]
-                heap_add[max_moves, move_less](Move(place1, place2, board_score + score1 + score2), moves)
+                if max_opp_place.connected_to[win_stones](place2):
+                    var board2 = board1
+                    board2.place_stone(place2, self.turn)
+                    (max_opp_score, _) = board2.max_score(1 - self.turn)
+
+                heap_add[max_moves, move_less](Move(place1, place2, board_score + score1 + score2 - max_opp_score), moves)
         return moves
 
     fn play_move(mut self, move: self.Move):

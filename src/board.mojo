@@ -1,4 +1,6 @@
 from memory import memcpy
+from utils.numerics import neg_inf
+
 
 from game import Score
 from heap import heap_add
@@ -32,6 +34,16 @@ struct Place(Copyable, Movable, EqualityComparable, Defaultable, Stringable, Wri
 
     fn __ne__(self, other: Self, out result: Bool):
         result = not (self == other)
+
+    fn connected_to[win_stones: Int](self, other: Place) -> Bool:
+        if self.x >= other.x + win_stones or
+            other.x >= self.x + win_stones or
+            self.y >= other.y + win_stones or
+            other.y >= self.y + win_stones: return False
+        if self.x == other.x or self.y == other.y: return True
+        if self.x + self.y == other.x + other.y: return True
+        if self.x + other.y == self.y + other.x: return True
+        return False
 
     fn __str__(self, out result: String):
         return String.write(self)
@@ -391,6 +403,20 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         elif black == 0:
             return -scores[white]
         return 0
+
+    fn max_score(self, player: Int) -> (Score, Place):
+        var max_score = neg_inf[DType.float32]()
+        var place = Place(0, 0)
+
+        for y in range(size):
+            for x in range(size):
+                if self[x, y] == self.empty:
+                    var score = self._scores[y*size+x][player]
+                    if max_score < score:
+                        max_score = score
+                        place = Place(x, y)
+
+        return Score(max_score), place
 
 
 fn _value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
