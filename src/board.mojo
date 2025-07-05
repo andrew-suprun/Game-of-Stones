@@ -59,12 +59,10 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
     var _places: InlineArray[Int8, size * size]
     var _scores: InlineArray[Scores, size * size] 
-    var _score: Score
 
     fn __init__(out self):
         self._places = InlineArray[Int8, size * size](fill = 0)
         self._scores = InlineArray[Scores, size * size](uninitialized=True)
-        self._score = 0
 
         for y in range(size):
             var v = 1 + min(win_stones - 1, y, size - 1 - y)
@@ -83,18 +81,11 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         self._scores = InlineArray[Scores, size * size](uninitialized=True)
         memcpy(self._scores.unsafe_ptr(), existing._scores.unsafe_ptr(), size * size)
 
-        self._score = existing._score
-
     fn place_stone(mut self, place: Place, turn: Int):
         var scores = self.value_table[turn]
 
         var x = Int(place.x)
         var y = Int(place.y)
-
-        if turn == first:
-            self._score += self.score(place, first)
-        else:
-            self._score -= self.score(place, second)
 
         var x_start = max(0, x - win_stones + 1)
         var x_end = min(x + win_stones, size) - win_stones + 1
@@ -245,6 +236,37 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
 
     fn setscores(mut self, place: Place, value: Scores):
         self._scores[Int(place.y) * size + Int(place.x)] = value
+
+    fn rollout[stones_per_move: Int](mut self, player: Int) -> Int:
+        var turn = player
+        var i = 0
+        while True:
+            @parameter
+            for _ in range(stones_per_move):
+                var (score, place) = self.max_score(turn)
+                if score.iswin():
+                    print("rollout:", i, place, "first" if turn == first else "second")
+                    return 1 if turn == first else -1
+                elif score == 0:
+                    print("rollout: draw", i)
+                    return 0
+                self.place_stone(place, turn)
+            i += 1
+            turn = 1 - turn
+
+    fn max_score(self, player: Int) -> (Score, Place):
+        var max_score = neg_inf[DType.float32]()
+        var place = Place(0, 0)
+
+        for y in range(size):
+            for x in range(size):
+                if self[x, y] == self.empty:
+                    var score = self._scores[y*size+x][player]
+                    if max_score < score:
+                        max_score = score
+                        place = Place(x, y)
+
+        return Score(max_score), place
 
     fn __str__(self, out result: String):
         result = String.write(self)
@@ -403,21 +425,6 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         elif black == 0:
             return -scores[white]
         return 0
-
-    fn max_score(self, player: Int) -> (Score, Place):
-        var max_score = neg_inf[DType.float32]()
-        var place = Place(0, 0)
-
-        for y in range(size):
-            for x in range(size):
-                if self[x, y] == self.empty:
-                    var score = self._scores[y*size+x][player]
-                    if max_score < score:
-                        max_score = score
-                        place = Place(x, y)
-
-        return Score(max_score), place
-
 
 fn _value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     alias result_size = win_stones * win_stones + 1
