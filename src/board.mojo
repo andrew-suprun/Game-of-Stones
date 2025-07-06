@@ -1,13 +1,12 @@
 from memory import memcpy
 from utils.numerics import neg_inf
 
-
-from game import Score
+from game import TScore
 from heap import heap_add
 
 alias first = 0
 alias second = 1
-alias Scores = SIMD[DType.float32, 2]
+alias Scores = SIMD[DType.int32, 2]
 
 @fieldwise_init
 @register_passable("trivial")
@@ -51,7 +50,7 @@ struct Place(Copyable, Movable, EqualityComparable, Defaultable, Stringable, Wri
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
+struct Board[values: List[Int32], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -323,14 +322,12 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                     str += "    O "
                 else:
                     var score = self.score(Place(x, y), table_idx)
-                    if score.iswin():
-                        str += " WinX "
-                    elif score.isloss():
-                        str += " WinO "
-                    elif score.isdraw():
+                    if score > values[-1] / 2:
+                        str += "  Win "
+                    elif score == 0:
                         str += " Draw "
                     else:
-                        str += String(Int(score.value())).rjust(5, " ") + " "
+                        str += String(score).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
         str += "───┼" + "──────" * size + "┼───"
         if not table_idx:
@@ -339,8 +336,8 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
-    fn board_value(self, scores: List[Score], out value: Score):
-        value = 0.0
+    fn board_value(self, scores: List[Int32], out value: Score):
+        value = 0
         for y in range(size):
             var stones = Int8(0)
             for x in range(win_stones - 1):
@@ -395,7 +392,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 value += self._calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
 
-    fn _calc_value(self, stones: Int8, scores: List[Score], out value: Score):
+    fn _calc_value(self, stones: Int8, scores: List[Int32], out value: Score):
         var black = stones % win_stones
         var white = stones // win_stones
         if white == 0:
@@ -405,7 +402,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         return 0
 
     fn max_score(self, player: Int) -> (Score, Place):
-        var max_score = neg_inf[DType.float32]()
+        var max_score = self._scores[0][player]
         var place = Place(0, 0)
 
         for y in range(size):
@@ -419,14 +416,14 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         return Score(max_score), place
 
 
-fn _value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+fn _value_table[win_stones: Int, scores: List[Int32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     alias result_size = win_stones * win_stones + 1
 
     var s = scores
-    s.append(Score.win())
+    s.append(s[-1] * 16)
     v2 = List[Scores](Scores(1, -1))
     for i in range(win_stones - 1):
-        v2.append(Scores(s[i + 2].value() - s[i + 1].value(), -s[i + 1].value()))
+        v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
 
     var result = InlineArray[InlineArray[Scores, result_size], 2](InlineArray[Scores, result_size](0))
 
@@ -436,3 +433,67 @@ fn _value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArr
         result[1][i] = Scores(-v2[i][0], v2[i][1])
         result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
     return result
+
+
+from utils.numerics import FPUtils, inf, neg_inf, isinf
+
+@fieldwise_init("implicit")
+@register_passable("trivial")
+struct Score(TScore):
+    var _value: Int32
+
+    @implicit
+    fn __init__(out self, value: IntLiteral):
+        self._value = value
+
+    fn __float__(self) -> Float64:
+        return Float64(self._value)
+
+    fn min(self, other: Score) -> Score:
+        return Score(min(self._value, other._value))
+
+    fn max(self, other: Score) -> Score:
+        return Score(max(self._value, other._value))
+
+    fn __add__(self, other: Score) -> Score:
+        return self._value + other._value
+
+    fn __sub__(self, other: Score) -> Score:
+        return self._value - other._value
+
+    fn __iadd__(mut self, other: Score):
+        self._value += other._value
+
+    fn __isub__(mut self, other: Score):
+        self._value -= other._value
+
+    fn __mul__(self, other: Score) -> Score:
+        return self._value * other._value
+
+    fn __eq__(self, other: Score) -> Bool:
+        return self._value == other._value
+
+    fn __ne__(self, other: Score) -> Bool:
+        return self._value != other._value
+
+    fn __lt__(self, other: Score) -> Bool:
+        return self._value < other._value
+
+    fn __le__(self, other: Score) -> Bool:
+        return self._value <= other._value
+
+    fn __gt__(self, other: Score) -> Bool:
+        return self._value > other._value
+
+    fn __ge__(self, other: Score) -> Bool:
+        return self._value >= other._value
+
+    fn __neg__(self) -> Score:
+        return Score(-self._value)
+
+    fn __str__(self) -> String:
+        return String(self._value)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(String(self))
+

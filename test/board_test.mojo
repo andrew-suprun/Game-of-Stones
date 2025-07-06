@@ -4,7 +4,7 @@ from random import seed, random_si64
 from board import Board, Place, Score, first, second
 
 alias win_stones = 6
-alias values = List[Score](0, 1, 5, 25, 125, 625)
+alias values = List[Int32](0, 1, 5, 25, 125, 625)
 
 
 fn test_place_stone() raises:
@@ -24,7 +24,7 @@ fn test_place_stone() raises:
                         var b = board
                         b.place_stone(Place(x, y), first)
                         var expected = b.board_value(values) - value
-                        if actual.value() != expected.value():
+                        if actual != expected:
                             print(Place(x, y), "actual:", actual, "first:", expected, "n", n)
                             print(b)
                             print(b.str_scores())
@@ -33,7 +33,7 @@ fn test_place_stone() raises:
                         b = board
                         b.place_stone(Place(x, y), second)
                         expected = value - b.board_value(values)
-                        if actual.value() != expected.value():
+                        if actual != expected:
                             print(Place(x, y), "actual:", actual, "second:", expected, "n", n)
                             print(b)
                             print(b.str_scores())
