@@ -1,5 +1,4 @@
 * figure out why cannot print List[Move]
-* connect6 + gomoku: switch to old way to score
 * sims, sim -> nodes
 * root -> roots
 * alias Score = Float32
