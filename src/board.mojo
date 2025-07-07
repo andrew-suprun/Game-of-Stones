@@ -1,7 +1,6 @@
 from memory import memcpy
 from utils.numerics import neg_inf
 
-from game import TScore
 from heap import heap_add
 
 alias first = 0
