@@ -1,9 +1,9 @@
 * figure out why cannot print List[Move]
 * sims, sim -> nodes
 * root -> roots
-* alias Score = Float32
+* alias Score = Score
 * alias Decision = Int
-* alias Confidence = Float32 i.e. relation between best score and second best
+* alias Confidence = Score i.e. relation between best score and second best
 * alias Score = Float16
 * alias Score = Int32
 * alias Score = Int16

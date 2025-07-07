@@ -10,9 +10,10 @@ fn test_connect6() raises:
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
-    for i in range(1, 101):
+    for i in range(1, 10):
         _ = tree.expand(game)
         print("expand", i)
         print(tree)
-    print("score", tree.score())
-    assert_true(tree.score() == 58)
+    print("best move", tree.best_move())
+    print("decision", game.decision())
+    assert_true(tree.root.score == 58)

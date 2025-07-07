@@ -72,13 +72,13 @@ fn bench_fib_int():
         s += fib_int(i)
     keep(s)
 
-fn fib_float(x: Int32) -> Float32:
+fn fib_float(x: Int32) -> Score:
     if x < 2:
-        return Float32(x)
+        return Score(x)
     return fib_float(x-1) + fib_float(x-2)
 
 fn bench_fib_float():
-    var s:Float32 = 0
+    var s:Score = 0
     for i in range(28):
         s += fib_float(i)
     keep(s)
@@ -87,8 +87,8 @@ fn bench_fib_float():
 fn intrand() -> Int32:
     return Int32(random_si64(-10, 10))
 
-fn rand() -> Float32:
-    return Float32(random_float64(-10, 10))
+fn rand() -> Score:
+    return Score(random_float64(-10, 10))
 
 fn main() raises:
     print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt]().mean(Unit.ms))
