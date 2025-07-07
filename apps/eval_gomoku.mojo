@@ -1,6 +1,3 @@
-from sys import env_get_int
-from time import perf_counter_ns
-
 from tree import Tree
 from game import Score
 from gomoku import Gomoku, Move

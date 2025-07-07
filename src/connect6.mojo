@@ -1,7 +1,5 @@
-from utils.numerics import isinf
-
-
-from game import TGame, TMove, Decision
+from score import Score, win, draw, iswin
+from game import TGame, TMove
 from heap import heap_add
 from board import Board, Place, first
 
@@ -65,39 +63,44 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         self.board = Board[values, size, win_stones, max_places]()
         self.turn = 0
 
-    fn moves(self) -> List[(Move, Score, Decision)]:
+    fn moves(self) -> List[(Move, Score)]:
         @parameter
-        fn move_less(a: (Move, Score, Decision), b: (Move, Score, Decision)) -> Bool:
+        fn move_less(a: (Move, Score), b: (Move, Score)) -> Bool:
             return a[1] < b[1]
 
         var places = self.board.places(self.turn)
         if len(places) < max_places:
-            return [(Move(), Score(0), Decision.draw)]
+            return [(Move(), draw)]
 
-        var moves = List[(Move, Score, Decision)](capacity = max_moves)
+        var moves = List[(Move, Score)](capacity = max_moves)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
-            if isinf(score1):
-                return [(Move(place1, place1), Score(0), Decision.win)]
+            if iswin(score1):
+                return [(Move(place1, place1), win)]
 
             var board1 = self.board
             board1.place_stone(place1, self.turn)
-            var (max_opp_score, max_opp_place) = board1.max_score(1 - self.turn)
+            # var (max_opp_score, max_opp_place) = board1.max_score(1 - self.turn)
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j]
                 var score2 = board1.score(place2, self.turn)
 
-                if isinf(score2):
-                    return [(Move(place1, place2), Score(0), Decision.win)]
-                if max_opp_place.connected_to[win_stones](place2):
-                    var board2 = board1
-                    board2.place_stone(place2, self.turn)
-                    (max_opp_score, _) = board2.max_score(1 - self.turn)
+                if iswin(score2):
+                    return [(Move(place1, place2), win)]
 
-                heap_add[max_moves, move_less]((Move(place1, place2), board_score + score1 + score2 - max_opp_score, Decision.undecided), moves)
+                var board2 = board1
+                board2.place_stone(place2, self.turn)
+                max_opp_score = board2.max_score(1 - self.turn)
+
+                # if max_opp_place.connected_to[win_stones](place2):
+                #     var board2 = board1
+                #     board2.place_stone(place2, self.turn)
+                #     (max_opp_score, _) = board2.max_score(1 - self.turn)
+
+                heap_add[max_moves, move_less]((Move(place1, place2), board_score + score1 + score2 - max_opp_score), moves)
         return moves
 
     fn play_move(mut self, move: self.Move):

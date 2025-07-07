@@ -1,6 +1,6 @@
 from memory import memcpy
-from utils.numerics import inf
 
+from score import Score, win
 from heap import heap_add
 
 alias first = 0
@@ -400,26 +400,22 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
             return -scores[white]
         return 0
 
-    fn max_score(self, player: Int) -> (Score, Place):
-        var max_score = self._scores[0][player]
-        var place = Place(0, 0)
+    fn max_score(self, player: Int) -> Score:
+        var max_scores = self._scores[0]
 
         for y in range(size):
             for x in range(size):
                 if self[x, y] == self.empty:
-                    var score = self._scores[y*size+x][player]
-                    if max_score < score:
-                        max_score = score
-                        place = Place(x, y)
+                    max_scores = max(max_scores, self._scores[y*size+x])
 
-        return max_score, place
+        return max_scores[player]
 
 
 fn _value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     alias result_size = win_stones * win_stones + 1
 
     var s = scores
-    s.append(inf[DType.float32]())
+    s.append(win)
     v2 = List[Scores](Scores(1, -1))
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))

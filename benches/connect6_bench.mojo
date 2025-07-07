@@ -8,15 +8,15 @@ from connect6 import Connect6, Move
 alias C6 = Connect6[19, 60, 32]
 
 fn bench_moves():
-    var c6 = C6()
+    var game = C6()
     try:
-        c6.play_move("j10")
-        c6.play_move("i9-i10")
+        game.play_move("j10")
+        game.play_move("i9-i10")
     except:
         pass
     for _ in range(1000):
-        var moves = c6.moves()
-        keep(moves[0])
+        var moves = game.moves()
+        keep(moves[0][0])
 
 fn bench_expand():
     var game = C6()
@@ -28,6 +28,7 @@ fn bench_expand():
         pass
     for _ in range(1000):
         var done = tree.expand(game)
+        keep(done)
         if done:
             print("done")
             break
