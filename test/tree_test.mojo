@@ -3,7 +3,7 @@ from testing import assert_true
 from utils.numerics import inf, neg_inf
 
 import board
-from game import TGame, TMove, Decision, win, draw, undecided
+from game import TGame, TMove, Decision
 from tree import Tree, Node
 
 var __id: Int = 0
@@ -19,13 +19,13 @@ struct TestMove(TMove):
     fn __init__(out self):
         self._id = __id
         self._score = 0
-        self._decision = undecided
+        self._decision = Decision.undecided
         __id += 1
 
     fn __init__(out self, text: String) raises:
         self._id = __id
         self._score = 0
-        self._decision = undecided
+        self._decision = Decision.undecided
         __id += 1
 
     fn score(self) -> Self.Score:
@@ -61,9 +61,9 @@ struct TestGame(TGame, Writable):
             move._score = Self.Move.Score(Int(random_si64(-10, 10)))
             var rand = random_si64(0, 8)
             if rand == 0:
-                move._decision = win
+                move._decision = Decision.win
             elif rand == 1:
-                move._decision = draw
+                move._decision = Decision.draw
             moves.append(move)
         return moves
 
@@ -83,7 +83,7 @@ def test_tree():
     seed(2)
     var g = TestGame()
     var t = Tree[TestGame, 2]()
-    for _ in range(5):
+    for _ in range(10):
         _ = t.expand(g)
     print(t)
     assert_true(t.root.move.score() == -2)

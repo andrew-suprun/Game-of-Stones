@@ -1,7 +1,7 @@
 from math import log2, sqrt
 from memory import Pointer
 
-from game import TGame, Decision, win, loss, draw, undecided
+from game import TGame, Decision
 
 struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
     var root: Node[Game, c]
@@ -10,18 +10,18 @@ struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
         self.root = Node[Game, c](Game.Move())
         
     fn expand(mut self, game: Game, out done: Bool):
-        if self.root.decision != undecided:
+        if self.root.decision != Decision.undecided:
             return True
         else:
             var g = game
             self.root._expand(g)
         
-        if self.root.decision != undecided:
+        if self.root.decision != Decision.undecided:
             return True
 
         var undecided = 0
         for _ in self.root.children:
-            if not self.root.decision != undecided:
+            if not self.root.decision != Decision.undecided:
                 undecided += 1
         return undecided == 1
 
@@ -36,7 +36,7 @@ struct Tree[Game: TGame, c: Game.Move.Score](Stringable, Writable):
 
     fn debug_best_moves(self):
         for ref node in self.root.children:
-            print("  ", node.move, node.move.score(), node.n_sims, str_decision(node.decision))
+            print("  ", node.move, node.move.score(), node.n_sims, node.decision)
 
 @fieldwise_init
 struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, Stringable, Writable):
@@ -61,7 +61,7 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Node[Game, c](move))
-                if move.decision() != undecided:
+                if move.decision() != Decision.undecided:
                     continue
         else:
             var log_parent_sims = log2(Float64(self.n_sims))
@@ -69,7 +69,7 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
             var maxV = Float64(self.children[0].move.score())
             for child_idx in range(1, len(self.children)):
                 ref child = self.children[child_idx]
-                if child.move.decision() == win:
+                if child.move.decision() == Decision.win:
                     continue
                 var v = Float64(child.move.score()) + Float64(self.c) * sqrt(log_parent_sims / Float64(child.n_sims))
                 if maxV < v:
@@ -85,19 +85,19 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
         var has_draw = False
         for child in self.children:
             self.n_sims += child.n_sims
-            if child.decision == loss:
+            if child.decision == Decision.loss:
                 continue
-            elif child.decision == win:
-                self.decision = loss
+            elif child.decision == Decision.win:
+                self.decision = Decision.loss
                 return
-            elif child.decision == draw:
+            elif child.decision == Decision.draw:
                 has_draw = True
                 max_score = max_score.max(Self.Score(0))
                 continue
             all_draws = False
             max_score = max_score.max(child.move.score())
         if has_draw and all_draws:
-            self.decision = draw
+            self.decision = Decision.draw
         else:
             self.move.setscore(-max_score)
 
@@ -107,11 +107,11 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
         var draw_move = self.children[-1].move
         var best_child = Pointer(to = self.children[-1])
         for ref child in self.children:
-            if child.decision == loss:
+            if child.decision == Decision.loss:
                 continue
-            if child.decision == win:
+            if child.decision == Decision.win:
                 return child.move
-            if child.decision == draw:
+            if child.decision == Decision.draw:
                 has_draw = True
                 draw_move = child.move
             if best_child[].n_sims < child.n_sims:
@@ -130,12 +130,10 @@ struct Node[Game: TGame, c: Game.Move.Score](Copyable, Movable, Representable, S
         self.write_to(writer, 0)
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self.move, " v: ", self.move.score(), " s: ", self.n_sims, "\n")
+        if self.decision == Decision.undecided:
+            writer.write("|   " * depth, self.move, " v: ", self.move.score(), " s: ", self.n_sims, "\n")
+        else:
+            writer.write("|   " * depth, self.move, " d: ", self.decision, "\n")
         if self.children:
             for child in self.children:
                 child.write_to(writer, depth + 1)
-
-alias decisions = ["loss", "draw", "win", "undecided"]
-
-fn str_decision(decision: Decision) -> String:
-    return decisions[decision]

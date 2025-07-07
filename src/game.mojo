@@ -1,9 +1,3 @@
-alias Decision = Int
-alias win: Decision = 1
-alias loss: Decision = -1
-alias draw: Decision = 0
-alias undecided: Decision = 2
-
 trait TGame(Copyable, Stringable, Writable):
     alias Move: TMove
 
@@ -56,3 +50,30 @@ trait TScore(Floatable, Copyable, Movable, Comparable, Stringable, Writable):
 
     fn __neg__(self) -> Self:
         ...
+
+@fieldwise_init
+struct Decision(Copyable, Movable, EqualityComparable, Stringable, Writable):
+    alias undecided = Decision(-2)
+    alias loss = Decision(-1)
+    alias draw = Decision(0)
+    alias win = Decision(1)
+
+    var _value: Byte
+
+    fn decided(self) -> Bool:
+        return self._value > 0
+
+    fn __eq__(self, other: Self) -> Bool:
+        return self._value == other._value
+
+    fn __ne__(self, other: Self) -> Bool:
+        return self._value != other._value
+
+    fn __str__(self) -> String:
+        return String.write(self)
+
+    alias _decisions = ["undecided", "loss", "draw", "win"]
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(Self._decisions[self._value + 2])
+
