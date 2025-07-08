@@ -1,44 +1,29 @@
-pixi run mojo run -I src -D Assert=all benches/basic_bench.mojo
---- basic (ms/10_000) ---
-InlineArray SIMD Int   0.0063
-List        SIMD Int   0.0079
-InlineArray SIMD Float 0.0094
-List        SIMD Float 0.0093
+mojo run -I src benches/basic_bench.mojo
+InlineArray SIMD Int   10.710304932735427
+InlineArray SIMD Int16 12.785962765957446
+List        SIMD Int   6.989669590643275
+List        SIMD Int16 12.906091891891892
+InlineArray SIMD Float 10.877036036036037
+List        SIMD Float 9.441577075098815
+fib int                1.4998673015873016
+fib float              1.7087634560906515
+tuple                  0.6527409005122675
+type                   0.6462588298732812
+list                   0.5656566250882561
 
-pixi run mojo run -I src benches/basic_bench.mojo
---- basic (ms/10_000) ---
-InlineArray SIMD Int   0.0063
-List        SIMD Int   0.0069
-InlineArray SIMD Float 0.0093
-List        SIMD Float 0.0093
-
-pixi run mojo run -I src -D Assert=all benches/board_bench.mojo 
+mojo run -I src benches/board_bench.mojo       
 --- board (ms/1000) ---
-update_row  0.024
-place_stone 0.147
-places      1.947
+update_row  0.067
+place_stone 0.333
+places      2.168
 
-pixi run mojo run -I src benches/board_bench.mojo       
---- board (ms/1000) ---
-update_row  0.024
-place_stone 0.149
-places      1.954
+mojo run -I src benches/connect6_bench.mojo
+moves  77.27 msec
+expand 79.54 msec
 
-pixi run mojo run -I src -D ASSERT=all benches/connect6_bench.mojo
-moves  20.324 msec
-expand 1323.5 msec
+mojo run -I src benches/gomoku_bench.mojo      
+moves  3.475 msec
+expand 6.100 msec
 
-pixi run mojo run -I src benches/connect6_bench.mojo
-moves  12.968 msec
-expand 1031.5 msec
-
-magic run mojo run -I src -D ASSERT=all benches/gomoku_bench.mojo
-moves  4.183 msec
-expand 216.6 msec
-
-pixi run mojo run -I src benches/gomoku_bench.mojo      
-moves  3.448 msec
-expand 185.7 msec
-
---- heap (ms/100_000) ---
-add  0.576486
+--- heap (ms/100_000_000) ---
+heap_add 0.5635075

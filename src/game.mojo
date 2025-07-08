@@ -1,6 +1,6 @@
 from score import Score
 
-trait TGame(Copyable, Stringable, Writable):
+trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
 
     fn moves(self) -> List[(Move, Score)]:
@@ -9,6 +9,8 @@ trait TGame(Copyable, Stringable, Writable):
     fn play_move(mut self, move: Move):
         ...
 
+    fn decision(self) -> StaticString:
+        ...
 
 # TODO: Remove Defaultable after removing Node.root
 trait TMove(Copyable, Movable, Defaultable, Stringable, Writable):

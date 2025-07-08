@@ -1,5 +1,4 @@
 * figure out why cannot print List[Move]
-* sims, sim -> nodes
 * root -> roots
 * alias Score = Score
 * alias Decision = Int
