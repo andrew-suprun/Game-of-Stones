@@ -17,6 +17,20 @@ fn benchInlineArraySIMDInt():
     keep(s)
 
 
+fn benchInlineArraySIMDInt16():
+    var a = InlineArray[SIMD[DType.int16, 2], 1100](uninitialized = True)
+    for i in range(1100):
+        a[i] = SIMD[DType.int16, 2](
+            Int16(intrand()), Int16(intrand())
+        )
+    var s: SIMD[DType.int16, 2] = 0
+    for _ in range(10_000):
+        var x = random_si64(0, 100)
+        for j in range(x, x + 1000):
+            s += a[j]
+    keep(s)
+
+
 fn benchListSIMDInt():
     var a = List[SIMD[DType.int32, 2]](capacity = 1100)
     for _ in range(1100):
@@ -26,6 +40,22 @@ fn benchListSIMDInt():
             )
         )
     var s: SIMD[DType.int32, 2] = 0
+    for _ in range(10_000):
+        var x = random_si64(0, 100)
+        for j in range(x, x + 1000):
+            s += a[j]
+    keep(s)
+
+
+fn benchListSIMDInt16():
+    var a = List[SIMD[DType.int16, 2]](capacity = 1100)
+    for _ in range(1100):
+        a.append(
+            SIMD[DType.int16, 2](
+            Int16(intrand()), Int16(intrand())
+            )
+        )
+    var s: SIMD[DType.int16, 2] = 0
     for _ in range(10_000):
         var x = random_si64(0, 100)
         for j in range(x, x + 1000):
@@ -134,12 +164,14 @@ fn rand() -> Score:
     return Score(random_float64(-10, 10))
 
 fn main() raises:
-    # print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt]().mean(Unit.ms))
-    # print("List        SIMD Int  ", benchmark.run[benchListSIMDInt]().mean(Unit.ms))
-    # print("InlineArray SIMD Float", benchmark.run[benchInlineArraySIMDFloat]().mean(Unit.ms))
-    # print("List        SIMD Float", benchmark.run[benchListSIMDFloat]().mean(Unit.ms))
-    # print("fib int               ", benchmark.run[bench_fib_int]().mean(Unit.ms))
-    # print("fib float             ", benchmark.run[bench_fib_float]().mean(Unit.ms))
+    print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt]().mean(Unit.ms))
+    print("InlineArray SIMD Int16", benchmark.run[benchInlineArraySIMDInt16]().mean(Unit.ms))
+    print("List        SIMD Int  ", benchmark.run[benchListSIMDInt]().mean(Unit.ms))
+    print("List        SIMD Int16", benchmark.run[benchListSIMDInt16]().mean(Unit.ms))
+    print("InlineArray SIMD Float", benchmark.run[benchInlineArraySIMDFloat]().mean(Unit.ms))
+    print("List        SIMD Float", benchmark.run[benchListSIMDFloat]().mean(Unit.ms))
+    print("fib int               ", benchmark.run[bench_fib_int]().mean(Unit.ms))
+    print("fib float             ", benchmark.run[bench_fib_float]().mean(Unit.ms))
     print("tuple                 ", benchmark.run[bench_tuple]().mean(Unit.ms))
     print("type                  ", benchmark.run[bench_type]().mean(Unit.ms))
     print("list                  ", benchmark.run[bench_list]().mean(Unit.ms))

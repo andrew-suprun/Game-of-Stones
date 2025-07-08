@@ -5,7 +5,7 @@ from tree import Tree
 from board import Board, first
 from connect6 import Connect6, Move
 
-alias C6 = Connect6[19, 60, 32]
+alias C6 = Connect6[19, 32, 16]
 
 fn bench_moves():
     var game = C6()

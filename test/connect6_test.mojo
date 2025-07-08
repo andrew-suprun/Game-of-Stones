@@ -17,4 +17,4 @@ fn test_connect6() raises:
     tree.debug_best_moves()
     print("best move", tree.best_move())
     print("decision", game.decision())
-    assert_true(tree.root.score == 58)
+    assert_true(String(tree.best_move()) == "i11-k9")

@@ -1,7 +1,7 @@
 from score import Score, win, draw, iswin
+from board import Board, Place, first
 from game import TGame, TMove
 from heap import heap_add
-from board import Board, Place, first
 
 alias win_stones = 6
 alias values = List[Score](0, 1, 5, 25, 125, 625)
@@ -43,9 +43,6 @@ struct Move(TMove):
         return self._p1 != other._p1 or self._p2 != other._p2
 
     fn __str__(self) -> String:
-        return String.write(self)
-
-    fn __repr__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):

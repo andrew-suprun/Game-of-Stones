@@ -62,14 +62,14 @@ struct Node[Game: TGame, c: score.Score](Copyable, Movable, Representable, Strin
                 if score.isdecisive(move[1]):
                     continue
         else:
-            var log_parent_sims = score.Score(self.n_sims)
+            var parent_sims = sqrt(score.Score(self.n_sims))
             var selected_child_idx = 0
             var maxV = score.loss
             for child_idx in range(len(self.children)):
                 ref child = self.children[child_idx]
                 if score.isdecisive(child.score):
                     continue
-                var v = child.score + self.c * log_parent_sims / score.Score(child.n_sims)
+                var v = child.score + self.c * parent_sims / score.Score(child.n_sims)
                 if maxV < v:
                     maxV = v
                     selected_child_idx = child_idx
@@ -99,7 +99,6 @@ struct Node[Game: TGame, c: score.Score](Copyable, Movable, Representable, Strin
         if all_losses:
             self.score = score.win
         elif has_draw and all_draws:
-            print("draw", self.move)
             self.score = score.draw
         else:
             self.score = score.invert(max_score)

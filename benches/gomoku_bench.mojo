@@ -15,7 +15,7 @@ fn bench_moves():
         pass
     for _ in range(1000):
         var moves = game.moves()
-        keep(moves[0])
+        keep(moves[0][0])
 
 fn bench_expand():
     var game = G()
