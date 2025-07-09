@@ -2,61 +2,52 @@ from game import TScore
 
 @fieldwise_init
 struct Score(TScore):
-    alias _win = Int8(1)
-    alias _loss = Int8(-1)
-    alias _draw = Int8(0)
-    alias _undecided = Int8(2)
-
-    alias _win_score = Score(Int32.MAX, Self._win)
-    alias _loss_score = Score(Int32.MIN, Self._loss)
-    alias _draw_score = Score(0, Self._draw)
+    alias _win_value = Int32.MAX
+    alias _draw_value = Int32.MAX-1
+    alias _loss_value = Int32.MAX-2
 
     var _value: Int32
-    var _decision: Int8
 
     @staticmethod
     fn win() -> Score:
-        return Self._win_score
+        return Score(Self._win_value)
 
     @staticmethod
     fn draw() -> Score:
-        return Self._draw_score
+        return Score(Self._draw_value)
 
     @staticmethod
     fn loss() -> Score:
-        return Self._loss_score
-
-    fn __init__(out self, value: Int32):
-        return Score(value, Self._undecided)
+        return Score(Self._loss_value)
 
     fn __init__(out self, value: Int):
-        return Score(value, Self._undecided)
+        return Score(Int32(value))
 
     fn __init__(out self, value: Float64):
-        return Score(Int32(value), Self._undecided)
+        return Score(Int32(value))
 
     fn __invert__(self) -> Score:
-        debug_assert(self._decision == Self._undecided)
-        return Score(-self._value, Self._undecided)
+        debug_assert(not self.isdecisive())
+        return Score(-self._value)
 
     fn iswin(self) -> Bool:
-        return self._decision == Self._win
+        return self._value == Self._win_value
 
     fn isloss(self) -> Bool:
-        return self._decision == Self._loss
+        return self._value == Self._loss_value
 
     fn isdraw(self) -> Bool:
-        return self._decision == Self._draw
+        return self._value == Self._draw_value
 
     fn isdecisive(self) -> Bool:
-        return self._decision != Self._undecided
+        return self._value >= Self._loss_value
 
     fn __lt__(self, other: Self) -> Bool:
-        debug_assert(self._decision == Self._undecided)
+        debug_assert(not self.isdecisive())
         return self._value < other._value
 
     fn __float__(self) -> Float64:
-        debug_assert(self._decision == Self._undecided)
+        debug_assert(not self.isdecisive())
         return Float64(self._value)
 
     fn __str__(self) -> String:
