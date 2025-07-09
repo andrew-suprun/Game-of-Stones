@@ -37,7 +37,7 @@ struct Tree[Game: TGame, c: Float64](Stringable, Writable):
 
     fn debug_best_moves(self):
         for ref node in self.root.children:
-            print("  ", node.move, node.score, node.n_sims)
+            print("  ", node.move, String(node.score), node.n_sims)
 
 struct Node[Game: TGame, c: Float64](Copyable, Movable, Representable, Stringable, Writable):
     var move: Game.Move

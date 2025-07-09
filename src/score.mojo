@@ -7,11 +7,11 @@ struct Score(TScore):
     alias _draw = Int8(0)
     alias _undecided = Int8(2)
 
-    alias _win_score = Score(Int16.MAX, Self._win)
-    alias _loss_score = Score(Int16.MIN, Self._loss)
+    alias _win_score = Score(Int32.MAX, Self._win)
+    alias _loss_score = Score(Int32.MIN, Self._loss)
     alias _draw_score = Score(0, Self._draw)
 
-    var _value: Int16
+    var _value: Int32
     var _decision: Int8
 
     @staticmethod
@@ -26,11 +26,14 @@ struct Score(TScore):
     fn loss() -> Score:
         return Self._loss_score
 
+    fn __init__(out self, value: Int32):
+        return Score(value, Self._undecided)
+
     fn __init__(out self, value: Int):
-        return Score(Int16(value), Self._undecided)
+        return Score(value, Self._undecided)
 
     fn __init__(out self, value: Float64):
-        return Score(Int16(value), Self._undecided)
+        return Score(Int32(value), Self._undecided)
 
     fn __invert__(self) -> Score:
         debug_assert(self._decision == Self._undecided)

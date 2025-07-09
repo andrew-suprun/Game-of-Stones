@@ -4,7 +4,7 @@ from random import seed, random_si64
 from board import Board, Place, Value, first, second
 
 alias win_stones = 6
-alias values = List[Int16](0, 1, 5, 25, 125, 625)
+alias values = List[Int32](0, 1, 5, 25, 125, 625)
 
 
 fn test_place_stone() raises:

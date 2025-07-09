@@ -1,6 +1,5 @@
 from memory import memcpy
 
-from score import Score
 from heap import heap_add
 
 alias first = 0
@@ -73,7 +72,7 @@ struct Board[values: List[Value], size: Int, win_stones: Int, max_places: Int](S
                 var t1 = max(0, min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y))
                 var t2 = max(0, min(win_stones, m, 2 * size - 1 - win_stones + 1 - y - x, x + y - win_stones + 1 + 1))
                 var total = v + h + t1 + t2
-                self.setscores(Place(x, y), Values(total, total))
+                self.setvalues(Place(x, y), Values(total, total))
 
     fn __copyinit__(out self, existing: Self, /):
         self._places = InlineArray[Int8, size * size](uninitialized=True)
@@ -91,9 +90,9 @@ struct Board[values: List[Value], size: Int, win_stones: Int, max_places: Int](S
         var y = Int(place.y)
 
         if turn == first:
-            self._score += self.score(place, first)
+            self._score += self.value(place, first)
         else:
-            self._score -= self.score(place, second)
+            self._score -= self.value(place, second)
 
         var x_start = max(0, x - win_stones + 1)
         var x_end = min(x + win_stones, size) - win_stones + 1
@@ -148,11 +147,11 @@ struct Board[values: List[Value], size: Int, win_stones: Int, max_places: Int](S
     fn places(self, turn: Int) -> List[Place]:
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
-            r = self.score(a, first) < self.score(b, first)
+            r = self.value(a, first) < self.value(b, first)
 
         @parameter
         fn less_second(a: Place, b: Place, out r: Bool):
-            r = self.score(a, second) < self.score(b, second)
+            r = self.value(a, second) < self.value(b, second)
 
         var places = List[Place](capacity = max_places)
 
@@ -219,7 +218,7 @@ struct Board[values: List[Value], size: Int, win_stones: Int, max_places: Int](S
 
         for y in range(size):
             for x in range(size):
-                if self[x, y] == self.empty and self.score(Place(x, y), first) > 1:
+                if self[x, y] == self.empty and self.value(Place(x, y), first) > 1:
                     return "no-decision"
 
         return "draw"
@@ -239,10 +238,10 @@ struct Board[values: List[Value], size: Int, win_stones: Int, max_places: Int](S
     fn __setitem__(mut self, x: Int, y: Int, value: Int8):
         self._places[y * size + x] = value
 
-    fn score(self, place: Place, turn: Int) -> Value:
+    fn value(self, place: Place, turn: Int) -> Value:
         return self._scores[Int(place.y) * size + Int(place.x)][turn]
 
-    fn setscores(mut self, place: Place, value: Values):
+    fn setvalues(mut self, place: Place, value: Values):
         self._scores[Int(place.y) * size + Int(place.x)] = value
 
     fn __str__(self, out result: String):
@@ -321,13 +320,13 @@ struct Board[values: List[Value], size: Int, win_stones: Int, max_places: Int](S
                 elif stone == Self.white:
                     str += "    O "
                 else:
-                    var score = self.score(Place(x, y), table_idx)
-                    if score > values[-1] / 2:
+                    var value = self.value(Place(x, y), table_idx)
+                    if value > values[-1] * 8:
                         str += "  Win "
-                    elif score == 0:
+                    elif value == 0:
                         str += " Draw "
                     else:
-                        str += String(score).rjust(5, " ") + " "
+                        str += String(value).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
         str += "───┼" + "──────" * size + "┼───"
         if not table_idx:

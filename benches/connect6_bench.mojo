@@ -1,6 +1,6 @@
 from benchmark import benchmark, Unit, keep
 
-from game import TMove, Score
+from game import TMove
 from tree import Tree
 from board import Board, first
 from connect6 import Connect6, Move
