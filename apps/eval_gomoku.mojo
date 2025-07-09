@@ -11,13 +11,13 @@ fn main() raises:
     var title = String.write(max_moves,  "-", c)
     print(title)
     var game = Game()
-    var tree = Tree[Game, Score(c)]()
+    var tree = Tree[Game, c]()
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("g9")
     game.play_move("h9")
 
-    var score = Score()
+    var score = Score(0)
     for sims in range(20_000):
         if tree.expand(game):
             break

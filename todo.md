@@ -1,3 +1,4 @@
+* switch to using Score in board.mojo
 * figure out why cannot print List[Move]
 * root -> roots
 * alias Confidence = Score i.e. relation between best score and second best

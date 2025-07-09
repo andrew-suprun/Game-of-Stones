@@ -1,16 +1,17 @@
 from testing import assert_true, assert_false
 from random import seed, random_si64
 
-from board import Board, Place, Value, first, second
+from score import Score
+from board import Board, Place, first, second
 
 alias win_stones = 6
-alias values = List[Int32](0, 1, 5, 25, 125, 625)
+alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
 
 fn test_place_stone() raises:
     seed(7)
     var board = Board[values, 19, win_stones, 20]()
-    var value = Value(0)
+    var value = Score(0)
     var n = 0
     for i in range(200):
         var turn = i % 2
@@ -117,12 +118,17 @@ fn test_decision() raises:
 
     print(board)
 
+    print(1)
     print(board.decision())
+    print(2)
     assert_true(board.decision() == "no-decision")
+    print(2.5)
 
     var b = board
     b.place_stone(Place(0, 5), first)
+    print(3)
     print(b.decision())
+    print(4)
     assert_true(b.decision() == "first-win")
 
     b = board
