@@ -66,7 +66,8 @@ struct Tree[Game: TGame, c: Float64](Stringable, Writable):
         for ref root in self.roots:
             root.write_to(writer)
 
-    fn debug_best_moves(self):
+    fn debug_roots(self):
+        print("roots")
         for ref node in self.roots:
             print("  ", node.move, String(node.score), node.n_sims)
 

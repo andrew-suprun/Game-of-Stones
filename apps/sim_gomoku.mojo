@@ -3,19 +3,18 @@ from time import perf_counter_ns
 import random
 
 from tree import Tree
-from game import Score
 from gomoku import Gomoku, Move
 from board import Place
 
 alias m1 = env_get_int["M1", 16]()
-alias c1 = env_get_int["C1", 30]()
+alias c1 = env_get_int["C1", 16]()
 alias m2 = env_get_int["M2", 16]()
-alias c2 = env_get_int["C2", 30]()
+alias c2 = env_get_int["C2", 16]()
 
 alias Game1 = Gomoku[19, m1]
 alias Game2 = Gomoku[19, m2]
-alias Tree1 = Tree[Game1, Score(c1)]
-alias Tree2 = Tree[Game2, Score(c2)]
+alias Tree1 = Tree[Game1, Float64(c1)]
+alias Tree2 = Tree[Game2, Float64(c2)]
 
 var __first_wins = 0
 var __second_wins = 0
@@ -63,7 +62,6 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         var sims = 0
         var move: Move
         var player: String
-        var value: Score
         var forced = False
         var deadline = perf_counter_ns() + 200_000_000
         if turn == black:
@@ -73,7 +71,6 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t1.best_move()
-            value = t1.score()
             player = n1
         else:
             while perf_counter_ns() < deadline:
@@ -82,7 +79,6 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t2.best_move()
-            value = t2.score()
             player = n2
         turn = not turn
         g1.play_move(move)
@@ -90,7 +86,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         t1 = Tree1()
         t2 = Tree2()
         var decision = g1.decision()
-        print("move", move, decision, sims, player, value, forced, file=log)
+        print("move", move, decision, sims, player, forced, file=log)
         print(g1, file=log)
         if decision == "first-win":
             if g1_black:

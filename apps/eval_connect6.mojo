@@ -21,6 +21,6 @@ fn main() raises:
             print("best move", move, "score", -tree.root.score)
         else:
             print("best move", move, "decision", tree.root.decision, "result", decision)
-        tree.debug_best_moves()
+        tree.debug_roots()
         tree = Tree[Game, 30]()
         print(game)

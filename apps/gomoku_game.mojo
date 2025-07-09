@@ -4,8 +4,8 @@ from game_of_stones import game_of_stones
 from gomoku import Gomoku
 
 alias board_size = env_get_int["BOARD_SIZE", 19]()
-alias max_moves = env_get_int["MAX_MOVES", 12]()
-alias exp_factor = env_get_int["EXP_FACTOR", 24]()
+alias max_moves = env_get_int["MAX_MOVES", 16]()
+alias exp_factor = env_get_int["EXP_FACTOR", 16]()
 
 
 fn main() raises:

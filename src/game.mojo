@@ -13,7 +13,6 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
     fn decision(self) -> StaticString:
         ...
 
-# TODO: Remove Defaultable after removing Node.root
 trait TMove(Copyable, Movable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...

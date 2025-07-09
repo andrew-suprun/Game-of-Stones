@@ -14,7 +14,7 @@ fn test_connect6() raises:
         # print("expand", i)
         _ = tree.expand(game)
         # print(tree)
-    tree.debug_best_moves()
+    tree.debug_roots()
     print("best move", tree.best_move())
     print("decision", game.decision())
     assert_true(String(tree.best_move()) == "i11-k9")

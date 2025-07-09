@@ -31,4 +31,4 @@ fn main() raises:
                 move.write_to(pv)
                 " ".write_to(pv)
             print(sims, tree.score(), "pv: [", len(pv_moves), "]", pv)
-            tree.debug_best_moves()
+            tree.debug_roots()

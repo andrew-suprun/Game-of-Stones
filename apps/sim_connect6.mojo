@@ -3,16 +3,15 @@ from time import perf_counter_ns
 import random
 
 from board import Place
-from game import TMove, Score
 from tree import Tree
 from connect6 import Connect6, Move
 
 alias m1 = env_get_int["M1", 32]()
-alias p1 = env_get_int["P1", 16]()
-alias c1 = env_get_int["C1", 30]()
+alias p1 = env_get_int["P1", 18]()
+alias c1 = env_get_int["C1", 5]()
 alias m2 = env_get_int["M2", 32]()
-alias p2 = env_get_int["P2", 16]()
-alias c2 = env_get_int["C2", 30]()
+alias p2 = env_get_int["P2", 18]()
+alias c2 = env_get_int["C2", 5]()
 
 alias Game1 = Connect6[19, m1, p1]
 alias Game2 = Connect6[19, m2, p2]
@@ -27,7 +26,7 @@ fn main() raises:
     var n1 = String.write(m1, "-", p1, "-", c1)
     var n2 = String.write(m2, "-", p2, "-", c2)
     print(n1, "vs.", n2)
-    with open("log-connect6.log", "w") as log_file:
+    with open("sim-connect6.log", "w") as log_file:
         for i in range(1, 11):
             random.seed(perf_counter_ns())
             var opening = opening_moves()
@@ -65,7 +64,6 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         var sims = 0
         var move: Move
         var player: String
-        var value: Score
         var forced = False
         var deadline = perf_counter_ns() + 200_000_000
         if turn == black:
@@ -75,7 +73,6 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t1.best_move()
-            value = t1.score()
             player = n1
         else:
             while perf_counter_ns() < deadline:
@@ -84,7 +81,6 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t2.best_move()
-            value = t2.score()
             player = n2
         turn = not turn
         g1.play_move(move)
@@ -92,7 +88,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         t1 = Tree1()
         t2 = Tree2()
         var decision = g1.decision()
-        print("move", move, decision, sims, player, value, forced, file=log)
+        print("move", move, decision, sims, player, forced, file=log)
         print(g1, file=log)
         if decision == "first-win":
             if g1_black:

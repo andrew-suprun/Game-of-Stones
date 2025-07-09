@@ -28,7 +28,7 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
-fn game_of_stones[name: StaticString, Game: TGame, c: Score, stones_per_move: Int]() raises -> Bool:
+fn game_of_stones[name: StaticString, Game: TGame, c: Float64, stones_per_move: Int]() raises -> Bool:
     var pygame = Python.import_module("pygame")
     pygame.init()
     var window = pygame.display.set_mode(Python.tuple(window_height, window_width))
@@ -40,7 +40,7 @@ fn game_of_stones[name: StaticString, Game: TGame, c: Score, stones_per_move: In
         done = game.run()
     return done
 
-struct GameOfStones[Game: TGame, c: Score, stones_per_move: Int]:
+struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
     var pygame: PythonObject
     var window: PythonObject
     var moves: List[Game.Move]
