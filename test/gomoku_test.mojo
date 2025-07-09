@@ -19,7 +19,6 @@ fn test_gomoku() raises:
             best_move = move
             print(i, best_move)
 
-    print("score", tree.root.score)
     tree.debug_best_moves()
     print("best move", tree.best_move())
-    assert_true(String(tree.best_move()) == "k10")
+    assert_true(String(tree.best_move()) == "h10")

@@ -10,13 +10,9 @@ alias Scores = SIMD[DType.float32, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Copyable, Movable, EqualityComparable, Defaultable, Stringable, Writable):
+struct Place(Copyable, Movable, EqualityComparable, Stringable, Writable):
     var x: Int8
     var y: Int8
-
-    fn __init__(out self):
-        self.x = 0
-        self.y = 0
 
     @implicit
     fn __init__(out self, place: String) raises:

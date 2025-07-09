@@ -1,9 +1,11 @@
-from utils.numerics import inf, neg_inf, isinf, FPUtils
+from utils.numerics import inf, neg_inf, nan, isinf, isnan
+
+from game import TScore
 
 @fieldwise_init
-struct Score(Copyable, Movable, Floatable, Comparable, Stringable, Writable):
+struct Score(TScore):
     alias _win_value = inf[DType.float32]()
-    alias _draw_value = Float32(-0.0)
+    alias _draw_value = nan[DType.float32]()
     alias _loss_value = neg_inf[DType.float32]()
 
     var _value: Float32
@@ -29,7 +31,6 @@ struct Score(Copyable, Movable, Floatable, Comparable, Stringable, Writable):
         return Score(Float32(value))
 
     fn __neg__(self) -> Score:
-        debug_assert(not self.isdecisive())
         return Score(-self._value)
 
     fn iswin(self) -> Bool:
@@ -39,10 +40,13 @@ struct Score(Copyable, Movable, Floatable, Comparable, Stringable, Writable):
         return isinf(self._value) and self._value < 0
 
     fn isdraw(self) -> Bool:
-        return self._value == 0 and FPUtils.get_sign(self._value)
+        return isnan(self._value)
 
     fn isdecisive(self) -> Bool:
         return isinf(self._value) or self.isdraw()
+
+    fn __add__(self, other: Self) -> Self:
+        return Score(self._value + other._value)
 
     fn __iadd__(mut self, other: Self):
         self._value += other._value
@@ -52,6 +56,9 @@ struct Score(Copyable, Movable, Floatable, Comparable, Stringable, Writable):
 
     fn __isub__(mut self, other: Self):
         self._value -= other._value
+
+    fn __truediv__(self, other: Self) -> Score:
+        return Score(self._value / other._value)
 
     fn __eq__(self, other: Self) -> Bool:
         return self._value == other._value

@@ -4,15 +4,12 @@ from game import TGame, TMove
 from heap import heap_add
 
 alias win_stones = 6
-alias values = List[Int32](0, 1, 5, 25, 125, 625)
+alias scores = List[Float32](0, 1, 5, 25, 125, 625)
 
 @register_passable("trivial")
 struct Move(TMove):
     var _p1: Place
     var _p2: Place
-
-    fn __init__(out self):
-        self = Self.__init__(Place(), Place())
 
     fn __init__(out self, p1: Place, p2: Place):
         self._p1 = p1
@@ -55,11 +52,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     alias Move = Move
     alias Score = Score
 
-    var board: Board[values, size, win_stones, max_places]
+    var board: Board[scores, size, win_stones, max_places]
     var turn: Int
 
     fn __init__(out self):
-        self.board = Board[values, size, win_stones, max_places]()
+        self.board = Board[scores, size, win_stones, max_places]()
         self.turn = 0
 
     fn moves(self) -> List[(Move, Score)]:
@@ -69,31 +66,31 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
         var places = self.board.places(self.turn)
         if len(places) < max_places:
-            return [(Move(), Score.draw())]
+            return []
 
         var moves = List[(Move, Score)](capacity = max_moves)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
             var place1 = places[i]
-            var value1 = self.board.value(place1, self.turn)
-            if value1 > 8 * values[-1]:
-                return [(Move(place1, place1), Score(value1))]
+            var score1 = self.board.score(place1, self.turn)
+            if score1.iswin():
+                return [(Move(place1, place1), score1)]
 
             var board1 = self.board
             board1.place_stone(place1, self.turn)
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j]
-                var value2 = board1.value(place2, self.turn)
+                var score2 = board1.score(place2, self.turn)
 
-                if value2 > 8 * values[-1]:
-                    return [(Move(place1, place1), Score(value1))]
+                if score2.iswin():
+                    return [(Move(place1, place2), score2)]
 
                 var board2 = board1
                 board2.place_stone(place2, self.turn)
                 max_opp_score = board2.max_score(1 - self.turn)
 
-                heap_add[max_moves, move_less]((Move(place1, place2), Score(board_score + value1 + value2 - max_opp_score)), moves)
+                heap_add[max_moves, move_less]((Move(place1, place2), board_score + score1 + score2 - max_opp_score), moves)
         return moves
 
     fn play_move(mut self, move: self.Move):

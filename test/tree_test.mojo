@@ -79,5 +79,4 @@ def test_tree():
         print(t)
         if done:
             break
-    print(Float64(t.root.score))
-    assert_true(Float64(t.root.score) == -1)
+    assert_true(False)

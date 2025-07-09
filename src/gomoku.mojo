@@ -1,16 +1,13 @@
-from score import Score, win, draw, iswin, isdraw
+from score import Score
 from game import TGame, TMove
 from board import Board, Place, first
 
 alias win_stones = 5
-alias values = List[Score](0, 1, 5, 25, 125)
+alias values = List[Float32](0, 1, 5, 25, 125)
 
 @register_passable("trivial")
 struct Move(TMove):
     var _place: Place
-
-    fn __init__(out self):
-        self = Self.__init__(Place())
 
     fn __init__(out self, place: Place):
         self._place = place
@@ -37,6 +34,7 @@ struct Move(TMove):
 
 struct Gomoku[size: Int, max_moves: Int](TGame):
     alias Move = Move
+    alias Score = Score
 
     var board: Board[values, size, win_stones, max_moves]
     var turn: Int
@@ -52,16 +50,16 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
 
         var places = self.board.places(self.turn)
         if len(places) < max_moves:
-            return [(Move(), draw)]
+            return []
 
         var moves = List[(Move, Score)](capacity = len(places))
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
-            if iswin(score):
-                return [(Move(place), win)]
-            if isdraw(score):
-                moves.append((Move(place), draw))
+            if score.iswin():
+                return [(Move(place), score)]
+            if score.isdraw():
+                moves.append((Move(place), score))
             else:
                 moves.append((Move(place), board_score + self.board.score(place, self.turn) / 2))
         return moves

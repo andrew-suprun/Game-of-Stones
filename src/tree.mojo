@@ -5,38 +5,69 @@ from utils.numerics import neg_inf
 from game import TGame, TScore
 
 struct Tree[Game: TGame, c: Float64](Stringable, Writable):
-    var root: Node[Game, c]
+    var roots: List[Node[Game, c]]
 
     fn __init__(out self):
-        self.root = Node[Game, c]((Game.Move(), Game.Score(0)))
+        self.roots = List[Node[Game, c]]()
         
     fn expand(mut self, game: Game, out done: Bool):
-        if self.root.score.isdecisive():
+        if not self.roots:
+            var moves = game.moves()
+            self.roots.reserve(len(moves))
+            for move in moves:
+                self.roots.append(Node[Game, c](move))
+            return False
+
+        var n_sims = Int32(0)
+        for ref root in self.roots:
+            n_sims += root.n_sims
+
+        var selected_idx = Node.select_node(self.roots, self.c * Float64(n_sims))
+        ref root = self.roots[selected_idx]
+
+        if root.score.isdecisive():
             return True
         else:
             var g = game
-            self.root._expand(g)
+            g.play_move(root.move)
+            root._expand(g)
+
         
-        if self.root.score.isdecisive():
-            return True
-
         var undecided = 0
-        for _ in self.root.children:
-            if not self.root.score.isdecisive():
+        for ref root in self.roots:
+            if not root.score.isdecisive():
                 undecided += 1
-        return undecided == 1
+        return undecided < 2
 
-    fn best_move(self) -> Game.Move:
-        return self.root.best_move()
+    fn best_move(self, out result: Game.Move):
+        debug_assert(len(self.roots) > 0, "Function node.best_move() is called with no children.")
+        var has_draw = False
+        var draw_move = self.roots[-1].move
+        var best_child = Pointer(to = self.roots[-1])
+        for ref child in self.roots:
+            if child.score.isloss():
+                continue
+            if child.score.iswin():
+                return child.move
+            if child.score.isdraw():
+                has_draw = True
+                draw_move = child.move
+            if best_child[].n_sims < child.n_sims:
+                best_child = Pointer(to = child)
+        if has_draw and Float64(best_child[].score) < 0:
+            return draw_move
+        result = best_child[].move
+
         
     fn __str__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        self.root.write_to(writer)
+        for ref root in self.roots:
+            root.write_to(writer)
 
     fn debug_best_moves(self):
-        for ref node in self.root.children:
+        for ref node in self.roots:
             print("  ", node.move, String(node.score), node.n_sims)
 
 struct Node[Game: TGame, c: Float64](Copyable, Movable, Representable, Stringable, Writable):
@@ -59,21 +90,9 @@ struct Node[Game: TGame, c: Float64](Copyable, Movable, Representable, Stringabl
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Node[Game, c](move))
-                if move[1].isdecisive():
-                    continue
         else:
-            var parent_sims = sqrt(Float64(self.n_sims))
-            var selected_child_idx = 0
-            var maxV = neg_inf[DType.float64]()
-            for child_idx in range(len(self.children)):
-                ref child = self.children[child_idx]
-                if child.score.isdecisive():
-                    continue
-                var v = Float64(child.score) + self.c * parent_sims / Float64(child.n_sims)
-                if maxV < v:
-                    maxV = v
-                    selected_child_idx = child_idx
-            ref selected_child = self.children[selected_child_idx]
+            var exp_factor = self.c * Float64(self.n_sims)
+            ref selected_child = self.children[Self.select_node(self.children, exp_factor)]
             game.play_move(selected_child.move)
             selected_child._expand(game)
 
@@ -103,24 +122,20 @@ struct Node[Game: TGame, c: Float64](Copyable, Movable, Representable, Stringabl
         else:
             self.score = Game.Score(-max_score)
 
-    fn best_move(self, out result: Game.Move):
-        debug_assert(len(self.children) > 0, "Function node.best_move() is called with no children.")
-        var has_draw = False
-        var draw_move = self.children[-1].move
-        var best_child = Pointer(to = self.children[-1])
-        for ref child in self.children:
-            if child.score.isloss():
+    @staticmethod
+    fn select_node(nodes: List[Node[Game, c]], exp_factor: Float64) -> Int:
+        var selected_child_idx = 0
+        var maxV = neg_inf[DType.float64]()
+        for child_idx in range(len(nodes)):
+            ref child = nodes[child_idx]
+            if child.score.isdecisive():
                 continue
-            if child.score.iswin():
-                return child.move
-            if child.score.isdraw():
-                has_draw = True
-                draw_move = child.move
-            if best_child[].n_sims < child.n_sims:
-                best_child = Pointer(to = child)
-        if has_draw and Float64(best_child[].score) < 0:
-            return draw_move
-        result = best_child[].move
+            var v = Float64(child.score) + exp_factor / Float64(child.n_sims)
+            if maxV < v:
+                maxV = v
+                selected_child_idx = child_idx
+        return selected_child_idx
+
 
     fn __str__(self) -> String:
         return String.write(self)
