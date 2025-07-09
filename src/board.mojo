@@ -1,11 +1,12 @@
 from memory import memcpy
 
-from score import Score, win
+from score import Score
 from heap import heap_add
 
 alias first = 0
 alias second = 1
-alias Scores = SIMD[DType.float32, 2]
+alias Values = SIMD[DType.int32, 2]
+alias Value = Int32
 
 @fieldwise_init
 @register_passable("trivial")
@@ -49,19 +50,19 @@ struct Place(Copyable, Movable, EqualityComparable, Defaultable, Stringable, Wri
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
+struct Board[values: List[Value], size: Int, win_stones: Int, max_places: Int](Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
     alias value_table = _value_table[win_stones, values]()
 
     var _places: InlineArray[Int8, size * size]
-    var _scores: InlineArray[Scores, size * size] 
-    var _score: Score
+    var _scores: InlineArray[Values, size * size] 
+    var _score: Value
 
     fn __init__(out self):
         self._places = InlineArray[Int8, size * size](fill = 0)
-        self._scores = InlineArray[Scores, size * size](uninitialized=True)
+        self._scores = InlineArray[Values, size * size](uninitialized=True)
         self._score = 0
 
         for y in range(size):
@@ -72,13 +73,13 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 var t1 = max(0, min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y))
                 var t2 = max(0, min(win_stones, m, 2 * size - 1 - win_stones + 1 - y - x, x + y - win_stones + 1 + 1))
                 var total = v + h + t1 + t2
-                self.setscores(Place(x, y), Scores(total, total))
+                self.setscores(Place(x, y), Values(total, total))
 
     fn __copyinit__(out self, existing: Self, /):
         self._places = InlineArray[Int8, size * size](uninitialized=True)
         memcpy(self._places.unsafe_ptr(), existing._places.unsafe_ptr(), size * size)
 
-        self._scores = InlineArray[Scores, size * size](uninitialized=True)
+        self._scores = InlineArray[Values, size * size](uninitialized=True)
         memcpy(self._scores.unsafe_ptr(), existing._scores.unsafe_ptr(), size * size)
 
         self._score = existing._score
@@ -125,7 +126,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         else:
             self[x, y] = Self.white
     
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
+    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Values, win_stones * win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
@@ -238,10 +239,10 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
     fn __setitem__(mut self, x: Int, y: Int, value: Int8):
         self._places[y * size + x] = value
 
-    fn score(self, place: Place, turn: Int) -> Score:
+    fn score(self, place: Place, turn: Int) -> Value:
         return self._scores[Int(place.y) * size + Int(place.x)][turn]
 
-    fn setscores(mut self, place: Place, value: Scores):
+    fn setscores(mut self, place: Place, value: Values):
         self._scores[Int(place.y) * size + Int(place.x)] = value
 
     fn __str__(self, out result: String):
@@ -335,8 +336,8 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
-    fn board_value(self, scores: List[Score], out value: Score):
-        value = 0
+    fn board_value(self, scores: List[Value]) -> Value:
+        var value = Value(0)
         for y in range(size):
             var stones = Int8(0)
             for x in range(win_stones - 1):
@@ -390,8 +391,9 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
                 stones += self[size - win_stones - x - y, y + win_stones - 1]
                 value += self._calc_value(stones, scores)
                 stones -= self[size - 1 - x - y, y]
+        return value
 
-    fn _calc_value(self, stones: Int8, scores: List[Score], out value: Score):
+    fn _calc_value(self, stones: Int8, scores: List[Value]) -> Value:
         var black = stones % win_stones
         var white = stones // win_stones
         if white == 0:
@@ -400,7 +402,7 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
             return -scores[white]
         return 0
 
-    fn max_score(self, player: Int) -> Score:
+    fn max_score(self, player: Int) -> Value:
         var max_scores = self._scores[0]
 
         for y in range(size):
@@ -411,20 +413,20 @@ struct Board[values: List[Score], size: Int, win_stones: Int, max_places: Int](S
         return max_scores[player]
 
 
-fn _value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+fn _value_table[win_stones: Int, scores: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
     alias result_size = win_stones * win_stones + 1
 
     var s = scores
-    s.append(win)
-    v2 = List[Scores](Scores(1, -1))
+    s.append(scores[-1]*10)
+    v2 = List[Values](Values(1, -1))
     for i in range(win_stones - 1):
-        v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
+        v2.append(Values(s[i + 2] - s[i + 1], -s[i + 1]))
 
-    var result = InlineArray[InlineArray[Scores, result_size], 2](InlineArray[Scores, result_size](0))
+    var result = InlineArray[InlineArray[Values, result_size], 2](InlineArray[Values, result_size](0))
 
     for i in range(win_stones - 1):
-        result[0][i * win_stones] = Scores(v2[i][1], -v2[i][0])
-        result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
-        result[1][i] = Scores(-v2[i][0], v2[i][1])
-        result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
+        result[0][i * win_stones] = Values(v2[i][1], -v2[i][0])
+        result[0][i] = Values(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
+        result[1][i] = Values(-v2[i][0], v2[i][1])
+        result[1][i * win_stones] = Values(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
     return result

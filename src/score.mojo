@@ -1,30 +1,69 @@
-from utils.numerics import inf, neg_inf, isinf, FPUtils
+from game import TScore
 
-alias Score = Float32
-alias loss = neg_inf[DType.float32]()
-alias draw: Score = -0.0
-alias win = inf[DType.float32]()
+@fieldwise_init
+struct Score(TScore):
+    alias _win = Int8(1)
+    alias _loss = Int8(-1)
+    alias _draw = Int8(0)
+    alias _undecided = Int8(2)
 
-fn invert(score: Score) -> Score:
-    return -score if score != 0 else 0
+    alias _win_score = Score(Int16.MAX, Self._win)
+    alias _loss_score = Score(Int16.MIN, Self._loss)
+    alias _draw_score = Score(0, Self._draw)
 
-fn iswin(score: Score) -> Bool:
-    return isinf(score) and score > 0
+    var _value: Int16
+    var _decision: Int8
 
-fn isloss(score: Score) -> Bool:
-    return isinf(score) and score < 0
+    @staticmethod
+    fn win() -> Score:
+        return Self._win_score
 
-fn isdraw(score: Score) -> Bool:
-    return score == 0 and FPUtils.get_sign(score)
+    @staticmethod
+    fn draw() -> Score:
+        return Self._draw_score
 
-fn isdecisive(score: Score) -> Bool:
-    return isinf(score) or isdraw(score)
+    @staticmethod
+    fn loss() -> Score:
+        return Self._loss_score
 
-fn str(score: Score) -> String:
-    if iswin(score):
-        return "win"
-    if isloss(score):
-        return "loss"
-    if isdraw(score):
-        return "draw"
-    return String(score)
+    fn __init__(out self, value: Int):
+        return Score(Int16(value), Self._undecided)
+
+    fn __init__(out self, value: Float64):
+        return Score(Int16(value), Self._undecided)
+
+    fn __invert__(self) -> Score:
+        debug_assert(self._decision == Self._undecided)
+        return Score(-self._value, Self._undecided)
+
+    fn iswin(self) -> Bool:
+        return self._decision == Self._win
+
+    fn isloss(self) -> Bool:
+        return self._decision == Self._loss
+
+    fn isdraw(self) -> Bool:
+        return self._decision == Self._draw
+
+    fn isdecisive(self) -> Bool:
+        return self._decision != Self._undecided
+
+    fn __lt__(self, other: Self) -> Bool:
+        debug_assert(self._decision == Self._undecided)
+        return self._value < other._value
+
+    fn __float__(self) -> Float64:
+        debug_assert(self._decision == Self._undecided)
+        return Float64(self._value)
+
+    fn __str__(self) -> String:
+        if self.iswin():
+            return "win"
+        if self.isloss():
+            return "loss"
+        if self.isdraw():
+            return "draw"
+        return String(self._value)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(self)

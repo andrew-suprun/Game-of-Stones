@@ -15,12 +15,12 @@ struct TestMove(TMove):
 
     fn __init__(out self):
         self._id = __id
-        self._score = 0
+        self._score = Score(0)
         __id += 1
 
     fn __init__(out self, text: String) raises:
         self._id = __id
-        self._score = 0
+        self._score = Score(0)
         __id += 1
 
     fn __str__(self, out r: String):
@@ -35,6 +35,7 @@ struct TestMove(TMove):
 
 struct TestGame(TGame, Writable):
     alias Move = TestMove
+    alias Score = Score
 
     fn __init__(out self):
         pass
@@ -45,13 +46,13 @@ struct TestGame(TGame, Writable):
         for _ in range(n_moves):
             var rand = random_si64(0, 8)
             if __id >= 22 and __id <= 23:
-                moves.append((TestMove(), score.loss))
+                moves.append((TestMove(), Score.loss()))
             elif __id >= 35 and __id <= 37:
-                moves.append((TestMove(), score.loss))
+                moves.append((TestMove(), Score.loss()))
             elif rand == 0:
-                moves.append((TestMove(), score.win))
+                moves.append((TestMove(), Score.win()))
             elif rand == 1:
-                moves.append((TestMove(), score.draw))
+                moves.append((TestMove(), Score.draw()))
             else:
                 moves.append((TestMove(), Score(random_float64(-10, 10))))
         return moves
@@ -69,11 +70,14 @@ struct TestGame(TGame, Writable):
         pass
 
 def test_tree():
-    seed(2)
+    seed(6)
     var g = TestGame()
     var t = Tree[TestGame, 10]()
-    for _ in range(10):
-        _ = t.expand(g)
+    for i in range(10):
+        var done = t.expand(g)
+        print(i, done)
         print(t)
-    assert_true(t.root.score == -2)
-    assert_true(False)
+        if done:
+            break
+    print(Float64(t.root.score))
+    assert_true(Float64(t.root.score) == -1)

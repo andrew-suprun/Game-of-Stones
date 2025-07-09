@@ -1,16 +1,16 @@
 from testing import assert_true, assert_false
 from random import seed, random_si64
 
-from board import Board, Place, Score, first, second
+from board import Board, Place, Value, first, second
 
 alias win_stones = 6
-alias values = List[Int32](0, 1, 5, 25, 125, 625)
+alias values = List[Int16](0, 1, 5, 25, 125, 625)
 
 
 fn test_place_stone() raises:
     seed(7)
     var board = Board[values, 19, win_stones, 20]()
-    var value = Score(0)
+    var value = Value(0)
     var n = 0
     for i in range(200):
         var turn = i % 2
