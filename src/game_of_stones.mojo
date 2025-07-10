@@ -99,13 +99,14 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
             
             elif event.type == self.pygame.KEYDOWN:
                 if event.key == self.pygame.K_ESCAPE:
-                    _ = self.moves.pop()
-                    _ = self.moves.pop()
+                    var moves = self.moves
+                    self.moves.clear()
+                    _ = moves.pop()
+                    _ = moves.pop()
                     self.selected.clear()
                     self.game_complete = False
                     self.tree = Tree[Game, c](Game.Score.draw())
                     self.game = Game()
-                    var moves = self.moves
                     for move in moves:
                         self.play_move(move)
 
@@ -212,14 +213,6 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
         self.pygame.display.flip()
 
 
-    fn undo_moves(mut self):
-            _ = self.moves.pop(-1)
-            _ = self.moves.pop(-1)
-            self.selected.clear()
-            self.tree = Tree[Game, c](Game.Score.draw())
-            print("undo")
-            print(self.game)
-        
     fn best_move(mut self, out move: Game.Move):
         move = self.tree.best_move()
 
