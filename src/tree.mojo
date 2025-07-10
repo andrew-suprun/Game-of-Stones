@@ -1,8 +1,7 @@
-from math import sqrt
 from memory import Pointer
 from utils.numerics import neg_inf
 
-from game import TGame, TScore
+from game import TGame
 
 struct Tree[Game: TGame, c: Float64](Stringable, Writable):
     var roots: List[Node[Game, c]]

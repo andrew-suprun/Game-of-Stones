@@ -1,8 +1,6 @@
 from benchmark import benchmark, Unit, keep
 from random import random_si64, random_float64
 
-from score import Score
-
 fn benchInlineArraySIMDInt():
     var a = InlineArray[SIMD[DType.int32, 2], 1100](uninitialized = True)
     for i in range(1100):
@@ -93,29 +91,6 @@ fn benchListSIMDFloat():
     keep(s)
 
 
-fn fib_int(x: Int32) -> Int32:
-    if x < 2:
-        return x
-    return fib_int(x-1) + fib_int(x-2)
-
-fn bench_fib_int():
-    var s:Int32 = 0
-    for i in range(28):
-        s += fib_int(i)
-    keep(s)
-
-fn fib_float(x: Int32) -> Score:
-    if x < 2:
-        return Score(x)
-    return fib_float(x-1) + fib_float(x-2)
-
-fn bench_fib_float():
-    var s: Score = 0
-    for i in range(28):
-        s += fib_float(i)
-    keep(s)
-
-
 @fieldwise_init
 struct S(Copyable, Movable):
     var i: Int
@@ -170,8 +145,6 @@ fn main() raises:
     print("List        SIMD Int16", benchmark.run[benchListSIMDInt16]().mean(Unit.ms))
     print("InlineArray SIMD Float", benchmark.run[benchInlineArraySIMDFloat]().mean(Unit.ms))
     print("List        SIMD Float", benchmark.run[benchListSIMDFloat]().mean(Unit.ms))
-    print("fib int               ", benchmark.run[bench_fib_int]().mean(Unit.ms))
-    print("fib float             ", benchmark.run[bench_fib_float]().mean(Unit.ms))
     print("tuple                 ", benchmark.run[bench_tuple]().mean(Unit.ms))
     print("type                  ", benchmark.run[bench_type]().mean(Unit.ms))
     print("list                  ", benchmark.run[bench_list]().mean(Unit.ms))

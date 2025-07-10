@@ -4,7 +4,7 @@ from utils.numerics import inf, neg_inf
 
 from score import Score
 from game import TGame, TMove
-from tree import Tree, Node
+from tree import Tree
 
 var __id: Int = 0
 
