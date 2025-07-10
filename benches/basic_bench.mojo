@@ -135,8 +135,8 @@ fn bench_tuple():
 fn intrand() -> Int32:
     return Int32(random_si64(-10, 10))
 
-fn rand() -> Score:
-    return Score(random_float64(-10, 10))
+fn rand() -> Float32:
+    return Float32(random_float64(-10, 10))
 
 fn main() raises:
     print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt]().mean(Unit.ms))
