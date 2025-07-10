@@ -81,6 +81,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
         self.moves.append(move)
         self.selected.clear()
         self.game.play_move(move)
+        self.tree.debug_roots()
         self.tree = Tree[Game, c](Game.Score.draw())
         print("move", move, self.game.decision())
         print(self.game)

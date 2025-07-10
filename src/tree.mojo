@@ -33,7 +33,9 @@ struct Tree[Game: TGame, c: Float64](Stringable, Writable):
             g.play_move(root.move)
             root._expand(g)
 
-        
+        if root.score.iswin():
+            return True
+
         var undecided = 0
         for ref root in self.roots:
             if not root.score.isdecisive():
