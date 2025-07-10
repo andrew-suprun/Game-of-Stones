@@ -72,11 +72,10 @@ struct TestGame(TGame, Writable):
 def test_tree():
     seed(6)
     var g = TestGame()
-    var t = Tree[TestGame, 10]()
+    var t = Tree[TestGame, 10](TestGame.Score.draw())
     for i in range(10):
         var done = t.expand(g)
         print(i, done)
         print(t)
         if done:
             break
-    assert_true(False)

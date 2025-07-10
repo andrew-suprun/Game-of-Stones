@@ -6,7 +6,7 @@ from gomoku import Gomoku
 fn test_gomoku() raises:
     alias Game = Gomoku[19, 8]
     var game = Game()
-    var tree = Tree[Game, 10]()
+    var tree = Tree[Game, 10](Game.Score.draw())
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("i10")

@@ -5,7 +5,7 @@ from connect6 import Connect6
 fn main() raises:
     alias Game = Connect6[19, 6, 6]
     var game = Game()
-    var tree = Tree[Game, 30]()
+    var tree = Tree[Game, 30](Game.Score.draw())
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
@@ -22,5 +22,5 @@ fn main() raises:
         else:
             print("best move", move, "decision", tree.root.decision, "result", decision)
         tree.debug_roots()
-        tree = Tree[Game, 30]()
+        tree = Tree[Game, 30](Game.Score.draw())
         print(game)

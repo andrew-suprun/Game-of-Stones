@@ -43,8 +43,8 @@ alias white = False
 fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
     var g1 = Game1()
     var g2 = Game2()
-    var t1 = Tree1()
-    var t2 = Tree2()
+    var t1 = Tree1(Game1.Score.draw())
+    var t2 = Tree2(Game2.Score.draw())
     var n1 = String.write(m1, "-", p1, "-", c1)
     var n2 = String.write(m2, "-", p2, "-", c2)
 
@@ -85,8 +85,8 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         turn = not turn
         g1.play_move(move)
         g2.play_move(move)
-        t1 = Tree1()
-        t2 = Tree2()
+        t1 = Tree1(Game1.Score.draw())
+        t2 = Tree2(Game2.Score.draw())
         var decision = g1.decision()
         print("move", move, decision, sims, player, forced, file=log)
         print(g1, file=log)

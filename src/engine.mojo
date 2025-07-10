@@ -5,7 +5,7 @@ from builtin.io import _fdopen
 from game import TGame, Score
 from tree import Tree
 
-fn run[Game: TGame, exp_factor: Score]() raises:
+fn run[Game: TGame, exp_factor: Float64]() raises:
     var log_file = FileHandle()
     var log = False
 
@@ -17,7 +17,7 @@ fn run[Game: TGame, exp_factor: Score]() raises:
     var stdin = _fdopen["r"](FileDescriptor(0))
 
     var game = Game()
-    var tree = Tree[Game, exp_factor]()
+    var tree = Tree[Game, exp_factor](Game.Score.draw())
 
     while True:
         var line: String
@@ -37,12 +37,12 @@ fn run[Game: TGame, exp_factor: Score]() raises:
         if terms[0] == "move":
             var move = Game.Move(terms[1])
             game.play_move(move)
-            tree = Tree[Game, exp_factor]()
+            tree = Tree[Game, exp_factor](Game.Score.draw())
             if log:
                 print(game, file=log_file)
         elif terms[0] == "undo":
             # TODO implement undo
-            tree = Tree[Game, exp_factor]()
+            tree = Tree[Game, exp_factor](Game.Score.draw())
             if log:
                 print(game, file=log_file)
         elif terms[0] == "respond":
@@ -56,7 +56,7 @@ fn run[Game: TGame, exp_factor: Score]() raises:
                 sims += 1
             var move = tree.best_move()
             game.play_move(move)
-            tree = Tree[Game, exp_factor]()
+            tree = Tree[Game, exp_factor](Game.Score.draw())
             print("move", move, game.decision(), sims)
             if log:
                 print("move", move, file=log_file)

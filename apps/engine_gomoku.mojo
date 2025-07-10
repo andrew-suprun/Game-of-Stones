@@ -9,4 +9,4 @@ alias max_moves = env_get_int["MAX_MOVES", 12]()
 alias exp_factor = env_get_int["EXP_FACTOR", 24]()
 
 fn main() raises:
-    run[Gomoku[board_size, max_moves], Score(exp_factor)]()
+    run[Gomoku[board_size, max_moves], Float64(exp_factor)]()

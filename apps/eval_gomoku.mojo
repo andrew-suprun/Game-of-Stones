@@ -11,7 +11,7 @@ fn main() raises:
     var title = String.write(max_moves,  "-", c)
     print(title)
     var game = Game()
-    var tree = Tree[Game, c]()
+    var tree = Tree[Game, c](Game.Score.draw())
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("g9")

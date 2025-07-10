@@ -60,7 +60,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
         self.moves = List[Game.Move]()
         self.selected = List[Place]()
         self.game = Game()
-        self.tree = Tree[Game, c]()
+        self.tree = Tree[Game, c](Game.Score.draw())
         self.turn = black
         self.search_complete = False
         self.game_complete = False
@@ -81,7 +81,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
         self.moves.append(move)
         self.selected.clear()
         self.game.play_move(move)
-        self.tree = Tree[Game, c]()
+        self.tree = Tree[Game, c](Game.Score.draw())
         print("move", move, self.game.decision())
         print(self.game)
         if self.game.decision() != "no-decision":
@@ -103,7 +103,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
                     _ = self.moves.pop()
                     self.selected.clear()
                     self.game_complete = False
-                    self.tree = Tree[Game, c]()
+                    self.tree = Tree[Game, c](Game.Score.draw())
                     self.game = Game()
                     var moves = self.moves
                     for move in moves:
@@ -206,7 +206,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
             _ = self.moves.pop(-1)
             _ = self.moves.pop(-1)
             self.selected.clear()
-            self.tree = Tree[Game, c]()
+            self.tree = Tree[Game, c](Game.Score.draw())
             print("undo")
             print(self.game)
         

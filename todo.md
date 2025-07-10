@@ -1,4 +1,3 @@
-* tree: handle case where game.moves() returns empty list
 * switch to using Score in board.mojo
 * figure out why cannot print List[Move]
 * alias Confidence = Score i.e. relation between best score and second best

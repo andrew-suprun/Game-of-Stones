@@ -41,8 +41,8 @@ alias white = False
 fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
     var g1 = Game1()
     var g2 = Game2()
-    var t1 = Tree1()
-    var t2 = Tree2()
+    var t1 = Tree1(Game1.Score.draw())
+    var t2 = Tree2(Game2.Score.draw())
     var n1 = String.write(m1, "-", c1)
     var n2 = String.write(m2, "-", c2)
 

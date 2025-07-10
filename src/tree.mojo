@@ -6,9 +6,11 @@ from game import TGame, TScore
 
 struct Tree[Game: TGame, c: Float64](Stringable, Writable):
     var roots: List[Node[Game, c]]
+    var no_moves_score: Game.Score
 
-    fn __init__(out self):
+    fn __init__(out self, no_moves_score: Game.Score):
         self.roots = List[Node[Game, c]]()
+        self.no_moves_score = no_moves_score
         
     fn expand(mut self, game: Game, out done: Bool):
         if not self.roots:
@@ -86,7 +88,9 @@ struct Node[Game: TGame, c: Float64](Copyable, Movable, Representable, Stringabl
     fn _expand(mut self, mut game: Game):
         if not self.children:
             var moves = game.moves()
-            debug_assert(len(moves) > 0, "Function moves(...) returns empty result.")
+            if not moves:
+                self.score = Game.Score.draw()
+                return
 
             self.children.reserve(len(moves))
             for move in moves:
