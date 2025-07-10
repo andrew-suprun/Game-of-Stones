@@ -141,9 +141,19 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
                             _ = self.selected.pop(0)
                         elif len(self.selected) == 2:
                             _ = self.selected.pop(1)
-                    elif len(self.selected) < self.stones_per_move:
+                    elif len(self.selected) < self.stones_per_move and self.is_empty(place):
                         self.selected.append(place)
             self.draw()
+
+    fn is_empty(self, place: Place) raises -> Bool:
+        for move in self.moves:
+            var places = String(move).split("-")
+            for place_str in places:
+                var board_place = Place(place_str)
+                if board_place == place:
+                    return False
+        return True
+ 
 
     fn engine_move(mut self) raises:
         if self.app_complete or self.game_complete: return
