@@ -91,47 +91,6 @@ fn benchListSIMDFloat():
     keep(s)
 
 
-@fieldwise_init
-struct S(Copyable, Movable):
-    var i: Int
-    var j: Int32
-
-fn list(mut l: List[S]):
-    l.clear()
-    for i in range(1000):
-        l.append(S(i, Int32(i+1)))
-
-fn bench_list():
-    var l = List[S](capacity = 1000)
-    for _ in range(1000):
-        list(l)
-        keep(l[-1].i)
-
-
-fn type() -> List[S]:
-    var result = List[S](capacity = 1000)
-    for i in range(1000):
-        result.append(S(i, Int32(i+1)))
-    return result
-
-fn bench_type():
-    for _ in range(1000):
-        var l = type()
-        keep(l[-1].i)
-
-
-fn tuple() -> List[(Int, Int32)]:
-    var result = List[(Int, Int32)](capacity = 1000)
-    for i in range(1000):
-        result.append((i, Int32(i+1)))
-    return result
-
-fn bench_tuple():
-    for _ in range(1000):
-        var l = tuple()
-        keep(l[-1][0])
-
-
 fn intrand() -> Int32:
     return Int32(random_si64(-10, 10))
 
@@ -145,6 +104,3 @@ fn main() raises:
     print("List        SIMD Int16", benchmark.run[benchListSIMDInt16]().mean(Unit.ms))
     print("InlineArray SIMD Float", benchmark.run[benchInlineArraySIMDFloat]().mean(Unit.ms))
     print("List        SIMD Float", benchmark.run[benchListSIMDFloat]().mean(Unit.ms))
-    print("tuple                 ", benchmark.run[bench_tuple]().mean(Unit.ms))
-    print("type                  ", benchmark.run[bench_type]().mean(Unit.ms))
-    print("list                  ", benchmark.run[bench_list]().mean(Unit.ms))
