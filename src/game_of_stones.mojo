@@ -99,8 +99,8 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
             
             elif event.type == self.pygame.KEYDOWN:
                 if event.key == self.pygame.K_ESCAPE:
-                    var moves = self.moves
-                    self.moves.clear()
+                    var moves = self.moves^
+                    self.moves = List[Game.Move]()
                     _ = moves.pop()
                     _ = moves.pop()
                     self.selected.clear()
