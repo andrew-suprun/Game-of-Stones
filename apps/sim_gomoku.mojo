@@ -83,8 +83,8 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         turn = not turn
         g1.play_move(move)
         g2.play_move(move)
-        t1 = Tree1()
-        t2 = Tree2()
+        t1 = Tree1(Game1.Score.draw())
+        t2 = Tree2(Game1.Score.draw())
         var decision = g1.decision()
         print("move", move, decision, sims, player, forced, file=log)
         print(g1, file=log)
