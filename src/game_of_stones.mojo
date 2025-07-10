@@ -99,9 +99,10 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
             
             elif event.type == self.pygame.KEYDOWN:
                 if event.key == self.pygame.K_ESCAPE:
+                    if len(self.moves) == 1:
+                        continue
                     var moves = self.moves^
                     self.moves = List[Game.Move]()
-                    _ = moves.pop()
                     _ = moves.pop()
                     self.selected.clear()
                     self.game_complete = False
@@ -114,8 +115,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
                     if self.game_complete:
                         self.game_complete_confirmed = True
                         return
-                    # turn the table on first white move
-                    if len(self.moves) == 1 and not self.selected:
+                    if not self.selected:
                         return
                     if len(self.selected) == self.stones_per_move:
                         var move: Game.Move
