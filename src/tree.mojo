@@ -69,10 +69,11 @@ struct Tree[Game: TGame, c: Float64](Stringable, Writable):
         for ref root in self.roots:
             root.write_to(writer)
 
-    fn debug_roots(self):
-        print("roots")
+    fn debug_roots(self) -> String:
+        var result = String("roots:\n")
         for ref node in self.roots:
-            print("  ", node.move, String(node.score), node.n_sims)
+            result.write("  ", node.move, " ", String(node.score), " ", node.n_sims, "\n")
+        return result
 
 struct Node[Game: TGame, c: Float64](Copyable, Movable, Representable, Stringable, Writable):
     var move: Game.Move

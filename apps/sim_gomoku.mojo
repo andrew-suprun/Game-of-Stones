@@ -64,6 +64,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         var player: String
         var forced = False
         var deadline = perf_counter_ns() + 200_000_000
+        var roots: String
         if turn == black:
             while perf_counter_ns() < deadline:
                 if t1.expand(g1):
@@ -71,6 +72,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t1.best_move()
+            roots = t1.debug_roots()
             player = n1
         else:
             while perf_counter_ns() < deadline:
@@ -79,6 +81,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t2.best_move()
+            roots = t2.debug_roots()
             player = n2
         turn = not turn
         g1.play_move(move)
@@ -86,6 +89,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         t1 = Tree1(Game1.Score.draw())
         t2 = Tree2(Game1.Score.draw())
         var decision = g1.decision()
+        print(roots, file=log)
         print("move", move, decision, sims, player, forced, file=log)
         print(g1, file=log)
         if decision == "first-win":

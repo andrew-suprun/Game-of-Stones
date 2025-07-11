@@ -8,10 +8,10 @@ from connect6 import Connect6, Move
 
 alias m1 = env_get_int["M1", 32]()
 alias p1 = env_get_int["P1", 18]()
-alias c1 = env_get_int["C1", 5]()
+alias c1 = env_get_int["C1", 16]()
 alias m2 = env_get_int["M2", 32]()
 alias p2 = env_get_int["P2", 18]()
-alias c2 = env_get_int["C2", 5]()
+alias c2 = env_get_int["C2", 16]()
 
 alias Game1 = Connect6[19, m1, p1]
 alias Game2 = Connect6[19, m2, p2]
@@ -66,6 +66,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         var player: String
         var forced = False
         var deadline = perf_counter_ns() + 200_000_000
+        var roots: String
         if turn == black:
             while perf_counter_ns() < deadline:
                 if t1.expand(g1):
@@ -73,6 +74,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t1.best_move()
+            roots = t1.debug_roots()
             player = n1
         else:
             while perf_counter_ns() < deadline:
@@ -81,6 +83,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
                     break
                 sims += 1
             move = t2.best_move()
+            roots = t2.debug_roots()
             player = n2
         turn = not turn
         g1.play_move(move)
@@ -88,6 +91,7 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         t1 = Tree1(Game1.Score.draw())
         t2 = Tree2(Game2.Score.draw())
         var decision = g1.decision()
+        print(roots, file=log)
         print("move", move, decision, sims, player, forced, file=log)
         print(g1, file=log)
         if decision == "first-win":
