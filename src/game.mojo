@@ -1,16 +1,22 @@
-trait TGame(Copyable, Defaultable, Stringable, Writable):
+trait TGame(Defaultable, Stringable, Writable):
     alias Move: TMove
 
     fn moves(self) -> List[(Move, Score)]:
         ...
 
+    fn best_move(self) -> (Move, Score):
+        ...
+
     fn play_move(mut self, move: Move):
+        ...
+
+    fn undo_move(mut self, move: Move):
         ...
 
     fn decision(self) -> StaticString:
         ...
 
-trait TMove(Copyable, Movable, Stringable, Writable):
+trait TMove(Copyable, Movable, Defaultable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
