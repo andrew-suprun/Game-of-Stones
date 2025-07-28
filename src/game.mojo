@@ -14,12 +14,12 @@ trait TMove(Copyable, Movable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
-from utils.numerics import inf, neg_inf, nan, isinf, isnan
+from utils.numerics import FPUtils, inf, neg_inf, isinf
 
 alias Score = Float32
 
 alias win = inf[DType.float32]()
-alias draw = nan[DType.float32]()
+alias draw: Float32 = -0
 alias loss = neg_inf[DType.float32]()
 
 fn iswin(score: Score) -> Bool:
@@ -29,7 +29,7 @@ fn isloss(score: Score) -> Bool:
     return isinf(score) and score < 0
 
 fn isdraw(score: Score) -> Bool:
-    return isnan(score)
+    return score == 0 and FPUtils.get_sign(score)
 
 fn isdecisive(score: Score) -> Bool:
     return isinf(score) or isdraw(score)
