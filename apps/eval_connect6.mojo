@@ -1,11 +1,11 @@
-from game import Decision
-from tree import Tree
+from game import draw, isdecisive, score_str
+from mcts import MCTS
 from connect6 import Connect6
 
 fn main() raises:
     alias Game = Connect6[19, 6, 6]
     var game = Game()
-    var tree = Tree[Game, 30](Game.Score.draw())
+    var tree = MCTS[Game, 30](draw)
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
@@ -17,10 +17,11 @@ fn main() raises:
         var move = tree.best_move()
         game.play_move(move)
         decision = game.decision()
-        if tree.root.decision == Decision.undecided:
-            print("best move", move, "score", -tree.root.score)
-        else:
-            print("best move", move, "decision", tree.root.decision, "result", decision)
-        tree.debug_roots()
-        tree = Tree[Game, 30](Game.Score.draw())
+        for node in tree.roots:
+            if isdecisive(node.score):
+                print("best move", move, "score", node.score)
+            else:
+                print("best move", move, "decision", score_str(node.score), "result", decision)
+        print(tree.debug_roots())
+        tree = MCTS[Game, 30](draw)
         print(game)

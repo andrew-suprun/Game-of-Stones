@@ -1,6 +1,6 @@
 from benchmark import benchmark, Unit, keep
 
-from score import Score
+from game import Score
 from board import Board, Place, first, _value_table
 
 alias win_stones = 6

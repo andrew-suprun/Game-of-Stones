@@ -1,7 +1,7 @@
 from testing import assert_true, assert_false
 from random import seed, random_si64
 
-from score import Score
+from game import Score
 from board import Board, Place, first, second
 
 alias win_stones = 6

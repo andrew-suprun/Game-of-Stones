@@ -1,5 +1,4 @@
-from score import Score
-from game import TGame, TMove
+from game import TGame, TMove, Score, iswin, isdraw
 from board import Board, Place, first
 
 alias win_stones = 5
@@ -34,7 +33,6 @@ struct Move(TMove):
 
 struct Gomoku[size: Int, max_moves: Int](TGame):
     alias Move = Move
-    alias Score = Score
 
     var board: Board[values, size, win_stones, max_moves]
     var turn: Int
@@ -56,9 +54,9 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
-            if score.iswin():
+            if iswin(score):
                 return [(Move(place), score)]
-            if score.isdraw():
+            if isdraw(score):
                 moves.append((Move(place), score))
             else:
                 moves.append((Move(place), board_score + self.board.score(place, self.turn) / 2))

@@ -5,12 +5,12 @@ import random
 import sys
 
 from board import Place
-from game import TGame, TMove, Score
+from game import TGame, TMove, Score, draw
 from gomoku import Gomoku
 
 alias game = env_get_string["game"]()
 
-from tree import Tree
+from mcts import MCTS
 
 alias board_size = 19
 alias window_height = 1000
@@ -46,7 +46,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
     var moves: List[Game.Move]
     var selected: List[Place]
     var game: Game
-    var tree: Tree[Game, c]
+    var tree: MCTS[Game, c]
     var turn: Int
     var search_complete: Bool
     var game_complete: Bool
@@ -60,7 +60,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
         self.moves = List[Game.Move]()
         self.selected = List[Place]()
         self.game = Game()
-        self.tree = Tree[Game, c](Game.Score.draw())
+        self.tree = MCTS[Game, c](draw)
         self.turn = black
         self.search_complete = False
         self.game_complete = False
@@ -81,8 +81,8 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
         self.moves.append(move)
         self.selected.clear()
         self.game.play_move(move)
-        self.tree.debug_roots()
-        self.tree = Tree[Game, c](Game.Score.draw())
+        print(self.tree.debug_roots())
+        self.tree = MCTS[Game, c](draw)
         print("move", move, self.game.decision())
         print(self.game)
         if self.game.decision() != "no-decision":
@@ -107,7 +107,7 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
                     _ = moves.pop()
                     self.selected.clear()
                     self.game_complete = False
-                    self.tree = Tree[Game, c](Game.Score.draw())
+                    self.tree = MCTS[Game, c](draw)
                     self.game = Game()
                     for move in moves:
                         self.play_move(move)

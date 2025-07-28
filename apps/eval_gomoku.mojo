@@ -1,5 +1,5 @@
-from tree import Tree
-from game import Score
+from mcts import MCTS
+from game import Score, draw, isdecisive, score_str
 from gomoku import Gomoku, Move
 from board import Place
 
@@ -11,24 +11,26 @@ fn main() raises:
     var title = String.write(max_moves,  "-", c)
     print(title)
     var game = Game()
-    var tree = Tree[Game, c](Game.Score.draw())
+    var tree = MCTS[Game, c](draw)
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("g9")
     game.play_move("h9")
 
-    var score = Score(0)
-    for sims in range(20_000):
-        if tree.expand(game):
-            break
-        var pv_moves = tree.principal_variation()
-        # if score != tree.score():
-        if True:
-            score = tree.score()
-            var pv = String()
-            # TODO: cannot print List[Game.Move]
-            for move in pv_moves:
-                move.write_to(pv)
-                " ".write_to(pv)
-            print(sims, tree.score(), "pv: [", len(pv_moves), "]", pv)
-            tree.debug_roots()
+    print(game)
+    var decision: String = "no-decision"
+    while decision == "no-decision":
+        for _ in range(1, 1000):
+            _ = tree.expand(game)
+        # print(tree)
+        var move = tree.best_move()
+        game.play_move(move)
+        decision = game.decision()
+        for node in tree.roots:
+            if isdecisive(node.score):
+                print("best move", move, "score", node.score)
+            else:
+                print("best move", move, "decision", score_str(node.score), "result", decision)
+        print(tree.debug_roots())
+        tree = MCTS[Game, c](draw)
+        print(game)

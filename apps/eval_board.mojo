@@ -3,7 +3,7 @@ from game import Score
 from board import Board, first
 
 alias win_stones = 6
-alias values = List[Score](0, 1, 5, 25, 125, 625, inf[DType.float32]())
+alias values = List[Float32](0, 1, 5, 25, 125, 625, inf[DType.float32]())
 
 fn main() raises:
     var moves_str: String = "j10 i9-i10 i7-j11 i13"

@@ -1,8 +1,5 @@
-from score import Score
-
 trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
-    alias Score: TScore
 
     fn moves(self) -> List[(Move, Score)]:
         ...
@@ -17,35 +14,31 @@ trait TMove(Copyable, Movable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
-trait TScore(Copyable, Movable, Floatable, LessThanComparable, Stringable, Writable):
-    @staticmethod
-    fn win() -> Self:
-        ...
+from utils.numerics import inf, neg_inf, nan, isinf, isnan
 
-    @staticmethod
-    fn loss() -> Self:
-        ...
+alias Score = Float32
 
-    @staticmethod
-    fn draw() -> Self:
-        ...
+alias win = inf[DType.float32]()
+alias draw = nan[DType.float32]()
+alias loss = neg_inf[DType.float32]()
 
-    fn __init__(out self, value: Int):
-        ...
+fn iswin(score: Score) -> Bool:
+    return isinf(score) and score > 0
 
-    fn __init__(out self, value: Float64):
-        ...
+fn isloss(score: Score) -> Bool:
+    return isinf(score) and score < 0
 
-    fn iswin(self) -> Bool:
-        ...
+fn isdraw(score: Score) -> Bool:
+    return isnan(score)
 
-    fn isdraw(self) -> Bool:
-        ...
+fn isdecisive(score: Score) -> Bool:
+    return isinf(score) or isdraw(score)
 
-    fn isloss(self) -> Bool:
-        ...
-
-    fn isdecisive(self) -> Bool:
-        ...
-
-
+fn score_str(score: Score) -> String:
+    if iswin(score):
+        return "win"
+    if isloss(score):
+        return "loss"
+    if isdraw(score):
+        return "draw"
+    return String(score)

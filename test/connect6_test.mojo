@@ -1,12 +1,13 @@
 from testing import assert_true
 
-from tree import Tree
+from game import draw
+from mcts import MCTS
 from connect6 import Connect6
 
 fn test_connect6() raises:
     alias Game = Connect6[19, 32, 20]
     var game = Game()
-    var tree = Tree[Game, 1](Game.Score.draw())
+    var tree = MCTS[Game, 1](draw)
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
@@ -14,7 +15,7 @@ fn test_connect6() raises:
         # print("expand", i)
         _ = tree.expand(game)
         # print(tree)
-    tree.debug_roots()
+    print(tree.debug_roots())
     print("best move", tree.best_move())
     print("decision", game.decision())
     assert_true(String(tree.best_move()) == "i11-k9")

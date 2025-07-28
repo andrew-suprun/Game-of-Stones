@@ -2,9 +2,8 @@ from random import seed, random_si64, random_float64
 from testing import assert_true
 from utils.numerics import inf, neg_inf
 
-from score import Score
-from game import TGame, TMove
-from tree import Tree
+from game import TGame, TMove, Score, win, loss, draw
+from mcts import MCTS
 
 var __id: Int = 0
 
@@ -46,13 +45,13 @@ struct TestGame(TGame, Writable):
         for _ in range(n_moves):
             var rand = random_si64(0, 8)
             if __id >= 22 and __id <= 23:
-                moves.append((TestMove(), Score.loss()))
+                moves.append((TestMove(), loss))
             elif __id >= 35 and __id <= 37:
-                moves.append((TestMove(), Score.loss()))
+                moves.append((TestMove(), loss))
             elif rand == 0:
-                moves.append((TestMove(), Score.win()))
+                moves.append((TestMove(), win))
             elif rand == 1:
-                moves.append((TestMove(), Score.draw()))
+                moves.append((TestMove(), draw))
             else:
                 moves.append((TestMove(), Score(random_float64(-10, 10))))
         return moves
@@ -72,7 +71,7 @@ struct TestGame(TGame, Writable):
 def test_tree():
     seed(6)
     var g = TestGame()
-    var t = Tree[TestGame, 10](TestGame.Score.draw())
+    var t = MCTS[TestGame, 10](draw)
     for i in range(10):
         var done = t.expand(g)
         print(i, done)

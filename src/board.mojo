@@ -1,7 +1,7 @@
 from utils.numerics import inf
 from memory import memcpy
 
-from score import Score
+from game import Score, isdecisive, iswin
 from heap import heap_add
 
 alias first = 0
@@ -216,7 +216,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
         for y in range(size):
             for x in range(size):
                 var score = self.score(Place(x, y), first)
-                if self[x, y] == self.empty and (score.isdecisive() or score >= 1):
+                if self[x, y] == self.empty and (isdecisive(score) or score >= 1):
                     return "no-decision"
 
         return "draw"
@@ -319,7 +319,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                     str += "    O "
                 else:
                     var value = self.score(Place(x, y), table_idx)
-                    if value.iswin():
+                    if iswin(value):
                         str += "  Win "
                     elif value == 0:
                         str += " Draw "
