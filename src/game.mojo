@@ -25,7 +25,7 @@ from utils.numerics import FPUtils, inf, neg_inf, isinf
 alias Score = Float32
 
 alias win = inf[DType.float32]()
-alias draw: Float32 = -0
+alias draw: Float32 = -0.0
 alias loss = neg_inf[DType.float32]()
 
 fn iswin(score: Score) -> Bool:

@@ -43,15 +43,11 @@ struct TestGame(TGame):
         var n_moves = random_si64(2, 5)
         var moves = List[(Self.Move, Score)]()
         for _ in range(n_moves):
-            var rand = random_si64(0, 8)
+            var rand = random_si64(0, 16)
             if rand == 0:
-                var move = TestMove()
-                print("\nT: win move:", move, end="")
-                moves.append((move, win))
-            elif rand == 1:
-                var move = TestMove()
-                print("\nT: draw move:", move, end="")
-                moves.append((move, draw))
+                moves.append((TestMove(), win))
+            elif rand == 1 or rand == 2:
+                moves.append((TestMove(), draw))
             else:
                 moves.append((TestMove(), Score(random_float64(-10, 10))))
         return moves
@@ -76,7 +72,7 @@ struct TestGame(TGame):
         pass
 
 def test_tree():
-    seed(6)
+    seed(2)
     var g = TestGame()
     var t = Negamax[TestGame]()
     var score = t.expand(g, 3)
