@@ -1,7 +1,7 @@
 from builtin.debug_assert import ASSERT_MODE
 from builtin.sort import sort
 
-from game import TGame, Score, win, loss
+from game import TGame, Score, win, loss, isdecisive
 
 struct Negamax[Game: TGame](Defaultable):
     var best_move: Game.Move
@@ -39,12 +39,18 @@ struct Negamax[Game: TGame](Defaultable):
             for move in moves:
                 print(move[0], "", end="")
 
-        for (child_move, _) in moves:
-            if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "move", child_move, end="")
-            game.play_move(child_move)
-            var score = -self._expand(game, -b, -a, depth + 1)
-            game.undo_move(child_move)
+        for (child_move, score_ref) in moves:
+            var score = score_ref
+            if not isdecisive(score):
+                if ASSERT_MODE == "all":
+                    print("\n" + "|   "*depth + "move", child_move, end="")
+                game.play_move(child_move)
+                score = -self._expand(game, -b, -a, depth + 1)
+                game.undo_move(child_move)
+            else:
+                if ASSERT_MODE == "all":
+                    print("\n" + "|   "*depth + "move", child_move, "score", score, end="")
+
             if score > best_score:
                 if depth == 0:
                     self.best_move = child_move
@@ -55,7 +61,7 @@ struct Negamax[Game: TGame](Defaultable):
                     a = score
             if score > b:
                 if ASSERT_MODE == "all":
-                    print("\n" + "|   "*depth + "cutoff", child_move, end="")
+                    print("\n" + "|   "*depth + "cutoff", child_move, score, end="")
                     print("\n" + "|   "*depth + "<-- expand: score", best_score, end="")
                 return best_score
         if ASSERT_MODE == "all":

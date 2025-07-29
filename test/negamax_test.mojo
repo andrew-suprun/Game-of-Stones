@@ -44,14 +44,14 @@ struct TestGame(TGame):
         var moves = List[(Self.Move, Score)]()
         for _ in range(n_moves):
             var rand = random_si64(0, 8)
-            if __id >= 22 and __id <= 23:
-                moves.append((TestMove(), loss))
-            elif __id >= 35 and __id <= 37:
-                moves.append((TestMove(), loss))
-            elif rand == 0:
-                moves.append((TestMove(), win))
+            if rand == 0:
+                var move = TestMove()
+                print("\nT: win move:", move, end="")
+                moves.append((move, win))
             elif rand == 1:
-                moves.append((TestMove(), draw))
+                var move = TestMove()
+                print("\nT: draw move:", move, end="")
+                moves.append((move, draw))
             else:
                 moves.append((TestMove(), Score(random_float64(-10, 10))))
         return moves
@@ -84,3 +84,4 @@ def test_tree():
     print("T: best move", t.best_move)
     assert_true(String(t.best_move) == "<1>")
     assert_true(abs(score - 7.3030324) < 0.0000001)
+    assert_true(False)
