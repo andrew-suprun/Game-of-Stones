@@ -4,7 +4,7 @@ trait TGame(Defaultable, Stringable, Writable):
     fn moves(self) -> List[(Move, Score)]:
         ...
 
-    fn best_move(self) -> (Move, Score):
+    fn best_score(self) -> Score:
         ...
 
     fn play_move(mut self, move: Move):
