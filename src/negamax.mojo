@@ -1,7 +1,8 @@
 from builtin.debug_assert import ASSERT_MODE
 from builtin.sort import sort
+from utils.numerics import inf, neg_inf
 
-from game import TGame, Score, win, loss, isdecisive, score_str
+from game import TGame, Score, undecided, win, loss
 
 struct Negamax[Game: TGame](Defaultable):
     var best_move: Game.Move
@@ -13,7 +14,7 @@ struct Negamax[Game: TGame](Defaultable):
 
     fn expand(mut self, mut game: Game, max_depth: Int) -> Score:
         self._max_depth = max_depth
-        var score = self._expand(game, loss, win, 0)
+        var score = self._expand(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
         if ASSERT_MODE == "all":
             print()
         return score
@@ -24,49 +25,45 @@ struct Negamax[Game: TGame](Defaultable):
         if depth == self._max_depth:
             var score = game.best_score()
             if ASSERT_MODE == "all":
-                print(" score", -score, end="")
+                print("\n" + "|   "*depth + "leaf: best score", score, end="")
             return score
-        else:
-            if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "--> expand:", "a:", alpha, "b:", beta, end="")
-        var best_score = loss
-        var moves = game.moves()
 
+        if ASSERT_MODE == "all":
+            print("\n" + "|   "*depth + "--> expand:", "a:", alpha, "b:", beta, end="")
+        var best_score = neg_inf[DType.float32]()
+        var moves = game.moves()
         sort[grater[Game]](moves)
 
         if ASSERT_MODE == "all":
-            print("\n" + "|   "*depth + "moves: ", sep="", end="")
+            print(" | moves: ", sep="", end="")
             for move in moves:
-                print(move[0], score_str(move[1]), " | ", end="")
+                print(move, "  ", end="")
 
-        for (child_move, score_ref) in moves:
+        for ref child_move in moves:
             if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "move", child_move, end="")
-            var score = score_ref
-            if not isdecisive(score):
+                print("\n" + "|   "*depth + "> move", child_move, end="")
+            if child_move.decision() == undecided:
                 game.play_move(child_move)
-                score = -self._expand(game, -b, -a, depth + 1)
+                child_move.set_score(-self._expand(game, -b, -a, depth + 1))
                 game.undo_move(child_move)
-            else:
-                if ASSERT_MODE == "all":
-                    print("", score_str(score), end="")
 
-            if score > best_score:
+            if child_move.score() > best_score:
                 if depth == 0:
                     self.best_move = child_move
                     if ASSERT_MODE == "all":
                         print("\n" + "|   "*depth + "set best move", child_move, end="")
-                best_score = score
-                if score > alpha:
-                    a = score
-            if score > b:
+                best_score = child_move.score()
+                if child_move.score() > alpha:
+                    a = child_move.score()
+            if ASSERT_MODE == "all":
+                print("\n" + "|   "*depth + "< move", child_move, "| best score", best_score,end="")
+            if child_move.score() > b:
                 if ASSERT_MODE == "all":
-                    print("\n" + "|   "*depth + "cutoff", child_move, score_str(score), end="")
-                    print("\n" + "|   "*depth + "<-- expand: score", score_str(best_score), end="")
+                    print("\n" + "|   "*depth + "cutoff", end="")
                 return best_score
         if ASSERT_MODE == "all":
-            print("\n" + "|   "*depth + "<-- expand: score", score_str(best_score), end="")
+            print("\n" + "|   "*depth + "<-- expand: best score", best_score, end="")
         return best_score
 
-fn grater[Game: TGame](a: (Game.Move, Score), b: (Game.Move, Score)) capturing -> Bool:
-    return a[1] > b[1]
+fn grater[Game: TGame](a: Game.Move, b: Game.Move) capturing -> Bool:
+    return a.score() > b.score()
