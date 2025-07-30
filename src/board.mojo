@@ -1,7 +1,7 @@
-from utils.numerics import inf
+from utils.numerics import inf, isinf
 from memory import memcpy
 
-from game import Score, isdecisive, iswin
+from game import Score
 from heap import heap_add
 
 alias first = 0
@@ -10,9 +10,13 @@ alias Scores = SIMD[DType.float32, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Copyable, Movable, EqualityComparable, Stringable, Writable):
+struct Place(Copyable, Movable, Defaultable, EqualityComparable, Stringable, Writable):
     var x: Int8
     var y: Int8
+
+    fn __init__(out self):
+        self.x = -1
+        self.y = -1
 
     @implicit
     fn __init__(out self, place: String) raises:
@@ -216,7 +220,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
         for y in range(size):
             for x in range(size):
                 var score = self.score(Place(x, y), first)
-                if self[x, y] == self.empty and (isdecisive(score) or score >= 1):
+                if self[x, y] == self.empty and (isinf[DType.float32](score) or score >= 1):
                     return "no-decision"
 
         return "draw"
@@ -319,7 +323,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                     str += "    O "
                 else:
                     var value = self.score(Place(x, y), table_idx)
-                    if iswin(value):
+                    if isinf[DType.float32](value):
                         str += "  Win "
                     elif value == 0:
                         str += " Draw "

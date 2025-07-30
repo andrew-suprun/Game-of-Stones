@@ -1,5 +1,7 @@
+from utils.numerics import isinf
+
 from board import Board, Place, first
-from game import TGame, TMove, Score, iswin
+from game import TGame, TMove, Score
 from heap import heap_add
 
 alias win_stones = 6
@@ -9,10 +11,20 @@ alias scores = List[Float32](0, 1, 5, 25, 125, 625)
 struct Move(TMove):
     var _p1: Place
     var _p2: Place
+    var _score: Score
+    var _terminal: Bool
+
+    fn __init__(out self):
+        self._p1 = Place()
+        self._p2 = Place()
+        self._score = Score(0)
+        self._terminal = False
 
     fn __init__(out self, p1: Place, p2: Place):
         self._p1 = p1
         self._p2 = p2
+        self._score = Score(0)
+        self._terminal = False
 
     @implicit
     fn __init__(out self, move: String) raises:
@@ -22,6 +34,8 @@ struct Move(TMove):
             self._p2 = Place(tokens[1])
         else:
             self._p2 = self._p1
+        self._score = Score(0)
+        self._terminal = False
 
     @implicit
     fn __init__(out self, move: StringLiteral) raises:
@@ -31,12 +45,14 @@ struct Move(TMove):
             self._p2 = Place(tokens[1])
         else:
             self._p2 = self._p1
+        self._score = Score(0)
+        self._terminal = False
 
-    fn __eq__(self, other: Move) -> Bool:
-        return self._p1 == other._p1 and self._p2 == other._p2
+    fn score(self) -> Score:
+        return self._score
 
-    fn __ne__(self, other: Move) -> Bool:
-        return self._p1 != other._p1 or self._p2 != other._p2
+    fn is_terminal(self) -> Bool:
+        return self._terminal
 
     fn __str__(self) -> String:
         return String.write(self)
@@ -72,7 +88,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
-            if iswin(score1):
+            if isinf[DType.float32](score1):
                 return [(Move(place1, place1), score1)]
 
             var board1 = self.board
@@ -82,7 +98,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                 var place2 = places[j]
                 var score2 = board1.score(place2, self.turn)
 
-                if iswin(score2):
+                if isinf[DType.float32](score2):
                     return [(Move(place1, place2), score2)]
 
                 var board2 = board1
