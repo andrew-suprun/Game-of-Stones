@@ -1,10 +1,10 @@
 alias Score = Float32
-alias Decision = Int8
 
+alias Decision = Int
 alias undecided: Decision = 0
-alias win: Decision = 1
-alias draw: Decision = 2
-alias loss: Decision = 3
+alias first_wins: Decision = 1
+alias second_wins: Decision = 2
+alias draw: Decision = 3
 
 trait TGame(Defaultable, Stringable, Writable):
     alias Move: TMove
@@ -12,7 +12,7 @@ trait TGame(Defaultable, Stringable, Writable):
     fn moves(self) -> List[Move]:
         ...
 
-    fn best_score(self) -> Score:
+    fn best_move(self) -> Move:
         ...
 
     fn play_move(mut self, move: Move):
@@ -30,13 +30,7 @@ trait TMove(Copyable, Movable, Defaultable, Stringable, Writable):
     fn score(self) -> Score:
         ...
 
-    fn set_score(mut self, score: Score):
-        ...
-
-    fn decision(self) -> Decision:
-        ...
-
-    fn set_decision(mut self, decision: Decision):
+    fn is_terminal(self) -> Bool:
         ...
 
 trait TScore(Copyable, Movable, Comparable, Defaultable, Stringable, Writable):

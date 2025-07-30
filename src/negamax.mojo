@@ -2,7 +2,7 @@ from builtin.debug_assert import ASSERT_MODE
 from builtin.sort import sort
 from utils.numerics import inf, neg_inf
 
-from game import TGame, Score, undecided, win, loss
+from game import TGame, Score
 
 struct Negamax[Game: TGame](Defaultable):
     var best_move: Game.Move
@@ -23,16 +23,16 @@ struct Negamax[Game: TGame](Defaultable):
         var a = alpha
         var b = beta
         if depth == self._max_depth:
-            var score = game.best_score()
+            var move = game.best_move()
             if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "leaf: best score", score, end="")
-            return score
+                print("\n" + "|   "*depth + "leaf: best move", move, end="")
+            return move.score()
 
         if ASSERT_MODE == "all":
             print("\n" + "|   "*depth + "--> expand:", "a:", alpha, "b:", beta, end="")
         var best_score = neg_inf[DType.float32]()
         var moves = game.moves()
-        sort[grater[Game]](moves)
+        sort[Self.greater](moves)
 
         if ASSERT_MODE == "all":
             print(" | moves: ", sep="", end="")
@@ -42,22 +42,23 @@ struct Negamax[Game: TGame](Defaultable):
         for ref child_move in moves:
             if ASSERT_MODE == "all":
                 print("\n" + "|   "*depth + "> move", child_move, end="")
-            if child_move.decision() == undecided:
+            var score = child_move.score()
+            if not child_move.is_terminal():
                 game.play_move(child_move)
-                child_move.set_score(-self._expand(game, -b, -a, depth + 1))
+                score = -self._expand(game, -b, -a, depth + 1)
                 game.undo_move(child_move)
 
-            if child_move.score() > best_score:
+            if score > best_score:
                 if depth == 0:
                     self.best_move = child_move
                     if ASSERT_MODE == "all":
-                        print("\n" + "|   "*depth + "set best move", child_move, end="")
-                best_score = child_move.score()
-                if child_move.score() > alpha:
-                    a = child_move.score()
+                        print("\n" + "|   "*depth + "set best move", child_move, "score", score, end="")
+                best_score = score
+                if score > alpha:
+                    a = score
             if ASSERT_MODE == "all":
                 print("\n" + "|   "*depth + "< move", child_move, "| best score", best_score,end="")
-            if child_move.score() > b:
+            if score > b:
                 if ASSERT_MODE == "all":
                     print("\n" + "|   "*depth + "cutoff", end="")
                 return best_score
@@ -65,5 +66,7 @@ struct Negamax[Game: TGame](Defaultable):
             print("\n" + "|   "*depth + "<-- expand: best score", best_score, end="")
         return best_score
 
-fn grater[Game: TGame](a: Game.Move, b: Game.Move) capturing -> Bool:
-    return a.score() > b.score()
+    @parameter
+    @staticmethod
+    fn greater(a: Game.Move, b: Game.Move) capturing -> Bool:
+        return a.score() > b.score()
