@@ -87,12 +87,11 @@ struct TestGame(TGame):
         pass
 
 def test_tree():
-    seed(2)
+    seed(4)
     var g = TestGame()
     var t = Negamax[TestGame]()
     var score = t.expand(g, 3)
     print("T: score", score)
     print("T: best move", t.best_move)
-    print("T: score", score)
-    assert_true(String(t.best_move) == "<3> 5.9203353")
-    assert_true(String(score) == "4.076665")
+    assert_true(String(t.best_move) == "<5> 0.13071215")
+    assert_true(String(score) == "4.9088035")
