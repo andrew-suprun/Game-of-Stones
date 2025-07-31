@@ -19,6 +19,7 @@ fn bench_place_stone():
     for _ in range(1000):
         var new_board = board
         new_board.place_stone(Place(9, 9), 0)
+        new_board.place_stone(Place(8, 8), 0)
         score += new_board._score
 
 fn bench_places():
