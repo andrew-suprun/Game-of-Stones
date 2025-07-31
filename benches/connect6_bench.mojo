@@ -1,11 +1,11 @@
 from benchmark import benchmark, Unit, keep
 
 from game import TMove, draw
-from mcts import MCTS
+from negamax import Negamax
 from board import Board, first
 from connect6 import Connect6, Move
 
-alias C6 = Connect6[19, 32, 16]
+alias C6 = Connect6[19, 12, 8]
 
 fn bench_moves():
     var game = C6()
@@ -16,22 +16,18 @@ fn bench_moves():
         pass
     for _ in range(1000):
         var moves = game.moves()
-        keep(moves[0][0])
+        keep(moves[0])
 
 fn bench_expand():
     var game = C6()
-    var tree = MCTS[C6, 20](draw)
+    var tree = Negamax[C6]()
     try:
         game.play_move(Move("j10"))
         game.play_move(Move("i9-i10"))
     except:
         pass
-    for _ in range(1000):
-        var done = tree.expand(game)
-        keep(done)
-        if done:
-            print("done")
-            break
+    var score = tree.expand(game, 4)
+    keep(score)
 
 fn main() raises:
     print("moves ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")

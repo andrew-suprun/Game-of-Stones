@@ -6,7 +6,7 @@ alias first_wins: Decision = 1
 alias second_wins: Decision = 2
 alias draw: Decision = 3
 
-trait TGame(Defaultable, Stringable, Writable):
+trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
 
     fn moves(self) -> List[Move]:
@@ -16,9 +16,6 @@ trait TGame(Defaultable, Stringable, Writable):
         ...
 
     fn play_move(mut self, move: Move):
-        ...
-
-    fn undo_move(mut self, move: Move):
         ...
 
     fn decision(self) -> Decision:

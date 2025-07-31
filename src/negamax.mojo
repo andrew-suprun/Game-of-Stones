@@ -44,9 +44,9 @@ struct Negamax[Game: TGame](Defaultable):
                 print("\n" + "|   "*depth + "> move", child_move, end="")
             var score = child_move.score()
             if not child_move.is_terminal():
-                game.play_move(child_move)
+                var child_game = game
+                child_game.play_move(child_move)
                 score = -self._expand(game, -b, -a, depth + 1)
-                game.undo_move(child_move)
 
             if score > best_score:
                 if depth == 0:

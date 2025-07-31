@@ -1,7 +1,7 @@
 from utils.numerics import isinf
 
+from game import TGame, TMove, Score, Decision
 from board import Board, Place, first
-from game import TGame, TMove, Score
 from heap import heap_add
 
 alias win_stones = 6
@@ -20,11 +20,11 @@ struct Move(TMove):
         self._score = Score(0)
         self._terminal = False
 
-    fn __init__(out self, p1: Place, p2: Place):
+    fn __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool):
         self._p1 = p1
         self._p2 = p2
-        self._score = Score(0)
-        self._terminal = False
+        self._score = score
+        self._terminal = terminal
 
     @implicit
     fn __init__(out self, move: String) raises:
@@ -80,22 +80,21 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         self.board = Board[scores, size, win_stones, max_places]()
         self.turn = 0
 
-    fn moves(self) -> List[(Move, Score)]:
+    fn best_move(self) -> Move:
         @parameter
-        fn move_less(a: (Move, Score), b: (Move, Score)) -> Bool:
-            return a[1] < b[1]
+        fn move_less(a: Move, b: Move) -> Bool:
+            return a._score < b._score
 
         var places = self.board.places(self.turn)
-        if len(places) < max_places:
-            return []
+        debug_assert(len(places) > 1)
 
-        var moves = List[(Move, Score)](capacity = max_moves)
+        var best_move = Move()
         var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
             if isinf(score1):
-                return [(Move(place1, place1), score1)]
+                return Move(place1, place1, score1, True)
 
             var board1 = self.board
             board1.place_stone(place1, self.turn)
@@ -105,13 +104,45 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                 var score2 = board1.score(place2, self.turn)
 
                 if isinf(score2):
-                    return [(Move(place1, place2), score2)]
+                    return Move(place1, place2, score2, True)
 
                 var board2 = board1
                 board2.place_stone(place2, self.turn)
-                max_opp_score = board2.max_score(1 - self.turn)
+                var max_opp_score = board2.max_score(1 - self.turn)
+                var move_score = board_score + score1 + score2 - max_opp_score
+                if move_score > best_move.score():
+                    best_move = Move(place1, place2, move_score, False)
 
-                heap_add[max_moves, move_less]((Move(place1, place2), board_score + score1 + score2 - max_opp_score), moves)
+        return best_move
+
+    fn moves(self) -> List[Move]:
+        @parameter
+        fn move_less(a: Move, b: Move) -> Bool:
+            return a._score < b._score
+
+        var places = self.board.places(self.turn)
+        if len(places) < max_places:
+            return []
+
+        var moves = List[Move](capacity = max_moves)
+        var board_score = self.board._score if self.turn == first else -self.board._score
+        for i in range(len(places) - 1):
+            var place1 = places[i]
+            var score1 = self.board.score(place1, self.turn)
+            if isinf(score1):
+                return [Move(place1, place1, score1, True)]
+
+            var board1 = self.board
+            board1.place_stone(place1, self.turn)
+
+            for j in range(i + 1, len(places)):
+                var place2 = places[j]
+                var score2 = board1.score(place2, self.turn)
+
+                if isinf(score2):
+                    return [Move(place1, place2, score2, True)]
+
+                heap_add[max_moves, move_less](Move(place1, place2, board_score + score1 + score2, False), moves)
         return moves
 
     fn play_move(mut self, move: self.Move):
@@ -120,7 +151,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
             self.board.place_stone(move._p2, self.turn)
         self.turn = 1 - self.turn
 
-    fn decision(self) -> StaticString:
+    fn decision(self) -> Decision:
         return self.board.decision()
 
     fn __str__(self, out str: String):
