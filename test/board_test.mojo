@@ -13,31 +13,34 @@ fn test_place_stone() raises:
     var board = Board[values, 19, win_stones, 20]()
     var value = Score(0)
     var n = 0
+    var history = List[Place]()
     for i in range(200):
         var turn = i % 2
         var xx = Int(random_si64(0, board.size - 1))
         var yy = Int(random_si64(0, board.size - 1))
         if board[xx, yy] == board.empty:
+            history.append(Place(xx, yy))
             for y in range(board.size):
                 for x in range(board.size):
+                    var place = Place(x, y)
                     if board[x, y] == board.empty:
-                        var actual = board.score(Place(x, y), first)
-                        var b = board
-                        b.place_stone(Place(x, y), first)
-                        var expected = b.board_value(values) - value
+                        var actual = board.score(place, first)
+                        board.place_stone(place, first)
+                        var expected = board.board_value(values) - value
+                        board.remove_stone(place)
                         if actual != expected:
-                            print(Place(x, y), "actual:", actual, "first:", expected, "n", n)
-                            print(b)
-                            print(b.str_scores())
+                            print(place, "actual:", actual, "first:", expected, "n", n)
+                            print(board)
+                            print(board.str_scores())
                             assert_true(False)
-                        actual = board.score(Place(x, y), second)
-                        b = board
-                        b.place_stone(Place(x, y), second)
-                        expected = value - b.board_value(values)
+                        actual = board.score(place, second)
+                        board.place_stone(place, second)
+                        expected = value - board.board_value(values)
+                        board.remove_stone(place)
                         if actual != expected:
-                            print(Place(x, y), "actual:", actual, "second:", expected, "n", n)
-                            print(b)
-                            print(b.str_scores())
+                            print(place, "actual:", actual, "second:", expected, "n", n)
+                            print(board)
+                            print(board.str_scores())
                             assert_true(False)
             if turn == first:
                 value += board.score(Place(xx, yy), turn)
@@ -45,6 +48,19 @@ fn test_place_stone() raises:
                 value -= board.score(Place(xx, yy), turn)
             board.place_stone(Place(xx, yy), turn)
             n += 1
+
+    while len(history):
+        var place = history.pop()
+        board.remove_stone(place)
+    print("score", board._score)
+    print(board)
+    print(board.str_scores())
+
+    assert_true(board._score == 0)
+    var new_board = Board[values, 19, win_stones, 20]()
+    for y in range(board.size):
+        for x in range(board.size):
+            assert_true(new_board[x, y] == board[x, y])
 
 fn test_places() raises:
     var board = Board[values, 19, win_stones, 20]()
@@ -124,67 +140,67 @@ fn test_decision() raises:
     assert_true(board.decision() == "no-decision")
     print(2.5)
 
-    var b = board
-    b.place_stone(Place(0, 5), first)
+    board.place_stone(Place(0, 5), first)
     print(3)
-    print(b.decision())
+    print(board.decision())
     print(4)
-    assert_true(b.decision() == "first-win")
+    assert_true(board.decision() == "first-win")
+    board.remove_stone(Place(0, 5))
 
-    b = board
-    b.place_stone(Place(5, 5), first)
-    print(b.decision())
-    assert_true(b.decision() == "first-win")
+    board.place_stone(Place(5, 5), first)
+    print(board.decision())
+    assert_true(board.decision() == "first-win")
+    board.remove_stone(Place(5, 5))
 
-    b = board
-    b.place_stone(Place(5, 0), first)
-    print(b.decision())
-    assert_true(b.decision() == "first-win")
+    board.place_stone(Place(5, 0), first)
+    print(board.decision())
+    assert_true(board.decision() == "first-win")
+    board.remove_stone(Place(5, 0))
 
-    b = board
-    b.place_stone(Place(18, 5), second)
-    print(b.decision())
-    assert_true(b.decision() == "second-win")
+    board.place_stone(Place(18, 5), second)
+    print(board.decision())
+    assert_true(board.decision() == "second-win")
+    board.remove_stone(Place(18, 5))
 
-    b = board
-    b.place_stone(Place(13, 5), second)
-    print(b.decision())
-    assert_true(b.decision() == "second-win")
+    board.place_stone(Place(13, 5), second)
+    print(board.decision())
+    assert_true(board.decision() == "second-win")
+    board.remove_stone(Place(13, 5))
 
-    b = board
-    b.place_stone(Place(13, 0), second)
-    print(b.decision())
-    assert_true(b.decision() == "second-win")
+    board.place_stone(Place(13, 0), second)
+    print(board.decision())
+    assert_true(board.decision() == "second-win")
+    board.remove_stone(Place(18, 0))
 
-    b = board
-    b.place_stone(Place(13, 18), first)
-    print(b.decision())
-    assert_true(b.decision() == "first-win")
+    board.place_stone(Place(13, 18), first)
+    print(board.decision())
+    assert_true(board.decision() == "first-win")
+    board.remove_stone(Place(13, 18))
 
-    b = board
-    b.place_stone(Place(18, 13), first)
-    print(b.decision())
-    assert_true(b.decision() == "first-win")
+    board.place_stone(Place(18, 13), first)
+    print(board.decision())
+    assert_true(board.decision() == "first-win")
+    board.remove_stone(Place(18, 13))
 
-    b = board
-    b.place_stone(Place(13, 13), first)
-    print(b.decision())
-    assert_true(b.decision() == "first-win")
+    board.place_stone(Place(13, 13), first)
+    print(board.decision())
+    assert_true(board.decision() == "first-win")
+    board.remove_stone(Place(13, 13))
 
-    b = board
-    b.place_stone(Place(5, 18), second)
-    print(b.decision())
-    assert_true(b.decision() == "second-win")
+    board.place_stone(Place(5, 18), second)
+    print(board.decision())
+    assert_true(board.decision() == "second-win")
+    board.remove_stone(Place(5, 18))
 
-    b = board
-    b.place_stone(Place(5, 13), second)
-    print(b.decision())
-    assert_true(b.decision() == "second-win")
+    board.place_stone(Place(5, 13), second)
+    print(board.decision())
+    assert_true(board.decision() == "second-win")
+    board.remove_stone(Place(5, 13))
 
-    b = board
-    b.place_stone(Place(0, 13), second)
-    print(b.decision())
-    assert_true(b.decision() == "second-win")
+    board.place_stone(Place(0, 13), second)
+    print(board.decision())
+    assert_true(board.decision() == "second-win")
+    board.remove_stone(Place(0, 13))
 
 fn test_connected_to() raises:
     assert_false(Place(2, 5).connected_to[5](Place(7, 5)))

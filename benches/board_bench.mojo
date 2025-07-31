@@ -17,9 +17,9 @@ fn bench_place_stone():
     var board = Board[values, 19, win_stones, 8]()
     var score = Score(0)
     for _ in range(1000):
-        var new_board = board
-        new_board.place_stone(Place(9, 9), 0)
-        score += new_board._score
+        board.place_stone(Place(9, 9), 0)
+        score += board._score
+        board.remove_stone(Place(9, 9))
 
 fn bench_places():
     var board = Board[values, 19, win_stones, 20]()

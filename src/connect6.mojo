@@ -48,6 +48,12 @@ struct Move(TMove):
         self._score = Score(0)
         self._terminal = False
 
+    fn __eq__(self, other: Self) -> Bool:
+        return self._p1 == other._p1 and self._p2 == other._p2
+
+    fn __ne__(self, other: Self) -> Bool:
+        return self._p1 != other._p1 or self._p2 != other._p2
+
     fn score(self) -> Score:
         return self._score
 
@@ -88,7 +94,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
-            if isinf[DType.float32](score1):
+            if isinf(score1):
                 return [(Move(place1, place1), score1)]
 
             var board1 = self.board
@@ -98,7 +104,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                 var place2 = places[j]
                 var score2 = board1.score(place2, self.turn)
 
-                if isinf[DType.float32](score2):
+                if isinf(score2):
                     return [(Move(place1, place2), score2)]
 
                 var board2 = board1

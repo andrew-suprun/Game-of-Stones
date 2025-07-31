@@ -28,11 +28,11 @@ struct Place(Copyable, Movable, Defaultable, EqualityComparable, Stringable, Wri
         self.x = ord(place[0]) - ord("a")
         self.y = Int(String(place)[1:]) - 1
 
-    fn __eq__(self, other: Self, out result: Bool):
-        result = self.x == other.x and self.y == other.y
+    fn __eq__(self, other: Self) -> Bool:
+        return self.x == other.x and self.y == other.y
 
-    fn __ne__(self, other: Self, out result: Bool):
-        result = not (self == other)
+    fn __ne__(self, other: Self) -> Bool:
+        return self.x != other.x or self.y != other.y
 
     fn connected_to[win_stones: Int](self, other: Place) -> Bool:
         if self.x >= other.x + win_stones or
@@ -59,11 +59,17 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
     var _places: InlineArray[Int8, size * size]
     var _scores: InlineArray[Scores, size * size] 
     var _score: Score
+    var _scores_history: List[(Int, Scores)]
+    var _scores_history_idices: List[Int]
+    var _score_history: List[Score]
 
     fn __init__(out self):
         self._places = InlineArray[Int8, size * size](fill = 0)
         self._scores = InlineArray[Scores, size * size](uninitialized=True)
         self._score = 0
+        self._scores_history = List[(Int, Scores)]()
+        self._scores_history_idices = List[Int]()
+        self._score_history = List[Score]()
 
         for y in range(size):
             var v = 1 + min(win_stones - 1, y, size - 1 - y)
@@ -75,16 +81,9 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 var total = v + h + t1 + t2
                 self.setvalues(Place(x, y), Scores(total, total))
 
-    fn __copyinit__(out self, existing: Self, /):
-        self._places = InlineArray[Int8, size * size](uninitialized=True)
-        memcpy(self._places.unsafe_ptr(), existing._places.unsafe_ptr(), size * size)
-
-        self._scores = InlineArray[Scores, size * size](uninitialized=True)
-        memcpy(self._scores.unsafe_ptr(), existing._scores.unsafe_ptr(), size * size)
-
-        self._score = existing._score
-
     fn place_stone(mut self, place: Place, turn: Int):
+        self._score_history.append(self._score)
+        self._scores_history_idices.append(len(self._scores_history))
         var scores = self.value_table[turn]
 
         var x = Int(place.x)
@@ -125,10 +124,25 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
-    
+
+    fn remove_stone(mut self, place: Place):
+        self._score = self._score_history.pop()
+        var idx = self._scores_history_idices.pop()
+        while idx < len(self._scores_history):
+            var scores = self._scores_history.pop()
+            self._scores[scores[0]] = scores[1]
+        self[Int(place.x), Int(place.y)] = Self.empty
+
+
     fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
         var offset = start
         var stones = Int8(0)
+
+        for _ in range(n + win_stones - 1):
+            self._scores_history.append((offset, self._scores[offset]))
+            offset += delta
+        
+        offset = start
 
         @parameter
         for i in range(win_stones - 1):
@@ -220,7 +234,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
         for y in range(size):
             for x in range(size):
                 var score = self.score(Place(x, y), first)
-                if self[x, y] == self.empty and (isinf[DType.float32](score) or score >= 1):
+                if self[x, y] == self.empty and (isinf(score) or score >= 1):
                     return "no-decision"
 
         return "draw"
@@ -323,7 +337,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                     str += "    O "
                 else:
                     var value = self.score(Place(x, y), table_idx)
-                    if isinf[DType.float32](value):
+                    if isinf(value):
                         str += "  Win "
                     elif value == 0:
                         str += " Draw "

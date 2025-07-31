@@ -13,9 +13,9 @@ list                   0.5656566250882561
 
 mojo run -I src benches/board_bench.mojo       
 --- board (ms/1000) ---
-update_row  0.067
-place_stone 0.333
-places      2.168
+update_row  0.09697040710890681
+place_stone 0.43981049773755654
+places      2.194815
 
 mojo run -I src benches/connect6_bench.mojo
 moves  77.27 msec
