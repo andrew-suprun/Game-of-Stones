@@ -328,7 +328,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                     elif value == 0:
                         str += " Draw "
                     else:
-                        str += String(value).rjust(5, " ") + " "
+                        str += String(Int(value)).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
         str += "───┼" + "──────" * size + "┼───"
         if not table_idx:

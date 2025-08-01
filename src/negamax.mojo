@@ -12,14 +12,14 @@ struct Negamax[Game: TGame](Defaultable):
         self.best_move = Game.Move()
         self._max_depth = 0
 
-    fn expand(mut self, mut game: Game, max_depth: Int) -> Score:
+    fn expand(mut self, game: Game, max_depth: Int) -> Score:
         self._max_depth = max_depth
         var score = self._expand(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
         if ASSERT_MODE == "all":
             print()
         return score
 
-    fn _expand(mut self, mut game: Game, alpha: Score, beta: Score, depth: Int) -> Score:
+    fn _expand(mut self, game: Game, alpha: Score, beta: Score, depth: Int) -> Score:
         var a = alpha
         var b = beta
         if depth == self._max_depth:
@@ -46,7 +46,7 @@ struct Negamax[Game: TGame](Defaultable):
             if not child_move.is_terminal():
                 var child_game = game
                 child_game.play_move(child_move)
-                score = -self._expand(game, -b, -a, depth + 1)
+                score = -self._expand(child_game, -b, -a, depth + 1)
 
             if score > best_score:
                 if depth == 0:
