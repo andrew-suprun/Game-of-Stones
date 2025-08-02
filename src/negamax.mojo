@@ -44,7 +44,7 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
             if not child_move.is_terminal():
                 var child_game = game
                 child_game.play_move(child_move)
-                score = self._expand(child_game, -b, -a, depth + 1)
+                score = -self._expand(child_game, -b, -a, depth + 1)
 
             if score > best_score:
                 if depth == 0:
