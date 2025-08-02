@@ -1,3 +1,4 @@
+from builtin.sort import sort
 from utils.numerics import inf, isinf
 from memory import memcpy
 
@@ -154,6 +155,14 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
         fn less_second(a: Place, b: Place, out r: Bool):
             r = self.score(a, second) < self.score(b, second)
 
+        @parameter
+        fn greater_first(a: Place, b: Place, out r: Bool):
+            r = self.score(a, first) > self.score(b, first)
+
+        @parameter
+        fn greater_second(a: Place, b: Place, out r: Bool):
+            r = self.score(a, second) > self.score(b, second)
+
         var places = List[Place](capacity = max_places)
 
         if turn == first:
@@ -161,11 +170,13 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
                 for x in range(size):
                     if self[x, y] == self.empty:
                         heap_add[less_first](Place(x, y), max_places, places)
+            sort[greater_first](places)
         else:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
                         heap_add[less_second](Place(x, y), max_places, places)
+            sort[greater_second](places)
         return places^
 
     fn decision(self) -> Decision:

@@ -18,11 +18,10 @@ place_stone 0.7546667710616974
 places      2.627055434782609
 
 mojo run -I src benches/connect6_bench.mojo
-moves    55.18 msec
-expand 4 42.27 msec
-expand 5 241.7 msec
-expand 6 561.8 msec
-
+moves    53.04 msec
+expand 4 41.04 msec
+expand 5 178.5 msec
+expand 6 374.1 msec
 
 mojo run -I src benches/gomoku_bench.mojo      
 moves  3.475 msec
