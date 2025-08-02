@@ -1,10 +1,9 @@
 from builtin.debug_assert import ASSERT_MODE
-from builtin.sort import sort
 from utils.numerics import inf, neg_inf
 
 from game import TGame, Score
 
-struct Negamax[Game: TGame](Defaultable):
+struct Negamax[Game: TGame, max_moves: Int](Defaultable):
     var best_move: Game.Move
     var _max_depth: Int
 
@@ -23,21 +22,20 @@ struct Negamax[Game: TGame](Defaultable):
         var a = alpha
         var b = beta
         if depth == self._max_depth:
-            var move = game.best_move()
+            var moves = game.moves(1)
             if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "leaf: best move", move, end="")
-            return move.score()
+                print("\n" + "|   "*depth + "leaf: best move", moves[0], end="")
+            return moves[0].score()
 
         if ASSERT_MODE == "all":
             print("\n" + "|   "*depth + "--> expand:", "a:", alpha, "b:", beta, end="")
         var best_score = neg_inf[DType.float32]()
-        var moves = game.moves()
-        sort[Self.greater](moves)
+        var moves = game.moves(max_moves)
 
         if ASSERT_MODE == "all":
             print(" | moves: ", sep="", end="")
-            for move in moves:
-                print(move, "  ", end="")
+            for ref child_move in moves:
+                print(child_move, "  ", end="")
 
         for ref child_move in moves:
             if ASSERT_MODE == "all":
@@ -46,7 +44,7 @@ struct Negamax[Game: TGame](Defaultable):
             if not child_move.is_terminal():
                 var child_game = game
                 child_game.play_move(child_move)
-                score = -self._expand(child_game, -b, -a, depth + 1)
+                score = self._expand(child_game, -b, -a, depth + 1)
 
             if score > best_score:
                 if depth == 0:
@@ -66,7 +64,3 @@ struct Negamax[Game: TGame](Defaultable):
             print("\n" + "|   "*depth + "<-- expand: best score", best_score, end="")
         return best_score
 
-    @parameter
-    @staticmethod
-    fn greater(a: Game.Move, b: Game.Move) capturing -> Bool:
-        return a.score() > b.score()

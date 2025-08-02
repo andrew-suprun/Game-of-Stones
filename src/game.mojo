@@ -9,10 +9,7 @@ alias draw: Decision = 3
 trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
 
-    fn moves(self) -> List[Move]:
-        ...
-
-    fn best_move(self) -> Move:
+    fn moves(self, max_moves: Int) -> List[Move]:
         ...
 
     fn play_move(mut self, move: Move):

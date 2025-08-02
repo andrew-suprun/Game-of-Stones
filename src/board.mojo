@@ -160,12 +160,12 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        heap_add[max_places, less_first](Place(x, y), places)
+                        heap_add[less_first](Place(x, y), max_places, places)
         else:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        heap_add[max_places, less_second](Place(x, y), places)
+                        heap_add[less_second](Place(x, y), max_places, places)
         return places^
 
     fn decision(self) -> Decision:
@@ -422,8 +422,7 @@ fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineA
     v2 = List[Scores](Scores(1, -1))
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
-
-    var result = InlineArray[InlineArray[Scores, result_size], 2](InlineArray[Scores, result_size](0))
+    var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=0))
 
     for i in range(win_stones - 1):
         result[0][i * win_stones] = Scores(v2[i][1], -v2[i][0])

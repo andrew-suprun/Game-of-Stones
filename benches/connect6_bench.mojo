@@ -5,7 +5,7 @@ from negamax import Negamax
 from board import Board, first
 from connect6 import Connect6, Move
 
-alias C6 = Connect6[19, 16, 12]
+alias C6 = Connect6[19, 12]
 
 fn bench_moves():
     var game = C6()
@@ -15,23 +15,22 @@ fn bench_moves():
     except:
         pass
     for _ in range(1000):
-        var moves = game.moves()
+        var moves = game.moves(16)
         keep(moves[0])
 
-fn bench_expand():
+fn bench_expand[depth: Int]():
     var game = C6()
-    var tree = Negamax[C6]()
+    var tree = Negamax[C6, 16]()
     try:
         game.play_move(Move("j10"))
         game.play_move(Move("i9-i10"))
     except:
         pass
-    var score = tree.expand(game, 5)
+    var score = tree.expand(game, depth)
     keep(score)
-    print("best move", tree.best_move)
-    print("score", score)
-
 
 fn main() raises:
-    print("moves ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")
-    print("expand", benchmark.run[bench_expand]().mean(Unit.ms), "msec")
+    print("moves   ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")
+    print("expand 4", benchmark.run[bench_expand[4]]().mean(Unit.ms), "msec")
+    print("expand 5", benchmark.run[bench_expand[5]]().mean(Unit.ms), "msec")
+    print("expand 6", benchmark.run[bench_expand[6]]().mean(Unit.ms), "msec")

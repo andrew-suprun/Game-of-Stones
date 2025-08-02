@@ -1,1 +1,2 @@
-* Negamax: handle terminal moves
+* PV optimization
+* cache intermediate results
