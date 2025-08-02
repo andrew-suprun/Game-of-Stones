@@ -92,7 +92,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
             return a._score < b._score
 
         @parameter
-        fn greater(a: Move, b: Move) capturing -> Bool:
+        fn greater(a: Move, b: Move) -> Bool:
             return a._score > b._score
 
         var moves = List[Move]()

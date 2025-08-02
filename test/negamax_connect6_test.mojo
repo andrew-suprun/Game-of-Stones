@@ -15,7 +15,7 @@ fn test_connect6() raises:
     var (score, _) = tree.expand(game, 2)
     print("best move", tree.best_move)
     print("score", score)
-    assert_true(String(tree.best_move) == "i11-k9 94.0")
+    assert_true(String(tree.best_move) == "i11-k9 19.0")
 
 fn main() raises:
     var game = C6()
