@@ -125,7 +125,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
 
                 var board2 = board1
                 board2.place_stone[turn](place2)
-                var max_opp_score = board2.max_score[second]() if turn == first else board2.max_score[second]()
+                var max_opp_score = board2.max_score[second]() if turn == first else board2.max_score[first]()
                 var move_score = self.board._score + score1 + score2 + max_opp_score
                 if ASSERT_MODE == "all":
                     # print("\n### board", board2.board_value(scores), Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")

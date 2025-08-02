@@ -6,7 +6,7 @@ alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625, inf[DType.float32]())
 
 fn main() raises:
-    var moves_str: String = "j10 i9-i10 i11-k9 i7-i5 l8-m7"
+    var moves_str: String = "j10 i9-i10 i11-k9 h12-i7 i6-k8"
     var moves = moves_str.split(" ")
     var board = Board[values, 19, win_stones, 8]()
     var value = Score(0)
@@ -31,14 +31,16 @@ fn main() raises:
             print(board)
             print(board.str_scores())
         
+        var opp_value: Float32
         if turn == first:
-            var opp_value = board.max_score[second]()
-            print("opp", opp_value)
-            print("score", score + opp_value)
+            opp_value = board.max_score[second]()
         else:
-            var opp_value = board.max_score[first]()
-            print("opp", opp_value)
-            print("score", score + opp_value)
+            opp_value = board.max_score[first]()
+
+        print("score", score)
+        print("opp", opp_value)
+        print("score+opp", score+opp_value)
         print("board", value)
+        print("board+opp", value + opp_value)
 
         turn = 1 - turn

@@ -25,7 +25,7 @@ fn main() raises:
         game.play_move("i9-i10")
     except:
         pass
-    var score = tree.expand(game, 2)
+    var score = tree.expand(game, 3)
     print(game)
     print("best move", tree.best_move)
     print("score", score)
