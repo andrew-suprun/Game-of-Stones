@@ -242,11 +242,8 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
             return SIMD[DType.int64, 2](0, 0)
     
 
-    fn __getitem__(self, x: Int, y: Int, out result: Int8):
-        result = self._places[y * size + x]
-
-    fn __setitem__(mut self, x: Int, y: Int, value: Int8):
-        self._places[y * size + x] = value
+    fn __getitem__(ref self, x: Int, y: Int) -> ref [self._places] Int8:
+        return self._places[y * size + x]
 
     fn score[turn: Int](self, place: Place) -> Score:
         return Score(self._scores[Int(place.y) * size + Int(place.x)][turn])
@@ -411,13 +408,16 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
             return Score(-scores[white])
         return 0
 
-    fn max_score(self, player: Int) -> Score:
+    fn max_score[player: Int](self) -> Score:
         var max_scores = self._scores[0]
 
         for y in range(size):
             for x in range(size):
                 if self[x, y] == self.empty:
-                    max_scores = max(max_scores, self._scores[y*size+x])
+                    if player == first:
+                        max_scores = max(max_scores, self._scores[y*size+x])
+                    else:
+                        max_scores = min(max_scores, self._scores[y*size+x])
 
         return Score(max_scores[player])
 

@@ -12,7 +12,7 @@ fn test_connect6() raises:
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
-    var score = tree.expand(game, 5)
+    var score = tree.expand(game, 2)
     print("best move", tree.best_move)
     print("score", score)
     assert_true(String(tree.best_move) == "i11-k9 94.0")
@@ -25,7 +25,7 @@ fn main() raises:
         game.play_move("i9-i10")
     except:
         pass
-    var score = tree.expand(game, 3)
+    var score = tree.expand(game, 2)
     print(game)
     print("best move", tree.best_move)
     print("score", score)
