@@ -31,6 +31,6 @@ fn bench_expand[depth: Int]():
 
 fn main() raises:
     print("moves   ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")
-    print("expand 4", benchmark.run[bench_expand[4]]().mean(Unit.ms), "msec")
-    print("expand 5", benchmark.run[bench_expand[5]]().mean(Unit.ms), "msec")
-    print("expand 6", benchmark.run[bench_expand[6]]().mean(Unit.ms), "msec")
+    @parameter
+    for i in range(1, 7):
+        print("expand-", i, " ", benchmark.run[bench_expand[i]]().mean(Unit.ms), " msec", sep="")
