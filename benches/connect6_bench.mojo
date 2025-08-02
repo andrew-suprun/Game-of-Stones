@@ -27,7 +27,7 @@ fn bench_expand[depth: Int]():
     except:
         pass
     var score = tree.expand(game, depth)
-    keep(score)
+    keep(score[0])
 
 fn main() raises:
     print("moves   ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")

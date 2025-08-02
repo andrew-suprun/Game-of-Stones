@@ -169,7 +169,6 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
         var deadline = perf_counter_ns() + 1_000_000_000
         var sim = 0
         var done = self.expand_tree()
-        self.tree.debug_best_moves()
         while not done and perf_counter_ns() < deadline:
             var event = self.pygame.event.poll()
             if event.type == self.pygame.QUIT:
@@ -179,19 +178,6 @@ struct GameOfStones[Game: TGame, c: Float64, stones_per_move: Int]:
             while not done and perf_counter_ns() < deadline2:
                 done = self.expand_tree()
                 sim += 1
-<<<<<<< Updated upstream
-=======
-        print("--------")
-        self.tree.debug_best_moves()
-        var pv_moves = self.tree.principal_variation()
-        var pv = String()
-        # TODO: cannot print List[Game.Move]
-        for move in pv_moves:
-            move.write_to(pv)
-            " ".write_to(pv)
-        print(self.tree.score(), "pv: [", len(pv_moves), "]", pv)
-        print("sims", sim, "score", self.tree.score())
->>>>>>> Stashed changes
 
         var move = self.tree.best_move()
         self.play_move(move)

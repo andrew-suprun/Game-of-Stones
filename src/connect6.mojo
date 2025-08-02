@@ -1,9 +1,8 @@
-from builtin.debug_assert import ASSERT_MODE
 from builtin.sort import sort
 from utils.numerics import isinf, neg_inf
 
 from game import TGame, TMove, Score, Decision
-from board import Board, Place, first, second
+from board import Board, Place, first
 from heap import heap_add
 
 alias win_stones = 6
@@ -88,12 +87,6 @@ struct Connect6[size: Int, max_places: Int](TGame):
         self.turn = 0
 
     fn moves(self, max_moves: Int) -> List[Move]:
-        if self.turn == first:
-            return self.moves[first](max_moves)
-        else:
-            return self.moves[second](max_moves)
-
-    fn moves[turn: Int](self, max_moves: Int) -> List[Move]:
         @parameter
         fn less(a: Move, b: Move) -> Bool:
             return a._score < b._score
@@ -104,52 +97,43 @@ struct Connect6[size: Int, max_places: Int](TGame):
 
         var moves = List[Move]()
 
-        var places = self.board.places[turn]()
+        var places = self.board.places(self.turn)
         debug_assert(len(places) > 1)
 
+        var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
             var place1 = places[i]
-            var score1 = self.board.score[turn](place1)
+            var score1 = self.board.score(place1, self.turn)
             if isinf(score1):
                 return [Move(place1, place1, score1, True)]
 
             var board1 = self.board
-            board1.place_stone[turn](place1)
+            board1.place_stone(place1, self.turn)
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j]
-                var score2 = board1.score[turn](place2)
+                var score2 = board1.score(place2, self.turn)
 
                 if isinf(score2):
                     return [Move(place1, place2, score2, True)]
 
                 var board2 = board1
-                board2.place_stone[turn](place2)
-                var max_opp_score = board2.max_score[second]() if turn == first else board2.max_score[first]()
-                var move_score = self.board._score + score1 + score2 + max_opp_score
-                if ASSERT_MODE == "all":
-                    # print("\n### board", board2.board_value(scores), Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
-                    debug_assert(board2.board_value(scores) == self.board._score + score1 + score2)
-                
-                if turn == first:
-                    heap_add[less](Move(place1, place2, move_score, False), max_moves, moves)
-                else:
-                    heap_add[greater](Move(place1, place2, move_score, False), max_moves, moves)
-        if turn == first:
-            sort[greater](moves)
-        else:
-            sort[less](moves)
+                board2.place_stone(place2, self.turn)
+                var board_value = board2.board_value(scores)
+                if self.turn:
+                    board_value = -board_value
+                var max_opp_score = board2.max_score(1 - self.turn)
+                debug_assert(board_value == board_score + score1 + score2)
+                var move_score = board_score + score1 + score2 - max_opp_score
+                heap_add[less](Move(place1, place2, move_score, False), max_moves, moves)
+                # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
+        sort[greater](moves)
         return moves
 
     fn play_move(mut self, move: self.Move):
-        if self.turn == first:
-            self.board.place_stone[first](move._p1)
-            if move._p1 != move._p2:
-                self.board.place_stone[first](move._p2)
-        else:
-            self.board.place_stone[second](move._p1)
-            if move._p1 != move._p2:
-                self.board.place_stone[second](move._p2)
+        self.board.place_stone(move._p1, self.turn)
+        if move._p1 != move._p2:
+            self.board.place_stone(move._p2, self.turn)
         self.turn = 1 - self.turn
 
     fn decision(self) -> Decision:
