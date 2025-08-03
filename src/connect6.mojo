@@ -1,3 +1,4 @@
+from hashlib.hasher import Hasher
 from builtin.sort import sort
 from utils.numerics import isinf, neg_inf
 
@@ -22,19 +23,30 @@ struct Move(TMove):
         self._terminal = False
 
     fn __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool):
-        self._p1 = p1
-        self._p2 = p2
+        if p1 < p2:
+            self._p1 = p1
+            self._p2 = p2
+        else:
+            self._p1 = p2
+            self._p2 = p1
         self._score = score
         self._terminal = terminal
 
     @implicit
     fn __init__(out self, move: String) raises:
         var tokens = move.split("-")
-        self._p1 = Place(String(tokens[0]))
+        var p1 = Place(String(tokens[0]))
+        var p2: Place
         if len(tokens) == 2:
-            self._p2 = Place(String(tokens[1]))
+            p2 = Place(String(tokens[1]))
         else:
-            self._p2 = self._p1
+            p2 = p1
+        if p1 < p2:
+            self._p1 = p1
+            self._p2 = p2
+        else:
+            self._p1 = p2
+            self._p2 = p1
         self._score = Score(0)
         self._terminal = False
 
@@ -48,6 +60,10 @@ struct Move(TMove):
             self._p2 = self._p1
         self._score = Score(0)
         self._terminal = False
+
+    fn __hash__[H: Hasher](self, mut hasher: H):
+        hasher.update(self._p1)
+        hasher.update(self._p2)
 
     fn __eq__(self, other: Self) -> Bool:
         return (self._p1 == other._p1 and self._p2 == other._p2) or
@@ -73,8 +89,7 @@ struct Move(TMove):
         writer.write(" ", self._score)
         if self._terminal:
             writer.write(" ", "terminal")
-
-
+    
 struct Connect6[size: Int, max_places: Int](TGame):
     alias Move = Move
     alias Score = Score

@@ -18,7 +18,7 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
     fn decision(self) -> Decision:
         ...
 
-trait TMove(Copyable, Movable, EqualityComparable, Defaultable, Stringable, Writable):
+trait TMove(Copyable, Movable, EqualityComparable, Hashable, Defaultable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
     fn score(self) -> Score:

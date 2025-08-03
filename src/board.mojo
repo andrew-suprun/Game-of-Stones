@@ -1,3 +1,4 @@
+from hashlib.hasher import Hasher
 from builtin.sort import sort
 from utils.numerics import inf, isinf
 from memory import memcpy
@@ -11,7 +12,7 @@ alias Scores = SIMD[DType.float32, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Copyable, Movable, Defaultable, EqualityComparable, Stringable, Writable):
+struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessThanComparable, Stringable, Writable):
     var x: Int8
     var y: Int8
 
@@ -35,6 +36,13 @@ struct Place(Copyable, Movable, Defaultable, EqualityComparable, Stringable, Wri
     fn __ne__(self, other: Self) -> Bool:
         return self.x != other.x or self.y != other.y
 
+    fn __lt__(self, other: Self) -> Bool:
+        return self.x < other.x or self.x == other.x and self.y < other.y
+
+    fn __hash__[H: Hasher](self, mut hasher: H):
+        hasher.update(self.x)
+        hasher.update(self.y)
+        
     fn connected_to[win_stones: Int](self, other: Place) -> Bool:
         if self.x >= other.x + win_stones or
             other.x >= self.x + win_stones or
