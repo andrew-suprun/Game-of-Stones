@@ -18,18 +18,19 @@ fn test_connect6() raises:
     assert_true(String(tree.best_move) == "i11-k9 19.0")
 
 fn main() raises:
-    var game = C6()
-    var tree = Negamax[C6, 16]()
-    try:
-        game.play_move("j10")
-        game.play_move("i9-i10")
-    except:
-        pass
-    var (score, pv) = tree.expand(game, 3)
-    print(game)
-    print("best move", tree.best_move)
-    print("score", score)
+    for max_depth in range(1, 8):
+        print("----\nDEPTH", max_depth)
+        var game = C6()
+        var tree = Negamax[C6, 16]()
+        try:
+            game.play_move("j10")
+            game.play_move("i9-i10")
+        except:
+            pass
+        var (score, pv) = tree.expand(game, max_depth)
+        print("best move", tree.best_move)
+        print("score", score)
 
-    print("pv:")
-    for move in pv[::-1]:
-        print(move)
+        print("pv:")
+        for move in pv[::-1]:
+            print(move)
