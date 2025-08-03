@@ -96,10 +96,12 @@ struct Connect6[size: Int, max_places: Int](TGame):
 
     var board: Board[scores, size, win_stones, max_places]
     var turn: Int
+    var _hash: UInt64
 
     fn __init__(out self):
         self.board = Board[scores, size, win_stones, max_places]()
         self.turn = 0
+        self._hash = 0
 
     fn moves(self, max_moves: Int) -> List[Move]:
         @parameter
@@ -149,10 +151,17 @@ struct Connect6[size: Int, max_places: Int](TGame):
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
+        if self.turn == first:
+            self._hash += hash(move)
+        else:
+            self._hash -= hash(move)
         self.turn = 1 - self.turn
 
     fn decision(self) -> Decision:
         return self.board.decision()
+
+    fn hash(self) -> UInt64:
+        return self._hash
 
     fn __str__(self, out str: String):
         return String(self.board)
