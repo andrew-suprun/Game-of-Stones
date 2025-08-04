@@ -135,8 +135,8 @@ struct Connect6[size: Int, max_places: Int](TGame):
     fn decision(self) -> Decision:
         return self.board.decision()
 
-    fn hash(self) -> UInt64:
-        return self._hash
+    fn hash(self) -> Int:
+        return Int(self._hash)
 
     fn __str__(self, out str: String):
         return String(self.board)

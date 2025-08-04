@@ -19,7 +19,7 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
     fn decision(self) -> Decision:
         ...
 
-    fn hash(self) -> UInt64:
+    fn hash(self) -> Int:
         ...
 
 trait TMove(Copyable, Movable, EqualityComparable, Hashable, Defaultable, Stringable, Writable):
