@@ -1,7 +1,7 @@
 from sys import argv
 from time import perf_counter_ns
 
-from game import TGame, Score
+from game import TGame, Score, Decision, undecided, first_wins, second_wins
 from tree import TTree
 
 fn run[Tree: TTree](no_legal_moves_score: Score) raises:
@@ -20,7 +20,6 @@ fn run[Tree: TTree](no_legal_moves_score: Score) raises:
         var line: String
         try:
             var text = input()
-            print(text)
             line = String(text.strip())
         except:
             if log:
@@ -44,12 +43,12 @@ fn run[Tree: TTree](no_legal_moves_score: Score) raises:
             if log:
                 print(game, file=log_file)
         elif terms[0] == "respond":
-            var (score, pv) = tree.search(game, Int(terms[1]) * 1000)
-            print("move", pv[0], score, game.decision())
+            var (score, pv) = tree.search(game, Int(terms[1]))
+            print("move", pv[0], score, str_decision(game.decision()))
             if log:
                 print("pv: ", end="", file=log_file)
                 for move in pv:
-                    print(move, "", move, file=log_file)
+                    print(move, "", end="", file=log_file)
                 print(game, file=log_file)
         elif terms[0] == "stop":
             if log:
@@ -58,3 +57,13 @@ fn run[Tree: TTree](no_legal_moves_score: Score) raises:
         else:
             if log:
                 print("unknown", line, file=log_file)
+
+fn str_decision(d: Decision) -> StaticString:
+    if d == undecided:
+        return "no-decision"
+    elif d == first_wins:
+        return "first-win"
+    elif d == second_wins:
+        return "second-win"
+    else:
+        return "draw"
