@@ -2,7 +2,7 @@ from hashlib.hasher import Hasher
 from builtin.sort import sort
 from utils.numerics import isinf, neg_inf
 
-from game import TGame, TMove, Score, Terminal, Decision
+from game import TGame, TMove, Score, Terminal, MoveScore, Decision
 from board import Board, Place, first
 from heap import heap_add
 
@@ -78,16 +78,16 @@ struct Connect6[size: Int, max_places: Int](TGame):
         self.turn = 0
         self._hash = 0
 
-    fn moves(self, max_moves: Int) -> List[(Move, Score, Terminal)]:
+    fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:
         @parameter
-        fn less(a: (Move, Score, Terminal), b: (Move, Score, Terminal)) -> Bool:
-            return a[1] < b[1]
+        fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
+            return a.score < b.score
 
         @parameter
-        fn greater(a: (Move, Score, Terminal), b: (Move, Score, Terminal)) -> Bool:
-            return a[1] > b[1]
+        fn greater(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
+            return a.score > b.score
 
-        var moves = List[(Move, Score, Terminal)]()
+        var moves = List[MoveScore[Move]]()
 
         var places = self.board.places(self.turn)
         debug_assert(len(places) > 1)
@@ -97,7 +97,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
             if isinf(score1):
-                return [(Move(place1, place1), score1, True)]
+                return [MoveScore(Move(place1, place1), score1, True)]
 
             var board1 = self.board
             board1.place_stone(place1, self.turn)
@@ -107,7 +107,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
                 var score2 = board1.score(place2, self.turn)
 
                 if isinf(score2):
-                    return [(Move(place1, place2), score2, True)]
+                    return [MoveScore(Move(place1, place2), score2, True)]
 
                 var board2 = board1
                 board2.place_stone(place2, self.turn)
@@ -117,7 +117,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
                 var max_opp_score = board2.max_score(1 - self.turn)
                 debug_assert(board_value == board_score + score1 + score2)
                 var move_score = board_score + score1 + score2 - max_opp_score
-                heap_add[less]((Move(place1, place2), move_score, False), max_moves, moves)
+                heap_add[less](MoveScore(Move(place1, place2), move_score, False), max_moves, moves)
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
         sort[greater](moves)
         return moves

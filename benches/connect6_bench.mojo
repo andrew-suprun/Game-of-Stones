@@ -16,7 +16,7 @@ fn bench_moves():
         pass
     for _ in range(1000):
         var moves = game.moves(16)
-        keep(moves[0][1])
+        keep(moves[0].score)
 
 fn bench_expand[depth: Int]():
     var game = C6()
