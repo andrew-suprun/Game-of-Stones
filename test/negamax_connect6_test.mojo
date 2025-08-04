@@ -15,7 +15,8 @@ fn test_connect6() raises:
     var (score, _) = tree.expand(game, 2)
     print("best move", tree.best_move)
     print("score", score)
-    assert_true(String(tree.best_move) == "i11-k9 19.0")
+    assert_true(String(tree.best_move) == "i11-k9")
+    assert_true(score == 13)
 
 fn main() raises:
     for max_depth in range(1, 8):

@@ -1,4 +1,5 @@
 alias Score = Float32
+alias Terminal = Bool
 
 alias Decision = Int
 alias undecided: Decision = 0
@@ -9,7 +10,7 @@ alias draw: Decision = 3
 trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
 
-    fn moves(self, max_moves: Int) -> List[Move]:
+    fn moves(self, max_moves: Int) -> List[(Move, Score, Terminal)]:
         ...
 
     fn play_move(mut self, move: Move):
@@ -22,14 +23,5 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
         ...
 
 trait TMove(Copyable, Movable, EqualityComparable, Hashable, Defaultable, Stringable, Writable):
-    fn __init__(out self, text: String) raises:
-        ...
-    fn score(self) -> Score:
-        ...
-
-    fn is_terminal(self) -> Bool:
-        ...
-
-trait TScore(Copyable, Movable, Comparable, Defaultable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...

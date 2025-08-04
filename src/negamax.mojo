@@ -24,8 +24,8 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
         if depth == self._max_depth:
             var moves = game.moves(1)
             if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "leaf: best move", moves[0], end="")
-            return (moves[0].score(), [moves[0]])
+                print("\n" + "|   "*depth + "leaf: best move", moves[0][0], end="")
+            return (moves[0][1], [moves[0][0]])
 
         if ASSERT_MODE == "all":
             print("\n" + "|   "*depth + "--> expand:", "a:", alpha, "b:", beta, end="")
@@ -36,14 +36,14 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
 
         if ASSERT_MODE == "all":
             print(" | moves: ", sep="", end="")
-            for ref child_move in moves:
+            for ref (child_move, _, _) in moves:
                 print(child_move, "  ", end="")
 
-        for ref child_move in moves:
+        for (child_move, child_score, terminal) in moves:
             if ASSERT_MODE == "all":
                 print("\n" + "|   "*depth + "> move", child_move, end="")
-            var score = child_move.score()
-            if not child_move.is_terminal():
+            var score = child_score
+            if not terminal:
                 var child_game = game
                 child_game.play_move(child_move)
                 (score, pv) = self._expand(child_game, -b, -a, depth + 1)
@@ -72,7 +72,9 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
                     print("\n" + "|   "*depth + "cutoff", end="")
                 return (best_score, List[Game.Move]())
         if ASSERT_MODE == "all":
-            print("\n" + "|   "*depth + "<-- expand: best score", best_score, end="")
+            for i in range(len(moves)):
+                if best_move == moves[i][0]:
+                    print("\n" + "|   "*depth + "<-- expand: best move", best_move, i, "score", best_score, end="")
         best_pv.append(best_move)
         return (best_score, best_pv)
 

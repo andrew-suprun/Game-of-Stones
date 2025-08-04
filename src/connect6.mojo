@@ -2,7 +2,7 @@ from hashlib.hasher import Hasher
 from builtin.sort import sort
 from utils.numerics import isinf, neg_inf
 
-from game import TGame, TMove, Score, Decision
+from game import TGame, TMove, Score, Terminal, Decision
 from board import Board, Place, first
 from heap import heap_add
 
@@ -13,24 +13,17 @@ alias scores = List[Float32](0, 1, 5, 25, 125, 625)
 struct Move(TMove):
     var _p1: Place
     var _p2: Place
-    var _score: Score
-    var _terminal: Bool
 
     fn __init__(out self):
-        self._p1 = Place()
-        self._p2 = Place()
-        self._score = Score(0)
-        self._terminal = False
+        self = Self(Place(), Place())
 
-    fn __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool):
+    fn __init__(out self, p1: Place, p2: Place):
         if p1 < p2:
             self._p1 = p1
             self._p2 = p2
         else:
             self._p1 = p2
             self._p2 = p1
-        self._score = score
-        self._terminal = terminal
 
     @implicit
     fn __init__(out self, move: String) raises:
@@ -47,19 +40,10 @@ struct Move(TMove):
         else:
             self._p1 = p2
             self._p2 = p1
-        self._score = Score(0)
-        self._terminal = False
 
     @implicit
     fn __init__(out self, move: StringLiteral) raises:
-        var tokens = String(move).split("-")
-        self._p1 = Place(String(tokens[0]))
-        if len(tokens) == 2:
-            self._p2 = Place(String(tokens[1]))
-        else:
-            self._p2 = self._p1
-        self._score = Score(0)
-        self._terminal = False
+        self = Self(String(move))
 
     fn __hash__[H: Hasher](self, mut hasher: H):
         hasher.update(self._p1)
@@ -72,12 +56,6 @@ struct Move(TMove):
     fn __ne__(self, other: Self) -> Bool:
         return not self == other
 
-    fn score(self) -> Score:
-        return self._score
-
-    fn is_terminal(self) -> Bool:
-        return self._terminal
-
     fn __str__(self) -> String:
         return String.write(self)
 
@@ -86,9 +64,6 @@ struct Move(TMove):
             writer.write(self._p1, "-", self._p2)
         else:
             writer.write(self._p1)
-        writer.write(" ", self._score)
-        if self._terminal:
-            writer.write(" ", "terminal")
     
 struct Connect6[size: Int, max_places: Int](TGame):
     alias Move = Move
@@ -103,16 +78,16 @@ struct Connect6[size: Int, max_places: Int](TGame):
         self.turn = 0
         self._hash = 0
 
-    fn moves(self, max_moves: Int) -> List[Move]:
+    fn moves(self, max_moves: Int) -> List[(Move, Score, Terminal)]:
         @parameter
-        fn less(a: Move, b: Move) -> Bool:
-            return a._score < b._score
+        fn less(a: (Move, Score, Terminal), b: (Move, Score, Terminal)) -> Bool:
+            return a[1] < b[1]
 
         @parameter
-        fn greater(a: Move, b: Move) -> Bool:
-            return a._score > b._score
+        fn greater(a: (Move, Score, Terminal), b: (Move, Score, Terminal)) -> Bool:
+            return a[1] > b[1]
 
-        var moves = List[Move]()
+        var moves = List[(Move, Score, Terminal)]()
 
         var places = self.board.places(self.turn)
         debug_assert(len(places) > 1)
@@ -122,7 +97,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
             if isinf(score1):
-                return [Move(place1, place1, score1, True)]
+                return [(Move(place1, place1), score1, True)]
 
             var board1 = self.board
             board1.place_stone(place1, self.turn)
@@ -132,7 +107,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
                 var score2 = board1.score(place2, self.turn)
 
                 if isinf(score2):
-                    return [Move(place1, place2, score2, True)]
+                    return [(Move(place1, place2), score2, True)]
 
                 var board2 = board1
                 board2.place_stone(place2, self.turn)
@@ -142,12 +117,12 @@ struct Connect6[size: Int, max_places: Int](TGame):
                 var max_opp_score = board2.max_score(1 - self.turn)
                 debug_assert(board_value == board_score + score1 + score2)
                 var move_score = board_score + score1 + score2 - max_opp_score
-                heap_add[less](Move(place1, place2, move_score, False), max_moves, moves)
+                heap_add[less]((Move(place1, place2), move_score, False), max_moves, moves)
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
         sort[greater](moves)
         return moves
 
-    fn play_move(mut self, move: self.Move):
+    fn play_move(mut self, move: Move):
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
