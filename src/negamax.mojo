@@ -1,7 +1,7 @@
 from builtin.debug_assert import ASSERT_MODE
 from utils.numerics import inf, neg_inf
 
-from game import TGame, Score
+from game import TGame, Score, Terminal
 
 struct Negamax[Game: TGame, max_moves: Int](Defaultable):
     var best_move: Game.Move
@@ -19,12 +19,16 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
         return (score, pv)
 
     fn _expand(mut self, game: Game, alpha: Score, beta: Score, depth: Int) -> (Score, List[Game.Move]):
+        @parameter
+        fn greater(a: (Game.Move, Score, Terminal), b: (Game.Move, Score, Terminal)) -> Bool:
+            return a[1] > b[1]
+
         var a = alpha
         var b = beta
         if depth == self._max_depth:
             var moves = game.moves(1)
             if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "leaf: best move", moves[0][0], end="")
+                print("\n" + "|   "*depth + "leaf: best move", moves[0][0], moves[0][1], end="")
             return (moves[0][1], [moves[0][0]])
 
         if ASSERT_MODE == "all":
@@ -37,41 +41,43 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
         if ASSERT_MODE == "all":
             print(" | moves: ", sep="", end="")
             for ref (child_move, _, _) in moves:
-                print(child_move, "  ", end="")
+                print(child_move, " ", end="")
 
-        for (child_move, child_score, terminal) in moves:
+        for ref move in moves:
             if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "> move", child_move, end="")
-            var score = child_score
-            if not terminal:
+                print("\n" + "|   "*depth + "> move", move[0], move[1], end="")
+            if not move[2]:
                 var child_game = game
-                child_game.play_move(child_move)
+                child_game.play_move(move[0])
                 (score, pv) = self._expand(child_game, -b, -a, depth + 1)
-                score = -score
+                move[1] = -score
             else:
                 pv = List[Game.Move]()
 
-            if score > best_score:
+            if move[1] > best_score:
                 if depth == 0:
-                    self.best_move = child_move
+                    self.best_move = move[0]
                     if ASSERT_MODE == "all":
-                        print("\n|   set best move", child_move, "score", score, end="")
+                        print("\n|   set best move", move[0], "score", move[1], end="")
                         print(" pv: ", end="")
                         for move in pv[::-1]:
-                            print(move, "| ", end="")
+                            print(move, "", end="")
 
-                best_score = score
+                best_score = move[1]
                 best_pv = pv
-                best_move = child_move
-                if score > alpha:
-                    a = score
+                best_move = move[0]
+                if move[1] > alpha:
+                    a = move[1]
             if ASSERT_MODE == "all":
-                print("\n" + "|   "*depth + "< move", child_move, "| best score", best_score,end="")
-            if score > b:
+                print("\n" + "|   "*depth + "< move", move[0], move[1], "| best score", best_score,end="")
+            if move[1] > b:
                 if ASSERT_MODE == "all":
                     print("\n" + "|   "*depth + "cutoff", end="")
                 return (best_score, List[Game.Move]())
+        sort[greater](moves)
         if ASSERT_MODE == "all":
+            for i in range(len(moves)):
+                print("\n" + "|   "*depth + "    child", moves[i][0], "score", moves[i][1], end="")
             for i in range(len(moves)):
                 if best_move == moves[i][0]:
                     print("\n" + "|   "*depth + "<-- expand: best move", best_move, i, "score", best_score, end="")

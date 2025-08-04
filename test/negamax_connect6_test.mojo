@@ -19,10 +19,10 @@ fn test_connect6() raises:
     assert_true(score == 13)
 
 fn main() raises:
-    for max_depth in range(1, 8):
+    for max_depth in range(2, 3):
         print("----\nDEPTH", max_depth)
         var game = C6()
-        var tree = Negamax[C6, 16]()
+        var tree = Negamax[C6, 32]()
         try:
             game.play_move("j10")
             game.play_move("i9-i10")
