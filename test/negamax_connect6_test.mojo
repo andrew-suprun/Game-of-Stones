@@ -12,14 +12,14 @@ fn test_connect6() raises:
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
-    var (score, _) = tree.expand(game, 2)
-    print("best move", tree.best_move)
+    var (score, pv) = tree.search(game, 1000)
+    print("best move", pv[0])
     print("score", score)
-    assert_true(String(tree.best_move) == "i11-k9")
-    assert_true(score == 13)
+    assert_true(String(pv[0]) == "i11-k9")
+    assert_true(score == 18)
 
 fn main() raises:
-    for max_depth in range(2, 7):
+    for duration in [10, 100, 1000, 5000, 20_000, 60_000, 180_000]:
         var game = C6()
         var tree = Negamax[C6, 32]()
         try:
@@ -27,11 +27,11 @@ fn main() raises:
             game.play_move("i9-i10")
         except:
             pass
-        var (score, pv) = tree.expand(game, max_depth)
-        print("depth", max_depth, end="")
-        print(" score", score, end="")
+        var (score, pv) = tree.search(game, duration)
+        print("duration", String(duration).rjust(5, " "), end="")
+        print(": score", score, end="")
 
         print(" pv: ", end="")
-        for move in pv[::-1]:
+        for move in pv:
             print(move, "", end="")
         print()
