@@ -10,7 +10,7 @@ alias draw: Decision = 3
 trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
 
-    fn moves(self, max_moves: Int) -> List[(Move, Score, Terminal)]:
+    fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:
         ...
 
     fn play_move(mut self, move: Move):
@@ -25,3 +25,9 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
 trait TMove(Copyable, Movable, EqualityComparable, Hashable, Defaultable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
+
+@fieldwise_init
+struct MoveScore[Move: TMove](Copyable, Movable):
+    var move: Move
+    var score: Score
+    var terminal: Bool
