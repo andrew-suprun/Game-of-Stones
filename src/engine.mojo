@@ -1,11 +1,10 @@
 from sys import argv
 from time import perf_counter_ns
-from builtin.io import _fdopen
 
-from game import TGame, Score, draw
-from mcts import MCTS
+from game import TGame, Score
+from tree import TTree
 
-fn run[Game: TGame, exp_factor: Float64]() raises:
+fn run[Tree: TTree](no_legal_moves_score: Score) raises:
     var log_file = FileHandle()
     var log = False
 
@@ -14,15 +13,14 @@ fn run[Game: TGame, exp_factor: Float64]() raises:
         log_file = open(args[1], "w")
         log = True
 
-    var stdin = _fdopen["r"](FileDescriptor(0))
-
-    var game = Game()
-    var tree = MCTS[Game, exp_factor](draw)
+    var game = Tree.Game()
+    var tree = Tree(no_legal_moves_score)
 
     while True:
         var line: String
         try:
-            var text = stdin.readline()
+            var text = input()
+            print(text)
             line = String(text.strip())
         except:
             if log:
@@ -35,32 +33,23 @@ fn run[Game: TGame, exp_factor: Float64]() raises:
             print("got", line, file=log_file)
         var terms = line.split(" ")
         if terms[0] == "move":
-            var move = Game.Move(terms[1])
+            var move = Tree.Game.Move(terms[1])
             game.play_move(move)
-            tree = MCTS[Game, exp_factor](draw)
+            tree = Tree(no_legal_moves_score)
             if log:
                 print(game, file=log_file)
         elif terms[0] == "undo":
             # TODO implement undo
-            tree = MCTS[Game, exp_factor](draw)
+            tree = Tree(no_legal_moves_score)
             if log:
                 print(game, file=log_file)
         elif terms[0] == "respond":
-            var deadline = perf_counter_ns() + Int(terms[1]) * 1_000_000
-            var sims = 0
-            while perf_counter_ns() < deadline:
-                if tree.expand(game):
-                    if log:
-                        print("DONE", file=log_file)
-                    break
-                sims += 1
-            var move = tree.best_move()
-            game.play_move(move)
-            tree = MCTS[Game, exp_factor](draw)
-            print("move", move, game.decision(), sims)
+            var (score, pv) = tree.search(game, Int(terms[1]) * 1000)
+            print("move", pv[0], score, game.decision())
             if log:
-                print("move", move, file=log_file)
-                print("sims", sims, file=log_file)
+                print("pv: ", end="", file=log_file)
+                for move in pv:
+                    print(move, "", move, file=log_file)
                 print(game, file=log_file)
         elif terms[0] == "stop":
             if log:

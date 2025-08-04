@@ -3,24 +3,29 @@ from time import perf_counter_ns
 from utils.numerics import inf, neg_inf
 
 from game import TGame, Score, Terminal, MoveScore
+from tree import TTree
 
 alias debug = env_get_bool["DEBUG", False]()
 
-struct Negamax[Game: TGame, max_moves: Int](Defaultable):
+struct Negamax[G: TGame, max_moves: Int](TTree):
+    alias Game = G
+    
+    var _no_legal_moves_score: Score
     var _best_score: Score
-    var _pv: List[Game.Move]
+    var _pv: List[G.Move]
     var _max_depth: Int
     var _deadline: UInt
-    var _moves_cache: Dict[Int, List[MoveScore[Game.Move]]]
+    var _moves_cache: Dict[Int, List[MoveScore[G.Move]]]
 
-    fn __init__(out self):
+    fn __init__(out self, no_legal_moves_score: Score):
+        self._no_legal_moves_score: Score = no_legal_moves_score
         self._best_score = Score(0)
-        self._pv = List[Game.Move]()
+        self._pv = List[G.Move]()
         self._max_depth = 0
         self._deadline = 0
-        self._moves_cache = Dict[Int, List[MoveScore[Game.Move]]]()
+        self._moves_cache = Dict[Int, List[MoveScore[G.Move]]]()
 
-    fn search(mut self, game: Game, duration_ms: Int) -> (Score, List[Game.Move]):
+    fn search(mut self, game: G, duration_ms: Int) -> (Score, List[G.Move]):
         self._deadline = perf_counter_ns() + 1_000_000 * duration_ms
         self._moves_cache.clear()
 
@@ -32,14 +37,14 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
         return (self._best_score, self._pv)
 
 
-    fn _search(mut self, game: Game, alpha: Score, beta: Score, depth: Int) -> (Score, List[Game.Move]):
+    fn _search(mut self, game: G, alpha: Score, beta: Score, depth: Int) -> (Score, List[G.Move]):
         @parameter
-        fn greater(a: MoveScore[Game.Move], b: MoveScore[Game.Move]) -> Bool:
+        fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
             return a.score > b.score
 
         var best_score = neg_inf[DType.float32]()
-        var best_pv = List[Game.Move]()
-        var best_move = Game.Move()
+        var best_pv = List[G.Move]()
+        var best_move = G.Move()
 
         var a = alpha
         var b = beta
@@ -50,11 +55,13 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
 
         if debug: print("\n" + "|   "*depth + "--> search:", "a:", alpha, "b:", beta, end="")
 
-        var children: List[MoveScore[Game.Move]]
+        var children: List[MoveScore[G.Move]]
         try:
             children = self._moves_cache[game.hash()]
         except:
             children = game.moves(max_moves)
+            if not children:
+                return (self._no_legal_moves_score, List[G.Move]())
 
         if debug:
             print(" | moves: ", sep="", end="")
@@ -71,7 +78,7 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
                 if perf_counter_ns() > self._deadline:
                     return (best_score, best_pv)
             else:
-                pv = List[Game.Move]()
+                pv = List[G.Move]()
 
             if child.score > best_score:
                 best_move = child.move
@@ -94,7 +101,7 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
             if debug: print("\n" + "|   "*depth + "< move", child.move, child.score, "| best score", best_score,end="")
             if child.score > b:
                 if debug: print("\n" + "|   "*depth + "cutoff", end="")
-                return (best_score, List[Game.Move]())
+                return (best_score, List[G.Move]())
         sort[greater](children)
         if debug:
             for i in range(len(children)):

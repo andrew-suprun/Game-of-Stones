@@ -23,7 +23,7 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
         ...
 
 trait TMove(Copyable, Movable, EqualityComparable, Hashable, Defaultable, Stringable, Writable):
-    fn __init__(out self, text: String) raises:
+    fn __init__(out self, text: StringSlice) raises:
         ...
 
 @fieldwise_init

@@ -26,7 +26,7 @@ struct Move(TMove):
             self._p2 = p1
 
     @implicit
-    fn __init__(out self, move: String) raises:
+    fn __init__(out self, move: StringSlice) raises:
         var tokens = move.split("-")
         var p1 = Place(String(tokens[0]))
         var p2: Place
