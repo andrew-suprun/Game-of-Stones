@@ -18,9 +18,14 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
     fn expand(mut self, game: Game, max_depth: Int) -> (Score, List[Game.Move]):
         self._max_depth = max_depth
         self._moves_cache.clear()
-        var (score, pv) = self._expand(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
-        if debug: print()
-        return (score, pv)
+
+        var result = (Score(0), List[Game.Move]())
+        for depth in range(2, max_depth + 1):
+            self._max_depth = depth
+            result = self._expand(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
+            if debug: print()
+        return result
+
 
     fn _expand(mut self, game: Game, alpha: Score, beta: Score, depth: Int) -> (Score, List[Game.Move]):
         @parameter
@@ -48,7 +53,7 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
         if debug:
             print(" | moves: ", sep="", end="")
             for ref (child_move, _, _) in moves:
-                print(child_move, " ", end="")
+                print(child_move, "", end="")
 
         for ref move in moves:
             if debug: print("\n" + "|   "*depth + "> move", move[0], move[1], end="")
@@ -80,8 +85,6 @@ struct Negamax[Game: TGame, max_moves: Int](Defaultable):
                 return (best_score, List[Game.Move]())
         sort[greater](moves)
         if debug:
-            for i in range(len(moves)):
-                print("\n" + "|   "*depth + "    child", moves[i][0], "score", moves[i][1], end="")
             for i in range(len(moves)):
                 if best_move == moves[i][0]:
                     print("\n" + "|   "*depth + "<-- expand: best move", best_move, i, "score", best_score, end="")

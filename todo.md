@@ -1,3 +1,3 @@
+* timed search
+* negamax engine
 * revive mcts
-* PV optimization
-* cache intermediate results

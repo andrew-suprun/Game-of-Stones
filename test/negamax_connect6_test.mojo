@@ -19,8 +19,7 @@ fn test_connect6() raises:
     assert_true(score == 13)
 
 fn main() raises:
-    for max_depth in range(2, 3):
-        print("----\nDEPTH", max_depth)
+    for max_depth in range(2, 7):
         var game = C6()
         var tree = Negamax[C6, 32]()
         try:
@@ -29,9 +28,10 @@ fn main() raises:
         except:
             pass
         var (score, pv) = tree.expand(game, max_depth)
-        print("best move", tree.best_move)
-        print("score", score)
+        print("depth", max_depth, end="")
+        print(" score", score, end="")
 
-        print("pv:")
+        print(" pv: ", end="")
         for move in pv[::-1]:
-            print(move)
+            print(move, "", end="")
+        print()
