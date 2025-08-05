@@ -1,6 +1,6 @@
 from testing import assert_true
 
-from game import draw
+from game import Score
 from negamax import Negamax
 from connect6 import Connect6
 
@@ -8,7 +8,7 @@ alias C6 = Connect6[19, 12]
 
 fn test_connect6() raises:
     var game = C6()
-    var tree = Negamax[C6, 16]()
+    var tree = Negamax[C6, 16](Score(0))
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
@@ -19,19 +19,24 @@ fn test_connect6() raises:
     assert_true(score == 18)
 
 fn main() raises:
-    for duration in [10, 100, 1000, 5000, 20_000, 60_000, 180_000]:
-        var game = C6()
-        var tree = Negamax[C6, 32]()
-        try:
-            game.play_move("j10")
-            game.play_move("i9-i10")
-        except:
-            pass
-        var (score, pv) = tree.search(game, duration)
-        print("duration", String(duration).rjust(5, " "), end="")
-        print(": score", score, end="")
+    var game = C6()
+    var tree = Negamax[C6, 32](Score(0))
+    try:
+        game.play_move("j10")
+        game.play_move("a1-b4")
+        game.play_move("j9-j11")
+        game.play_move("c7-d10")
+        game.play_move("i10-k10")
+        game.play_move("e13-f16")
+        game.play_move("j12-l10")
+    except:
+        pass
 
-        print(" pv: ", end="")
-        for move in pv:
-            print(move, "", end="")
-        print()
+    print(game)
+    var (score, pv) = tree.search(game, 1000)
+    print("pv: ", end="")
+    for move in pv:
+        print(move, "", end="")
+
+    print("| score", score)
+

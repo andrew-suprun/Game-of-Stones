@@ -44,6 +44,8 @@ fn run[Tree: TTree](no_legal_moves_score: Score) raises:
                 print(game, file=log_file)
         elif terms[0] == "respond":
             var (score, pv) = tree.search(game, Int(terms[1]))
+            debug_assert(len(pv) > 0)
+            game.play_move(pv[0])
             print("move", pv[0], score, str_decision(game.decision()))
             if log:
                 print("pv: ", end="", file=log_file)

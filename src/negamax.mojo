@@ -1,6 +1,6 @@
 from sys import argv, env_get_bool
 from time import perf_counter_ns
-from utils.numerics import inf, neg_inf
+from utils.numerics import inf, neg_inf, isinf
 
 from game import TGame, Score, Terminal, MoveScore
 from tree import TTree
@@ -31,8 +31,12 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
 
         self._max_depth = 2
         while perf_counter_ns() < self._deadline:
-            _ = self._search(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
+            (score, pv) = self._search(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
             if debug: print()
+            if isinf(score): 
+                self._best_score = score
+                self._pv = pv
+                break
             self._max_depth += 1
         return (self._best_score, self._pv)
 
@@ -42,18 +46,14 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
         fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
             return a.score > b.score
 
-        var best_score = neg_inf[DType.float32]()
-        var best_pv = List[G.Move]()
-        var best_move = G.Move()
-
         var a = alpha
         var b = beta
         if depth == self._max_depth:
             var moves = game.moves(1)
-            if debug: print("\n" + "|   "*depth + "leaf: best move", moves[0].move, moves[0].score, end="")
+            if debug: print("\n#" + "|   "*depth + "leaf: best move", moves[0].move, moves[0].score, end="")
             return (moves[0].score, [moves[0].move])
 
-        if debug: print("\n" + "|   "*depth + "--> search:", "a:", alpha, "b:", beta, end="")
+        if debug: print("\n#" + "|   "*depth + "--> search:", "a:", alpha, "b:", beta, end="")
 
         var children: List[MoveScore[G.Move]]
         try:
@@ -63,13 +63,17 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
             if not children:
                 return (self._no_legal_moves_score, List[G.Move]())
 
+        var best_pv = List[G.Move]()
+        var best_move = children[0].move
+        var best_score = neg_inf[DType.float32]()
+
         if debug:
             print(" | moves: ", sep="", end="")
             for ref child in children:
                 print(child.move, "", end="")
 
         for ref child in children:
-            if debug: print("\n" + "|   "*depth + "> move", child.move, child.score, end="")
+            if debug: print("\n#" + "|   "*depth + "> move", child.move, child.score, end="")
             if not child.terminal:
                 var child_game = game
                 child_game.play_move(child.move)
@@ -88,9 +92,9 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
                     a = child.score
 
                 if depth == 0:
+                    self._best_score = child.score
                     pv.append(child.move)
                     pv.reverse()
-                    self._best_score = child.score
                     self._pv = pv
                     if debug:
                         print("\n|   set best move", child.move, "score", child.score, end="")
@@ -98,15 +102,13 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
                         for move in pv:
                             print(move, "", end="")
 
-            if debug: print("\n" + "|   "*depth + "< move", child.move, child.score, "| best score", best_score,end="")
+            if debug: print("\n#" + "|   "*depth + "< move", child.move, child.score, "b", b, "| best score", best_score,end="")
             if child.score > b:
-                if debug: print("\n" + "|   "*depth + "cutoff", end="")
+                if debug: print("\n#" + "|   "*depth + "cutoff", end="")
                 return (best_score, List[G.Move]())
         sort[greater](children)
         if debug:
-            for i in range(len(children)):
-                if best_move == children[i].move:
-                    print("\n" + "|   "*depth + "<-- search: best move", best_move, i, "score", best_score, end="")
+            print("\n#" + "|   "*depth + "<-- search: best move", best_move, "score", best_score, end="")
         best_pv.append(best_move)
         self._moves_cache[game.hash()] = children^
         return (best_score, best_pv)
