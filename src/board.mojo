@@ -327,7 +327,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
             str = ""
 
     fn str_scores_raises(self, table_idx: Int, out str: String) raises:
-        str = String("\n   │")
+        str = "\n   │"
         for i in range(size):
             str += String.format("    {} ", chr(i + ord("a")))
         str += "│\n"

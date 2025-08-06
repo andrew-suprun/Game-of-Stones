@@ -70,7 +70,7 @@ struct MCTS[Game: TGame, c: Float64](Stringable, Writable):
             root.write_to(writer)
 
     fn debug_roots(self) -> String:
-        var result = String("roots:\n")
+        var result = "roots:\n"
         for ref node in self.roots:
             result.write("  ", node.move, " ", score_str(node.score), " ", node.n_sims, "\n")
         return result

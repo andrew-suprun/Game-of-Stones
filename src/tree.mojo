@@ -6,5 +6,5 @@ trait TTree:
     fn __init__(out self, no_legal_moves_score: Score):
         ...
 
-    fn search(mut self, game: Game, duration_ms: Int) -> (Score, List[Game.Move]):
+    fn search(mut self, game: Game, max_time_ms: Int) -> (Score, List[Game.Move]):
         ...

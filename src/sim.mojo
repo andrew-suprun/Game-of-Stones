@@ -3,10 +3,14 @@ from time import perf_counter_ns
 import random
 
 from tree import TTree
-from game import Score, Decision, undecided
+from game import Score, Decision, undecided, first_wins, second_wins
 from board import Place, first
 
-fn run[T1: TTree, T2: TTree]() raises:
+fn run[T1: TTree, T2: TTree](name1: String, name2: String) raises:
+    var stats = Dict[String, Int]()
+    stats[name1] = 0
+    stats[name2] = 0
+    stats["draw"] = 0
     with open("sim-connect6.log", "w") as log_file:
         for i in range(1, 11):
             random.seed(perf_counter_ns())
@@ -15,10 +19,28 @@ fn run[T1: TTree, T2: TTree]() raises:
             for move in opening:
                 print(move, "", end="")
             print()
+
             var decision = play_opening[T1, T2](opening, log_file)
-            print("decision", decision)
+            if decision == first_wins:
+                stats[name1] += 1
+            elif decision == second_wins:
+                stats[name2] += 1
+            else:
+                stats["draw"] += 1
+
+            for stat in stats.items():
+                print(stat.key, stat.value)
+
             decision = play_opening[T2, T1](opening, log_file)
-            print("decision", decision)
+            if decision == first_wins:
+                stats[name2] += 1
+            elif decision == second_wins:
+                stats[name1] += 1
+            else:
+                stats["draw"] += 1
+
+            for stat in stats.items():
+                print(stat.key, stat.value)
 
 alias black = True
 alias white = False
@@ -39,15 +61,23 @@ fn play_opening[T1: TTree, T2: TTree](opening: List[String], log: FileHandle) ra
     while True:
         var move: String        
         if turn == first:
-            var (score, pv) = t1.search(g1, 200)
+            var (score, pv) = t1.search(g1, 2000)
             debug_assert(len(pv) > 0)
             move = String(pv[0])
-            print("move", move, score)
+            print("move", move, score, end="")
+            print(" pv:", end="")
+            for move in pv:
+                print("", move, end="")
+            print()
         else:
-            var (score, pv) = t2.search(g2, 200)
+            var (score, pv) = t2.search(g2, 2000)
             debug_assert(len(pv) > 0)
             move = String(pv[0])
-            print("move", move, score)
+            print("move", move, score, end="")
+            print(" pv:", end="")
+            for move in pv:
+                print("", move, end="")
+            print()
         g1.play_move(T1.Game.Move(move))
         g2.play_move(T2.Game.Move(move))
         turn = 1 - turn
@@ -64,7 +94,7 @@ fn opening_moves() -> List[String]:
                 places.append(Place(Int8(i), Int8(j)))
     random.shuffle(places)
 
-    moves = List(String("j10"))
+    moves = List("j10")
     moves.append(String(places[0]) + "-" + String(places[1]))
     moves.append(String(places[2]) + "-" + String(places[3]))
     moves.append(String(places[3]) + "-" + String(places[5]))
