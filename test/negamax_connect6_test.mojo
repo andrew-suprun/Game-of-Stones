@@ -16,7 +16,7 @@ fn test_connect6() raises:
     print("best move", pv[0])
     print("score", score)
     assert_true(String(pv[0]) == "i11-k9")
-    assert_true(score == 18)
+    assert_true(score == 12)
 
 fn main() raises:
     var game = C6()

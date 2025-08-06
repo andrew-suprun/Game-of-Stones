@@ -1,3 +1,4 @@
+from sys import env_get_string
 from hashlib.hasher import Hasher
 from builtin.sort import sort
 from utils.numerics import isinf, neg_inf
@@ -5,6 +6,8 @@ from utils.numerics import isinf, neg_inf
 from game import TGame, TMove, Score, Terminal, MoveScore, Decision
 from board import Board, Place, first
 from heap import heap_add
+
+alias debug = env_get_string["ASSERT_MODE", ""]()
 
 alias win_stones = 6
 alias scores = List[Float32](0, 1, 5, 25, 125, 625)
@@ -110,12 +113,14 @@ struct Connect6[size: Int, max_places: Int](TGame):
                     return [MoveScore(Move(place1, place2), score2, True)]
 
                 var board2 = board1
+                if debug:
+                    var board_value = board2.board_value(scores)
+                    if self.turn:
+                        board_value = -board_value
+                    debug_assert(board_value == board_score + score1 + score2)
+
                 board2.place_stone(place2, self.turn)
-                var board_value = board2.board_value(scores)
-                if self.turn:
-                    board_value = -board_value
                 var max_opp_score = board2.max_score(1 - self.turn)
-                debug_assert(board_value == board_score + score1 + score2)
                 var move_score = board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score, False), max_moves, moves)
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")

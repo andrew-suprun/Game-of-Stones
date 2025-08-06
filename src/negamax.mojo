@@ -31,13 +31,13 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
 
         self._max_depth = 2
         while perf_counter_ns() < self._deadline:
-            (score, pv) = self._search(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
+            var (score, _) = self._search(game, neg_inf[DType.float32](), inf[DType.float32](), 0)
             if debug: print()
             if isinf(score): 
-                self._best_score = score
-                self._pv = pv
                 break
             self._max_depth += 1
+        if debug:
+            print("\n#best score", self._best_score)
         return (self._best_score, self._pv)
 
 
@@ -50,6 +50,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
         var b = beta
         if depth == self._max_depth:
             var moves = game.moves(1)
+            debug_assert(len(moves) == 1)
             if debug: print("\n#" + "|   "*depth + "leaf: best move", moves[0].move, moves[0].score, end="")
             return (moves[0].score, [moves[0].move])
 
@@ -63,6 +64,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
             if not children:
                 return (self._no_legal_moves_score, List[G.Move]())
 
+        debug_assert(len(children) > 0)
         var best_pv = List[G.Move]()
         var best_move = children[0].move
         var best_score = neg_inf[DType.float32]()
@@ -80,6 +82,8 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
                 (score, pv) = self._search(child_game, -b, -a, depth + 1)
                 child.score = -score
                 if perf_counter_ns() > self._deadline:
+                    if debug:
+                        print("\n#deadline", best_score)
                     return (best_score, best_pv)
             else:
                 pv = List[G.Move]()
