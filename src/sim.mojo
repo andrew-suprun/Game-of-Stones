@@ -20,7 +20,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String) raises:
                 print(move, "", end="")
             print()
 
-            var decision = play_opening[T1, T2](opening, log_file)
+            var decision = play_opening[T1, T2](200, 200, opening, log_file)
             if decision == first_wins:
                 stats[name1] += 1
             elif decision == second_wins:
@@ -31,7 +31,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String) raises:
             for stat in stats.items():
                 print(stat.key, stat.value)
 
-            decision = play_opening[T2, T1](opening, log_file)
+            decision = play_opening[T2, T1](200, 200, opening, log_file)
             if decision == first_wins:
                 stats[name2] += 1
             elif decision == second_wins:
@@ -45,7 +45,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String) raises:
 alias black = True
 alias white = False
 
-fn play_opening[T1: TTree, T2: TTree](opening: List[String], log: FileHandle) raises -> Decision:
+fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[String], log: FileHandle) raises -> Decision:
     var g1 = T1.Game()
     var g2 = T2.Game()
     var t1 = T1(Score(0))
@@ -61,7 +61,7 @@ fn play_opening[T1: TTree, T2: TTree](opening: List[String], log: FileHandle) ra
     while True:
         var move: String        
         if turn == first:
-            var (score, pv) = t1.search(g1, 2000)
+            var (score, pv) = t1.search(g1, time1)
             debug_assert(len(pv) > 0)
             move = String(pv[0])
             print("move", move, score, end="")
@@ -70,7 +70,7 @@ fn play_opening[T1: TTree, T2: TTree](opening: List[String], log: FileHandle) ra
                 print("", move, end="")
             print()
         else:
-            var (score, pv) = t2.search(g2, 2000)
+            var (score, pv) = t2.search(g2, time2)
             debug_assert(len(pv) > 0)
             move = String(pv[0])
             print("move", move, score, end="")
