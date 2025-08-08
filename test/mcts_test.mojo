@@ -84,7 +84,7 @@ def test_tree():
             print("break", i)
             break
     print(t)
-    print(t.best_child().move, t.best_child().score, t.best_child().decisive)
-    assert_true(String(t.best_child().move) == "<2>")
-    assert_true(String(t.best_child().score) == "2.3809257")
-    assert_true(t.best_child().decisive == False)
+    print(t._best_child().move, t._best_child().score, t._best_child().decisive)
+    assert_true(String(t._best_child().move) == "<2>")
+    assert_true(String(t._best_child().score) == "2.3809257")
+    assert_true(t._best_child().decisive == False)
