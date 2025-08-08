@@ -18,9 +18,10 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String) raises:
             print("\nopening ", i, ": ", sep="", end="")
             for move in opening:
                 print(move, "", end="")
+            print("\nblack:", name1, "white:", name2, end="")
             print()
 
-            var decision = play_opening[T1, T2](200, 200, opening, log_file)
+            var decision = play_opening[T1, T2](2000, 2000, opening, log_file)
             if decision == first_wins:
                 stats[name1] += 1
             elif decision == second_wins:
@@ -31,7 +32,8 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String) raises:
             for stat in stats.items():
                 print(stat.key, stat.value)
 
-            decision = play_opening[T2, T1](200, 200, opening, log_file)
+            print("\nblack:", name2, "white:", name1)
+            decision = play_opening[T2, T1](2000, 2000, opening, log_file)
             if decision == first_wins:
                 stats[name2] += 1
             elif decision == second_wins:
@@ -80,6 +82,8 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
             print()
         g1.play_move(T1.Game.Move(move))
         g2.play_move(T2.Game.Move(move))
+        t1 = T1(Score(0))
+        t2 = T2(Score(0))
         turn = 1 - turn
 
         var decision = g1.decision()
@@ -97,5 +101,5 @@ fn opening_moves() -> List[String]:
     moves = List("j10")
     moves.append(String(places[0]) + "-" + String(places[1]))
     moves.append(String(places[2]) + "-" + String(places[3]))
-    moves.append(String(places[3]) + "-" + String(places[5]))
+    moves.append(String(places[4]) + "-" + String(places[5]))
     return moves

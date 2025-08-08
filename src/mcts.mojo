@@ -1,5 +1,5 @@
 from memory import Pointer
-from utils.numerics import inf, neg_inf
+from utils.numerics import inf, neg_inf, isinf
 from time import perf_counter_ns
 
 from tree import TTree
@@ -9,46 +9,35 @@ struct Mcts[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
     alias Game = G
     alias MctsNode = Node[G, max_moves, c]
 
-    var roots: List[Self.MctsNode]
+    var root: Self.MctsNode
     var no_moves_score: Score
 
     fn __init__(out self, no_moves_score: Score):
-        self.roots = List[Self.MctsNode]()
+        self.root = Self.MctsNode(G.Move(), Score(0), False)
         self.no_moves_score = no_moves_score
         
     fn search(mut self, game: G, max_time_ms: Int) -> (Score, List[G.Move]):
+        self.root = Self.MctsNode(G.Move(), Score(0), False)
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
             if self.expand(game):
                 break
+
         var child_node = self._best_child()
         return (child_node.score, [child_node.move])
 
     fn expand(mut self, game: G, out done: Bool):
-        if not self.roots:
-            var moves = game.moves(max_moves)
-            self.roots.reserve(len(moves))
-            for move in moves:
-                self.roots.append(Self.MctsNode(move))
-            return False
+        if self.root.decisive:
+            return True
 
-        var n_sims = Int32(0)
-        for ref root in self.roots:
-            n_sims += root.n_sims
+        self.root._expand(game)
 
-        var selected_idx = Node.select_node(self.roots, self.c * Float64(n_sims))
-        ref root = self.roots[selected_idx]
-
-        var g = game
-        g.play_move(root.move)
-        root._expand(g)
-
-        if root.decisive and root.score > 0:
+        if self.root.decisive:
             return True
 
         var undecided = 0
-        for ref root in self.roots:
-            if not root.decisive:
+        for ref child in self.root.children:
+            if not child.decisive:
                 undecided += 1
         return undecided < 2
 
@@ -56,11 +45,11 @@ struct Mcts[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
         return self._best_child().move
 
     fn _best_child(self) -> Self.MctsNode:
-        debug_assert(len(self.roots) > 0, "Function node.best_child() is called with no children.")
+        debug_assert(len(self.root.children) > 0, "Function node.best_child() is called with no children.")
         var has_draw = False
-        var draw_node = self.roots[-1]
-        var best_child = Pointer(to = self.roots[-1])
-        for ref child in self.roots:
+        var draw_node = self.root.children[-1]
+        var best_child = Pointer(to = self.root.children[-1])
+        for ref child in self.root.children:
             if child.decisive:
                 if child.score < 0:
                     continue
@@ -81,12 +70,12 @@ struct Mcts[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        for ref root in self.roots:
+        for ref root in self.root.children:
             root.write_to(writer)
 
     fn debug_roots(self) -> String:
         var result = "roots:\n"
-        for ref node in self.roots:
+        for ref node in self.root.children:
             result.write("  ", node.move, " ", node.score, " ", node.decisive, " ", node.n_sims, "\n")
         return result
 
@@ -97,12 +86,13 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
     var children: List[Self]
     var n_sims: Int32
 
-    fn __init__(out self, move: MoveScore[G.Move]):
-        self.move = move.move
-        self.score = move.score
-        self.decisive = move.terminal
+    fn __init__(out self, move: G.Move, score: Score, decisive: Bool):
+        self.move = move
+        self.score = score
+        self.decisive = decisive
         self.children = List[Self]()
         self.n_sims = 1
+        debug_assert(self.decisive or not isinf(self.score))
 
     fn _expand(mut self, game: G):
         if not self.children:
@@ -110,11 +100,11 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
             if not moves:
                 self.score = Score(0)
                 self.decisive = True
-                return
-
-            self.children.reserve(len(moves))
-            for move in moves:
-                self.children.append(Self(move))
+            else:
+                self.children.reserve(len(moves))
+                for move in moves:
+                    debug_assert(move.terminal or not isinf(self.score))
+                    self.children.append(Self(move.move, move.score, move.terminal))
         else:
             var exp_factor = self.c * Float64(self.n_sims)
             ref selected_child = self.children[Self.select_node(self.children, exp_factor)]
@@ -150,10 +140,11 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
             self.decisive = True
         else:
             self.score = Score(-max_score)
+        debug_assert(self.decisive or not isinf(self.score))
 
     @staticmethod
     fn select_node(nodes: List[Self], exp_factor: Float64) -> Int:
-        var selected_child_idx = 0
+        var selected_child_idx = -1
         var maxV = neg_inf[DType.float64]()
         for child_idx in range(len(nodes)):
             ref child = nodes[child_idx]
@@ -163,6 +154,7 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
             if maxV < v:
                 maxV = v
                 selected_child_idx = child_idx
+        debug_assert(selected_child_idx >= 0)
         return selected_child_idx
 
 

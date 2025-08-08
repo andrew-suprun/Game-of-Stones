@@ -27,7 +27,21 @@ trait TMove(Copyable, Movable, EqualityComparable, Hashable, Defaultable, String
         ...
 
 @fieldwise_init
-struct MoveScore[Move: TMove](Copyable, Movable):
+struct MoveScore[Move: TMove](Copyable, Movable, Writable):
     var move: Move
     var score: Score
     var terminal: Bool
+
+    fn write_to[W: Writer](self, mut writer: W):
+        writer.write(self.move)
+        if self.terminal:
+            if self.score > 0:
+                writer.write(" win")
+            elif self.score < 0:
+                writer.write(" loss")
+            else:
+                writer.write(" draw")
+        else:
+            writer.write(self.score)
+
+

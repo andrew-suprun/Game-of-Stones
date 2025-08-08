@@ -23,17 +23,12 @@ fn main() raises:
     var tree = Negamax[C6, 32](Score(0))
     try:
         game.play_move("j10")
-        game.play_move("a1-b4")
-        game.play_move("j9-j11")
-        game.play_move("c7-d10")
-        game.play_move("i10-k10")
-        game.play_move("e13-f16")
-        game.play_move("j12-l10")
+        game.play_move("i9-i10")
     except:
         pass
 
     print(game)
-    var (score, pv) = tree.search(game, 1000)
+    var (score, pv) = tree.search(game, 10)
     print("pv: ", end="")
     for move in pv:
         print(move, "", end="")

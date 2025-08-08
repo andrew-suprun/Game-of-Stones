@@ -8,4 +8,4 @@ alias Tree1 = Mcts[Game1, 20, 5]
 alias Game2 = Connect6[19, 15]
 alias Tree2 = Mcts[Game2, 20, 5]
 
-fn main() raises: run[Tree1, Tree2]("Negamax", "Mcts")
+fn main() raises: run[Tree1, Tree2]("a", "b")

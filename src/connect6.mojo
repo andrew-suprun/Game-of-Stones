@@ -93,8 +93,6 @@ struct Connect6[size: Int, max_places: Int](TGame):
         var moves = List[MoveScore[Move]]()
 
         var places = self.board.places(self.turn)
-        if len(places) <= 1:
-            print(self.board)
         debug_assert(len(places) > 1)
 
         var board_score = self.board._score if self.turn == first else -self.board._score
@@ -123,6 +121,8 @@ struct Connect6[size: Int, max_places: Int](TGame):
 
                 board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
+                if isinf(max_opp_score):
+                    continue
                 var move_score = board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score, False), max_moves, moves)
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
