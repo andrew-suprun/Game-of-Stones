@@ -174,7 +174,19 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
         self.write_to(writer, 0)
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self.move, " v: ", String(self.score), " s: ", self.n_sims, "\n")
+        writer.write("|   " * depth, self.move)
+        if self.decisive:
+            if self.score > 0:
+                writer.write(" win")
+            elif self.score < 0:
+                writer.write(" loss")
+            else:
+                writer.write(" draw")
+        else:
+            writer.write(" ", String(self.score))
+        writer.write(" sims: ", self.n_sims, "\n")
+
+
         if self.children:
             for child in self.children:
                 child.write_to(writer, depth + 1)
