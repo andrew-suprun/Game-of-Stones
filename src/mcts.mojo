@@ -104,7 +104,7 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
         self.children = List[Self]()
         self.n_sims = 1
 
-    fn _expand(mut self, mut game: G):
+    fn _expand(mut self, game: G):
         if not self.children:
             var moves = game.moves(max_moves)
             if not moves:
@@ -118,8 +118,9 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
         else:
             var exp_factor = self.c * Float64(self.n_sims)
             ref selected_child = self.children[Self.select_node(self.children, exp_factor)]
-            game.play_move(selected_child.move)
-            selected_child._expand(game)
+            var g = game
+            g.play_move(selected_child.move)
+            selected_child._expand(g)
 
         self.n_sims = 0
         var max_score = neg_inf[DType.float64]()

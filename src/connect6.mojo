@@ -93,6 +93,8 @@ struct Connect6[size: Int, max_places: Int](TGame):
         var moves = List[MoveScore[Move]]()
 
         var places = self.board.places(self.turn)
+        if len(places) <= 1:
+            print(self.board)
         debug_assert(len(places) > 1)
 
         var board_score = self.board._score if self.turn == first else -self.board._score

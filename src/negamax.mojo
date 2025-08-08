@@ -83,7 +83,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
                 child.score = -score
                 if perf_counter_ns() > self._deadline:
                     if debug:
-                        print("\n#deadline", best_score)
+                        print("\n#" + "|   "*depth + "<-- search: timeout", end="")
                     return (best_score, best_pv)
             else:
                 pv = List[G.Move]()
