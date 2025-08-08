@@ -1,4 +1,4 @@
-from mcts import MCTS
+from mcts import Mcts
 from game import Score, draw, isdecisive, score_str
 from gomoku import Gomoku, Move
 from board import Place
@@ -11,7 +11,7 @@ fn main() raises:
     var title = String.write(max_moves,  "-", c)
     print(title)
     var game = Game()
-    var tree = MCTS[Game, c](draw)
+    var tree = Mcts[Game, c](draw)
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("g9")
@@ -32,5 +32,5 @@ fn main() raises:
             else:
                 print("best move", move, "decision", score_str(node.score), "result", decision)
         print(tree.debug_roots())
-        tree = MCTS[Game, c](draw)
+        tree = Mcts[Game, c](draw)
         print(game)

@@ -4,7 +4,7 @@ from utils.numerics import inf, neg_inf
 from hashlib.hasher import Hasher
 
 from game import TGame, TMove, Score, MoveScore, Decision, undecided
-from mcts import MCTS
+from mcts import Mcts
 
 @fieldwise_init
 struct TestMove(TMove):
@@ -77,7 +77,7 @@ struct TestGame(TGame):
 def test_tree():
     seed(0)
     var g = TestGame()
-    var t = MCTS[TestGame, 10, 10](Score(0))
+    var t = Mcts[TestGame, 10, 10](Score(0))
     for i in range(20):
         var done = t.expand(g)
         if done:

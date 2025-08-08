@@ -1,13 +1,13 @@
 from testing import assert_true
 
 from game import draw
-from mcts import MCTS
+from mcts import Mcts
 from gomoku import Gomoku
 
 fn test_gomoku() raises:
     alias Game = Gomoku[19, 8]
     var game = Game()
-    var tree = MCTS[Game, 10](draw)
+    var tree = Mcts[Game, 10](draw)
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("i10")

@@ -5,7 +5,7 @@ from time import perf_counter_ns
 from tree import TTree
 from game import TGame, Score, MoveScore
 
-struct MCTS[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
+struct Mcts[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
     alias Game = G
     alias MctsNode = Node[G, max_moves, c]
 

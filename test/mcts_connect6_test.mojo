@@ -1,13 +1,13 @@
 from testing import assert_true
 
 from game import Score
-from mcts import MCTS
+from mcts import Mcts
 from connect6 import Connect6
 
 fn test_connect6() raises:
     alias Game = Connect6[19, 20]
     var game = Game()
-    var tree = MCTS[Game, 32, 1](Score(0))
+    var tree = Mcts[Game, 32, 1](Score(0))
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
@@ -22,7 +22,7 @@ fn test_connect6() raises:
 fn main() raises:
     alias Game = Connect6[19, 6]
     var game = Game()
-    var tree = MCTS[Game, 8, 1](Score(0))
+    var tree = Mcts[Game, 8, 1](Score(0))
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)

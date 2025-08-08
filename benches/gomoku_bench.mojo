@@ -1,7 +1,7 @@
 from benchmark import benchmark, Unit, keep
 
 from game import TMove, Score, draw
-from mcts import MCTS
+from mcts import Mcts
 from gomoku import Gomoku
 
 alias G = Gomoku[19, 32]
@@ -19,7 +19,7 @@ fn bench_moves():
 
 fn bench_expand():
     var game = G()
-    var tree = MCTS[G, 20](draw)
+    var tree = Mcts[G, 20](draw)
     try:
         game.play_move(Gomoku.Move("j10"))
         game.play_move(Gomoku.Move("i9"))

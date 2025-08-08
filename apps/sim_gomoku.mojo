@@ -3,7 +3,7 @@ from time import perf_counter_ns
 import random
 
 from game import draw
-from mcts import MCTS
+from mcts import Mcts
 from gomoku import Gomoku, Move
 from board import Place
 
@@ -14,8 +14,8 @@ alias c2 = env_get_int["C2", 16]()
 
 alias Game1 = Gomoku[19, m1]
 alias Game2 = Gomoku[19, m2]
-alias MCTS1 = MCTS[Game1, Float64(c1)]
-alias MCTS2 = MCTS[Game2, Float64(c2)]
+alias Mcts1 = Mcts[Game1, Float64(c1)]
+alias Mcts2 = Mcts[Game2, Float64(c2)]
 
 var __first_wins = 0
 var __second_wins = 0
@@ -42,8 +42,8 @@ alias white = False
 fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
     var g1 = Game1()
     var g2 = Game2()
-    var t1 = MCTS1(draw)
-    var t2 = MCTS2(draw)
+    var t1 = Mcts1(draw)
+    var t2 = Mcts2(draw)
     var n1 = String.write(m1, "-", c1)
     var n2 = String.write(m2, "-", c2)
 
@@ -87,8 +87,8 @@ fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
         turn = not turn
         g1.play_move(move)
         g2.play_move(move)
-        t1 = MCTS1(draw)
-        t2 = MCTS2(draw)
+        t1 = Mcts1(draw)
+        t2 = Mcts2(draw)
         var decision = g1.decision()
         print(roots, file=log)
         print("move", move, decision, sims, player, forced, file=log)
