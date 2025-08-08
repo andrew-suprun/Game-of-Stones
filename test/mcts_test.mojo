@@ -49,7 +49,7 @@ struct TestGame(TGame):
         var n_moves = random_si64(2, 5)
         var id = self.move_id
         for _ in range(n_moves):
-            var rand = random_si64(0, 8)
+            var rand = random_si64(0, 12)
             if rand == 0:
                 moves.append(MoveScore(TestMove(id), 10, True))
             elif rand == 1:
@@ -75,14 +75,16 @@ struct TestGame(TGame):
         pass
 
 def test_tree():
-    seed(6)
+    seed(0)
     var g = TestGame()
     var t = MCTS[TestGame, 10, 10](Score(0))
-    for i in range(100):
+    for i in range(20):
         var done = t.expand(g)
         if done:
             print("break", i)
             break
     print(t)
     print(t.best_child().move, t.best_child().score, t.best_child().decisive)
-    assert_true(False)
+    assert_true(String(t.best_child().move) == "<2>")
+    assert_true(String(t.best_child().score) == "2.3809257")
+    assert_true(t.best_child().decisive == False)
