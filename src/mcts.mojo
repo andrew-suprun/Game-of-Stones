@@ -21,7 +21,7 @@ struct MCTS[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
         while perf_counter_ns() < deadline:
             if self.expand(game):
                 break
-        var child_node = self.best_child()
+        var child_node = self._best_child()
         return (child_node.score, [child_node.move])
 
     fn expand(mut self, game: G, out done: Bool):
@@ -52,7 +52,10 @@ struct MCTS[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
                 undecided += 1
         return undecided < 2
 
-    fn best_child(self) -> Self.MctsNode:
+    fn best_move(self) -> G.Move:
+        return self._best_child().move
+
+    fn _best_child(self) -> Self.MctsNode:
         debug_assert(len(self.roots) > 0, "Function node.best_child() is called with no children.")
         var has_draw = False
         var draw_node = self.roots[-1]
