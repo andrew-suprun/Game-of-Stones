@@ -1,2 +1,2 @@
-* revive mcts
-* terminal -> decisive
+* revive Gomoku
+* revive GUI

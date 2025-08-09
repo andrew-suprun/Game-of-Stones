@@ -50,6 +50,8 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
         var b = beta
         if depth == max_depth:
             var moves = game.moves(1)
+            if not moves:
+                return (Score(0), [])
             debug_assert(len(moves) == 1)
             if debug: print("\n#" + "|   "*depth + "leaf: best move", moves[0].move, moves[0].score, end="")
             return (moves[0].score, [moves[0].move])
@@ -63,12 +65,13 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
             children = game.moves(max_moves)
             if not children:
                 return (self._no_legal_moves_score, List[G.Move]())
-
         debug_assert(len(children) > 0)
+
         var best_pv = List[G.Move]()
         var best_move = children[0].move
         var best_score = neg_inf[DType.float32]()
 
+        sort[greater](children)
         if debug:
             print(" | moves: ", sep="", end="")
             for ref child in children:
@@ -99,7 +102,6 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
             if child.score > b:
                 if debug: print("\n#" + "|   "*depth + "cutoff", end="")
                 return (best_score, List[G.Move]())
-        sort[greater](children)
         if debug:
             print("\n#" + "|   "*depth + "<-- search: best move", best_move, "score", best_score, end="")
         best_pv.append(best_move)

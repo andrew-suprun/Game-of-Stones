@@ -86,10 +86,6 @@ struct Connect6[size: Int, max_places: Int](TGame):
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
 
-        @parameter
-        fn greater(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
-            return a.score > b.score
-
         var moves = List[MoveScore[Move]]()
 
         var places = self.board.places(self.turn)
@@ -126,7 +122,6 @@ struct Connect6[size: Int, max_places: Int](TGame):
                 var move_score = board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score, False), max_moves, moves)
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
-        sort[greater](moves)
         return moves
 
     fn play_move(mut self, move: Move):
