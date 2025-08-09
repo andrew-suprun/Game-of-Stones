@@ -1,21 +1,21 @@
 from testing import assert_true
 
-from game import draw
+from game import Score
 from mcts import Mcts
 from gomoku import Gomoku
 
 fn test_gomoku() raises:
     alias Game = Gomoku[19, 8]
     var game = Game()
-    var tree = Mcts[Game, 10](draw)
+    var tree = Mcts[Game, 10, 5](Score(0))
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("i10")
     print(game)
-    var best_move = Game.Move("a1")
+    var best_move = String(Game.Move())
     for i in range(10_000):
         _ = tree.expand(game)
-        var move = tree.best_move()
+        var move = String(tree.best_move())
         if best_move != move:
             best_move = move
             print(i, best_move)

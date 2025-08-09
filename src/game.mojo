@@ -22,7 +22,7 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
     fn hash(self) -> Int:
         ...
 
-trait TMove(Copyable, Movable, EqualityComparable, Hashable, Defaultable, Stringable, Writable):
+trait TMove(Copyable, Movable, Hashable, Defaultable, Stringable, Writable):
     fn __init__(out self, text: StringSlice) raises:
         ...
 

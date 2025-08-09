@@ -1,36 +1,24 @@
-from mcts import Mcts
-from game import Score, draw, isdecisive, score_str
-from gomoku import Gomoku, Move
-from board import Place
-
-alias max_moves = 8
-alias c = 0
-alias Game = Gomoku[19, max_moves]
+from utils.numerics import inf
+from game import Score
+from gomoku import Gomoku
+from negamax import Negamax
 
 fn main() raises:
-    var title = String.write(max_moves,  "-", c)
-    print(title)
-    var game = Game()
-    var tree = Mcts[Game, c](draw)
-    game.play_move("j10")
-    game.play_move("i9")
-    game.play_move("g9")
-    game.play_move("h9")
+    alias Game = Gomoku[19, 15]
+    alias Tree = Negamax[Game, 20]
 
-    print(game)
-    var decision: String = "no-decision"
-    while decision == "no-decision":
-        for _ in range(1, 1000):
-            _ = tree.expand(game)
-        # print(tree)
-        var move = tree.best_move()
+    var moves_str: String = "j10 h10 i8 j8 l10 i9 " "k7 g11 f12 g10 k10 m10 l11"
+    var moves = moves_str.split(" ")
+    var game = Tree.Game()
+    var tree = Tree(Score(0))
+
+    for move_str in moves:
+        var move = Tree.Game.Move(move_str)
         game.play_move(move)
-        decision = game.decision()
-        for node in tree.roots:
-            if isdecisive(node.score):
-                print("best move", move, "score", node.score)
-            else:
-                print("best move", move, "decision", score_str(node.score), "result", decision)
-        print(tree.debug_roots())
-        tree = Mcts[Game, c](draw)
-        print(game)
+    
+    var (score, pv) = tree.search(game, 250)
+    print(score, "ev:", end="")
+    for move in pv:
+        print("", move, end="")
+    print()
+

@@ -59,7 +59,7 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int](Copyable, Stringable, Writable):
+struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -154,7 +154,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int, max_places: Int]
             stones -= self._places[offset]
             offset += delta
 
-    fn places(self, turn: Int) -> List[Place]:
+    fn places(self, turn: Int, max_places: Int) -> List[Place]:
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
             r = self.score(a, first) < self.score(b, first)

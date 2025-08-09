@@ -1,133 +1,151 @@
-from sys import env_get_int
-from time import perf_counter_ns
-import random
-
-from game import draw
+from negamax import Negamax
 from mcts import Mcts
-from gomoku import Gomoku, Move
-from board import Place
+from gomoku import Gomoku
+from sim import run
 
-alias m1 = env_get_int["M1", 16]()
-alias c1 = env_get_int["C1", 16]()
-alias m2 = env_get_int["M2", 16]()
-alias c2 = env_get_int["C2", 16]()
+alias Game1 = Gomoku[19, 15]
+alias Tree1 = Negamax[Game1, 20]
 
-alias Game1 = Gomoku[19, m1]
-alias Game2 = Gomoku[19, m2]
-alias Mcts1 = Mcts[Game1, Float64(c1)]
-alias Mcts2 = Mcts[Game2, Float64(c2)]
+alias Game2 = Gomoku[19, 15]
+alias Tree2 = Mcts[Game2, 20, 5]
 
-var __first_wins = 0
-var __second_wins = 0
-var __draws = 0
+fn main() raises: run[Tree1, Tree2]("Negamax", "Mcts", openings)
 
-fn main() raises:
-    var n1 = String.write(m1,  "-", c1)
-    var n2 = String.write(m2,  "-", c2)
-    print(n1, "vs.", n2)
-    with open("sim-gomoku.log", "w") as log_file:
-        for i in range(1, 11):
-            random.seed(perf_counter_ns())
-            var opening = opening_moves()
-            print("\nopening ", i, ": ", sep="", end="")
-            for move in opening:
-                print(move, "", end="")
-            print()
-            play_opening(opening, True, log_file)
-            play_opening(opening, False, log_file)
-
-alias black = True
-alias white = False
-
-fn play_opening(opening: List[Move], g1_black: Bool, log: FileHandle):
-    var g1 = Game1()
-    var g2 = Game2()
-    var t1 = Mcts1(draw)
-    var t2 = Mcts2(draw)
-    var n1 = String.write(m1, "-", c1)
-    var n2 = String.write(m2, "-", c2)
-
-    if g1_black:
-        print("Black", n1, "White", n2, file=log)
-    else:
-        print("Black", n2, "White", n1, file=log)
-
-    var turn = g1_black
-    for move in opening:
-        g1.play_move(move)
-        g2.play_move(move)
-        print(move, file=log)
-    print(g1, file=log)
-
-    while True:
-        var sims = 0
-        var move: Move
-        var player: String
-        var forced = False
-        var deadline = perf_counter_ns() + 200_000_000
-        var roots: String
-        if turn == black:
-            while perf_counter_ns() < deadline:
-                if t1.expand(g1):
-                    forced = True
-                    break
-                sims += 1
-            move = t1.best_move()
-            roots = t1.debug_roots()
-            player = n1
-        else:
-            while perf_counter_ns() < deadline:
-                if t2.expand(g2):
-                    forced = True
-                    break
-                sims += 1
-            move = t2.best_move()
-            roots = t2.debug_roots()
-            player = n2
-        turn = not turn
-        g1.play_move(move)
-        g2.play_move(move)
-        t1 = Mcts1(draw)
-        t2 = Mcts2(draw)
-        var decision = g1.decision()
-        print(roots, file=log)
-        print("move", move, decision, sims, player, forced, file=log)
-        print(g1, file=log)
-        if decision == "first-win":
-            if g1_black:
-                print(n1, "wins", file=log)
-                __first_wins += 1
-            else:
-                print(n2, "wins", file=log)
-                __second_wins += 1
-            break
-        elif decision == "second-win":
-            if g1_black:
-                print(n2, "wins", file=log)
-                __second_wins += 1
-            else:
-                print(n1, "wins", file=log)
-                __first_wins += 1
-            break
-        elif decision == "draw":
-            print(n2, "draw", file=log)
-            __draws += 1
-            break
-    print(__first_wins, ":", __second_wins, " (", __draws, ")", sep="")
-
-
-fn opening_moves() -> List[Move]:
-    var places = List[Place]()
-    for j in range(7, 12):
-        for i in range(7, 12):
-            if i != 9 or j != 9:
-                places.append(Place(Int8(i), Int8(j)))
-    random.shuffle(places)
-
-    moves = List(Move(Place(9, 9)))
-    moves.append(Move(places[0]))
-    moves.append(Move(places[1]))
-    moves.append(Move(places[2]))
-    moves.append(Move(places[3]))
-    # moves.append(Move(places[4]))
-    return moves
+alias openings: List[List[String]] = [
+    ["j10",  "h10", "h11",  "i11", "k12", "i9"],
+    ["j10",  "h10", "i8",  "j8", "l10", "i9"],
+    ["j10",  "h10", "j11",  "j9", "k12", "i12"],
+    ["j10",  "h10", "j9",  "i10", "l11", "i11"],
+    ["j10",  "h10", "k11",  "h9", "l8", "i9"],
+    ["j10",  "h10", "k9",  "h11", "i12", "k12"],
+    ["j10",  "h10", "l10",  "h9", "k8", "j11"],
+    ["j10",  "h10", "l10",  "h9", "k9", "i8"],
+    ["j10",  "h10", "l12",  "h12", "k10", "k12"],
+    ["j10",  "h10", "l8",  "h11", "i10", "i9"],
+    ["j10",  "h11", "i10",  "j11", "k10", "i8"],
+    ["j10",  "h11", "i8",  "l9", "l10", "j9"],
+    ["j10",  "h11", "j9",  "k8", "l10", "h8"],
+    ["j10",  "h11", "k12",  "l9", "l12", "i11"],
+    ["j10",  "h11", "k9",  "h10", "j8", "i8"],
+    ["j10",  "h11", "k9",  "l9", "l11", "i12"],
+    ["j10",  "h11", "l12",  "j9", "l10", "h10"],
+    ["j10",  "h12", "i8",  "j11", "l9", "h10"],
+    ["j10",  "h12", "j12",  "h11", "l8", "i8"],
+    ["j10",  "h12", "j9",  "h10", "k9", "h11"],
+    ["j10",  "h12", "j9",  "i12", "k12", "i8"],
+    ["j10",  "h12", "k10",  "h9", "i12", "i8"],
+    ["j10",  "h12", "l10",  "h10", "k10", "h9"],
+    ["j10",  "h12", "l10",  "i10", "k12", "h9"],
+    ["j10",  "h12", "l10",  "k9", "k11", "j8"],
+    ["j10",  "h8", "h12",  "j12", "l9", "k12"],
+    ["j10",  "h8", "i10",  "h10", "l12", "h11"],
+    ["j10",  "h8", "j9",  "k8", "l12", "j11"],
+    ["j10",  "h8", "k10",  "i12", "l10", "j9"],
+    ["j10",  "h8", "k8",  "h9", "k12", "i11"],
+    ["j10",  "h8", "k8",  "k12", "l8", "i11"],
+    ["j10",  "h8", "l11",  "i11", "k11", "i10"],
+    ["j10",  "h8", "l12",  "k12", "l11", "h10"],
+    ["j10",  "h8", "l9",  "i9", "l11", "j12"],
+    ["j10",  "h9", "h12",  "k8", "l11", "k9"],
+    ["j10",  "h9", "i10",  "h11", "i12", "j12"],
+    ["j10",  "h9", "i10",  "i11", "k11", "h12"],
+    ["j10",  "h9", "i8",  "j12", "k11", "h8"],
+    ["j10",  "h9", "j9",  "i11", "l9", "i10"],
+    ["j10",  "h9", "k11",  "h11", "i11", "h10"],
+    ["j10",  "h9", "k11",  "i10", "j8", "j9"],
+    ["j10",  "h9", "l11",  "j9", "j12", "h10"],
+    ["j10",  "h9", "l8",  "l9", "l12", "i9"],
+    ["j10",  "i10", "i11",  "h11", "l12", "k8"],
+    ["j10",  "i10", "i12",  "h9", "k12", "j9"],
+    ["j10",  "i10", "i12",  "j12", "l11", "h9"],
+    ["j10",  "i10", "j12",  "h9", "i8", "h12"],
+    ["j10",  "i10", "j8",  "h8", "j9", "k11"],
+    ["j10",  "i10", "k10",  "j9", "k9", "j8"],
+    ["j10",  "i10", "k9",  "h8", "h11", "h10"],
+    ["j10",  "i10", "l10",  "h9", "l9", "i12"],
+    ["j10",  "i10", "l10",  "k11", "l11", "h12"],
+    ["j10",  "i10", "l10",  "k11", "l8", "i11"],
+    ["j10",  "i10", "l12",  "i11", "l11", "h12"],
+    ["j10",  "i10", "l12",  "l10", "l11", "h9"],
+    ["j10",  "i11", "j11",  "h8", "j9", "k8"],
+    ["j10",  "i11", "k11",  "h11", "l11", "i12"],
+    ["j10",  "i11", "k11",  "h8", "l8", "j9"],
+    ["j10",  "i11", "k12",  "i10", "k11", "k9"],
+    ["j10",  "i11", "k8",  "i8", "j8", "i10"],
+    ["j10",  "i11", "k8",  "k10", "l10", "h12"],
+    ["j10",  "i11", "l8",  "h8", "i10", "k12"],
+    ["j10",  "i11", "l8",  "i8", "l9", "h9"],
+    ["j10",  "i12", "j11",  "i10", "i11", "h11"],
+    ["j10",  "i12", "j11",  "k10", "l8", "h8"],
+    ["j10",  "i12", "j12",  "i8", "l10", "k9"],
+    ["j10",  "i12", "j8",  "h8", "l11", "h11"],
+    ["j10",  "i12", "j8",  "i11", "j12", "i9"],
+    ["j10",  "i12", "l10",  "h10", "k8", "i10"],
+    ["j10",  "i12", "l11",  "h11", "j9", "i10"],
+    ["j10",  "i12", "l8",  "h10", "l11", "i8"],
+    ["j10",  "i12", "l9",  "i8", "j12", "j8"],
+    ["j10",  "i8", "i11",  "h10", "l11", "j9"],
+    ["j10",  "i8", "i9",  "h8", "l10", "i11"],
+    ["j10",  "i8", "i9",  "k9", "l11", "j12"],
+    ["j10",  "i8", "j8",  "j9", "j12", "k10"],
+    ["j10",  "i8", "j9",  "j11", "j12", "h8"],
+    ["j10",  "i8", "k11",  "k9", "k10", "i11"],
+    ["j10",  "i8", "k8",  "i11", "j8", "j9"],
+    ["j10",  "i9", "i10",  "h10", "j11", "j9"],
+    ["j10",  "i9", "i10",  "h8", "l11", "h12"],
+    ["j10",  "i9", "i10",  "j8", "j9", "i11"],
+    ["j10",  "i9", "i12",  "i11", "k10", "k9"],
+    ["j10",  "i9", "i12",  "j11", "k10", "j9"],
+    ["j10",  "i9", "j9",  "h8", "k8", "h12"],
+    ["j10",  "i9", "k8",  "i11", "l9", "l10"],
+    ["j10",  "i9", "l10",  "j8", "k9", "i8"],
+    ["j10",  "i9", "l11",  "j11", "k11", "h11"],
+    ["j10",  "i9", "l12",  "h10", "k8", "h12"],
+    ["j10",  "i9", "l12",  "i8", "i11", "h10"],
+    ["j10",  "i9", "l9",  "l8", "l12", "k12"],
+    ["j10",  "j11", "k10",  "h12", "l11", "h10"],
+    ["j10",  "j11", "k10",  "h12", "l11", "i11"],
+    ["j10",  "j11", "k11",  "h8", "h12", "i11"],
+    ["j10",  "j11", "k11",  "i12", "l10", "h10"],
+    ["j10",  "j11", "k8",  "i12", "j12", "k11"],
+    ["j10",  "j11", "k9",  "k12", "l12", "h10"],
+    ["j10",  "j11", "l10",  "k9", "l9", "i12"],
+    ["j10",  "j11", "l12",  "h12", "k9", "i8"],
+    ["j10",  "j11", "l9",  "h9", "k11", "k9"],
+    ["j10",  "j12", "k12",  "k8", "l10", "h9"],
+    ["j10",  "j12", "l10",  "h9", "k11", "i11"],
+    ["j10",  "j12", "l10",  "k11", "l11", "i11"],
+    ["j10",  "j12", "l12",  "h8", "j8", "i8"],
+    ["j10",  "j8", "j11",  "h10", "l10", "k12"],
+    ["j10",  "j8", "j9",  "i10", "l11", "k8"],
+    ["j10",  "j8", "k11",  "h10", "l10", "j9"],
+    ["j10",  "j8", "l11",  "h12", "i12", "h10"],
+    ["j10",  "j9", "k10",  "i8", "l11", "h10"],
+    ["j10",  "j9", "k12",  "i9", "l9", "h11"],
+    ["j10",  "j9", "k12",  "j12", "k8", "i9"],
+    ["j10",  "j9", "l10",  "h12", "k11", "i12"],
+    ["j10",  "j9", "l10",  "i8", "l9", "k8"],
+    ["j10",  "j9", "l11",  "h11", "j12", "h10"],
+    ["j10",  "j9", "l11",  "i8", "k8", "h8"],
+    ["j10",  "j9", "l9",  "h12", "l11", "k8"],
+    ["j10",  "k10", "k11",  "k8", "k12", "j9"],
+    ["j10",  "k10", "l12",  "i12", "k12", "j12"],
+    ["j10",  "k10", "l9",  "j12", "l8", "j11"],
+    ["j10",  "k11", "l11",  "i12", "k9", "h10"],
+    ["j10",  "k11", "l11",  "i8", "l10", "k9"],
+    ["j10",  "k12", "l10",  "k9", "k10", "i9"],
+    ["j10",  "k12", "l12",  "h11", "k11", "i9"],
+    ["j10",  "k12", "l9",  "h10", "k8", "j8"],
+    ["j10",  "k8", "k9",  "j8", "l11", "h11"],
+    ["j10",  "k8", "l12",  "j12", "k10", "h10"],
+    ["j10",  "k8", "l8",  "h10", "l9", "i9"],
+    ["j10",  "k8", "l9",  "h11", "l8", "h8"],
+    ["j10",  "k9", "k10",  "i8", "l11", "j11"],
+    ["j10",  "k9", "l10",  "k12", "l9", "h10"],
+    ["j10",  "k9", "l11",  "l10", "l12", "k12"],
+    ["j10",  "k9", "l8",  "i12", "k10", "i10"],
+    ["j10",  "k9", "l8",  "k11", "l12", "i9"],
+    ["j10",  "l11", "l12",  "h12", "j12", "k8"],
+    ["j10",  "l8", "l10",  "i12", "l11", "i11"],
+    ["j10",  "l8", "l10",  "i9", "j12", "i11"],
+]

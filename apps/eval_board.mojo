@@ -6,9 +6,9 @@ alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625, inf[DType.float32]())
 
 fn main() raises:
-    var moves_str: String = "j10 h12-h9 k9-l12 l12-i8 j7-m7 h10-h11 h7-h13 i11-j11 i7-k11 j8-k7 i9-l8 f11-n6 e11-g7 f7-h8 f8-k12 e12-i10 g8-g10 f12-g12 d12-j12 f13-f14 d12-j12 e14-j9"
+    var moves_str: String = "j10 h9 i8 j12 k11 h8 " "h7 j9 i11 k9 i9 i10 h11 j11 k12 l9 k14 k10 i12 j13 j14 n9 m9 m8 n7 k13 i13 i14 h12 g11 h13 h14 l7 m13 k7 j7 j8 l6 l8 j6 o7 m7 n8 l10 i6 i7 g9 n10 n13 k5 l4 j5 j4 m5 l5 m10 o10 n11 k8 m6 m4 n4 g8 m11 o9 o11 f9 e10 i4 k4 g10 e8 p6 q5 g6 g7 g13 f14 k15 l16 e13 f13 o8 o6 f5 e4 q11 n12 o13 p10 q9 l14"
     var moves = moves_str.split(" ")
-    var board = Board[values, 19, win_stones, 8]()
+    var board = Board[values, 19, win_stones]()
     var value = Score(0)
 
     var turn = first

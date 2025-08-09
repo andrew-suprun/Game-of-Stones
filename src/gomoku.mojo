@@ -1,73 +1,83 @@
-from game import TGame, TMove, Score, iswin, isdraw
+from sys import env_get_string
+from hashlib.hasher import Hasher
+from builtin.sort import sort
+from utils.numerics import isinf
+
+from game import TGame, TMove, Score, MoveScore, Decision
 from board import Board, Place, first
 
+alias debug = env_get_string["ASSERT_MODE", ""]()
+
 alias win_stones = 5
-alias values = List[Float32](0, 1, 5, 25, 125)
+alias scores = List[Float32](0, 1, 5, 25, 125)
 
 @register_passable("trivial")
 struct Move(TMove):
     var _place: Place
 
-    fn __init__(out self, place: Place):
-        self._place = place
+    fn __init__(out self):
+        self = Self(Place())
+
+    fn __init__(out self, p1: Place):
+        self._place = p1
 
     @implicit
-    fn __init__(out self, move: String) raises:
-        self._place = Place(move)
+    fn __init__(out self, move: StringSlice) raises:
+        self._place = Place(String(move))
 
     @implicit
     fn __init__(out self, move: StringLiteral) raises:
-        self._place = Place(move)
+        self = Self(String(move))
 
-    fn __eq__(self, other: Move) -> Bool:
-        return self._place == other._place
-
-    fn __ne__(self, other: Move) -> Bool:
-        return self._place != other._place
+    fn __hash__[H: Hasher](self, mut hasher: H):
+        hasher.update(self._place)
 
     fn __str__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
-
-struct Gomoku[size: Int, max_moves: Int](TGame):
+    
+struct Gomoku[size: Int, max_places: Int](TGame):
     alias Move = Move
 
-    var board: Board[values, size, win_stones, max_moves]
+    var board: Board[scores, size, win_stones]
     var turn: Int
+    var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[values, size, win_stones, max_moves]()
-        self.turn = first
+        self.board = Board[scores, size, win_stones]()
+        self.turn = 0
+        self._hash = 0
 
-    fn moves(self) -> List[(Move, Score)]:
+    fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:
         @parameter
-        fn move_less(a: (Move, Score), b: (Move, Score)) -> Bool:
-            return a[1] < b[1]
+        fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
+            return a.score < b.score
 
-        var places = self.board.places(self.turn)
-        if len(places) < max_moves:
-            return []
-
-        var moves = List[(Move, Score)](capacity = len(places))
+        var moves = List[MoveScore[Move]]()
+        var places = self.board.places(self.turn, max_moves)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
-            if iswin(score):
-                return [(Move(place), score)]
-            if isdraw(score):
-                moves.append((Move(place), score))
-            else:
-                moves.append((Move(place), board_score + self.board.score(place, self.turn) / 2))
+            if isinf(score):
+                return [MoveScore(Move(place), score, True)]
+            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn) / 2, False))
         return moves
 
-    fn play_move(mut self, move: self.Move):
+    fn play_move(mut self, move: Move):
         self.board.place_stone(move._place, self.turn)
+        if self.turn == first:
+            self._hash += hash(move)
+        else:
+            self._hash -= hash(move)
         self.turn = 1 - self.turn
 
-    fn decision(self) -> StaticString:
+    fn decision(self) -> Decision:
         return self.board.decision()
+
+    fn hash(self) -> Int:
+        return Int(self._hash)
 
     fn __str__(self, out str: String):
         return String(self.board)

@@ -9,7 +9,7 @@ alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
 fn test_place_stone() raises:
     seed(7)
-    var board = Board[values, 19, win_stones, 20]()
+    var board = Board[values, 19, win_stones]()
     var value = Score(0)
     var n = 0
     for i in range(200):
@@ -45,22 +45,8 @@ fn test_place_stone() raises:
             board.place_stone(Place(xx, yy), turn)
             n += 1
 
-fn test_places() raises:
-    var board = Board[values, 19, win_stones, 20]()
-    board.place_stone(Place(9, 9), first)
-    board.place_stone(Place(8, 9), second)
-    var places = board.places(first)
-    for i in range(0, 19):
-        assert_true(board.score(places[i], first) >= board.score(places[i+1], first))
-
-    places = board.places(second)
-    for i in range(0, 20):
-        print(places[i], board.score(places[i], second))
-    for i in range(0, 19):
-        assert_true(board.score(places[i], second) >= board.score(places[i+1], second))
-
 fn test_decision() raises:
-    var board = Board[values, 19, win_stones, 20]()
+    var board = Board[values, 19, win_stones]()
 
     board.place_stone(Place(0, 0), first)
     board.place_stone(Place(0, 1), first)

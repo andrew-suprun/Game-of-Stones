@@ -56,7 +56,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
             if debug: print("\n#" + "|   "*depth + "leaf: best move", moves[0].move, moves[0].score, end="")
             return (moves[0].score, [moves[0].move])
 
-        if debug: print("\n#" + "|   "*depth + "--> search:", "a:", alpha, "b:", beta, end="")
+        if debug: print("\n#" + "|   "*depth + "--> search:", end="")
 
         var children: List[MoveScore[G.Move]]
         try:
@@ -98,13 +98,16 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
                 if child.score > alpha:
                     a = child.score
 
-            if debug: print("\n#" + "|   "*depth + "< move", child.move, child.score, "b", b, "| best score", best_score,end="")
+            if debug: print("\n#" + "|   "*depth + "< move", child.move, child.score, "| best score", best_score,end="")
             if child.score > b:
                 if debug: print("\n#" + "|   "*depth + "cutoff", end="")
                 return (best_score, List[G.Move]())
-        if debug:
-            print("\n#" + "|   "*depth + "<-- search: best move", best_move, "score", best_score, end="")
         best_pv.append(best_move)
+        if debug:
+            print("\n#" + "|   "*depth + "<-- search: best move", best_move, "score", best_score, "pv:", end="")
+            for move in best_pv[::-1]:
+                print("", move, end="")
+
         self._moves_cache[game.hash()] = children^
         return (best_score, best_pv)
 

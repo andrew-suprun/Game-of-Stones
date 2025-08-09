@@ -52,13 +52,6 @@ struct Move(TMove):
         hasher.update(self._p1)
         hasher.update(self._p2)
 
-    fn __eq__(self, other: Self) -> Bool:
-        return (self._p1 == other._p1 and self._p2 == other._p2) or
-                (self._p1 == other._p2 and self._p2 == other._p1)
-
-    fn __ne__(self, other: Self) -> Bool:
-        return not self == other
-
     fn __str__(self) -> String:
         return String.write(self)
 
@@ -70,14 +63,13 @@ struct Move(TMove):
     
 struct Connect6[size: Int, max_places: Int](TGame):
     alias Move = Move
-    alias Score = Score
 
-    var board: Board[scores, size, win_stones, max_places]
+    var board: Board[scores, size, win_stones]
     var turn: Int
     var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[scores, size, win_stones, max_places]()
+        self.board = Board[scores, size, win_stones]()
         self.turn = 0
         self._hash = 0
 
@@ -88,7 +80,7 @@ struct Connect6[size: Int, max_places: Int](TGame):
 
         var moves = List[MoveScore[Move]]()
 
-        var places = self.board.places(self.turn)
+        var places = self.board.places(self.turn, max_places)
         debug_assert(len(places) > 1)
 
         var board_score = self.board._score if self.turn == first else -self.board._score
