@@ -22,14 +22,14 @@ fn benchScores2():
         a[i] = Scores(
             rand(), rand()
         )
-    var max_score: Score = 0
+    var max_score: Float32 = 0
     for _ in range(10_000):
         for j in range(361):
             max_score = max(max_score, a[j][0])
     keep(max_score)
 
-fn rand() -> Score:
-    return Score(random_float64(-10, 10))
+fn rand() -> Float32:
+    return Float32(random_float64(-10, 10))
 
 fn main() raises:
     print("Scores.1", benchmark.run[benchScores1]().mean(Unit.ms))

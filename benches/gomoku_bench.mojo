@@ -14,12 +14,12 @@ fn bench_moves():
     except:
         pass
     for _ in range(1000):
-        var moves = game.moves()
-        keep(moves[0][0])
+        var moves = game.moves(32)
+        keep(moves[0].move)
 
 fn bench_expand():
     var game = G()
-    var tree = Mcts[G, 20](draw)
+    var tree = Mcts[G, 20, 20](draw)
     try:
         game.play_move(Gomoku.Move("j10"))
         game.play_move(Gomoku.Move("i9"))

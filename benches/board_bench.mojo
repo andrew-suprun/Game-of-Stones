@@ -25,7 +25,7 @@ fn bench_place_stone():
 fn bench_places():
     var board = Board[values, 19, win_stones]()
     for _ in range(1000):
-        _ = board.places(first)
+        _ = board.places(first, 20)
 
 fn main() raises:
     print("--- board (ms/1000) ---")
