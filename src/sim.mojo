@@ -1,10 +1,7 @@
-from sys import env_get_int
-from time import perf_counter_ns
-import random
 
 from tree import TTree
 from game import Score, Decision, undecided, first_wins, second_wins
-from board import Place, first
+from board import first
 
 alias timeout = 200
 
