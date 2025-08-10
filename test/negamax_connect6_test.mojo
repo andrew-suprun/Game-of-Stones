@@ -23,6 +23,7 @@ fn main() raises:
     try:
         game.play_move("j10")
         game.play_move("i9-i10")
+        game.play_move("i11-k9")
     except:
         pass
 

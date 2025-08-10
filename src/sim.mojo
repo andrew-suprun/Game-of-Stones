@@ -6,13 +6,14 @@ from tree import TTree
 from game import Score, Decision, undecided, first_wins, second_wins
 from board import Place, first
 
+alias timeout = 200
+
 fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[String]]) raises:
     var stats = Dict[String, Int]()
     stats[name1] = 0
     stats[name2] = 0
     stats["draw"] = 0
     for opening in openings:
-        random.seed(perf_counter_ns())
         print()
         print("opening:", end="")
         for move in opening:
@@ -22,7 +23,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
         print()
         print(name1, "vs.", name2)
         print()
-        var decision = play_opening[T1, T2](250, 250, opening)
+        var decision = play_opening[T1, T2](timeout, timeout, opening)
         if decision == first_wins:
             stats[name1] += 1
         elif decision == second_wins:
@@ -37,7 +38,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
         print()
         print(name2, "vs.", name1)
         print()
-        decision = play_opening[T2, T1](250, 250, opening)
+        decision = play_opening[T2, T1](timeout, timeout, opening)
         if decision == first_wins:
             stats[name2] += 1
         elif decision == second_wins:

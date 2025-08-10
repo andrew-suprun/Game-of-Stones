@@ -58,7 +58,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
             if debug: print("\n#" + "|   "*depth + "leaf: best move", moves[0].move, moves[0].score, end="")
             return (moves[0].score, [moves[0].move])
 
-        if debug: print("\n#" + "|   "*depth + "--> search:", end="")
+        if debug: print("\n#" + "|   "*depth + "--> search", end="")
 
         var children: List[MoveScore[G.Move]]
         try:
@@ -75,9 +75,9 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
 
         sort[greater](children)
         if debug:
-            print(" | moves: ", sep="", end="")
+            print(" moves:", sep="", end="")
             for ref child in children:
-                print(child.move, "", end="")
+                print("", child.move, child.score, end="")
 
         for ref child in children:
             if debug: print("\n#" + "|   "*depth + "> move", child.move, child.score, end="")
