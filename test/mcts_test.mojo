@@ -3,7 +3,7 @@ from testing import assert_true
 from utils.numerics import inf, neg_inf
 from hashlib.hasher import Hasher
 
-from game import TGame, TMove, Score, MoveScore, Decision, undecided
+from game import TGame, TMove, Score, MoveScore, Decision, undecided, draw
 from mcts import Mcts
 
 @fieldwise_init
@@ -77,7 +77,7 @@ struct TestGame(TGame):
 def test_tree():
     seed(0)
     var g = TestGame()
-    var t = Mcts[TestGame, 10, 10](Score(0))
+    var t = Mcts[TestGame, 10, 10, draw]()
     for i in range(20):
         var done = t.expand(g)
         if done:

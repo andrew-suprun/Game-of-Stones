@@ -2,22 +2,20 @@ from sys import argv, env_get_bool
 from time import perf_counter_ns
 from utils.numerics import inf, neg_inf, isinf
 
-from game import TGame, Score, Terminal, MoveScore
+from game import TGame, Score, Decision, MoveScore, draw
 from tree import TTree
 
 alias debug = env_get_bool["DEBUG", False]()
 
-struct Negamax[G: TGame, max_moves: Int](TTree):
+struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Decision](TTree):
     alias Game = G
     
-    var _no_legal_moves_score: Score
     var _best_score: Score
     var _pv: List[G.Move]
     var _deadline: UInt
     var _moves_cache: Dict[Int, List[MoveScore[G.Move]]]
 
-    fn __init__(out self, no_legal_moves_score: Score):
-        self._no_legal_moves_score: Score = no_legal_moves_score
+    fn __init__(out self):
         self._best_score = Score(0)
         self._pv = List[G.Move]()        
         self._deadline = 0
@@ -66,7 +64,11 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
         except:
             children = game.moves(max_moves)
             if not children:
-                return (self._no_legal_moves_score, List[G.Move]())
+                if no_legal_moves_decision == draw:
+                    return (Score(0), List[G.Move]())
+                else:
+                    return (Score(neg_inf[DType.float32]()), List[G.Move]())
+
         debug_assert(len(children) > 0)
 
         var best_pv = List[G.Move]()

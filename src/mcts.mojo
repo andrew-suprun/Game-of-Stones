@@ -3,18 +3,16 @@ from utils.numerics import inf, neg_inf, isinf
 from time import perf_counter_ns
 
 from tree import TTree
-from game import TGame, Score, MoveScore
+from game import TGame, Score, MoveScore, Decision, draw
 
-struct Mcts[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
+struct Mcts[G: TGame, max_moves: Int, c: Float64, no_legal_moves_decision: Decision](TTree, Stringable, Writable):
     alias Game = G
-    alias MctsNode = Node[G, max_moves, c]
+    alias MctsNode = Node[G, max_moves, c, no_legal_moves_decision]
 
     var root: Self.MctsNode
-    var no_moves_score: Score
 
-    fn __init__(out self, no_moves_score: Score):
+    fn __init__(out self):
         self.root = Self.MctsNode(G.Move(), Score(0), False)
-        self.no_moves_score = no_moves_score
         
     fn search(mut self, game: G, max_time_ms: Int) -> (Score, List[G.Move]):
         self.root = Self.MctsNode(G.Move(), Score(0), False)
@@ -79,7 +77,7 @@ struct Mcts[G: TGame, max_moves: Int, c: Float64](TTree, Stringable, Writable):
             result.write("  ", node.move, " ", node.score, " ", node.decisive, " ", node.n_sims, "\n")
         return result
 
-struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representable, Stringable, Writable):
+struct Node[G: TGame, max_moves: Int, c: Float64, no_legal_moves_decision: Decision](Copyable, Movable, Representable, Stringable, Writable):
     var move: G.Move
     var score: Score
     var decisive: Bool
@@ -98,8 +96,12 @@ struct Node[G: TGame, max_moves: Int, c: Float64](Copyable, Movable, Representab
         if not self.children:
             var moves = game.moves(max_moves)
             if not moves:
-                self.score = Score(0)
                 self.decisive = True
+                if no_legal_moves_decision == draw:
+                    self.score = Score(0)
+                else:
+                    self.score = Score(neg_inf[DType.float32]())
+
             else:
                 self.children.reserve(len(moves))
                 for move in moves:

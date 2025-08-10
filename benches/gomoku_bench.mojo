@@ -19,7 +19,7 @@ fn bench_moves():
 
 fn bench_expand():
     var game = G()
-    var tree = Mcts[G, 20, 20](draw)
+    var tree = Mcts[G, 20, 20, draw]()
     try:
         game.play_move(Gomoku.Move("j10"))
         game.play_move(Gomoku.Move("i9"))

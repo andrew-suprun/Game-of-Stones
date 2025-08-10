@@ -21,7 +21,7 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
         self.y = -1
 
     @implicit
-    fn __init__(out self, place: String) raises:
+    fn __init__(out self, place: StringSlice) raises:
         self.x = ord(place[0]) - ord("a")
         self.y = Int(place[1:]) - 1
 
