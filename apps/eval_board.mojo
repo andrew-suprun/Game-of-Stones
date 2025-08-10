@@ -24,13 +24,13 @@ fn main() raises:
                 score += board_score
                 value += board_score
                 print(place, board.score(place, first))
-                board.place_stone(String(place), first)
+                board.place_stone(place, first)
             else:
                 board_score = board.score(place, second)
                 score -= board_score
                 value -= board_score
                 print(place, board.score(place, second))
-                board.place_stone(String(place), second)
+                board.place_stone(place, second)
             debug_assert(value == board.board_value(values))
             print(board)
             # print(board.str_scores())

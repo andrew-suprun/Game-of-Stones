@@ -5,8 +5,8 @@ from game import draw
 from mcts import Mcts
 from connect6 import Connect6
 
-alias Game = Connect6[size = 19, max_places = 18]
-alias Tree = Mcts[Game, max_moves = 32, c = 5, no_legal_moves_decision = draw]
+alias Game = Connect6[size = 19, max_places = 15]
+alias Tree = Mcts[Game, max_moves = 20, c = 5, no_legal_moves_decision = draw]
 
 fn main() raises:
     var done = False
