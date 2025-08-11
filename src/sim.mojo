@@ -52,8 +52,8 @@ alias white = False
 fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[String]) raises -> Decision:
     var g1 = T1.Game()
     var g2 = T2.Game()
-    var t1 = T1(Score(0))
-    var t2 = T2(Score(0))
+    var t1 = T1()
+    var t2 = T2()
     var turn = first
 
     for move in opening:
@@ -82,8 +82,8 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
             print()
         g1.play_move(T1.Game.Move(move))
         g2.play_move(T2.Game.Move(move))
-        t1 = T1(Score(0))
-        t2 = T2(Score(0))
+        t1 = T1()
+        t2 = T2()
         turn = 1 - turn
 
         var decision = g1.decision()
