@@ -1,6 +1,6 @@
 from testing import assert_true
 
-from game import Score, draw
+from score import Score, draw
 from negamax import Negamax
 from connect6 import Connect6
 
@@ -19,7 +19,7 @@ fn test_connect6() raises:
 
 fn main() raises:
     var game = C6()
-    var tree = Negamax[C6, 32](Score(0))
+    var tree = Negamax[C6, 32, draw]()
     try:
         game.play_move("j10")
         game.play_move("i9-i10")

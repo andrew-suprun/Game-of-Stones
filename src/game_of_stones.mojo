@@ -3,9 +3,10 @@ from python import Python, PythonObject
 import random
 import sys
 
+from score import Score
 from board import Place
 from tree import TTree
-from game import TGame, TMove, Score, undecided
+from game import TGame, TMove
 from gomoku import Gomoku
 
 alias board_size = 19
@@ -78,9 +79,9 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         self.selected.clear()
         self.game.play_move(move)
         self.tree = Tree()
-        print("move", move, self.game.decision())
+        print("move", move, "terminal:", self.game.is_terminal())
         print(self.game)
-        if self.game.decision() != undecided:
+        if self.game.is_terminal():
             self.game_complete = True
 
         self.turn = 1 - self.turn

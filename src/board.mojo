@@ -3,7 +3,7 @@ from builtin.sort import sort
 from utils.numerics import inf, isinf
 from memory import memcpy
 
-from game import Score, Decision, undecided, first_wins, second_wins, draw
+from score import Score, win, loss, draw
 from heap import heap_add
 
 alias first = 0
@@ -177,7 +177,10 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
                         heap_add[less_second](Place(x, y), max_places, places)
         return places^
 
-    fn decision(self) -> Decision:
+    fn score(self) -> Score:
+        return self._score
+
+    fn is_terminal(self) -> Bool:
         for a in range(size):
             var h_stones = SIMD[DType.int64, 2](0, 0)
             var v_stones = SIMD[DType.int64, 2](0, 0)
@@ -188,9 +191,9 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
                 h_stones += self._counts(self[b + win_stones - 1, a])
                 v_stones += self._counts(self[a, b + win_stones - 1])
                 if h_stones[0] == win_stones or v_stones[0] == win_stones:
-                    return first_wins
+                    return True
                 elif h_stones[1] == win_stones or v_stones[1] == win_stones:
-                    return second_wins
+                    return True
                 h_stones -= self._counts(self[b, a])
                 v_stones -= self._counts(self[a, b])
 
@@ -204,9 +207,9 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
                 stones1 += self._counts(self[x + win_stones - 1, x + y + win_stones - 1])
                 stones2 += self._counts(self[size - x - win_stones, x + y + win_stones - 1])
                 if stones1[0] == win_stones or stones2[0] == win_stones:
-                    return first_wins
+                    return True
                 elif stones1[1] == win_stones or stones2[1] == win_stones:
-                    return second_wins
+                    return True
                 stones1 -= self._counts(self[x, x+y])
                 stones2 -= self._counts(self[size - 1 - x, x + y])
 
@@ -220,9 +223,9 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
                 stones1 += self._counts(self[x + y + win_stones - 1, y + win_stones - 1])
                 stones2 += self._counts(self[size - win_stones - x - y, y + win_stones - 1])
                 if stones1[0] == win_stones or stones2[0] == win_stones:
-                    return first_wins
+                    return True
                 elif stones1[1] == win_stones or stones2[1] == win_stones:
-                    return second_wins
+                    return True
                 stones1 -= self._counts(self[x + y, y])
                 stones2 -= self._counts(self[size - 1 - x - y, y])
 
@@ -230,9 +233,9 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
             for x in range(size):
                 var score = self.score(Place(x, y), first)
                 if self[x, y] == self.empty and (isinf(score) or score >= 1):
-                    return undecided
+                    return False
 
-        return draw
+        return True
 
     fn _counts(self, stones: Int8, out result: SIMD[DType.int64, 2]):
         if stones == 1:

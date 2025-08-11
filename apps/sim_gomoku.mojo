@@ -3,7 +3,7 @@ from time import perf_counter_ns
 
 from negamax import Negamax
 from mcts import Mcts
-from game import draw
+from score import draw
 from gomoku import Gomoku
 from board import Place
 from sim import run

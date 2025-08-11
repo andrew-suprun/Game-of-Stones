@@ -1,6 +1,6 @@
 
 from tree import TTree
-from game import Score, Decision, undecided, first_wins, second_wins
+from score import Score, win, loss
 from board import first
 
 alias timeout = 200
@@ -21,9 +21,9 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
         print(name1, "vs.", name2)
         print()
         var decision = play_opening[T1, T2](timeout, timeout, opening)
-        if decision == first_wins:
+        if decision == win:
             stats[name1] += 1
-        elif decision == second_wins:
+        elif decision == loss:
             stats[name2] += 1
         else:
             stats["draw"] += 1
@@ -36,9 +36,9 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
         print(name2, "vs.", name1)
         print()
         decision = play_opening[T2, T1](timeout, timeout, opening)
-        if decision == first_wins:
+        if decision == win:
             stats[name2] += 1
-        elif decision == second_wins:
+        elif decision == loss:
             stats[name1] += 1
         else:
             stats["draw"] += 1
@@ -49,7 +49,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
 alias black = True
 alias white = False
 
-fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[String]) raises -> Decision:
+fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[String]) raises -> Score:
     var g1 = T1.Game()
     var g2 = T2.Game()
     var t1 = T1()
@@ -86,7 +86,6 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
         t2 = T2()
         turn = 1 - turn
 
-        var decision = g1.decision()
-        if decision != undecided:
-            return decision
+        if g1.is_terminal():
+            return g1.score()
 

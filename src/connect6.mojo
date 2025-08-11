@@ -1,9 +1,9 @@
 from sys import env_get_string
 from hashlib.hasher import Hasher
 from builtin.sort import sort
-from utils.numerics import isinf, neg_inf
 
-from game import TGame, TMove, Score, Terminal, MoveScore, Decision
+from score import Score, is_win, win
+from game import TGame, TMove, MoveScore
 from board import Board, Place, first
 from heap import heap_add
 
@@ -87,8 +87,8 @@ struct Connect6[size: Int, max_places: Int](TGame):
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
-            if isinf(score1):
-                return [MoveScore(Move(place1, place1), score1, True)]
+            if is_win(score1):
+                return [MoveScore(Move(place1, place1), win)]
 
             var board1 = self.board
             board1.place_stone(place1, self.turn)
@@ -97,8 +97,8 @@ struct Connect6[size: Int, max_places: Int](TGame):
                 var place2 = places[j]
                 var score2 = board1.score(place2, self.turn)
 
-                if isinf(score2):
-                    return [MoveScore(Move(place1, place2), score2, True)]
+                if is_win(score2):
+                    return [MoveScore(Move(place1, place2), win)]
 
                 var board2 = board1
                 if debug:
@@ -109,10 +109,10 @@ struct Connect6[size: Int, max_places: Int](TGame):
 
                 board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
-                if isinf(max_opp_score):
+                if is_win(max_opp_score):
                     continue
                 var move_score = board_score + score1 + score2 - max_opp_score
-                heap_add[less](MoveScore(Move(place1, place2), move_score, False), max_moves, moves)
+                heap_add[less](MoveScore(Move(place1, place2), move_score), max_moves, moves)
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
         return moves
 
@@ -126,8 +126,11 @@ struct Connect6[size: Int, max_places: Int](TGame):
             self._hash -= hash(move)
         self.turn = 1 - self.turn
 
-    fn decision(self) -> Decision:
-        return self.board.decision()
+    fn score(self) -> Score:
+        return self.board.score()
+
+    fn is_terminal(self) -> Bool:
+        return self.board.is_terminal()
 
     fn hash(self) -> Int:
         return Int(self._hash)

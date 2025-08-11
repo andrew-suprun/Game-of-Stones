@@ -1,9 +1,10 @@
 from random import seed, random_si64, random_float64
-from testing import assert_true
+from testing import assert_true, assert_false
 from utils.numerics import inf, neg_inf
 from hashlib.hasher import Hasher
 
-from game import TGame, TMove, Score, MoveScore, Decision, undecided, draw
+from score import Score, win, draw, str_score
+from game import TGame, TMove, MoveScore
 from mcts import Mcts
 
 @fieldwise_init
@@ -51,19 +52,22 @@ struct TestGame(TGame):
         for _ in range(n_moves):
             var rand = random_si64(0, 12)
             if rand == 0:
-                moves.append(MoveScore(TestMove(id), 10, True))
+                moves.append(MoveScore(TestMove(id), win))
             elif rand == 1:
-                moves.append(MoveScore(TestMove(id), 0, True))
+                moves.append(MoveScore(TestMove(id), draw))
             else:
-                moves.append(MoveScore(TestMove(id), Score(random_float64(-10, 10)), False))
+                moves.append(MoveScore(TestMove(id), Score(random_float64(-10, 10))))
             id += 1
         return moves
 
     fn play_move(mut self, move: self.Move):
         self.move_id *= 10
 
-    fn decision(self) -> Decision:
-        return undecided
+    fn score(self) -> Score:
+        return 0
+
+    fn is_terminal(self) -> Bool:
+        return False
 
     fn hash(self) -> Int:
         return 0
@@ -84,7 +88,7 @@ def test_tree():
             print("break", i)
             break
     print(t)
-    print(t._best_child().move, t._best_child().score, t._best_child().decisive)
+    print(t._best_child().move, str_score(t._best_child().score))
     assert_true(String(t._best_child().move) == "<2>")
     assert_true(String(t._best_child().score) == "2.3809257")
-    assert_true(t._best_child().decisive == False)
+    assert_false(g.is_terminal())

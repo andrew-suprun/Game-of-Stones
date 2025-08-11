@@ -1,9 +1,9 @@
 from sys import env_get_string
 from hashlib.hasher import Hasher
 from builtin.sort import sort
-from utils.numerics import isinf
 
-from game import TGame, TMove, Score, MoveScore, Decision
+from score import Score, is_win
+from game import TGame, TMove, MoveScore, Decision
 from board import Board, Place, first
 
 alias debug = env_get_string["ASSERT_MODE", ""]()
@@ -60,9 +60,9 @@ struct Gomoku[size: Int, max_places: Int](TGame):
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
-            if isinf(score):
-                return [MoveScore(Move(place), score, True)]
-            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn) / 2, False))
+            if is_win(score):
+                return [MoveScore(Move(place), score)]
+            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn) / 2))
         return moves
 
     fn play_move(mut self, move: Move):
@@ -73,8 +73,11 @@ struct Gomoku[size: Int, max_places: Int](TGame):
             self._hash -= hash(move)
         self.turn = 1 - self.turn
 
-    fn decision(self) -> Decision:
-        return self.board.decision()
+    fn score(self) -> Score:
+        return self.board.score()
+
+    fn is_terminal(self) -> Bool:
+        return self.board.is_terminal()
 
     fn hash(self) -> Int:
         return Int(self._hash)

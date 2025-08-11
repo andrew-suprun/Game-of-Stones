@@ -1,11 +1,4 @@
-alias Score = Float32
-alias Terminal = Bool
-
-alias Decision = Int
-alias undecided: Decision = 0
-alias first_wins: Decision = 1
-alias second_wins: Decision = 2
-alias draw: Decision = 3
+from score import Score, is_win, is_loss, is_draw
 
 trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
@@ -16,7 +9,10 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
     fn play_move(mut self, move: Move):
         ...
 
-    fn decision(self) -> Decision:
+    fn score(self) -> Score:
+        ...
+
+    fn is_terminal(self) -> Bool:
         ...
 
     fn hash(self) -> Int:
@@ -30,17 +26,15 @@ trait TMove(Copyable, Movable, Hashable, Defaultable, Stringable, Writable):
 struct MoveScore[Move: TMove](Copyable, Movable, Writable):
     var move: Move
     var score: Score
-    var terminal: Bool
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move)
-        if self.terminal:
-            if self.score > 0:
-                writer.write(" win")
-            elif self.score < 0:
-                writer.write(" loss")
-            else:
-                writer.write(" draw")
+        if is_win(self.score):
+            writer.write(" win")
+        elif is_loss(self.score):
+            writer.write(" loss")
+        elif is_draw(self.score):
+            writer.write(" draw")
         else:
             writer.write(self.score)
 

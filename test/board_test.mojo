@@ -1,7 +1,7 @@
 from testing import assert_true, assert_false
 from random import seed, random_si64
 
-from game import Score, undecided, first_wins, second_wins
+from score import Score, win, loss
 from board import Board, Place, first, second
 
 alias win_stones = 6
@@ -45,7 +45,7 @@ fn test_place_stone() raises:
             board.place_stone(Place(xx, yy), turn)
             n += 1
 
-fn test_decision() raises:
+fn test_score() raises:
     var board = Board[values, 19, win_stones]()
 
     board.place_stone(Place(0, 0), first)
@@ -107,72 +107,72 @@ fn test_decision() raises:
     print(board)
 
     print(1)
-    print(board.decision())
+    print(board.score())
     print(2)
-    assert_true(board.decision() == undecided)
+    assert_true(board.score() == 0)
     print(2.5)
 
     var b = board
     b.place_stone(Place(0, 5), first)
     print(3)
-    print(b.decision())
+    print(b.score())
     print(4)
-    assert_true(b.decision() == first_wins)
+    assert_true(b.score() == win)
 
     b = board
     b.place_stone(Place(5, 5), first)
-    print(b.decision())
-    assert_true(b.decision() == first_wins)
+    print(b.score())
+    assert_true(b.score() == win)
 
     b = board
     b.place_stone(Place(5, 0), first)
-    print(b.decision())
-    assert_true(b.decision() == first_wins)
+    print(b.score())
+    assert_true(b.score() == win)
 
     b = board
     b.place_stone(Place(18, 5), second)
-    print(b.decision())
-    assert_true(b.decision() == second_wins)
+    print(b.score())
+    assert_true(b.score() == loss)
 
     b = board
     b.place_stone(Place(13, 5), second)
-    print(b.decision())
-    assert_true(b.decision() == second_wins)
+    print(b.score())
+    assert_true(b.score() == loss)
 
     b = board
     b.place_stone(Place(13, 0), second)
-    print(b.decision())
-    assert_true(b.decision() == second_wins)
+    print(b.score())
+    assert_true(b.score() == loss)
 
     b = board
     b.place_stone(Place(13, 18), first)
-    print(b.decision())
-    assert_true(b.decision() == first_wins)
+    print(b.score())
+    assert_true(b.score() == win)
 
     b = board
     b.place_stone(Place(18, 13), first)
-    print(b.decision())
-    assert_true(b.decision() == first_wins)
+    print(b.score())
+    assert_true(b.score() == win)
 
     b = board
     b.place_stone(Place(13, 13), first)
-    print(b.decision())
-    assert_true(b.decision() == first_wins)
+    print(b.score())
+    assert_true(b.score() == win)
 
     b = board
     b.place_stone(Place(5, 18), second)
-    print(b.decision())
-    assert_true(b.decision() == second_wins)
+    print(b.score())
+    assert_true(b.score() == loss)
 
     b = board
     b.place_stone(Place(5, 13), second)
-    print(b.decision())
-    assert_true(b.decision() == second_wins)
+    print(b.score())
+    assert_true(b.score() == loss)
 
     b = board
     b.place_stone(Place(0, 13), second)
-    print(b.decision())
-    assert_true(b.decision() == second_wins)
+    print(b.score())
+    assert_true(b.score() == loss)
 
 fn test_connected_to() raises:
     assert_false(Place(2, 5).connected_to[5](Place(7, 5)))

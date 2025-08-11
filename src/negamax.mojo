@@ -2,12 +2,13 @@ from sys import argv, env_get_bool
 from time import perf_counter_ns
 from utils.numerics import inf, neg_inf, isinf
 
-from game import TGame, Score, Decision, MoveScore, draw
+from score import Score, draw, is_decisive
+from game import TGame, MoveScore
 from tree import TTree
 
 alias debug = env_get_bool["DEBUG", False]()
 
-struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Decision](TTree):
+struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
     alias Game = G
     
     var _best_score: Score
@@ -83,7 +84,7 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Decision](TTre
 
         for ref child in children:
             if debug: print("\n#" + "|   "*depth + "> move", child.move, child.score, end="")
-            if not child.terminal:
+            if not is_decisive(child.score):
                 var child_game = game
                 child_game.play_move(child.move)
                 (score, pv) = self._search(child_game, -b, -a, depth + 1, max_depth)

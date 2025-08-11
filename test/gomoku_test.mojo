@@ -1,6 +1,6 @@
 from testing import assert_true
 
-from game import Score, draw
+from score import Score, draw
 from mcts import Mcts
 from gomoku import Gomoku
 

@@ -1,7 +1,7 @@
 from sys import env_get_int
 
 from game_of_stones import game_of_stones
-from game import draw
+from score import draw
 from mcts import Mcts
 from gomoku import Gomoku
 
