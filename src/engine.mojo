@@ -1,7 +1,7 @@
 from sys import argv
 from time import perf_counter_ns
 
-from game import TGame, Score, Decision, undecided, first_wins, second_wins
+from game import TGame, Score
 from tree import TTree
 
 fn run[Tree: TTree]() raises:

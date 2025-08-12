@@ -8,10 +8,10 @@ from gomoku import Gomoku
 from board import Place
 from sim import run
 
-alias Game1 = Gomoku[19, 15]
+alias Game1 = Gomoku[15]
 alias Tree1 = Negamax[Game1, 20, draw]
 
-alias Game2 = Gomoku[19, 15]
+alias Game2 = Gomoku[15]
 alias Tree2 = Mcts[Game2, 20, 5, draw]
 
 fn main() raises: run[Tree1, Tree2]("Negamax", "Mcts", openings())

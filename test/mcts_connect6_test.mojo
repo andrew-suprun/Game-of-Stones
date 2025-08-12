@@ -5,7 +5,7 @@ from mcts import Mcts
 from connect6 import Connect6
 
 fn test_connect6() raises:
-    alias Game = Connect6[19, 20]
+    alias Game = Connect6[20]
     var game = Game()
     var tree = Mcts[Game, 32, 1, draw]()
     game.play_move("j10")
@@ -20,7 +20,7 @@ fn test_connect6() raises:
     assert_true(String(tree.best_move()) == "i11-k9")
 
 fn main() raises:
-    alias Game = Connect6[19, 6]
+    alias Game = Connect6[6]
     var game = Game()
     var tree = Mcts[Game, 8, 5, draw]()
     game.play_move("j10")

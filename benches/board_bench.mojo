@@ -1,20 +1,20 @@
 from benchmark import benchmark, Unit, keep
 
 from game import Score
-from board import Board, Place, first, _value_table
+from board import Board, Place, size, first, _value_table
 
 alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
 fn bench_update_row():
-    var board = Board[values, 19, win_stones]()
+    var board = Board[values, win_stones]()
     var vv = _value_table[6, values]()
     for _ in range(1000):
-        board._update_row(0, board.size + 1, 6, vv[0])
+        board._update_row(0, size + 1, 6, vv[0])
     keep(board._scores[5*20])
 
 fn bench_place_stone():
-    var board = Board[values, 19, win_stones]()
+    var board = Board[values, win_stones]()
     var score = Score(0)
     for _ in range(1000):
         var new_board = board
@@ -23,7 +23,7 @@ fn bench_place_stone():
         score += new_board._score
 
 fn bench_places():
-    var board = Board[values, 19, win_stones]()
+    var board = Board[values, win_stones]()
     for _ in range(1000):
         _ = board.places(first, 20)
 

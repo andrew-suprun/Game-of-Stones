@@ -4,7 +4,7 @@ from game import TMove, Score, draw
 from mcts import Mcts
 from gomoku import Gomoku
 
-alias G = Gomoku[19, 32]
+alias G = Gomoku[32]
 
 fn bench_moves():
     var game = G()

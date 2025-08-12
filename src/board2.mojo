@@ -11,6 +11,18 @@ alias first = 0
 alias second = 1
 alias Scores = SIMD[DType.float32, 2]
 
+alias l = offsets(1)
+alias d = offsets(size)
+alias dl = offsets(size+1)
+alias dr = offsets(size-1)
+
+fn offsets(delta: Int8) -> SIMD[DType.int8, 8]:
+    var result = SIMD[DType.int8, 8]()
+    for i in range(8):
+        result[i] = i*delta
+
+
+
 @fieldwise_init
 @register_passable("trivial")
 struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessThanComparable, Stringable, Writable):
@@ -60,7 +72,7 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Float32], win_stones: Int](Copyable, Stringable, Writable):
+struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -135,11 +147,22 @@ struct Board[values: List[Float32], win_stones: Int](Copyable, Stringable, Writa
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
-    
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
-        var offset = start
-        var stones = Int8(0)
 
+
+    fn _update_row(mut self, start: Int, offsets: SIMD[DType.int8, 8], n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
+        var offset = start
+        
+        for _ in range(n):
+            var p = UnsafePointer(to = self._places[offset])
+            var stones = p.gather(l)
+            @parameter
+            for i in range(win_stones, 8):
+                stones[i] = 0
+            var n_stones = stones.reduce_add()
+            var scores = scores[n_stones]
+
+        
+        
         @parameter
         for i in range(win_stones - 1):
             stones += self._places[offset + i * delta]

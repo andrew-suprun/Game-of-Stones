@@ -5,7 +5,7 @@ from negamax import Negamax
 from board import Board, first
 from connect6 import Connect6, Move
 
-alias C6 = Connect6[19, 12]
+alias C6 = Connect6[12]
 
 fn bench_moves():
     var game = C6()

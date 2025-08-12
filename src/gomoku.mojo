@@ -3,8 +3,8 @@ from hashlib.hasher import Hasher
 from builtin.sort import sort
 
 from score import Score, is_win
-from game import TGame, TMove, MoveScore, Decision
-from board import Board, Place, first
+from game import TGame, TMove, MoveScore
+from board import Board, Place, size, first
 
 alias debug = env_get_string["ASSERT_MODE", ""]()
 
@@ -38,15 +38,15 @@ struct Move(TMove):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
     
-struct Gomoku[size: Int, max_places: Int](TGame):
+struct Gomoku[max_places: Int](TGame):
     alias Move = Move
 
-    var board: Board[scores, size, win_stones]
+    var board: Board[scores, win_stones]
     var turn: Int
     var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[scores, size, win_stones]()
+        self.board = Board[scores, win_stones]()
         self.turn = 0
         self._hash = 0
 

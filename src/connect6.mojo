@@ -4,7 +4,7 @@ from builtin.sort import sort
 
 from score import Score, is_win, win
 from game import TGame, TMove, MoveScore
-from board import Board, Place, first
+from board import Board, Place, size, first
 from heap import heap_add
 
 alias debug = env_get_string["ASSERT_MODE", ""]()
@@ -61,15 +61,15 @@ struct Move(TMove):
         else:
             writer.write(self._p1)
     
-struct Connect6[size: Int, max_places: Int](TGame):
+struct Connect6[max_places: Int](TGame):
     alias Move = Move
 
-    var board: Board[scores, size, win_stones]
+    var board: Board[scores, win_stones]
     var turn: Int
     var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[scores, size, win_stones]()
+        self.board = Board[scores, win_stones]()
         self.turn = 0
         self._hash = 0
 

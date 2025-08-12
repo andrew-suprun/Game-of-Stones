@@ -5,7 +5,7 @@ from mcts import Mcts
 from gomoku import Gomoku
 
 fn test_gomoku() raises:
-    alias Game = Gomoku[19, 8]
+    alias Game = Gomoku[8]
     var game = Game()
     var tree = Mcts[Game, 10, 5, draw]()
     game.play_move("j10")

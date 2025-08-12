@@ -4,7 +4,7 @@ from score import Score, draw
 from negamax import Negamax
 from connect6 import Connect6
 
-alias C6 = Connect6[19, 12]
+alias C6 = Connect6[12]
 
 fn test_connect6() raises:
     var game = C6()
