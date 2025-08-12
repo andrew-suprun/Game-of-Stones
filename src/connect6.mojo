@@ -29,7 +29,7 @@ struct Move(TMove):
             self._p2 = p1
 
     @implicit
-    fn __init__(out self, move: StringSlice) raises:
+    fn __init__(out self, move: String) raises:
         var tokens = move.split("-")
         var p1 = Place(String(tokens[0]))
         var p2: Place
@@ -43,10 +43,6 @@ struct Move(TMove):
         else:
             self._p1 = p2
             self._p2 = p1
-
-    @implicit
-    fn __init__(out self, move: StringLiteral) raises:
-        self = Self(String(move))
 
     fn __hash__[H: Hasher](self, mut hasher: H):
         hasher.update(self._p1)

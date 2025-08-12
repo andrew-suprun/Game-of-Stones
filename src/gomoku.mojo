@@ -22,12 +22,8 @@ struct Move(TMove):
         self._place = p1
 
     @implicit
-    fn __init__(out self, move: StringSlice) raises:
+    fn __init__(out self, move: String) raises:
         self._place = Place(String(move))
-
-    @implicit
-    fn __init__(out self, move: StringLiteral) raises:
-        self = Self(String(move))
 
     fn __hash__[H: Hasher](self, mut hasher: H):
         hasher.update(self._place)

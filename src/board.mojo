@@ -22,12 +22,7 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
         self.y = -1
 
     @implicit
-    fn __init__(out self, place: StringSlice) raises:
-        self.x = ord(place[0]) - ord("a")
-        self.y = Int(place[1:]) - 1
-
-    @implicit
-    fn __init__(out self, place: StringLiteral) raises:
+    fn __init__(out self, place: String) raises:
         self.x = ord(place[0]) - ord("a")
         self.y = Int(String(place)[1:]) - 1
 
@@ -54,7 +49,7 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
         if self.x + other.y == self.y + other.x: return True
         return False
 
-    fn __str__(self, out result: String):
+    fn __str__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
@@ -259,8 +254,8 @@ struct Board[values: List[Float32], win_stones: Int](Copyable, Stringable, Writa
     fn setvalues(mut self, place: Place, value: Scores):
         self._scores[Int(place.y) * size + Int(place.x)] = value
 
-    fn __str__(self, out result: String):
-        result = String.write(self)
+    fn __str__(self) -> String:
+        return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         try:

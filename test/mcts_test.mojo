@@ -13,7 +13,7 @@ struct TestMove(TMove):
     fn __init__(out self):
         self._id = 0
 
-    fn __init__(out self, text: StringSlice) raises:
+    fn __init__(out self, text: String) raises:
         self._id = 0
 
     fn __eq__(self, other: Self) -> Bool:
