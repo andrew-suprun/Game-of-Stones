@@ -1,6 +1,6 @@
 from hashlib.hasher import Hasher
 from builtin.sort import sort
-from utils.numerics import inf, isinf
+from utils.numerics import isinf
 from memory import memcpy
 
 from score import Score, win, loss, draw
@@ -430,7 +430,7 @@ fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineA
     alias result_size = win_stones * win_stones + 1
 
     var s = scores
-    s.append(inf[DType.float32]())
+    s.append(Score.MAX)
     v2 = List[Scores](Scores(1, -1))
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))

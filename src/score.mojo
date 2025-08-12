@@ -1,8 +1,8 @@
-from utils.numerics import inf, neg_inf, nan, isinf, isnan
+from utils.numerics import nan, isinf, isnan
 
 alias Score = Float32
-alias win = inf[DType.float32]()
-alias loss = neg_inf[DType.float32]()
+alias win = Score.MAX
+alias loss = Score.MIN
 alias draw = nan[DType.float32]()
 
 fn is_win(score: Score) -> Bool:

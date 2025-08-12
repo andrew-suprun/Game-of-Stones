@@ -1,6 +1,5 @@
 from random import seed, random_si64, random_float64
 from testing import assert_true, assert_false
-from utils.numerics import inf, neg_inf
 from hashlib.hasher import Hasher
 
 from score import Score, win, draw, str_score

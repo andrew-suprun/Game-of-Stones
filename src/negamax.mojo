@@ -1,6 +1,6 @@
 from sys import argv, env_get_bool
 from time import perf_counter_ns
-from utils.numerics import inf, neg_inf, isinf
+from utils.numerics import isinf
 
 from score import Score, draw, is_decisive
 from game import TGame, MoveScore
@@ -28,7 +28,7 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
         self._moves_cache.clear()
 
         while perf_counter_ns() < self._deadline:
-            var (score, _) = self._search(game, neg_inf[DType.float32](), inf[DType.float32](), 0, max_depth)
+            var (score, _) = self._search(game, Score.MIN, Score.MAX, 0, max_depth)
             if debug: print()
             if isinf(score):
                 if score < 0:
@@ -68,13 +68,13 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
                 if no_legal_moves_decision == draw:
                     return (Score(0), List[G.Move]())
                 else:
-                    return (Score(neg_inf[DType.float32]()), List[G.Move]())
+                    return (Score(Score.MIN), List[G.Move]())
 
         debug_assert(len(children) > 0)
 
         var best_pv = List[G.Move]()
         var best_move = children[0].move
-        var best_score = neg_inf[DType.float32]()
+        var best_score = Score.MIN
 
         sort[greater](children)
         if debug:
