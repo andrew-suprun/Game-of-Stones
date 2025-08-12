@@ -17,7 +17,6 @@ alias Tree2 = Mcts[Game2, 20, 5, draw]
 fn main() raises: run[Tree1, Tree2]("Negamax", "Mcts", openings())
 
 fn openings() -> List[List[String]]:
-    random.seed(perf_counter_ns())
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(7, 12):

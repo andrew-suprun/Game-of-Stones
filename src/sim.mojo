@@ -3,7 +3,7 @@ from tree import TTree
 from score import Score, win, loss
 from board import first
 
-alias timeout = 200
+alias timeout = 1000
 
 fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[String]]) raises:
     var stats = Dict[String, Int]()
