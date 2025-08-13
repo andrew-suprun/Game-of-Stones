@@ -3,7 +3,7 @@ from tree import TTree
 from score import Score, win, loss
 from board import first
 
-alias timeout = 200
+alias timeout = 2000
 
 fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[String]]) raises:
     var stats = Dict[String, Int]()
@@ -11,12 +11,6 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
     stats[name2] = 0
     stats["draw"] = 0
     for opening in openings:
-        print()
-        print("opening:", end="")
-        for move in opening:
-            print("", move, end="")
-        print()
-
         print()
         print(name1, "vs.", name2)
         print()
@@ -60,6 +54,13 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
         g1.play_move(T1.Game.Move(move))
         g2.play_move(T2.Game.Move(move))
 
+    print("opening:", end="")
+    for move in opening:
+        print("", move, end="")
+    print()
+    print(g1)
+
+
     while True:
         var move: String        
         if turn == first:
@@ -82,6 +83,7 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
             print()
         g1.play_move(T1.Game.Move(move))
         g2.play_move(T2.Game.Move(move))
+        print(g1)
         t1 = T1()
         t2 = T2()
         turn = 1 - turn

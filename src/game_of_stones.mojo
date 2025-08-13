@@ -67,19 +67,24 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
 
     fn run(mut self) raises -> Bool:
         var move =Tree. Game.Move("j10")
-        self.play_move(move)
+        self.play_move(move, 0)
 
         while not self.app_complete and not self.game_complete_confirmed:
             self.human_move()
             self.engine_move()
         return self.app_complete
 
-    fn play_move(mut self, move: Tree.Game.Move) raises:
+    fn play_move(mut self, move: Tree.Game.Move, time_ms: UInt) raises:
         self.moves.append(move)
         self.selected.clear()
         self.game.play_move(move)
         self.tree = Tree()
-        print("move", move, "terminal:", self.game.is_terminal())
+        print("move", move, end="")
+        if time_ms > 0:
+            print(" ms", time_ms, end="")
+        if self.game.is_terminal():
+            print(" terminal", end="")
+        print()
         print(self.game)
         if self.game.is_terminal():
             self.game_complete = True
@@ -106,7 +111,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
                     self.tree = Tree()
                     self.game = Tree.Game()
                     for move in moves:
-                        self.play_move(move)
+                        self.play_move(move, 0)
 
                 elif event.key == self.pygame.K_RETURN:
                     if self.game_complete:
@@ -122,7 +127,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
                         else:
                             var place2 = self.selected[1]
                             move = Tree.Game.Move(String(place1) + "-" + String(place2))
-                        self.play_move(move)
+                        self.play_move(move, 0)
                         self.selected.clear()
                         self.draw()
                         return
@@ -158,12 +163,13 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
 
         if len(self.moves) == 1:
             var move = Self.first_white_move()
-            self.play_move(move)
+            self.play_move(move, 0)
             self.draw()
             return
 
-        var (_, pv) = self.tree.search(self.game, 1000)
-        self.play_move(pv[0])
+        var start = perf_counter_ns()
+        var (_, pv) = self.tree.search(self.game, 2000)
+        self.play_move(pv[0], (perf_counter_ns() - start) // 1_000_000)
         self.draw()
 
     fn draw(self) raises:

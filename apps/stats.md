@@ -37,3 +37,9 @@ Timeout: 1s
 Negamax 123
 Mcts 77
 draw 0
+
+Timeout: 2s
+
+360 88
+625 111
+draw 1

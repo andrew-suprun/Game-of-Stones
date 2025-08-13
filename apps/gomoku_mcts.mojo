@@ -5,7 +5,7 @@ from score import draw
 from mcts import Mcts
 from gomoku import Gomoku
 
-alias Game = Gomoku[values = List[Float32](0, 1, 5, 20, 60), max_places = 15]
+alias Game = Gomoku[values = List[Float32](0, 1, 5, 25, 125), max_places = 15]
 alias Tree = Mcts[Game, max_moves = 20, c = 5, no_legal_moves_decision = draw]
 
 fn main() raises:

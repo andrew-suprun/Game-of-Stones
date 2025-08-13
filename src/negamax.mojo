@@ -31,9 +31,6 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
             var (score, _) = self._search(game, Score.MIN, Score.MAX, 0, max_depth)
             if debug: print()
             if isinf(score):
-                if score < 0:
-                    var moves = game.moves(1)
-                    self._pv = [moves[0].move]
                 break
             max_depth += 1
         if debug:
@@ -108,6 +105,7 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
                     pv.append(child.move)
                     self._pv = pv
                     if debug:
+                        pv.reverse()
                         print("\n#|   set best move", child.move, "score", child.score, end="")
                         print(" pv: ", end="")
                         for move in pv:
