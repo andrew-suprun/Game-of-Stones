@@ -2,7 +2,7 @@ from testing import assert_true, assert_false
 from random import seed, random_si64
 
 from score import Score, is_win, is_loss, is_decisive
-from board import Board, Place, size, first, second
+from board2 import Board, Place, size, first, second
 
 alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625)
@@ -20,7 +20,7 @@ fn test_place_stone() raises:
             for y in range(size):
                 for x in range(size):
                     if board[x, y] == board.empty:
-                        var actual = board.score(Place(x, y), first)
+                        var actual = board.score[first](Place(x, y))
                         var b = board
                         b.place_stone(Place(x, y), first)
                         var expected = b.board_value(values) - value
@@ -29,7 +29,7 @@ fn test_place_stone() raises:
                             print(b)
                             print(b.str_scores())
                             assert_true(False)
-                        actual = board.score(Place(x, y), second)
+                        actual = board.score[second](Place(x, y))
                         b = board
                         b.place_stone(Place(x, y), second)
                         expected = value - b.board_value(values)
@@ -39,9 +39,9 @@ fn test_place_stone() raises:
                             print(b.str_scores())
                             assert_true(False)
             if turn == first:
-                value += board.score(Place(xx, yy), turn)
+                value += board.score[first](Place(xx, yy))
             else:
-                value -= board.score(Place(xx, yy), turn)
+                value -= board.score[second](Place(xx, yy))
             board.place_stone(Place(xx, yy), turn)
             n += 1
 
@@ -128,6 +128,7 @@ fn test_score() raises:
     b = board
     b.place_stone("s6", second)
     print("#4", b.score())
+    print(b)
     assert_true(is_loss(b.score()))
 
     b = board

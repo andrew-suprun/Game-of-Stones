@@ -20,4 +20,4 @@ benches = "benches/run.sh"
 
 [dependencies]
 pygame = ">=2.6.1,<3"
-mojo = ">=25.6.0.dev2025081205,<26"
+mojo = "25.5.*"

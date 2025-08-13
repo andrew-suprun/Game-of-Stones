@@ -9,7 +9,6 @@ from board import Board, Place, size, first
 alias debug = env_get_string["ASSERT_MODE", ""]()
 
 alias win_stones = 5
-alias scores = List[Float32](0, 1, 5, 25, 125)
 
 @register_passable("trivial")
 struct Move(TMove):
@@ -34,15 +33,15 @@ struct Move(TMove):
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
     
-struct Gomoku[max_places: Int](TGame):
+struct Gomoku[values: List[Float32], max_places: Int](TGame):
     alias Move = Move
 
-    var board: Board[scores, win_stones]
+    var board: Board[values, win_stones]
     var turn: Int
     var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[scores, win_stones]()
+        self.board = Board[values, win_stones]()
         self.turn = 0
         self._hash = 0
 
@@ -58,7 +57,7 @@ struct Gomoku[max_places: Int](TGame):
             var score = self.board.score(place, self.turn)
             if is_win(score):
                 return [MoveScore(Move(place), score)]
-            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn) / 2))
+            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn)))
         return moves
 
     fn play_move(mut self, move: Move):

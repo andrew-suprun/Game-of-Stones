@@ -2,19 +2,18 @@ import random
 from time import perf_counter_ns
 
 from negamax import Negamax
-from mcts import Mcts
 from score import draw
 from connect6 import Connect6
 from board import Place
 from sim import run
 
-alias Game1 = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places = 15]
+alias Game1 = Connect6[List[Float32](0, 1, 6, 30, 120, 360), 15]
 alias Tree1 = Negamax[Game1, 20, draw]
 
-alias Game2 = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places = 15]
-alias Tree2 = Mcts[Game2, 20, 5, draw]
+alias Game2 = Connect6[List[Float32](0, 1, 5, 25, 125, 625), 15]
+alias Tree2 = Negamax[Game2, 20, draw]
 
-fn main() raises: run[Tree1, Tree2]("Negamax", "Mcts", openings())
+fn main() raises: run[Tree1, Tree2]("360", "625", openings())
 
 fn openings() -> List[List[String]]:
     var result = List[List[String]]()

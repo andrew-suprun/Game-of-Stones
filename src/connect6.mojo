@@ -10,7 +10,6 @@ from heap import heap_add
 alias debug = env_get_string["ASSERT_MODE", ""]()
 
 alias win_stones = 6
-alias scores = List[Float32](0, 1, 5, 25, 125, 625)
 
 @register_passable("trivial")
 struct Move(TMove):
@@ -57,15 +56,15 @@ struct Move(TMove):
         else:
             writer.write(self._p1)
     
-struct Connect6[max_places: Int](TGame):
+struct Connect6[values: List[Float32], max_places: Int](TGame):
     alias Move = Move
 
-    var board: Board[scores, win_stones]
+    var board: Board[values, win_stones]
     var turn: Int
     var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[scores, win_stones]()
+        self.board = Board[values, win_stones]()
         self.turn = 0
         self._hash = 0
 
@@ -98,7 +97,7 @@ struct Connect6[max_places: Int](TGame):
 
                 var board2 = board1
                 if debug:
-                    var board_value = board2.board_value(scores)
+                    var board_value = board2.board_value(values)
                     if self.turn:
                         board_value = -board_value
                     debug_assert(board_value == board_score + score1 + score2)

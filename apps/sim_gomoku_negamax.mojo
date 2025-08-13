@@ -2,19 +2,20 @@ import random
 from time import perf_counter_ns
 
 from negamax import Negamax
-from mcts import Mcts
 from score import draw
-from connect6 import Connect6
+from gomoku import Gomoku
 from board import Place
 from sim import run
 
-alias Game1 = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places = 15]
+
+
+alias Game1 = Gomoku[values = List[Float32](0, 1, 5, 26, 125), max_places = 15]
 alias Tree1 = Negamax[Game1, 20, draw]
 
-alias Game2 = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places = 15]
-alias Tree2 = Mcts[Game2, 20, 5, draw]
+alias Game2 = Gomoku[values = List[Float32](0, 1, 5, 20, 60), max_places = 15]
+alias Tree2 = Negamax[Game2, 20, draw]
 
-fn main() raises: run[Tree1, Tree2]("Negamax", "Mcts", openings())
+fn main() raises: run[Tree1, Tree2]("125", "60", openings())
 
 fn openings() -> List[List[String]]:
     var result = List[List[String]]()
@@ -26,8 +27,10 @@ fn openings() -> List[List[String]]:
     for _ in range(100):
         random.shuffle(places)
         moves = List("j10")
-        moves.append(String(places[0])+"-"+String(places[1]))
-        moves.append(String(places[2])+"-"+String(places[3]))
-        moves.append(String(places[4])+"-"+String(places[5]))
+        moves.append(String(places[0]))
+        moves.append(String(places[1]))
+        moves.append(String(places[2]))
+        moves.append(String(places[3]))
+        moves.append(String(places[4]))
         result.append(moves)
     return result

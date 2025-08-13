@@ -147,7 +147,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         for move in self.moves:
             var places = String(move).split("-")
             for place_str in places:
-                var board_place = Place(place_str)
+                var board_place = Place(String(place_str))
                 if board_place == place:
                     return False
         return True
@@ -179,14 +179,14 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             color = color_black if turn == black else color_white
             var places = String(move).split("-")
             for place_str in places:
-                var place = Place(place_str)
+                var place = Place(String(place_str))
                 self.pygame.draw.circle(self.window, color, board_to_window(place.x, place.y), r - 2)
             turn = 1 - turn
 
         var last_move = self.moves[-1]
         var places = String(last_move).split("-")
         for place_str in places:
-            var place = Place(place_str)
+            var place = Place(String(place_str))
             self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r//5)
 
         color = color_black if turn == black else color_white
