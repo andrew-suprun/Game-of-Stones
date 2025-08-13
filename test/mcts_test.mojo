@@ -6,6 +6,7 @@ from score import Score, win, draw, str_score
 from game import TGame, TMove, MoveScore
 from mcts import Mcts
 
+
 @fieldwise_init
 struct TestMove(TMove):
     var _id: Int
@@ -18,7 +19,7 @@ struct TestMove(TMove):
 
     fn __eq__(self, other: Self) -> Bool:
         return self._id == other._id
-        
+
     fn __ne__(self, other: Self) -> Bool:
         return self._id != other._id
 
@@ -76,6 +77,7 @@ struct TestGame(TGame):
 
     fn write_to[W: Writer](self, mut writer: W):
         pass
+
 
 def test_tree():
     seed(0)

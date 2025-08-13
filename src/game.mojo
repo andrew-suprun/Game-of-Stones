@@ -1,5 +1,6 @@
 from score import Score, is_win, is_loss, is_draw
 
+
 trait TGame(Copyable, Defaultable, Stringable, Writable):
     alias Move: TMove
 
@@ -18,9 +19,11 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
     fn hash(self) -> Int:
         ...
 
-trait TMove(Copyable, Movable, Hashable, Defaultable, Stringable, Writable):
+
+trait TMove(Copyable, Defaultable, Hashable, Movable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
+
 
 @fieldwise_init
 struct MoveScore[Move: TMove](Copyable, Movable, Writable):
@@ -37,5 +40,3 @@ struct MoveScore[Move: TMove](Copyable, Movable, Writable):
             writer.write(" draw")
         else:
             writer.write(self.score)
-
-

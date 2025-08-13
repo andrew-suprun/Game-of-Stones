@@ -1,9 +1,9 @@
-
 from tree import TTree
 from score import Score, win, loss
 from board import first
 
 alias timeout = 2000
+
 
 fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[String]]) raises:
     var stats = Dict[String, Int]()
@@ -40,8 +40,10 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
         for stat in stats.items():
             print(stat.key, stat.value)
 
+
 alias black = True
 alias white = False
+
 
 fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[String]) raises -> Score:
     var g1 = T1.Game()
@@ -60,9 +62,8 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
     print()
     print(g1)
 
-
     while True:
-        var move: String        
+        var move: String
         if turn == first:
             var (score, pv) = t1.search(g1, time1)
             debug_assert(len(pv) > 0)
@@ -90,4 +91,3 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
 
         if g1.is_terminal():
             return g1.score()
-

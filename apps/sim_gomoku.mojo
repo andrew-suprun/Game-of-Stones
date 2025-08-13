@@ -14,7 +14,10 @@ alias Tree1 = Negamax[Game1, 20, draw]
 alias Game2 = Gomoku[List[Float32](0, 1, 5, 25, 125), 15]
 alias Tree2 = Mcts[Game2, 20, 5, draw]
 
-fn main() raises: run[Tree1, Tree2]("Negamax", "Mcts", openings())
+
+fn main() raises:
+    run[Tree1, Tree2]("Negamax", "Mcts", openings())
+
 
 fn openings() -> List[List[String]]:
     var result = List[List[String]]()

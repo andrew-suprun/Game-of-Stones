@@ -7,6 +7,7 @@ from board import Board, Place, size, first, second
 alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
+
 fn test_place_stone() raises:
     seed(7)
     var board = Board[values, win_stones]()
@@ -44,6 +45,7 @@ fn test_place_stone() raises:
                 value -= board.score(Place(xx, yy), turn)
             board.place_stone(Place(xx, yy), turn)
             n += 1
+
 
 fn test_score() raises:
     var board = Board[values, win_stones]()
@@ -169,6 +171,7 @@ fn test_score() raises:
     b.place_stone("f19", second)
     print("#12", b.score())
     assert_true(is_loss(b.score()))
+
 
 fn test_connected_to() raises:
     assert_false(Place(2, 5).connected_to[5](Place(7, 5)))

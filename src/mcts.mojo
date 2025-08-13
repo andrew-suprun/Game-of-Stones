@@ -5,7 +5,8 @@ from score import Score, win, loss, draw, is_win, is_loss, is_draw, is_decisive,
 from tree import TTree
 from game import TGame, MoveScore
 
-struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](TTree, Stringable, Writable):
+
+struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](Stringable, TTree, Writable):
     alias Game = G
     alias MctsNode = Node[G, max_moves, c, no_legal_moves_decision]
 
@@ -13,7 +14,7 @@ struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
 
     fn __init__(out self):
         self.root = Self.MctsNode(G.Move(), Score(0))
-        
+
     fn search(mut self, game: G, max_time_ms: Int) -> (Score, List[G.Move]):
         self.root = Self.MctsNode(G.Move(), Score(0))
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
@@ -46,7 +47,7 @@ struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
         debug_assert(len(self.root.children) > 0, "Function node.best_child() is called with no children.")
         var has_draw = False
         var draw_node = self.root.children[-1]
-        var best_child = Pointer(to = self.root.children[-1])
+        var best_child = Pointer(to=self.root.children[-1])
         for ref child in self.root.children:
             if is_loss(child.score):
                 continue
@@ -55,14 +56,13 @@ struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
             else:
                 has_draw = True
                 draw_node = child
-            
+
             if best_child[].n_sims < child.n_sims:
-                best_child = Pointer(to = child)
+                best_child = Pointer(to=child)
         if has_draw and Float64(best_child[].score) < 0:
             return draw_node
         return best_child[]
 
-        
     fn __str__(self) -> String:
         return String.write(self)
 
@@ -75,6 +75,7 @@ struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
         for ref node in self.root.children:
             result.write("  ", node.move, " ", str_score(node.score), " ", node.n_sims, "\n")
         return result
+
 
 struct Node[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](Copyable, Movable, Representable, Stringable, Writable):
     var move: G.Move
@@ -144,7 +145,6 @@ struct Node[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
                 selected_child_idx = child_idx
         debug_assert(selected_child_idx >= 0)
         return selected_child_idx
-
 
     fn __str__(self) -> String:
         return String.write(self)

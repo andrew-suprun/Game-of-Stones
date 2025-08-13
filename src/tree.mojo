@@ -1,5 +1,6 @@
 from game import TGame, Score, Decision
 
+
 trait TTree:
     alias Game: TGame
 

@@ -10,6 +10,7 @@ alias debug = env_get_string["ASSERT_MODE", ""]()
 
 alias win_stones = 5
 
+
 @register_passable("trivial")
 struct Move(TMove):
     var _place: Place
@@ -32,7 +33,8 @@ struct Move(TMove):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
-    
+
+
 struct Gomoku[values: List[Float32], max_places: Int](TGame):
     alias Move = Move
 

@@ -5,10 +5,11 @@ from score import draw
 from negamax import Negamax
 from connect6 import Connect6
 
-alias Game = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places = 15]
-alias Tree = Negamax[Game, max_moves = 20, no_legal_moves_decision = draw]
+alias Game = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places=15]
+alias Tree = Negamax[Game, max_moves=20, no_legal_moves_decision=draw]
+
 
 fn main() raises:
     var done = False
     while not done:
-        done = game_of_stones["Connect6-Negamax", Tree, Game, stones_per_move = 2]()
+        done = game_of_stones["Connect6-Negamax", Tree, Game, stones_per_move=2]()

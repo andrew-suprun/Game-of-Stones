@@ -8,14 +8,16 @@ from board import Place
 from sim import run
 
 
-
-alias Game1 = Gomoku[values = List[Float32](0, 1, 5, 26, 125), max_places = 15]
+alias Game1 = Gomoku[values = List[Float32](0, 1, 5, 26, 125), max_places=15]
 alias Tree1 = Negamax[Game1, 20, draw]
 
-alias Game2 = Gomoku[values = List[Float32](0, 1, 5, 20, 60), max_places = 15]
+alias Game2 = Gomoku[values = List[Float32](0, 1, 5, 20, 60), max_places=15]
 alias Tree2 = Negamax[Game2, 20, draw]
 
-fn main() raises: run[Tree1, Tree2]("125", "60", openings())
+
+fn main() raises:
+    run[Tree1, Tree2]("125", "60", openings())
+
 
 fn openings() -> List[List[String]]:
     var result = List[List[String]]()

@@ -4,6 +4,7 @@ from score import Score, draw
 from mcts import Mcts
 from gomoku import Gomoku
 
+
 fn test_gomoku() raises:
     alias Game = Gomoku[8]
     var game = Game()

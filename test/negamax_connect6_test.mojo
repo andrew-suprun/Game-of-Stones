@@ -6,6 +6,7 @@ from connect6 import Connect6
 
 alias C6 = Connect6[12]
 
+
 fn test_connect6() raises:
     var game = C6()
     var tree = Negamax[C6, 16, draw]()
@@ -16,6 +17,7 @@ fn test_connect6() raises:
     print("best move", pv[0])
     print("score", score)
     assert_true(String(pv[0]) == "i11-k9")
+
 
 fn main() raises:
     var game = C6()
@@ -34,4 +36,3 @@ fn main() raises:
         print(move, "", end="")
 
     print("| score", score)
-

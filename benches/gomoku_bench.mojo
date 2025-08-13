@@ -6,6 +6,7 @@ from gomoku import Gomoku
 
 alias G = Gomoku[32]
 
+
 fn bench_moves():
     var game = G()
     try:
@@ -16,6 +17,7 @@ fn bench_moves():
     for _ in range(1000):
         var moves = game.moves(32)
         keep(moves[0].move)
+
 
 fn bench_expand():
     var game = G()
@@ -30,6 +32,7 @@ fn bench_expand():
         if done:
             print("done")
             break
+
 
 fn main() raises:
     print("moves ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")

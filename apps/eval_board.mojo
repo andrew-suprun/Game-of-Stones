@@ -4,6 +4,7 @@ from board import Board, Place, first, second
 alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625, Score.MAX)
 
+
 fn main() raises:
     var moves_str = "j10 i9-i10 i11-k9 g13-m7 j11-j12 h11-j9"
     # var moves_str = "j10 i9-i10 i11-k9 h12-i7 i6-k8 g11-h10"
@@ -35,11 +36,11 @@ fn main() raises:
             # print(board.str_scores())
             print("score", score)
             print("board", value)
-        
+
         var opp_value = board.max_score(first) if turn == second else -board.max_score(second)
 
         print("opp", opp_value)
-        print("score+opp", score+opp_value)
+        print("score+opp", score + opp_value)
         print("board+opp", value + opp_value)
 
         turn = 1 - turn

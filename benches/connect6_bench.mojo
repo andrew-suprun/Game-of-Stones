@@ -7,6 +7,7 @@ from connect6 import Connect6, Move
 
 alias C6 = Connect6[12]
 
+
 fn bench_moves():
     var game = C6()
     try:
@@ -17,6 +18,7 @@ fn bench_moves():
     for _ in range(1000):
         var moves = game.moves(16)
         keep(moves[0].score)
+
 
 fn main() raises:
     print("moves   ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")

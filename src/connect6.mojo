@@ -11,6 +11,7 @@ alias debug = env_get_string["ASSERT_MODE", ""]()
 
 alias win_stones = 6
 
+
 @register_passable("trivial")
 struct Move(TMove):
     var _p1: Place
@@ -55,7 +56,8 @@ struct Move(TMove):
             writer.write(self._p1, "-", self._p2)
         else:
             writer.write(self._p1)
-    
+
+
 struct Connect6[values: List[Float32], max_places: Int](TGame):
     alias Move = Move
 

@@ -4,6 +4,7 @@ from score import Score, draw
 from mcts import Mcts
 from connect6 import Connect6
 
+
 fn test_connect6() raises:
     alias Game = Connect6[20]
     var game = Game()
@@ -18,6 +19,7 @@ fn test_connect6() raises:
     print("best move", tree.best_move())
     print("score", game.score())
     assert_true(String(tree.best_move()) == "i11-k9")
+
 
 fn main() raises:
     alias Game = Connect6[6]

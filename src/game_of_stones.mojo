@@ -25,6 +25,7 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
+
 fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move: Int]() raises -> Bool:
     var pygame = Python.import_module("pygame")
     pygame.init()
@@ -36,6 +37,7 @@ fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move:
         var game = GameOfStones[Tree, stones_per_move](pygame, window)
         done = game.run()
     return done
+
 
 struct GameOfStones[Tree: TTree, stones_per_move: Int]:
     var pygame: PythonObject
@@ -66,7 +68,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         self.played_moves = List[Tree.Game.Move]()
 
     fn run(mut self) raises -> Bool:
-        var move =Tree. Game.Move("j10")
+        var move = Tree.Game.Move("j10")
         self.play_move(move, 0)
 
         while not self.app_complete and not self.game_complete_confirmed:
@@ -98,7 +100,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             if event.type == self.pygame.QUIT:
                 self.app_complete = True
                 return
-            
+
             elif event.type == self.pygame.KEYDOWN:
                 if event.key == self.pygame.K_ESCAPE:
                     if len(self.moves) == 1:
@@ -135,9 +137,9 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             elif event.type == self.pygame.MOUSEBUTTONDOWN:
                 if self.game_complete:
                     return
-                var x = Int(event.pos[0]-r)//d
-                var y = Int(event.pos[1]-r)//d
-                if x >=0 and x < board_size and y >= 0 and y < board_size:
+                var x = Int(event.pos[0] - r) // d
+                var y = Int(event.pos[1] - r) // d
+                if x >= 0 and x < board_size and y >= 0 and y < board_size:
                     var place = Place(x, y)
                     if place in self.selected:
                         if place == self.selected[0]:
@@ -156,10 +158,10 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
                 if board_place == place:
                     return False
         return True
- 
 
     fn engine_move(mut self) raises:
-        if self.app_complete or self.game_complete: return
+        if self.app_complete or self.game_complete:
+            return
 
         if len(self.moves) == 1:
             var move = Self.first_white_move()
@@ -175,10 +177,10 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
     fn draw(self) raises:
         self.window.fill(color_background)
 
-        for i in range(1, board_size+1):
-            self.pygame.draw.line(self.window, color_line, Python.tuple(d, i*d), Python.tuple(board_size*d, i*d))
-            self.pygame.draw.line(self.window, color_line, Python.tuple(i*d, d), Python.tuple(i*d, board_size*d))
-        
+        for i in range(1, board_size + 1):
+            self.pygame.draw.line(self.window, color_line, Python.tuple(d, i * d), Python.tuple(board_size * d, i * d))
+            self.pygame.draw.line(self.window, color_line, Python.tuple(i * d, d), Python.tuple(i * d, board_size * d))
+
         var turn = black
         var color: String
         for move in self.moves:
@@ -193,12 +195,12 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         var places = String(last_move).split("-")
         for place_str in places:
             var place = Place(String(place_str))
-            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r//5)
+            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r // 5)
 
         color = color_black if turn == black else color_white
         for place in self.selected:
             self.pygame.draw.circle(self.window, color, board_to_window(place.x, place.y), r - 2)
-            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r//5)
+            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r // 5)
 
         self.pygame.display.flip()
 
@@ -220,4 +222,3 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
 
 def board_to_window(x: Int8, y: Int8, out result: PythonObject):
     result = Python.tuple((Int(x) + 1) * d, (Int(y) + 1) * d)
-
