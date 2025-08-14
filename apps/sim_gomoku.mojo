@@ -1,18 +1,15 @@
 import random
-from time import perf_counter_ns
 
-from negamax import Negamax
-from mcts import Mcts
 from score import draw
-from gomoku import Gomoku
 from board import Place
+from gomoku import Gomoku
+from mcts import Mcts
+from negamax import Negamax
 from sim import run
 
-alias Game1 = Gomoku[max_places=15]
-alias Tree1 = Negamax[Game1, 20, draw]
-
-alias Game2 = Gomoku[max_places=15]
-alias Tree2 = Mcts[Game2, 20, 5, draw]
+alias Game = Gomoku[max_places=15]
+alias Tree1 = Negamax[Game, 20, draw]
+alias Tree2 = Mcts[Game, 20, 5, draw]
 
 
 fn main() raises:

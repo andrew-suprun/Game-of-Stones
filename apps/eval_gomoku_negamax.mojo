@@ -1,9 +1,8 @@
 from time import perf_counter_ns
 
-from game_of_stones import game_of_stones
 from score import draw
-from negamax import Negamax
 from gomoku import Gomoku
+from negamax import Negamax
 
 alias Game = Gomoku[max_places=15]
 alias Tree = Negamax[Game, max_moves=32, no_legal_moves_decision=draw]
@@ -19,7 +18,14 @@ fn main() raises:
     print(game)
     var start = perf_counter_ns()
     var (score, pv) = tree.search(game, 2000)
-    print("score", score, "time.ms", (perf_counter_ns() - start) // 1_000_000, "pv:", end="")
+    print(
+        "score",
+        score,
+        "time.ms",
+        (perf_counter_ns() - start) // 1_000_000,
+        "pv:",
+        end="",
+    )
     for move in pv:
         print("", move, end="")
     print()

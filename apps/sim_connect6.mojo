@@ -1,18 +1,15 @@
 import random
-from time import perf_counter_ns
 
+from score import draw
+from board import Place
+from connect6 import Connect6
 from negamax import Negamax
 from mcts import Mcts
-from score import draw
-from connect6 import Connect6
-from board import Place
 from sim import run
 
-alias Game1 = Connect6[max_places=15]
-alias Tree1 = Negamax[Game1, 20, draw]
-
-alias Game2 = Connect6[max_places=15]
-alias Tree2 = Mcts[Game2, 20, 5, draw]
+alias Game = Connect6[max_places=15]
+alias Tree1 = Negamax[Game, 20, draw]
+alias Tree2 = Mcts[Game, 20, 5, draw]
 
 
 fn main() raises:
