@@ -8,10 +8,10 @@ from connect6 import Connect6
 from board import Place
 from sim import run
 
-alias Game1 = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places=15]
+alias Game1 = Connect6[max_places=15]
 alias Tree1 = Negamax[Game1, 20, draw]
 
-alias Game2 = Connect6[values = List[Float32](0, 1, 5, 25, 125, 625), max_places=15]
+alias Game2 = Connect6[max_places=15]
 alias Tree2 = Mcts[Game2, 20, 5, draw]
 
 

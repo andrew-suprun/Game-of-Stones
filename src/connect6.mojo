@@ -10,7 +10,7 @@ from heap import heap_add
 alias debug = env_get_string["ASSERT_MODE", ""]()
 
 alias win_stones = 6
-
+alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
 @register_passable("trivial")
 struct Move(TMove):
@@ -58,7 +58,7 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
-struct Connect6[values: List[Float32], max_places: Int](TGame):
+struct Connect6[max_places: Int](TGame):
     alias Move = Move
 
     var board: Board[values, win_stones]

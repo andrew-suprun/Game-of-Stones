@@ -5,7 +5,7 @@ from score import draw
 from negamax import Negamax
 from gomoku import Gomoku
 
-alias Game = Gomoku[values = List[Float32](0, 1, 5, 25, 125), max_places=15]
+alias Game = Gomoku[max_places=15]
 alias Tree = Negamax[Game, max_moves=32, no_legal_moves_decision=draw]
 
 

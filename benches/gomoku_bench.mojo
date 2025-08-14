@@ -1,10 +1,11 @@
 from benchmark import benchmark, Unit, keep
 
-from game import TMove, Score, draw
+from score import Score, draw
+from game import TMove
 from mcts import Mcts
 from gomoku import Gomoku
 
-alias G = Gomoku[32]
+alias G = Gomoku[max_places=32]
 
 
 fn bench_moves():
