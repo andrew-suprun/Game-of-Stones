@@ -1,7 +1,7 @@
 from score import Score, is_win, is_loss, is_draw
 
 
-trait TGame(Copyable, Defaultable, Stringable, Writable):
+trait TGame(ExplicitlyCopyable, Defaultable, Stringable, Writable):
     alias Move: TMove
 
     fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:

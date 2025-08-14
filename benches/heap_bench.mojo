@@ -17,5 +17,5 @@ fn bench():
 
 
 fn main() raises:
-    print("\n--- heap (s/100_000_000) ---")
+    print("--- heap ---")
     print("heap_add", benchmark.run[bench]().min(Unit.s))

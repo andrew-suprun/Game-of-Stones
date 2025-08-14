@@ -45,6 +45,12 @@ struct TestGame(TGame):
     fn __init__(out self):
         self.move_id = 1
 
+    fn __copyinit__(out self, other: Self, /):
+        self.move_id = other.move_id
+
+    fn copy(self) -> Self:
+        return self
+
     fn moves(self, max_moves: Int) -> List[MoveScore[TestMove]]:
         var moves = List[MoveScore[TestMove]]()
         var n_moves = random_si64(2, 5)

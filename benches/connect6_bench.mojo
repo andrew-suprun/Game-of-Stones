@@ -21,4 +21,5 @@ fn bench_moves():
 
 
 fn main() raises:
+    print("--- connect6 ---")
     print("moves   ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")

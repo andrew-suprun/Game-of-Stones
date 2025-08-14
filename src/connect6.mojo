@@ -70,6 +70,14 @@ struct Connect6[max_places: Int](TGame):
         self.turn = 0
         self._hash = 0
 
+    fn __copyinit__(out self, other: Self, /):
+        self.board = other.board.copy()
+        self.turn = other.turn
+        self._hash = other._hash
+
+    fn copy(self) -> Self:
+        return self
+
     fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:
         @parameter
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:

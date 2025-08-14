@@ -1,34 +1,18 @@
-mojo run -I src benches/basic_bench.mojo
-InlineArray SIMD Int   10.710304932735427
-InlineArray SIMD Int16 12.785962765957446
-List        SIMD Int   6.989669590643275
-List        SIMD Int16 12.906091891891892
-InlineArray SIMD Float 10.877036036036037
-List        SIMD Float 9.441577075098815
-fib int                1.4998673015873016
-fib float              1.7087634560906515
-tuple                  0.6527409005122675
-type                   0.6462588298732812
-list                   0.5656566250882561
-
-mojo run -I src benches/board_bench.mojo       
---- board (ms/1000) ---
-update_row  0.081869227095982
-place_stone 0.7546667710616974
-places      2.627055434782609
-
-mojo run -I src benches/connect6_bench.mojo
-moves    50.00579166666666 msec
-expand-2 2.9068514492753623 msec
-expand-3 24.020131313131312 msec
-expand-4 97.24745833333333 msec
-expand-5 536.337 msec
-expand-6 1841.0155 msec
-expand-7 6048.4785 msec
-
-mojo run -I src benches/gomoku_bench.mojo  
-moves  3.475 msec
-expand 6.100 msec
-
---- heap (ms/100_000_000) ---
-heap_add 0.5635075
+--- basic ---
+InlineArray SIMD Int   12.978459459459458
+InlineArray SIMD Int16 15.373044871794873
+List        SIMD Int   8.387045614035088
+List        SIMD Int16 15.633803921568628
+InlineArray SIMD Float 12.93261081081081
+List        SIMD Float 11.346838862559242
+--- board ---
+update_row  0.08277829718488983
+place_stone 0.7668882203926536
+places      2.7527006880733946
+--- connect6 ---
+moves    53.57955555555555 msec
+--- gomoku ---
+moves  4.547066287878788 msec
+expand 6.584005524861878 msec
+--- heap ---
+heap_add 0.684488

@@ -55,7 +55,7 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
-struct Board[values: List[Float32], win_stones: Int](Copyable, Stringable, Writable):
+struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -89,6 +89,10 @@ struct Board[values: List[Float32], win_stones: Int](Copyable, Stringable, Writa
 
         self._score = existing._score
 
+    fn copy(self) -> Self:
+        return self
+
+        
     fn place_stone(mut self, place: Place, turn: Int):
         var scores = self.value_table[turn]
 

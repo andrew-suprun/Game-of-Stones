@@ -83,6 +83,7 @@ fn rand() -> Float32:
 
 
 fn main() raises:
+    print("--- basic ---")
     print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt]().mean(Unit.ms))
     print("InlineArray SIMD Int16", benchmark.run[benchInlineArraySIMDInt16]().mean(Unit.ms))
     print("List        SIMD Int  ", benchmark.run[benchListSIMDInt]().mean(Unit.ms))
