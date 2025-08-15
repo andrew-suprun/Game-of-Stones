@@ -2,7 +2,7 @@ from sys import argv, env_get_bool
 from time import perf_counter_ns
 from utils.numerics import isinf
 
-from score import Score, draw, is_decisive
+from score import Score, draw, is_decisive, loss
 from game import TGame, MoveScore
 from tree import TTree
 
@@ -38,6 +38,10 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
         if debug:
             print("\n#best score", self._best_score)
         self._pv.reverse()
+        if not self._pv:
+            var moves = game.moves(1)
+            self._best_score = loss
+            self._pv.append(moves[0].move)
         return (self._best_score, self._pv)
 
     fn _search(mut self, game: G, alpha: Score, beta: Score, depth: Int, max_depth: Int) -> (Score, List[G.Move]):
@@ -50,7 +54,7 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
         if depth == max_depth:
             var moves = game.moves(1)
             if not moves:
-                return (Score(0), [])
+                return (no_legal_moves_decision, [])
             debug_assert(len(moves) == 1)
             if debug:
                 print("\n#" + "|   " * depth + "leaf: best move", moves[0].move, moves[0].score, end="")
@@ -62,6 +66,7 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
         var children: List[MoveScore[G.Move]]
         try:
             children = self._moves_cache[game.hash()]
+            debug_assert(len(children) > 0)
         except:
             children = game.moves(max_moves)
             if not children:

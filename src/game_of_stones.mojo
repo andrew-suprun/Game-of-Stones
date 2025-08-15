@@ -81,7 +81,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         self.selected.clear()
         self.game.play_move(move)
         self.tree = Tree()
-        print("move", move, end="")
+        print("move", move, "score", self.game.score(), end="")
         if time_ms > 0:
             print(" ms", time_ms, end="")
         if self.game.is_terminal():
@@ -170,7 +170,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             return
 
         var start = perf_counter_ns()
-        var (_, pv) = self.tree.search(self.game, 2000)
+        var (_, pv) = self.tree.search(self.game, 100)
         self.play_move(pv[0], (perf_counter_ns() - start) // 1_000_000)
         self.draw()
 
