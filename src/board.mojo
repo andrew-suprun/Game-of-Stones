@@ -10,6 +10,7 @@ alias size = 19
 alias first = 0
 alias second = 1
 alias Scores = SIMD[DType.float32, 2]
+alias Stones = SIMD[DType.int64, 2]
 
 @fieldwise_init
 @register_passable("trivial")
@@ -182,8 +183,8 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
 
     fn is_terminal(self) -> Bool:
         for a in range(size):
-            var h_stones = SIMD[DType.int64, 2](0, 0)
-            var v_stones = SIMD[DType.int64, 2](0, 0)
+            var h_stones = Stones(0, 0)
+            var v_stones = Stones(0, 0)
             for b in range(win_stones - 1):
                 h_stones += self._counts(self[b, a])
                 v_stones += self._counts(self[a, b])
@@ -198,8 +199,8 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
                 v_stones -= self._counts(self[a, b])
 
         for y in range(size - win_stones + 1):
-            var stones1 = SIMD[DType.int64, 2](0, 0)
-            var stones2 = SIMD[DType.int64, 2](0, 0)
+            var stones1 = Stones(0, 0)
+            var stones2 = Stones(0, 0)
             for x in range(win_stones - 1):
                 stones1 += self._counts(self[x, y+x])
                 stones2 += self._counts(self[size - 1 - x, x + y])
@@ -214,8 +215,8 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
                 stones2 -= self._counts(self[size - 1 - x, x + y])
 
         for x in range(1, size - win_stones + 1):
-            var stones1 = SIMD[DType.int64, 2](0, 0)
-            var stones2 = SIMD[DType.int64, 2](0, 0)
+            var stones1 = Stones(0, 0)
+            var stones2 = Stones(0, 0)
             for y in range(win_stones - 1):
                 stones1 += self._counts(self[x + y, y])
                 stones2 += self._counts(self[size - 1 - x - y, y])
@@ -237,13 +238,13 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
 
         return True
 
-    fn _counts(self, stones: Int8, out result: SIMD[DType.int64, 2]):
+    fn _counts(self, stones: Int8, out result: Stones):
         if stones == 1:
-            return SIMD[DType.int64, 2](1, 0)
+            return Stones(1, 0)
         elif stones == win_stones:
-            return SIMD[DType.int64, 2](0, 1)
+            return Stones(0, 1)
         else:
-            return SIMD[DType.int64, 2](0, 0)
+            return Stones(0, 0)
     
 
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
