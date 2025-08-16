@@ -1,12 +1,12 @@
 from time import perf_counter_ns
 
 from score import draw
-from gomoku import Gomoku
+from connect6 import Connect6
 from negamax import Negamax
 
-alias Game = Gomoku[max_places=15]
+alias Game = Connect6[max_places=15]
 alias Tree = Negamax[Game, max_moves=32, no_legal_moves_decision=draw]
-alias moves_str = "j10 j9 i10 i9 k10 h10 k9 h9 j8 l10 k8 g9 f9"
+alias moves_str = "j10 c18-m19 k9-k10 k12-m10 j9-l11 m9-m12 j8-j11 j6-j12 h12-i11"
 
 
 fn main() raises:
@@ -15,6 +15,7 @@ fn main() raises:
     var moves = moves_str.split(" ")
     for move in moves:
         game.play_move(Tree.Game.Move(move))
+        print(game)
     print(game)
     var start = perf_counter_ns()
     var move = tree.search(game, 100)

@@ -170,7 +170,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             return
 
         var start = perf_counter_ns()
-        var move = self.tree.search(self.game, 100)
+        var move = self.tree.search(self.game, 1000)
         self.play_move(move.move, (perf_counter_ns() - start) // 1_000_000)
         self.draw()
 
