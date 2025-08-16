@@ -65,23 +65,13 @@ fn play_opening[T1: TTree, T2: TTree](time1: Int, time2: Int, opening: List[Stri
     while True:
         var move: String
         if turn == first:
-            var (score, pv) = t1.search(g1, time1)
-            debug_assert(len(pv) > 0)
-            move = String(pv[0])
-            print("move", move, score, end="")
-            print(" pv:", end="")
-            for move in pv:
-                print("", move, end="")
-            print()
+            var result = t1.search(g1, time1)
+            move = String(result.move)
+            print("move", move)
         else:
-            var (score, pv) = t2.search(g2, time2)
-            debug_assert(len(pv) > 0)
-            move = String(pv[0])
-            print("move", move, score, end="")
-            print(" pv:", end="")
-            for move in pv:
-                print("", move, end="")
-            print()
+            var result = t2.search(g2, time2)
+            move = String(result.move)
+            print("move", move)
         g1.play_move(T1.Game.Move(move))
         g2.play_move(T2.Game.Move(move))
         print(g1)

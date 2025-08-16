@@ -95,7 +95,6 @@ def test_tree():
             print("break", i)
             break
     print(t)
-    print(t._best_child().move, str_score(t._best_child().score))
-    assert_true(String(t._best_child().move) == "<2>")
-    assert_true(String(t._best_child().score) == "2.3809257")
+    print(t._best_child().move)
+    assert_true(String(t._best_child().move) == "<2> 2.3809257")
     assert_false(g.is_terminal())

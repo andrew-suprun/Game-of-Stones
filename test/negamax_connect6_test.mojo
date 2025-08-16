@@ -13,10 +13,9 @@ fn test_connect6() raises:
     game.play_move("j10")
     game.play_move("i9-i10")
     print(game)
-    var (score, pv) = tree.search(game, 100)
-    print("best move", pv[0])
-    print("score", score)
-    assert_true(String(pv[0]) == "i11-k9")
+    var move = tree.search(game, 100)
+    print("best move", move)
+    assert_true(String(move.move) == "i11-k9")
 
 
 fn main() raises:

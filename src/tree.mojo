@@ -1,4 +1,4 @@
-from game import TGame, Score, Decision
+from game import TGame, Score, MoveScore
 
 
 trait TTree:
@@ -7,5 +7,5 @@ trait TTree:
     fn __init__(out self):
         ...
 
-    fn search(mut self, game: Game, max_time_ms: Int) -> (Score, List[Game.Move]):
+    fn search(mut self, game: Game, max_time_ms: Int) -> MoveScore[Game.Move]:
         ...

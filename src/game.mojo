@@ -39,4 +39,4 @@ struct MoveScore[Move: TMove](Copyable, Movable, Writable):
         elif is_draw(self.score):
             writer.write(" draw")
         else:
-            writer.write(self.score)
+            writer.write(" ", self.score)

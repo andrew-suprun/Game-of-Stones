@@ -1,8 +1,7 @@
 from sys import argv, env_get_bool
 from time import perf_counter_ns
-from utils.numerics import isinf
 
-from score import Score, draw, is_decisive, loss
+from score import Score, draw, is_decisive, is_win, loss, is_loss
 from game import TGame, MoveScore
 from tree import TTree
 
@@ -12,39 +11,30 @@ alias debug = env_get_bool["DEBUG", False]()
 struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
     alias Game = G
 
-    var _best_score: Score
-    var _pv: List[G.Move]
+    var _best_move: MoveScore[G.Move]
     var _deadline: UInt
     var _moves_cache: Dict[Int, List[MoveScore[G.Move]]]
 
     fn __init__(out self):
-        self._best_score = Score(0)
-        self._pv = List[G.Move]()
+        self._best_move = MoveScore[G.Move](G.Move(), Score(0))
         self._deadline = 0
         self._moves_cache = Dict[Int, List[MoveScore[G.Move]]]()
 
-    fn search(mut self, game: G, duration_ms: Int) -> (Score, List[G.Move]):
+    fn search(mut self, game: G, duration_ms: Int) -> MoveScore[G.Move]:
         var max_depth = 2
         self._deadline = perf_counter_ns() + 1_000_000 * duration_ms
         self._moves_cache.clear()
 
         while perf_counter_ns() < self._deadline:
-            var (score, _) = self._search(game, Score.MIN, Score.MAX, 0, max_depth)
+            var score = self._search(game, Score.MIN, Score.MAX, 0, max_depth)
             if debug:
                 print()
-            if isinf(score):
+            if is_win(score):
                 break
             max_depth += 1
-        if debug:
-            print("\n#best score", self._best_score)
-        self._pv.reverse()
-        if not self._pv:
-            var moves = game.moves(1)
-            self._best_score = loss
-            self._pv.append(moves[0].move)
-        return (self._best_score, self._pv)
+        return self._best_move
 
-    fn _search(mut self, game: G, alpha: Score, beta: Score, depth: Int, max_depth: Int) -> (Score, List[G.Move]):
+    fn _search(mut self, game: G, alpha: Score, beta: Score, depth: Int, max_depth: Int) -> Score:
         @parameter
         fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
             return a.score > b.score
@@ -53,12 +43,10 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
         var b = beta
         if depth == max_depth:
             var moves = game.moves(1)
-            if not moves:
-                return (no_legal_moves_decision, [])
             debug_assert(len(moves) == 1)
             if debug:
-                print("\n#" + "|   " * depth + "leaf: best move", moves[0].move, moves[0].score, end="")
-            return (moves[0].score, [moves[0].move])
+                print("\n#" + "|   " * depth + "leaf: best move", moves[0], end="")
+            return moves[0].score
 
         if debug:
             print("\n#" + "|   " * depth + "--> search", end="")
@@ -66,14 +54,8 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
         var children: List[MoveScore[G.Move]]
         try:
             children = self._moves_cache[game.hash()]
-            debug_assert(len(children) > 0)
         except:
             children = game.moves(max_moves)
-            if not children:
-                if no_legal_moves_decision == draw:
-                    return (Score(0), List[G.Move]())
-                else:
-                    return (Score(Score.MIN), List[G.Move]())
 
         debug_assert(len(children) > 0)
 
@@ -93,39 +75,29 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
             if not is_decisive(child.score):
                 var child_game = game.copy()
                 child_game.play_move(child.move)
-                (score, pv) = self._search(child_game, -b, -a, depth + 1, max_depth)
-                child.score = -score
+                child.score = -self._search(child_game, -b, -a, depth + 1, max_depth)
                 if perf_counter_ns() > self._deadline:
                     if debug:
                         print("\n#" + "|   " * depth + "<-- search: timeout", end="")
-                    return (Score(0), List[G.Move]())
-            else:
-                pv = List[G.Move]()
+                    return Score(0)
 
-            if child.score > best_score:
+            if child.score > best_score or is_loss(best_score):
                 best_move = child.move
                 best_score = child.score
-                best_pv = pv
                 if child.score > alpha:
                     a = child.score
 
                 if depth == 0:
-                    self._best_score = child.score
-                    pv.append(child.move)
-                    self._pv = pv
+                    self._best_move = child
                     if debug:
-                        pv.reverse()
-                        print("\n#|   set best move", child.move, "score", child.score, end="")
-                        print(" pv: ", end="")
-                        for move in pv:
-                            print(move, "", end="")
+                        print("\n#|   set best move", child, end="")
 
             if debug:
                 print("\n#" + "|   " * depth + "< move", child.move, child.score, "| best score", best_score, end="")
             if child.score > b:
                 if debug:
                     print("\n#" + "|   " * depth + "cutoff", end="")
-                return (best_score, List[G.Move]())
+                return best_score
         best_pv.append(best_move)
         if debug:
             print("\n#" + "|   " * depth + "<-- search: best move", best_move, "score", best_score, "pv:", end="")
@@ -133,4 +105,4 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
                 print("", move, end="")
 
         self._moves_cache[game.hash()] = children^
-        return (best_score, best_pv)
+        return best_score
