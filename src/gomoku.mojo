@@ -11,6 +11,7 @@ alias debug = env_get_string["ASSERT_MODE", ""]()
 alias win_stones = 5
 alias values = List[Float32](0, 1, 5, 25, 125)
 
+
 @register_passable("trivial")
 struct Move(TMove):
     var _place: Place
@@ -67,7 +68,12 @@ struct Gomoku[max_places: Int](TGame):
             var score = self.board.score(place, self.turn)
             if is_win(score):
                 return [MoveScore(Move(place), score)]
-            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn)))
+            moves.append(
+                MoveScore(
+                    Move(place),
+                    board_score + self.board.score(place, self.turn),
+                )
+            )
         return moves
 
     fn play_move(mut self, move: Move):

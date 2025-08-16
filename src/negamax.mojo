@@ -71,14 +71,22 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
 
         for ref child in children:
             if debug:
-                print("\n#" + "|   " * depth + "> move", child.move, child.score, end="")
+                print(
+                    "\n#" + "|   " * depth + "> move",
+                    child.move,
+                    child.score,
+                    end="",
+                )
             if not is_decisive(child.score):
                 var child_game = game.copy()
                 child_game.play_move(child.move)
                 child.score = -self._search(child_game, -b, -a, depth + 1, max_depth)
                 if perf_counter_ns() > self._deadline:
                     if debug:
-                        print("\n#" + "|   " * depth + "<-- search: timeout", end="")
+                        print(
+                            "\n#" + "|   " * depth + "<-- search: timeout",
+                            end="",
+                        )
                     return Score(0)
 
             if child.score > best_score and not is_loss(child.score):
@@ -92,7 +100,14 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
                         print("\n#|   set best move", child, end="")
 
             if debug:
-                print("\n#" + "|   " * depth + "< move", child.move, child.score, "| best score", best_score, end="")
+                print(
+                    "\n#" + "|   " * depth + "< move",
+                    child.move,
+                    child.score,
+                    "| best score",
+                    best_score,
+                    end="",
+                )
             if child.score > b:
                 if debug:
                     print("\n#" + "|   " * depth + "cutoff", end="")

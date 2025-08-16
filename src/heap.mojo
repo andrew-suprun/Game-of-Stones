@@ -7,17 +7,15 @@ fn heap_add[T: Movable & Copyable, //, less: fn (T, T, out Bool) capturing](item
         var elem = items[idx]
         while True:
             var first = idx
-            var left_child_idx = idx*2 + 1
+            var left_child_idx = idx * 2 + 1
             if left_child_idx < len(items) and less(items[left_child_idx], elem):
                 first = left_child_idx
-            var right_child_idx = idx*2 + 2
-            if right_child_idx < len(items) and
-                less(items[right_child_idx], elem) and
-                less(items[right_child_idx], items[left_child_idx]):
+            var right_child_idx = idx * 2 + 2
+            if right_child_idx < len(items) and less(items[right_child_idx], elem) and less(items[right_child_idx], items[left_child_idx]):
                 first = right_child_idx
             if idx == first:
                 break
-            
+
             items[idx] = items[first]
             idx = first
         items[idx] = elem
@@ -30,5 +28,3 @@ fn heap_add[T: Movable & Copyable, //, less: fn (T, T, out Bool) capturing](item
         items[child_idx] = items[parent_idx]
         child_idx = parent_idx
     items[child_idx] = child
-
-

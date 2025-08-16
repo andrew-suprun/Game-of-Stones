@@ -178,8 +178,18 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         self.window.fill(color_background)
 
         for i in range(1, board_size + 1):
-            self.pygame.draw.line(self.window, color_line, Python.tuple(d, i * d), Python.tuple(board_size * d, i * d))
-            self.pygame.draw.line(self.window, color_line, Python.tuple(i * d, d), Python.tuple(i * d, board_size * d))
+            self.pygame.draw.line(
+                self.window,
+                color_line,
+                Python.tuple(d, i * d),
+                Python.tuple(board_size * d, i * d),
+            )
+            self.pygame.draw.line(
+                self.window,
+                color_line,
+                Python.tuple(i * d, d),
+                Python.tuple(i * d, board_size * d),
+            )
 
         var turn = black
         var color: String
@@ -195,12 +205,22 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         var places = String(last_move).split("-")
         for place_str in places:
             var place = Place(String(place_str))
-            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r // 5)
+            self.pygame.draw.circle(
+                self.window,
+                color_selcted,
+                board_to_window(place.x, place.y),
+                r // 5,
+            )
 
         color = color_black if turn == black else color_white
         for place in self.selected:
             self.pygame.draw.circle(self.window, color, board_to_window(place.x, place.y), r - 2)
-            self.pygame.draw.circle(self.window, color_selcted, board_to_window(place.x, place.y), r // 5)
+            self.pygame.draw.circle(
+                self.window,
+                color_selcted,
+                board_to_window(place.x, place.y),
+                r // 5,
+            )
 
         self.pygame.display.flip()
 

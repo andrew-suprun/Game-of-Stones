@@ -12,6 +12,7 @@ alias debug = env_get_string["ASSERT_MODE", ""]()
 alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
+
 @register_passable("trivial")
 struct Move(TMove):
     var _p1: Place

@@ -1,7 +1,17 @@
 from memory import Pointer
 from time import perf_counter_ns
 
-from score import Score, win, loss, draw, is_win, is_loss, is_draw, is_decisive, str_score
+from score import (
+    Score,
+    win,
+    loss,
+    draw,
+    is_win,
+    is_loss,
+    is_draw,
+    is_decisive,
+    str_score,
+)
 from tree import TTree
 from game import TGame, MoveScore
 
@@ -44,7 +54,10 @@ struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
         return self._best_child().move.move
 
     fn _best_child(self) -> Self.MctsNode:
-        debug_assert(len(self.root.children) > 0, "Function node.best_child() is called with no children.")
+        debug_assert(
+            len(self.root.children) > 0,
+            "Function node.best_child() is called with no children.",
+        )
         var has_draw = False
         var draw_node = self.root.children[-1]
         var best_child = Pointer(to=self.root.children[-1])

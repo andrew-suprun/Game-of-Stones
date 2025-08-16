@@ -12,9 +12,10 @@ alias second = 1
 alias Scores = SIMD[DType.float32, 2]
 alias Stones = SIMD[DType.int64, 2]
 
+
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessThanComparable, Stringable, Writable):
+struct Place(Copyable, Defaultable, EqualityComparable, Hashable, LessThanComparable, Movable, Stringable, Writable):
     var x: Int8
     var y: Int8
 
@@ -39,15 +40,16 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
     fn __hash__[H: Hasher](self, mut hasher: H):
         hasher.update(self.x)
         hasher.update(self.y)
-        
+
     fn connected_to[win_stones: Int](self, other: Place) -> Bool:
-        if self.x >= other.x + win_stones or
-            other.x >= self.x + win_stones or
-            self.y >= other.y + win_stones or
-            other.y >= self.y + win_stones: return False
-        if self.x == other.x or self.y == other.y: return True
-        if self.x + self.y == other.x + other.y: return True
-        if self.x + other.y == self.y + other.x: return True
+        if self.x >= other.x + win_stones or other.x >= self.x + win_stones or self.y >= other.y + win_stones or other.y >= self.y + win_stones:
+            return False
+        if self.x == other.x or self.y == other.y:
+            return True
+        if self.x + self.y == other.x + other.y:
+            return True
+        if self.x + other.y == self.y + other.x:
+            return True
         return False
 
     fn __str__(self) -> String:
@@ -56,6 +58,7 @@ struct Place(Copyable, Movable, Defaultable, Hashable, EqualityComparable, LessT
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
+
 struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
@@ -63,11 +66,11 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
     alias value_table = _value_table[win_stones, values]()
 
     var _places: InlineArray[Int8, size * size]
-    var _scores: InlineArray[Scores, size * size] 
+    var _scores: InlineArray[Scores, size * size]
     var _score: Score
 
     fn __init__(out self):
-        self._places = InlineArray[Int8, size * size](fill = 0)
+        self._places = InlineArray[Int8, size * size](fill=0)
         self._scores = InlineArray[Scores, size * size](uninitialized=True)
         self._score = 0
 
@@ -93,7 +96,6 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
     fn copy(self) -> Self:
         return self
 
-        
     fn place_stone(mut self, place: Place, turn: Int):
         var scores = self.value_table[turn]
 
@@ -135,7 +137,7 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
-    
+
     fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
         var offset = start
         var stones = Int8(0)
@@ -164,7 +166,7 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
         fn less_second(a: Place, b: Place, out r: Bool):
             r = self.score(a, second) < self.score(b, second)
 
-        var places = List[Place](capacity = max_places)
+        var places = List[Place](capacity=max_places)
 
         if turn == first:
             for y in range(size):
@@ -202,7 +204,7 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
             var stones1 = Stones(0, 0)
             var stones2 = Stones(0, 0)
             for x in range(win_stones - 1):
-                stones1 += self._counts(self[x, y+x])
+                stones1 += self._counts(self[x, y + x])
                 stones2 += self._counts(self[size - 1 - x, x + y])
             for x in range(size - win_stones + 1 - y):
                 stones1 += self._counts(self[x + win_stones - 1, x + y + win_stones - 1])
@@ -211,7 +213,7 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
                     return True
                 elif stones1[1] == win_stones or stones2[1] == win_stones:
                     return True
-                stones1 -= self._counts(self[x, x+y])
+                stones1 -= self._counts(self[x, x + y])
                 stones2 -= self._counts(self[size - 1 - x, x + y])
 
         for x in range(1, size - win_stones + 1):
@@ -245,7 +247,6 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
             return Stones(0, 1)
         else:
             return Stones(0, 0)
-    
 
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self._places[y * size + x]
@@ -422,7 +423,7 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
         for y in range(size):
             for x in range(size):
                 if self[x, y] == self.empty:
-                    max_scores = max(max_scores, self._scores[y*size+x])
+                    max_scores = max(max_scores, self._scores[y * size + x])
 
         return Score(max_scores[player])
 
