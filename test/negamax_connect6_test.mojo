@@ -16,22 +16,3 @@ fn test_connect6() raises:
     var move = tree.search(game, 100)
     print("best move", move)
     assert_true(String(move.move) == "i11-k9")
-
-
-fn main() raises:
-    var game = C6()
-    var tree = Negamax[C6, 32, draw]()
-    try:
-        game.play_move("j10")
-        game.play_move("i9-i10")
-        game.play_move("i11-k9")
-    except:
-        pass
-
-    print(game)
-    var (score, pv) = tree.search(game, 10)
-    print("pv: ", end="")
-    for move in pv:
-        print(move, "", end="")
-
-    print("| score", score)
