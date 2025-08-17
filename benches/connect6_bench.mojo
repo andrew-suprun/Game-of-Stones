@@ -11,8 +11,8 @@ alias C6 = Connect6[max_places=12]
 fn bench_moves():
     var game = C6()
     try:
-        game.play_move("j10")
-        game.play_move("i9-i10")
+        _ = game.play_move("j10")
+        _ = game.play_move("i9-i10")
     except:
         pass
     for _ in range(1000):

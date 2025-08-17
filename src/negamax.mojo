@@ -79,7 +79,7 @@ struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
                 )
             if not is_decisive(child.score):
                 var child_game = game.copy()
-                child_game.play_move(child.move)
+                _ = child_game.play_move(child.move)
                 child.score = -self._search(child_game, -b, -a, depth + 1, max_depth)
                 if perf_counter_ns() > self._deadline:
                     if debug:

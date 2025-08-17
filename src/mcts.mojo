@@ -113,7 +113,7 @@ struct Node[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
             var exp_factor = self.c * Score(self.n_sims)
             ref selected_child = self.children[Self.select_node(self.children, exp_factor)]
             var g = game.copy()
-            g.play_move(selected_child.move.move)
+            _ = g.play_move(selected_child.move.move)
             selected_child._expand(g)
 
         self.n_sims = 0

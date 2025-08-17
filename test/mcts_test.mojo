@@ -66,14 +66,9 @@ struct TestGame(TGame):
             id += 1
         return moves
 
-    fn play_move(mut self, move: self.Move):
+    fn play_move(mut self, move: self.Move) -> Score:
         self.move_id *= 10
-
-    fn score(self) -> Score:
         return 0
-
-    fn is_terminal(self) -> Bool:
-        return False
 
     fn hash(self) -> Int:
         return 0
@@ -97,4 +92,3 @@ def test_tree():
     print(t)
     print(t._best_child().move)
     assert_true(String(t._best_child().move) == "<2> 2.3809257")
-    assert_false(g.is_terminal())

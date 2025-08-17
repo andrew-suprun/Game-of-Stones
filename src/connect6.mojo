@@ -122,7 +122,7 @@ struct Connect6[max_places: Int](TGame):
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
         return moves
 
-    fn play_move(mut self, move: Move):
+    fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
@@ -131,12 +131,7 @@ struct Connect6[max_places: Int](TGame):
         else:
             self._hash -= hash(move)
         self.turn = 1 - self.turn
-
-    fn score(self) -> Score:
-        return self.board.score()
-
-    fn is_terminal(self) -> Bool:
-        return self.board.is_terminal()
+        return self.board._score
 
     fn hash(self) -> Int:
         return Int(self._hash)

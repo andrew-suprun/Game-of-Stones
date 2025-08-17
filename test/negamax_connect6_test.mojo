@@ -10,8 +10,8 @@ alias C6 = Connect6[max_places=12]
 fn test_connect6() raises:
     var game = C6()
     var tree = Negamax[C6, 16, draw]()
-    game.play_move("j10")
-    game.play_move("i9-i10")
+    _ = game.play_move("j10")
+    _ = game.play_move("i9-i10")
     print(game)
     var move = tree.search(game, 100)
     print("best move", move)

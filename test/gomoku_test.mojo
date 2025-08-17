@@ -9,9 +9,9 @@ fn test_gomoku() raises:
     alias Game = Gomoku[max_places=8]
     var game = Game()
     var tree = Mcts[Game, 10, 5, draw]()
-    game.play_move("j10")
-    game.play_move("i9")
-    game.play_move("i10")
+    _ = game.play_move("j10")
+    _ = game.play_move("i9")
+    _ = game.play_move("i10")
     print(game)
     var best_move = String(Game.Move())
     for i in range(10_000):

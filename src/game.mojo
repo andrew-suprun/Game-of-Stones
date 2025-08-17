@@ -7,13 +7,7 @@ trait TGame(Defaultable, ExplicitlyCopyable, Stringable, Writable):
     fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:
         ...
 
-    fn play_move(mut self, move: Move):
-        ...
-
-    fn score(self) -> Score:
-        ...
-
-    fn is_terminal(self) -> Bool:
+    fn play_move(mut self, move: Move) -> Score:
         ...
 
     fn hash(self) -> Int:

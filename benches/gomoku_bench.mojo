@@ -11,8 +11,8 @@ alias G = Gomoku[max_places=32]
 fn bench_moves():
     var game = G()
     try:
-        game.play_move(Gomoku.Move("j10"))
-        game.play_move(Gomoku.Move("i9"))
+        _ = game.play_move(Gomoku.Move("j10"))
+        _ = game.play_move(Gomoku.Move("i9"))
     except:
         pass
     for _ in range(1000):
@@ -24,8 +24,8 @@ fn bench_expand():
     var game = G()
     var tree = Mcts[G, 20, 20, draw]()
     try:
-        game.play_move(Gomoku.Move("j10"))
-        game.play_move(Gomoku.Move("i9"))
+        _ = game.play_move(Gomoku.Move("j10"))
+        _ = game.play_move(Gomoku.Move("i9"))
     except:
         pass
     for _ in range(1000):

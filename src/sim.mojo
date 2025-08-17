@@ -1,5 +1,5 @@
 from tree import TTree
-from score import Score, is_win, is_loss
+from score import Score, is_win, is_loss, is_decisive
 from board import first
 
 alias timeout = 200
@@ -28,13 +28,15 @@ fn sim_opening[
     var turn = first
 
     for move in opening:
-        g1.play_move(T1.Game.Move(move))
-        g2.play_move(T2.Game.Move(move))
+        _ = g1.play_move(T1.Game.Move(move))
+        _ = g2.play_move(T2.Game.Move(move))
 
     print("opening:", end="")
     for move in opening:
         print("", move, end="")
     print()
+
+    var score: Score
 
     while True:
         var move: String
@@ -46,18 +48,18 @@ fn sim_opening[
             var result = t2.search(g2, timeout)
             move = String(result.move)
             print("move", move)
-        g1.play_move(T1.Game.Move(move))
-        g2.play_move(T2.Game.Move(move))
+        score = g1.play_move(T1.Game.Move(move))
+        _ = g2.play_move(T2.Game.Move(move))
         t1 = T1()
         t2 = T2()
         turn = 1 - turn
 
-        if g1.is_terminal():
+        if is_decisive(score):
             break
 
-    if is_win(g1.score()):
+    if is_win(score):
         stats[name1] += 1
-    elif is_loss(g1.score()):
+    elif is_loss(score):
         stats[name2] += 1
     else:
         stats["draw"] += 1

@@ -3,7 +3,7 @@ from python import Python, PythonObject
 import random
 import sys
 
-from score import Score
+from score import Score, is_decisive
 from board import Place
 from tree import TTree
 from game import TGame, TMove
@@ -79,16 +79,16 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
     fn play_move(mut self, move: Tree.Game.Move, time_ms: UInt) raises:
         self.moves.append(move)
         self.selected.clear()
-        self.game.play_move(move)
+        var score = self.game.play_move(move)
         self.tree = Tree()
-        print("move", move, "score", self.game.score(), end="")
+        print("move", move, "score", score, end="")
         if time_ms > 0:
             print(" ms", time_ms, end="")
-        if self.game.is_terminal():
+        if is_decisive(score):
             print(" terminal", end="")
         print()
         print(self.game)
-        if self.game.is_terminal():
+        if is_decisive(score):
             self.game_complete = True
 
         self.turn = 1 - self.turn

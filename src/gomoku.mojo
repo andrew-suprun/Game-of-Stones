@@ -76,19 +76,14 @@ struct Gomoku[max_places: Int](TGame):
             )
         return moves
 
-    fn play_move(mut self, move: Move):
+    fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._place, self.turn)
         if self.turn == first:
             self._hash += hash(move)
         else:
             self._hash -= hash(move)
         self.turn = 1 - self.turn
-
-    fn score(self) -> Score:
-        return self.board.score()
-
-    fn is_terminal(self) -> Bool:
-        return self.board.is_terminal()
+        return self.board._score
 
     fn hash(self) -> Int:
         return Int(self._hash)
