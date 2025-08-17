@@ -180,7 +180,6 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
                         heap_add[less_second](Place(x, y), max_places, places)
         return places^
 
-
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self._places[y * size + x]
 

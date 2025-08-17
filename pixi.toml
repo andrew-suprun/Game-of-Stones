@@ -15,6 +15,7 @@ gomoku-sim = "mojo run -I src -D ASSERT=all apps/sim_gomoku.mojo"
 eval-board = "mojo run -I src -D ASSERT=all apps/eval_board.mojo"
 test = "mojo test -I src -D ASSERT=all test"
 benches = "benches/run.sh"
+format = "pixi run mojo format src test benches apps -l 180"
 
 [dependencies]
 pygame = ">=2.6.1,<3"
