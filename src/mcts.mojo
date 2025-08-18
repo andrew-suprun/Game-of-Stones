@@ -16,9 +16,9 @@ from tree import TTree
 from game import TGame, MoveScore
 
 
-struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](Stringable, TTree, Writable):
+struct Mcts[G: TGame, max_moves: Int, c: Score](Stringable, TTree, Writable):
     alias Game = G
-    alias MctsNode = Node[G, max_moves, c, no_legal_moves_decision]
+    alias MctsNode = Node[G, max_moves, c]
 
     var root: Self.MctsNode
 
@@ -90,7 +90,7 @@ struct Mcts[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
         return result
 
 
-struct Node[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](Copyable, Movable, Representable, Stringable, Writable):
+struct Node[G: TGame, max_moves: Int, c: Score](Copyable, Movable, Representable, Stringable, Writable):
     var move: MoveScore[G.Move]
     var children: List[Self]
     var n_sims: Int32
@@ -103,12 +103,10 @@ struct Node[G: TGame, max_moves: Int, c: Score, no_legal_moves_decision: Score](
     fn _expand(mut self, game: G):
         if not self.children:
             var moves = game.moves(max_moves)
-            if not moves:
-                self.move.score = no_legal_moves_decision
-            else:
-                self.children.reserve(len(moves))
-                for move in moves:
-                    self.children.append(Self(move))
+            debug_assert(len(moves) > 0)
+            self.children.reserve(len(moves))
+            for move in moves:
+                self.children.append(Self(move))
         else:
             var exp_factor = self.c * Score(self.n_sims)
             ref selected_child = self.children[Self.select_node(self.children, exp_factor)]

@@ -8,8 +8,8 @@ from mcts import Mcts
 from sim import run
 
 alias Game = Connect6[max_places=15]
-alias Tree1 = Negamax[Game, 20, draw]
-alias Tree2 = Mcts[Game, 20, 5, draw]
+alias Tree1 = Negamax[Game, 20]
+alias Tree2 = Mcts[Game, 20, 5]
 
 
 fn main() raises:

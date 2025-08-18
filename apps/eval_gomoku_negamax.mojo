@@ -5,7 +5,7 @@ from gomoku import Gomoku
 from negamax import Negamax
 
 alias Game = Gomoku[max_places=15]
-alias Tree = Negamax[Game, max_moves=32, no_legal_moves_decision=draw]
+alias Tree = Negamax[Game, max_moves=32]
 alias moves_str = "j10 j9 i10 i9 k10 h10 k9 h9 j8 l10 k8 g9 f9"
 
 

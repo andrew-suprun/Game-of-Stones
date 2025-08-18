@@ -83,7 +83,7 @@ struct TestGame(TGame):
 def test_tree():
     seed(0)
     var g = TestGame()
-    var t = Mcts[TestGame, 10, 10, draw]()
+    var t = Mcts[TestGame, 10, 10]()
     for i in range(20):
         var done = t.expand(g)
         if done:

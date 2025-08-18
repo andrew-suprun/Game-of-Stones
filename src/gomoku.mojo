@@ -1,8 +1,7 @@
 from sys import env_get_string
 from hashlib.hasher import Hasher
-from builtin.sort import sort
 
-from score import Score, is_win
+from score import Score, is_decisive
 from game import TGame, TMove, MoveScore
 from board import Board, Place, size, first
 
@@ -66,7 +65,7 @@ struct Gomoku[max_places: Int](TGame):
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
-            if is_win(score):
+            if is_decisive(score):
                 return [MoveScore(Move(place), score)]
             moves.append(
                 MoveScore(

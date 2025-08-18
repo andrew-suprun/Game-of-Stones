@@ -8,7 +8,7 @@ from gomoku import Gomoku
 fn test_gomoku() raises:
     alias Game = Gomoku[max_places=8]
     var game = Game()
-    var tree = Mcts[Game, 10, 5, draw]()
+    var tree = Mcts[Game, 10, 5]()
     _ = game.play_move("j10")
     _ = game.play_move("i9")
     _ = game.play_move("i10")

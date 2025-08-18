@@ -8,7 +8,7 @@ from connect6 import Connect6
 fn test_connect6() raises:
     alias Game = Connect6[max_places=20]
     var game = Game()
-    var tree = Mcts[Game, 32, 1, draw]()
+    var tree = Mcts[Game, 32, 1]()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     print(game)
@@ -23,7 +23,7 @@ fn test_connect6() raises:
 fn main() raises:
     alias Game = Connect6[max_places=6]
     var game = Game()
-    var tree = Mcts[Game, 8, 5, draw]()
+    var tree = Mcts[Game, 8, 5]()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     for _ in range(2):
@@ -36,4 +36,4 @@ fn main() raises:
         print(tree.debug_roots())
         if is_decisive(score):
             break
-        tree = Mcts[Game, 8, 5, draw]()
+        tree = Mcts[Game, 8, 5]()

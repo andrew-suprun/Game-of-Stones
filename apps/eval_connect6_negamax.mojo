@@ -5,7 +5,7 @@ from connect6 import Connect6
 from negamax import Negamax
 
 alias Game = Connect6[max_places=15]
-alias Tree = Negamax[Game, max_moves=32, no_legal_moves_decision=draw]
+alias Tree = Negamax[Game, max_moves=32]
 alias moves_str = "j10 c18-m19 k9-k10 k12-m10 j9-l11 m9-m12 j8-j11 j6-j12 h12-i11"
 
 

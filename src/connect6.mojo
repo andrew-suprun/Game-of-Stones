@@ -1,10 +1,9 @@
 from sys import env_get_string
 from hashlib.hasher import Hasher
-from builtin.sort import sort
 
-from score import Score, is_win, win
+from score import Score, is_decisive, is_win, loss
 from game import TGame, TMove, MoveScore
-from board import Board, Place, size, first
+from board import Board, Place, first
 from heap import heap_add
 
 alias debug = env_get_string["ASSERT_MODE", ""]()
@@ -93,8 +92,8 @@ struct Connect6[max_places: Int](TGame):
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
-            if is_win(score1):
-                return [MoveScore(Move(place1, place1), win)]
+            if is_decisive(score1):
+                return [MoveScore(Move(place1, place1), score1)]
 
             var board1 = self.board
             board1.place_stone(place1, self.turn)
@@ -103,8 +102,8 @@ struct Connect6[max_places: Int](TGame):
                 var place2 = places[j]
                 var score2 = board1.score(place2, self.turn)
 
-                if is_win(score2):
-                    return [MoveScore(Move(place1, place2), win)]
+                if is_decisive(score2):
+                    return [MoveScore(Move(place1, place2), score2)]
 
                 var board2 = board1
                 if debug:
@@ -120,6 +119,8 @@ struct Connect6[max_places: Int](TGame):
                 var move_score = board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score), max_moves, moves)
                 # print("\n### board", board_score, Move(place1, place2, move_score, False), "|", score1, score2, "opp", max_opp_score, end="")
+                if not moves:
+                    return [MoveScore(Move(place1, place2), loss)]
         return moves
 
     fn play_move(mut self, move: Move) -> Score:

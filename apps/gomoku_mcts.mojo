@@ -4,7 +4,7 @@ from gomoku import Gomoku
 from mcts import Mcts
 
 alias Game = Gomoku[max_places=15]
-alias Tree = Mcts[Game, max_moves=20, c=5, no_legal_moves_decision=draw]
+alias Tree = Mcts[Game, max_moves=20, c=5]
 
 
 fn main() raises:

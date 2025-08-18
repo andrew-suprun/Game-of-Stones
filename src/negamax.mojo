@@ -8,7 +8,7 @@ from tree import TTree
 alias debug = env_get_bool["DEBUG", False]()
 
 
-struct Negamax[G: TGame, max_moves: Int, no_legal_moves_decision: Score](TTree):
+struct Negamax[G: TGame, max_moves: Int](TTree):
     alias Game = G
 
     var _best_move: MoveScore[G.Move]
