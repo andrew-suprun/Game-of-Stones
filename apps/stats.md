@@ -2,8 +2,8 @@ Gomoku:
 
 Timeout: 0.2s
 
-Negamax 158
-Mcts 42
+Negamax 136
+Mcts 64
 draw 0
 
 125 93

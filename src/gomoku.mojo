@@ -67,12 +67,7 @@ struct Gomoku[max_places: Int](TGame):
             var score = self.board.score(place, self.turn)
             if is_decisive(score):
                 return [MoveScore(Move(place), score)]
-            moves.append(
-                MoveScore(
-                    Move(place),
-                    board_score + self.board.score(place, self.turn),
-                )
-            )
+            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn) / 2))
         return moves
 
     fn play_move(mut self, move: Move) -> Score:

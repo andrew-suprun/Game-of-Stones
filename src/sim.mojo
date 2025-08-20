@@ -14,9 +14,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
         sim_opening[T2, T1](name2, name1, opening, stats)
 
 
-fn sim_opening[
-    T1: TTree, T2: TTree
-](name1: String, name2: String, opening: List[String], mut stats: Dict[String, Int],) raises:
+fn sim_opening[T1: TTree, T2: TTree](name1: String, name2: String, opening: List[String], mut stats: Dict[String, Int],) raises:
     print()
     print(name1, "vs.", name2)
     print()

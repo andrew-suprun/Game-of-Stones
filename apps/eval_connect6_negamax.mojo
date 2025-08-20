@@ -14,7 +14,7 @@ fn main() raises:
     var tree = Tree()
     var moves = moves_str.split(" ")
     for move in moves:
-        game.play_move(Tree.Game.Move(move))
+        _ = game.play_move(Tree.Game.Move(move))
         print(game)
     print(game)
     var start = perf_counter_ns()
