@@ -4,7 +4,7 @@ from gomoku import Gomoku
 from negamax import Negamax
 
 alias Game = Gomoku[max_places=15]
-alias Tree = Negamax[Game, max_moves=32]
+alias Tree = Negamax[Game]
 
 
 fn main() raises:

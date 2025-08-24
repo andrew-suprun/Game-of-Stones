@@ -6,9 +6,9 @@ from tree import TTree
 from game import TGame, MoveScore
 
 
-struct Mcts[G: TGame, max_moves: Int, c: score.Score](Stringable, TTree, Writable):
+struct Mcts[G: TGame, c: score.Score](Stringable, TTree, Writable):
     alias Game = G
-    alias MctsNode = Node[G, max_moves, c]
+    alias MctsNode = Node[G, c]
 
     var root: Self.MctsNode
 
@@ -53,9 +53,10 @@ struct Mcts[G: TGame, max_moves: Int, c: score.Score](Stringable, TTree, Writabl
                 continue
             elif score.is_win(child.move.score):
                 return child
-            else:
+            elif score.is_draw(child.move.score):
                 has_draw = True
                 draw_node = child
+                continue
 
             if best_child[].n_sims < child.n_sims:
                 best_child = Pointer(to=child)
@@ -73,11 +74,11 @@ struct Mcts[G: TGame, max_moves: Int, c: score.Score](Stringable, TTree, Writabl
     fn debug_roots(self) -> String:
         var result = "roots:\n"
         for ref node in self.root.children:
-            result.write("  ", node.move, node.n_sims, "\n")
+            result.write("  ", node.move, " sims ", node.n_sims, "\n")
         return result
 
 
-struct Node[G: TGame, max_moves: Int, c: score.Score](Copyable, Movable, Representable, Stringable, Writable):
+struct Node[G: TGame, c: score.Score](Copyable, Movable, Representable, Stringable, Writable):
     var move: MoveScore[G.Move]
     var children: List[Self]
     var n_sims: Int32
@@ -89,7 +90,7 @@ struct Node[G: TGame, max_moves: Int, c: score.Score](Copyable, Movable, Represe
 
     fn _expand(mut self, game: G):
         if not self.children:
-            var moves = game.moves(max_moves)
+            var moves = game.moves()
             debug_assert(len(moves) > 0)
             self.children.reserve(len(moves))
             for move in moves:

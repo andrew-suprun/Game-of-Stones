@@ -51,7 +51,10 @@ struct TestGame(TGame):
     fn copy(self) -> Self:
         return self
 
-    fn moves(self, max_moves: Int) -> List[MoveScore[TestMove]]:
+    fn score(self) -> Score:
+        return Score(random_float64(-10, 10))
+
+    fn moves(self) -> List[MoveScore[TestMove]]:
         var moves = List[MoveScore[TestMove]]()
         var n_moves = random_si64(2, 5)
         var id = self.move_id

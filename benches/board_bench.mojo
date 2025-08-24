@@ -27,8 +27,10 @@ fn bench_place_stone():
 
 fn bench_places():
     var board = Board[values, win_stones]()
+    var places = List[Place](capacity=20)
     for _ in range(1000):
-        _ = board.places(first, 20)
+        places.clear()
+        _ = board.places(first, places)
 
 
 fn main() raises:

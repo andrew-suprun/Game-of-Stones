@@ -157,7 +157,7 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
             stones -= self._places[offset]
             offset += delta
 
-    fn places(self, turn: Int, max_places: Int) -> List[Place]:
+    fn places(self, turn: Int, mut places: List[Place]):
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
             r = self.score(a, first) < self.score(b, first)
@@ -166,19 +166,16 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
         fn less_second(a: Place, b: Place, out r: Bool):
             r = self.score(a, second) < self.score(b, second)
 
-        var places = List[Place](capacity=max_places)
-
         if turn == first:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        heap_add[less_first](Place(x, y), max_places, places)
+                        heap_add[less_first](Place(x, y), places)
         else:
             for y in range(size):
                 for x in range(size):
                     if self[x, y] == self.empty:
-                        heap_add[less_second](Place(x, y), max_places, places)
-        return places^
+                        heap_add[less_second](Place(x, y), places)
 
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self._places[y * size + x]

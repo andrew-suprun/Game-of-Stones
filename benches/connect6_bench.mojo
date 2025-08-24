@@ -5,7 +5,7 @@ from negamax import Negamax
 from board import Board, first
 from connect6 import Connect6, Move
 
-alias C6 = Connect6[max_places=12]
+alias C6 = Connect6[max_moves=20, max_places=12]
 
 
 fn bench_moves():
@@ -16,7 +16,7 @@ fn bench_moves():
     except:
         pass
     for _ in range(1000):
-        var moves = game.moves(16)
+        var moves = game.moves()
         keep(moves[0].score)
 
 

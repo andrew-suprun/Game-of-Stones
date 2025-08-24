@@ -3,8 +3,8 @@ from score import draw
 from connect6 import Connect6
 from mcts import Mcts
 
-alias Game = Connect6[max_places=15]
-alias Tree = Mcts[Game, max_moves=20, c=5]
+alias Game = Connect6[max_moves=20, max_places=15]
+alias Tree = Mcts[Game, c=5]
 
 
 fn main() raises:

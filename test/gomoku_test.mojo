@@ -13,13 +13,8 @@ fn test_gomoku() raises:
     _ = game.play_move("i9")
     _ = game.play_move("i10")
     print(game)
-    var best_move = String(Game.Move())
-    for i in range(10_000):
+    for _ in range(10_000):
         _ = tree.expand(game)
-        var move = String(tree.best_move())
-        if best_move != move:
-            best_move = move
-            print(i, best_move)
 
     print(tree.debug_roots())
     print("best move", tree.best_move())

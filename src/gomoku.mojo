@@ -55,20 +55,29 @@ struct Gomoku[max_places: Int](TGame):
     fn copy(self) -> Self:
         return self
 
-    fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:
+    fn score(self) -> Score:
+        var moves = List[MoveScore[Move]](capacity=1)
+        self._moves(moves)
+        return moves[0].score
+
+    fn moves(self) -> List[MoveScore[Move]]:
+        var moves = List[MoveScore[Move]](capacity=max_places)
+        self._moves(moves)
+        return moves
+
+    fn _moves(self, mut moves: List[MoveScore[Move]]):
         @parameter
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
 
-        var moves = List[MoveScore[Move]]()
-        var places = self.board.places(self.turn, max_moves)
+        var places = List[Place](capacity = max_places)
+        self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
             if is_decisive(score):
-                return [MoveScore(Move(place), score)]
+                moves.append(MoveScore(Move(place), score))
             moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn) / 2))
-        return moves
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._place, self.turn)

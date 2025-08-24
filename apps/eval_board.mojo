@@ -6,8 +6,7 @@ alias values = List[Float32](0, 1, 5, 25, 125, 625, Score.MAX)
 
 
 fn main() raises:
-    var moves_str = "j10 i9-i10 i11-k9 g13-m7 j11-j12 h11-j9"
-    # var moves_str = "j10 i9-i10 i11-k9 h12-i7 i6-k8 g11-h10"
+    var moves_str = "j10 j9-j12 i12-k12 h12-h9 " "i9-k11 h8-i8 h10-k10 j8-k8 g10-i10 l8-m8"
     var moves = moves_str.split(" ")
     var board = Board[values, win_stones]()
     var value = Score(0)

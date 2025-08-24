@@ -4,7 +4,10 @@ from score import Score, is_win, is_loss, is_draw
 trait TGame(Defaultable, ExplicitlyCopyable, Stringable, Writable):
     alias Move: TMove
 
-    fn moves(self, max_moves: Int) -> List[MoveScore[Move]]:
+    fn moves(self) -> List[MoveScore[Move]]:
+        ...
+
+    fn move(self) -> MoveScore[Move]:
         ...
 
     fn play_move(mut self, move: Move) -> Score:

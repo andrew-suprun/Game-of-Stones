@@ -8,8 +8,8 @@ from negamax import Negamax
 from sim import run
 
 alias Game = Gomoku[max_places=15]
-alias Tree1 = Negamax[Game, 20]
-alias Tree2 = Mcts[Game, 20, 5]
+alias Tree1 = Negamax[Game]
+alias Tree2 = Mcts[Game, 5]
 
 
 fn main() raises:

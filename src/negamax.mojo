@@ -8,7 +8,7 @@ from tree import TTree
 alias debug = env_get_bool["DEBUG", False]()
 
 
-struct Negamax[G: TGame, max_moves: Int](TTree):
+struct Negamax[G: TGame](TTree):
     alias Game = G
 
     var _best_move: MoveScore[G.Move]
@@ -23,9 +23,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
     fn search(mut self, game: G, duration_ms: Int) -> MoveScore[G.Move]:
         self._deadline = perf_counter_ns() + 1_000_000 * duration_ms
         self._moves_cache.clear()
-        var moves = game.moves(1)
-        debug_assert(len(moves) == 1)
-        self._best_move = moves[0]
+        self._best_move = game.move()
         var max_depth = 1
 
         while perf_counter_ns() < self._deadline:
@@ -37,6 +35,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
             max_depth += 1
         return self._best_move
 
+    # TODO: var alpha
     fn _search(mut self, game: G, alpha: score.Score, beta: score.Score, depth: Int, max_depth: Int) -> score.Score:
         @parameter
         fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
@@ -45,11 +44,10 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
         var a = alpha
         var b = beta
         if depth == max_depth:
-            var moves = game.moves(1)
-            debug_assert(len(moves) == 1)
+            var move = game.move()
             if debug:
-                print("\n#" + "|   " * depth + "leaf: best move", moves[0], end="")
-            return moves[0].score
+                print("\n#" + "|   " * depth + "leaf: move", move, end="")
+            return move.score
 
         if debug:
             print("\n#" + "|   " * depth + "--> search", end="")
@@ -58,7 +56,7 @@ struct Negamax[G: TGame, max_moves: Int](TTree):
         try:
             children = self._moves_cache[game.hash()]
         except:
-            children = game.moves(max_moves)
+            children = game.moves()
 
         debug_assert(len(children) > 0)
 

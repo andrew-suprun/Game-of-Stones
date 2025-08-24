@@ -3,8 +3,8 @@ from score import draw
 from connect6 import Connect6
 from negamax import Negamax
 
-alias Game = Connect6[max_places=15]
-alias Tree = Negamax[Game, max_moves=20]
+alias Game = Connect6[max_moves=20, max_places=15]
+alias Tree = Negamax[Game]
 
 
 fn main() raises:

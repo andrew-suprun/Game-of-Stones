@@ -10,13 +10,13 @@ def test_heap():
         r = a < b
 
     var values = List[Int]()
-    var items = List[Int]()
+    var items = List[Int](capacity=20)
     for i in range(100):
         values.append(i + 1)
 
     shuffle(values)
     for i in range(100):
-        heap_add[less](values[i], 20, items)
+        heap_add[less](values[i], items)
 
     for i in range(20):
         print(i, items[i])
