@@ -113,6 +113,9 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
                 var place2 = places[j]
                 var score2 = board1.score(place2, self.turn)
 
+                if score2 == 0:
+                    score2 = score.draw
+                    
                 if is_decisive(score2):
                     moves.clear()
                     moves.append(MoveScore(Move(place1, place2), score2))

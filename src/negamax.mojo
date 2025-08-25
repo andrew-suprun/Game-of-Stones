@@ -30,7 +30,7 @@ struct Negamax[G: TGame](TTree):
             var result = self._search(game, score.Score.MIN, score.Score.MAX, 0, max_depth)
             if debug:
                 print()
-            if score.is_win(result):
+            if score.is_decisive(result):
                 break
             max_depth += 1
         return self._best_move
@@ -41,6 +41,9 @@ struct Negamax[G: TGame](TTree):
         fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
             return a.score > b.score
 
+        if debug:
+            print("\n#" + "|   " * depth + "--> search: depth", depth, "max_depth", max_depth, end="")
+
         var a = alpha
         var b = beta
         if depth == max_depth:
@@ -48,9 +51,6 @@ struct Negamax[G: TGame](TTree):
             if debug:
                 print("\n#" + "|   " * depth + "leaf: move", move, end="")
             return move.score
-
-        if debug:
-            print("\n#" + "|   " * depth + "--> search", end="")
 
         var children: List[MoveScore[G.Move]]
         try:
@@ -80,10 +80,11 @@ struct Negamax[G: TGame](TTree):
                         print("\n#" + "|   " * depth + "<-- search: timeout", end="")
                     return score.Score(0)
 
-            if child.score > best_score and not score.is_loss(child.score):
+            var child_score = child.score if not score.is_draw(child.score) else 0
+            if child_score > best_score:
                 best_score = child.score
-                if child.score > alpha:
-                    a = child.score
+                if child.score > a:
+                    a = child_score
 
                 if depth == 0:
                     self._best_move = child
@@ -92,10 +93,12 @@ struct Negamax[G: TGame](TTree):
 
             if debug:
                 print("\n#" + "|   " * depth + "< move", child.move, child.score, "| best score", best_score, end="")
-            if child.score > b:
+            if child_score > b:
                 if debug:
                     print("\n#" + "|   " * depth + "cutoff", end="")
                 return best_score
 
         self._moves_cache[game.hash()] = children^
+        if debug:
+            print("\n#" + "|   " * depth + "<-- search: best score", best_score, end="")
         return best_score

@@ -17,6 +17,7 @@ fn main() raises:
 
 
 fn openings() -> List[List[String]]:
+    random.seed(3)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(7, 12):

@@ -2,15 +2,15 @@ Gomoku:
 
 Timeout: 0.2s
 
-Negamax 136
-Mcts 64
+Negamax 115
+Mcts 85
 draw 0
 
 
 Timeout: 1s
 
-Negamax 133
-Mcts 67
+Negamax 111
+Mcts 89
 draw 0
 
 -----
@@ -19,13 +19,13 @@ Connect6:
 
 Timeout: 0.2s
 
-Negamax 123
-Mcts 77
+Negamax 117
+Mcts 83
 draw 0
 
 
 Timeout: 1s
 
-Negamax 123
-Mcts 77
+Negamax 96
+Mcts 104
 draw 0

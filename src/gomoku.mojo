@@ -55,10 +55,10 @@ struct Gomoku[max_places: Int](TGame):
     fn copy(self) -> Self:
         return self
 
-    fn score(self) -> Score:
+    fn move(self) -> MoveScore[Move]:
         var moves = List[MoveScore[Move]](capacity=1)
         self._moves(moves)
-        return moves[0].score
+        return moves[0]
 
     fn moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=max_places)
