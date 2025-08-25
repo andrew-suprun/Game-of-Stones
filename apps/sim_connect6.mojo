@@ -9,7 +9,7 @@ from sim import run
 
 alias Game = Connect6[max_moves=20, max_places=15]
 alias Tree1 = Negamax[Game]
-alias Tree2 = Mcts[Game, 5]
+alias Tree2 = Mcts[Game, 1]
 
 
 fn main() raises:
@@ -17,14 +17,14 @@ fn main() raises:
 
 
 fn openings() -> List[List[String]]:
-    random.seed(3)
+    random.seed(4)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(7, 12):
         for i in range(7, 12):
             if i != 9 or j != 9:
                 places.append(String(Place(Int8(i), Int8(j))))
-    for _ in range(100):
+    for _ in range(50):
         random.shuffle(places)
         moves = List("j10")
         moves.append(String(places[0]) + "-" + String(places[1]))

@@ -19,12 +19,13 @@ alias white = 1
 alias color_background = "burlywood4"
 alias color_black = "black"
 alias color_white = "white"
-alias color_selcted = "deepskyblue3"
+alias color_selected = "deepskyblue3"
 alias color_line = "gray20"
 
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
+alias duration = 1000
 
 fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move: Int]() raises -> Bool:
     var pygame = Python.import_module("pygame")
@@ -82,8 +83,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         var score = self.game.play_move(move)
         self.tree = Tree()
         print("move", move, "score", score, end="")
-        if time_ms > 0:
-            print(" ms", time_ms, end="")
+        print(" ms", time_ms, end="")
         if is_decisive(score):
             print(" terminal", end="")
         print()
@@ -170,7 +170,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             return
 
         var start = perf_counter_ns()
-        var move = self.tree.search(self.game, 1000)
+        var move = self.tree.search(self.game, duration)
         self.play_move(move.move, (perf_counter_ns() - start) // 1_000_000)
         self.draw()
 
@@ -207,7 +207,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             var place = Place(String(place_str))
             self.pygame.draw.circle(
                 self.window,
-                color_selcted,
+                color_selected,
                 board_to_window(place.x, place.y),
                 r // 5,
             )
@@ -217,7 +217,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             self.pygame.draw.circle(self.window, color, board_to_window(place.x, place.y), r - 2)
             self.pygame.draw.circle(
                 self.window,
-                color_selcted,
+                color_selected,
                 board_to_window(place.x, place.y),
                 r // 5,
             )

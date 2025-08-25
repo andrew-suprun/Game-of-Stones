@@ -2,7 +2,7 @@ from tree import TTree
 from score import Score, is_win, is_loss, is_decisive
 from board import first
 
-alias timeout = 1000
+alias timeout = 200
 alias black = True
 alias white = False
 
