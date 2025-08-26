@@ -9,7 +9,7 @@ from sim import run
 
 alias Game = Gomoku[max_places=15]
 alias Tree1 = Negamax[Game]
-alias Tree2 = Mcts[Game, 1]
+alias Tree2 = Mcts[Game, 10]
 
 
 fn main() raises:
@@ -17,7 +17,7 @@ fn main() raises:
 
 
 fn openings() -> List[List[String]]:
-    random.seed(4)
+    random.seed(6)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(7, 12):

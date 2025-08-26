@@ -9,7 +9,7 @@ from sim import run
 
 alias Game = Connect6[max_moves=20, max_places=15]
 alias Tree1 = Negamax[Game]
-alias Tree2 = Mcts[Game, 1]
+alias Tree2 = Mcts[Game, 10]
 
 
 fn main() raises:
@@ -17,7 +17,7 @@ fn main() raises:
 
 
 fn openings() -> List[List[String]]:
-    random.seed(4)
+    random.seed(7)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(7, 12):
