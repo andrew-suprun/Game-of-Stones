@@ -1,1 +1,1 @@
-
+* test drawing positions

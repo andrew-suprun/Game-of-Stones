@@ -13,18 +13,20 @@ alias Tree2 = Mcts[Game, 10]
 
 
 fn main() raises:
+    print("Connect6: XF", Tree2.c)
     run[Tree1, Tree2]("Negamax", "Mcts", openings())
+    print()
 
 
 fn openings() -> List[List[String]]:
-    random.seed(7)
+    random.seed(5)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(7, 12):
         for i in range(7, 12):
             if i != 9 or j != 9:
                 places.append(String(Place(Int8(i), Int8(j))))
-    for _ in range(50):
+    for _ in range(100):
         random.shuffle(places)
         moves = List("j10")
         moves.append(String(places[0]) + "-" + String(places[1]))

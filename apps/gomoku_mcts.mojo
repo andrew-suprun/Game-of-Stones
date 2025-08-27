@@ -4,7 +4,7 @@ from gomoku import Gomoku
 from mcts import Mcts
 
 alias Game = Gomoku[max_places=15]
-alias Tree = Mcts[Game, c=10]
+alias Tree = Mcts[Game, c=6]
 
 
 fn main() raises:

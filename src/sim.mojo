@@ -64,4 +64,4 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, name2: String, opening: List
 
     for item in stats.items():
         print(item.key, item.value, "", end="")
-    print()
+    print("\x1b[1G", end="")

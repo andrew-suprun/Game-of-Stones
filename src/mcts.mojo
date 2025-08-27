@@ -1,6 +1,6 @@
 from memory import Pointer
 from time import perf_counter_ns
-from math import log, sqrt
+from math import log
 
 import score
 from tree import TTree
@@ -97,8 +97,7 @@ struct Node[G: TGame, c: score.Score](Copyable, Movable, Representable, Stringab
             for move in moves:
                 self.children.append(Self(move))
         else:
-            var ln_big_n = log(score.Score(self.n_sims))
-            ref selected_child = self.children[Self.select_node(self.children, ln_big_n)]
+            ref selected_child = self.children[Self.select_node(self.children)]
             var g = game.copy()
             _ = g.play_move(selected_child.move.move)
             selected_child._expand(g)
@@ -130,14 +129,14 @@ struct Node[G: TGame, c: score.Score](Copyable, Movable, Representable, Stringab
             self.move.score = -max_score
 
     @staticmethod
-    fn select_node(nodes: List[Self], ln_big_n: score.Score) -> Int:
+    fn select_node(nodes: List[Self]) -> Int:
         var selected_child_idx = -1
         var maxV = score.loss
         for child_idx in range(len(nodes)):
             ref child = nodes[child_idx]
             if score.is_decisive(child.move.score):
                 continue
-            var v = child.move.score + Self.c * sqrt(ln_big_n / score.Score(child.n_sims))
+            var v = child.move.score - Self.c * log(score.Score(child.n_sims))
             if maxV < v:
                 maxV = v
                 selected_child_idx = child_idx
