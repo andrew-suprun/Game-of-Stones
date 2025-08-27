@@ -1,5 +1,4 @@
 from game_of_stones import game_of_stones
-from score import draw
 from connect6 import Connect6
 from mcts import Mcts
 

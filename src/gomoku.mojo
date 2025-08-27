@@ -1,7 +1,7 @@
 from sys import env_get_string
 from hashlib.hasher import Hasher
 
-from score import Score, is_decisive
+from score import Score
 from game import TGame, TMove, MoveScore
 from board import Board, Place, size, first
 
@@ -70,14 +70,14 @@ struct Gomoku[max_places: Int](TGame):
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
 
-        var places = List[Place](capacity = max_places)
+        var places = List[Place](capacity=max_places)
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
-            if is_decisive(score):
+            if score.is_decisive():
                 moves.append(MoveScore(Move(place), score))
-            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn) / 2))
+            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn).value / 2))
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._place, self.turn)

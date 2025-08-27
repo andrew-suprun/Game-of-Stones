@@ -1,6 +1,5 @@
 from time import perf_counter_ns
 
-from score import draw
 from gomoku import Gomoku
 from negamax import Negamax
 

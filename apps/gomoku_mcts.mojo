@@ -1,5 +1,4 @@
 from game_of_stones import game_of_stones
-from score import draw
 from gomoku import Gomoku
 from mcts import Mcts
 

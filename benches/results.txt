@@ -1,18 +1,18 @@
 --- basic ---
-InlineArray SIMD Int   12.978459459459458
-InlineArray SIMD Int16 15.373044871794873
-List        SIMD Int   8.387045614035088
-List        SIMD Int16 15.633803921568628
-InlineArray SIMD Float 12.93261081081081
-List        SIMD Float 11.346838862559242
+InlineArray SIMD Int   13.017308108108109
+InlineArray SIMD Int16 15.409824675324675
+List        SIMD Int   8.399113475177305
+List        SIMD Int16 15.651282894736841
+InlineArray SIMD Float 12.946421621621623
+List        SIMD Float 11.37262380952381
 --- board ---
-update_row  0.08277829718488983
-place_stone 0.7668882203926536
-places      2.7527006880733946
+update_row  0.08334713086074179
+place_stone 0.7608629617934953
+places      2.694740990990991
 --- connect6 ---
-moves    53.57955555555555 msec
+moves    53.32062222222222 msec
 --- gomoku ---
-moves  4.547066287878788 msec
-expand 6.584005524861878 msec
+moves  4.340189530685921 msec
+expand 7.360003115264798 msec
 --- heap ---
-heap_add 0.684488
+heap_add 0.6878513333333334

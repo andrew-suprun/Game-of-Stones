@@ -8,12 +8,12 @@ from sim import run
 
 alias Game = Connect6[max_moves=20, max_places=15]
 alias Tree1 = Negamax[Game]
-alias Tree2 = Mcts[Game, 10]
+alias Tree2 = Negamax[Game]
 
 
 fn main() raises:
-    print("Connect6: XF", Tree2.c)
-    run[Tree1, Tree2]("Negamax", "Mcts", openings())
+    print("Connect6")
+    run[Tree1, Tree2]("N1", "N2", openings())
     print()
 
 

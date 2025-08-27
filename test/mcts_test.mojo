@@ -1,8 +1,8 @@
-from random import seed, random_si64, random_float64
 from testing import assert_true, assert_false
+from random import seed, random_si64, random_float64
 from hashlib.hasher import Hasher
 
-from score import Score, win, draw, str_score
+from score import Score
 from game import TGame, TMove, MoveScore
 from mcts import Mcts
 
@@ -54,6 +54,9 @@ struct TestGame(TGame):
     fn score(self) -> Score:
         return Score(random_float64(-10, 10))
 
+    fn move(self) -> MoveScore[TestMove]:
+        return MoveScore(TestMove(0), Score(random_float64(-10, 10)))
+
     fn moves(self) -> List[MoveScore[TestMove]]:
         var moves = List[MoveScore[TestMove]]()
         var n_moves = random_si64(2, 5)
@@ -61,9 +64,9 @@ struct TestGame(TGame):
         for _ in range(n_moves):
             var rand = random_si64(0, 12)
             if rand == 0:
-                moves.append(MoveScore(TestMove(id), win))
+                moves.append(MoveScore(TestMove(id), Score.win()))
             elif rand == 1:
-                moves.append(MoveScore(TestMove(id), draw))
+                moves.append(MoveScore(TestMove(id), Score.draw()))
             else:
                 moves.append(MoveScore(TestMove(id), Score(random_float64(-10, 10))))
             id += 1
@@ -84,9 +87,9 @@ struct TestGame(TGame):
 
 
 def test_tree():
-    seed(0)
+    seed(3)
     var g = TestGame()
-    var t = Mcts[TestGame, 10, 10]()
+    var t = Mcts[TestGame, 6]()
     for i in range(20):
         var done = t.expand(g)
         if done:
@@ -94,4 +97,4 @@ def test_tree():
             break
     print(t)
     print(t._best_child().move)
-    assert_true(String(t._best_child().move) == "<2> 2.3809257")
+    assert_true(String(t._best_child().move) == "<2> -9.448257")

@@ -1,7 +1,7 @@
 from testing import assert_true, assert_false
 from random import seed, random_si64
 
-from score import Score, is_win, is_loss, is_decisive
+from score import Score
 from board import Board, Place, size, first, second
 
 alias win_stones = 6
@@ -110,67 +110,67 @@ fn test_score() raises:
     print(board.str_scores())
 
     print("#0", board._score)
-    assert_true(not is_decisive(board._score))
+    assert_true(not board._score.is_decisive())
 
     var b = board
     b.place_stone("f1", first)
     print("#1", b._score)
-    assert_true(is_win(b._score))
+    assert_true(b._score.is_win())
 
     b = board
     b.place_stone("f6", first)
     print("#2", b._score)
-    assert_true(is_win(b._score))
+    assert_true(b._score.is_win())
 
     b = board
     b.place_stone("a6", first)
     print("#3", b._score)
-    assert_true(is_win(b._score))
+    assert_true(b._score.is_win())
 
     b = board
     b.place_stone("s6", second)
     print("#4", b._score)
-    assert_true(is_loss(b._score))
+    assert_true(b._score.is_loss())
 
     b = board
     b.place_stone("n6", second)
     print("#5", b._score)
-    assert_true(is_loss(b._score))
+    assert_true(b._score.is_loss())
 
     b = board
     b.place_stone("n1", second)
     print("#6", b._score)
-    assert_true(is_loss(b._score))
+    assert_true(b._score.is_loss())
 
     b = board
     b.place_stone("n19", first)
     print("#7", b._score)
-    assert_true(is_win(b._score))
+    assert_true(b._score.is_win())
 
     b = board
     b.place_stone("n14", first)
     print("#8", b._score)
-    assert_true(is_win(b._score))
+    assert_true(b._score.is_win())
 
     b = board
     b.place_stone("s14", first)
     print("#9", b._score)
-    assert_true(is_win(b._score))
+    assert_true(b._score.is_win())
 
     b = board
     b.place_stone("a14", second)
     print("#10", b._score)
-    assert_true(is_loss(b._score))
+    assert_true(b._score.is_loss())
 
     b = board
     b.place_stone("f14", second)
     print("#11", b._score)
-    assert_true(is_loss(b._score))
+    assert_true(b._score.is_loss())
 
     b = board
     b.place_stone("f19", second)
     print("#12", b._score)
-    assert_true(is_loss(b._score))
+    assert_true(b._score.is_loss())
 
 
 fn test_connected_to() raises:

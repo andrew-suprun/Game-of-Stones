@@ -1,4 +1,4 @@
-from score import Score, is_win, is_loss, is_draw
+from score import Score
 
 
 trait TGame(Defaultable, ExplicitlyCopyable, Stringable, Writable):
@@ -29,11 +29,11 @@ struct MoveScore[Move: TMove](Copyable, Movable, Writable):
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move)
-        if is_win(self.score):
+        if self.score.is_win():
             writer.write(" win")
-        elif is_loss(self.score):
+        elif self.score.is_loss():
             writer.write(" loss")
-        elif is_draw(self.score):
+        elif self.score.is_draw():
             writer.write(" draw")
         else:
             writer.write(" ", self.score)

@@ -3,7 +3,7 @@ from python import Python, PythonObject
 import random
 import sys
 
-from score import Score, is_decisive
+from score import Score
 from board import Place
 from tree import TTree
 from game import TGame, TMove
@@ -26,6 +26,7 @@ alias d = window_height // (board_size + 1)
 alias r = d // 2
 
 alias duration = 20
+
 
 fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move: Int]() raises -> Bool:
     var pygame = Python.import_module("pygame")
@@ -84,11 +85,11 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         self.tree = Tree()
         print("move", move, "score", score, end="")
         print(" ms", time_ms, end="")
-        if is_decisive(score):
+        if score.is_decisive():
             print(" terminal", end="")
         print()
         print(self.game)
-        if is_decisive(score):
+        if score.is_decisive():
             self.game_complete = True
 
         self.turn = 1 - self.turn

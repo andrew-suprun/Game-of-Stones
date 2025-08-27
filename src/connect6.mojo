@@ -1,7 +1,7 @@
 from sys import env_get_string
 from hashlib.hasher import Hasher
 
-from score import Score, is_decisive, is_win, loss
+from score import Score
 from game import TGame, TMove, MoveScore
 from board import Board, Place, first
 from heap import heap_add
@@ -63,7 +63,7 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
 
     var board: Board[values, win_stones]
     var turn: Int
-    var _hash: UInt64
+    var _hash: UInt64  # TODO remove _hash
 
     fn __init__(out self):
         self.board = Board[values, win_stones]()
@@ -93,7 +93,7 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
 
-        var places = List[Place](capacity = max_places)
+        var places = List[Place](capacity=max_places)
         self.board.places(self.turn, places)
         debug_assert(len(places) > 1)
 
@@ -101,7 +101,7 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
-            if is_decisive(score1):
+            if score1.is_decisive():
                 moves.clear()
                 moves.append(MoveScore(Move(place1, place1), score1))
                 return
@@ -114,12 +114,11 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
                 var score2 = board1.score(place2, self.turn)
 
                 if score2 == 0:
-                    score2 = score.draw
-                    
-                if is_decisive(score2):
-                    moves.clear()
-                    moves.append(MoveScore(Move(place1, place2), score2))
-                    return
+                    score2 = Score.draw()
+
+                if score2.is_decisive():
+                    heap_add[less](MoveScore(Move(place1, place2), score2), moves)
+                    continue
 
                 var board2 = board1
                 if debug:
@@ -133,6 +132,7 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
                 var move_score = board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
+    # TODO should not return anything
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:

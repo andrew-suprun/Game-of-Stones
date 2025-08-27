@@ -1,6 +1,6 @@
 from testing import assert_true
 
-from score import Score, draw
+from score import Score
 from mcts import Mcts
 from gomoku import Gomoku
 
@@ -8,7 +8,7 @@ from gomoku import Gomoku
 fn test_gomoku() raises:
     alias Game = Gomoku[max_places=8]
     var game = Game()
-    var tree = Mcts[Game, 10, 5]()
+    var tree = Mcts[Game, 5]()
     _ = game.play_move("j10")
     _ = game.play_move("i9")
     _ = game.play_move("i10")
@@ -18,4 +18,4 @@ fn test_gomoku() raises:
 
     print(tree.debug_roots())
     print("best move", tree.best_move())
-    assert_true(String(tree.best_move()) == "h10")
+    assert_true(String(tree.best_move()) == "k10")

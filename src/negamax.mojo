@@ -1,7 +1,7 @@
 from sys import argv, env_get_bool
 from time import perf_counter_ns
 
-import score
+from score import Score
 from game import TGame, MoveScore
 from tree import TTree
 
@@ -21,16 +21,26 @@ struct Negamax[G: TGame](TTree):
         self._moves_cache = Dict[Int, List[MoveScore[G.Move]]]()
 
     fn search(mut self, game: G, duration_ms: Int) -> MoveScore[G.Move]:
+        var moves = game.moves()
+        var all_draws = True
+        for move in moves:
+            if move.score.is_win():
+                return move
+            if not move.score.is_draw():
+                all_draws = False
+        if all_draws:
+            return moves[0]
+
         self._deadline = perf_counter_ns() + 1_000_000 * duration_ms
         self._moves_cache.clear()
         self._best_move = game.move()
         var max_depth = 1
 
         while perf_counter_ns() < self._deadline:
-            var result = self._search(game, score.Score.MIN, score.Score.MAX, 0, max_depth)
+            var result = self._search(game, Score.loss(), Score.win(), 0, max_depth)
             if debug:
                 print()
-            if score.is_decisive(result):
+            if result.is_decisive():
                 break
             max_depth += 1
         return self._best_move
@@ -60,7 +70,7 @@ struct Negamax[G: TGame](TTree):
 
         debug_assert(len(children) > 0)
 
-        var best_score = score.Score.MIN
+        var best_score = Score.loss()
 
         sort[greater](children)
         if debug:
@@ -71,7 +81,7 @@ struct Negamax[G: TGame](TTree):
         for ref child in children:
             if debug:
                 print("\n#" + "|   " * depth + "> move", child.move, child.score, end="")
-            if not score.is_decisive(child.score):
+            if not child.score.is_decisive():
                 var child_game = game.copy()
                 _ = child_game.play_move(child.move)
                 child.score = -self._search(child_game, -b, -a, depth + 1, max_depth)
@@ -80,7 +90,7 @@ struct Negamax[G: TGame](TTree):
                         print("\n#" + "|   " * depth + "<-- search: timeout", end="")
                     return score.Score(0)
 
-            var child_score = child.score if not score.is_draw(child.score) else 0
+            var child_score = child.score if not child.score.is_draw() else 0
             if child_score > best_score:
                 best_score = child.score
                 if child.score > a:

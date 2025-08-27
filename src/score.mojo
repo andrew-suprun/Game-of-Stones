@@ -1,32 +1,99 @@
-from utils.numerics import nan, isinf, isnan
-
-alias Score = Float32
-alias win = Score.MAX
-alias loss = Score.MIN
-alias draw = nan[DType.float32]()
+from utils.numerics import FPUtils, isinf, isnan, inf
 
 
-fn is_win(score: Score) -> Bool:
-    return isinf(score) and score > 0
+struct Score(Comparable, Copyable, Defaultable, Stringable, Writable):
+    var value: Float32
 
+    @staticmethod
+    fn win() -> Score:
+        return Score(Float32.MAX)
 
-fn is_loss(score: Score) -> Bool:
-    return isinf(score) and score < 0
+    @staticmethod
+    fn loss() -> Score:
+        return Score(Float32.MIN)
 
+    @staticmethod
+    fn draw() -> Score:
+        return Score(-0.0)
 
-fn is_draw(score: Score) -> Bool:
-    return isnan(score)
+    fn __init__(out self):
+        self.value = 0.0
 
+    fn __init__(out self, value: Float32):
+        self.value = value
 
-fn is_decisive(score: Score) -> Bool:
-    return isinf(score) or isnan(score)
+    @implicit
+    fn __init__(out self, value: IntLiteral):
+        self.value = value
 
+    @implicit
+    fn __init__[dtype: DType](out self, value: SIMD[dtype, 1]):
+        self.value = Float32(value)
 
-fn str_score(score: Score) -> String:
-    if is_win(score):
-        return "win"
-    if is_loss(score):
-        return "loss"
-    if is_draw(score):
-        return "draw"
-    return String(score)
+    fn is_win(self) -> Bool:
+        return isinf(self.value) and self.value > 0
+
+    fn is_loss(self) -> Bool:
+        return isinf(self.value) and self.value < 0
+
+    fn is_draw(self) -> Bool:
+        return self.value == 0 and FPUtils.get_sign(self.value)
+
+    fn is_decisive(self) -> Bool:
+        return isinf(self.value) or self.is_draw()
+
+    fn __add__(self, other: Self) -> Score:
+        return Score(self.value + other.value)
+
+    fn __sub__(self, other: Self) -> Score:
+        return Score(self.value - other.value)
+
+    fn __iadd__(mut self, other: Self):
+        self.value += other.value
+
+    fn __isub__(mut self, other: Self):
+        self.value -= other.value
+
+    fn __mul__(self, other: Self) -> Score:
+        return Score(self.value * other.value)
+
+    fn __eq__(self, other: Self) -> Bool:
+        if self.is_win() and not other.is_win():
+            return False
+        if self.is_loss() and not other.is_loss():
+            return False
+        if self.is_draw() and not other.is_draw():
+            return False
+        return self.value == other.value
+
+    fn __ne__(self, other: Self) -> Bool:
+        return not (self == other)
+
+    fn __lt__(self, other: Self) -> Bool:
+        return self.value < other.value
+
+    fn __le__(self, other: Self) -> Bool:
+        return self.value <= other.value
+
+    fn __gt__(self, other: Self) -> Bool:
+        return self.value > other.value
+
+    fn __ge__(self, other: Self) -> Bool:
+        return self.value >= other.value
+
+    fn __neg__(self) -> Self:
+        return Score(-self.value) if self.value != 0.0 else self
+
+    fn __str__(self) -> String:
+        return String.write(self)
+
+    fn write_to[W: Writer](self, mut writer: W):
+        if isinf(self.value):
+            if self.value > 0:
+                writer.write("win")
+            else:
+                writer.write("loss")
+        elif self.is_draw():
+            writer.write("draw")
+        else:
+            writer.write(String(self.value))

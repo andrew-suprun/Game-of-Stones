@@ -3,7 +3,7 @@ from builtin.sort import sort
 from utils.numerics import isinf
 from memory import memcpy
 
-from score import Score, win, loss, draw
+from score import Score
 from heap import heap_add
 
 alias size = 19
@@ -266,12 +266,12 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
                     str += "    O "
                 else:
                     var value = self.score(Place(x, y), table_idx)
-                    if isinf(value):
+                    if value.is_win():
                         str += "  Win "
                     elif value == 0:
                         str += " Draw "
                     else:
-                        str += String(Int(value)).rjust(5, " ") + " "
+                        str += String(Int(value.value)).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
         str += "───┼" + "──────" * size + "┼───"
         if not table_idx:
@@ -361,7 +361,7 @@ fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineA
     alias result_size = win_stones * win_stones + 1
 
     var s = scores
-    s.append(Score.MAX)
+    s.append(Float32.MAX)
     v2 = List[Scores](Scores(1, -1))
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
