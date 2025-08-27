@@ -75,10 +75,10 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
         self._score = 0
 
         for y in range(size):
-            var v = 1 + min(win_stones - 1, y, size - 1 - y)
+            var v = 1 + min(win_stones - 1, y, size - 1 - y, size - win_stones)
             for x in range(size):
-                var h = 1 + min(win_stones - 1, x, size - 1 - x)
-                var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
+                var h = 1 + min(win_stones - 1, x, size - 1 - x, size - win_stones)
+                var m = 1 + min(x, y, size - 1 - x, size - 1 - y, size - win_stones)
                 var t1 = max(0, min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y))
                 var t2 = max(0, min(win_stones, m, 2 * size - 1 - win_stones + 1 - y - x, x + y - win_stones + 1 + 1))
                 var total = v + h + t1 + t2
