@@ -18,6 +18,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
 
     fn search(mut self, game: G, max_time_ms: Int) -> MoveScore[G.Move]:
         var moves = game.moves()
+        debug_assert(len(moves) > 0)
         var all_draws = True
         for move in moves:
             if move.score.is_win():
@@ -68,7 +69,8 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
                 draw_node = child
                 continue
 
-            if best_child[].n_sims < child.n_sims:
+            if best_child[].n_sims < child.n_sims or 
+                    best_child[].n_sims == child.n_sims and best_child[].move.score < child.move.score:
                 best_child = Pointer(to=child)
         if has_draw and best_child[].move.score < 0:
             return draw_node

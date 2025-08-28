@@ -17,9 +17,9 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
 fn sim_opening[
     T1: TTree, T2: TTree
 ](name1: String, name2: String, opening: List[String], mut stats: Dict[String, Int],) raises:
-    # print()
-    # print(name1, "vs.", name2)
-    # print()
+    print()
+    print(name1, "vs.", name2)
+    print()
 
     var g1 = T1.Game()
     var g2 = T2.Game()
@@ -31,12 +31,11 @@ fn sim_opening[
         _ = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
 
-    # print("opening:", end="")
-    # for move in opening:
-    #     print("", move, end="")
-    # print()
-
-    var score: Score
+    print("opening:", end="")
+    for move in opening:
+        print("", move, end="")
+    print(g1)
+    print()
 
     while True:
         var move: String
@@ -44,13 +43,13 @@ fn sim_opening[
             var result = t1.search(g1, timeout)
             move = String(result.move)
             score = result.score
-            # print("move", move)
+            print(name1, result)
         else:
             var result = t2.search(g2, timeout)
             move = String(result.move)
-            score = result.score
-            # print("move", move)
-        _ = g1.play_move(T1.Game.Move(move))
+            score = -result.score
+            print(name2, result)
+        var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
         t1 = T1()
         t2 = T2()
@@ -69,4 +68,4 @@ fn sim_opening[
     print("\x1b[1G", end="")
     for item in stats.items():
         print(item.key, item.value, "", end="")
-    # print()
+    print()

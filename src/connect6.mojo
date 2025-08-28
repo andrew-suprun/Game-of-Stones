@@ -101,7 +101,7 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
-            if score1.is_decisive():
+            if score1.is_win():
                 moves.clear()
                 moves.append(MoveScore(Move(place1, place1), score1))
                 return
@@ -113,12 +113,10 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
                 var place2 = places[j]
                 var score2 = board1.score(place2, self.turn)
 
-                if score2 == 0:
-                    score2 = Score.draw()
-
-                if score2.is_decisive():
-                    heap_add[less](MoveScore(Move(place1, place2), score2), moves)
-                    continue
+                if score2.is_win():
+                    moves.clear()
+                    moves.append(MoveScore(Move(place1, place2), score2))
+                    return
 
                 var board2 = board1
                 if debug:
@@ -129,11 +127,11 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
 
                 board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
-                var move_score = board_score + score1 + score2 - max_opp_score
+                var move_score = Score.draw() if score1 + score2 == 0 else board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
-    # TODO should not return anything
     fn play_move(mut self, move: Move) -> Score:
+        var draw = self.board.score(move._p1, self.turn) + self.board.score(move._p2, self.turn) == 0
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
@@ -142,6 +140,8 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
         else:
             self._hash -= hash(move)
         self.turn = 1 - self.turn
+        if draw:
+            return Score.draw()
         return self.board._score
 
     fn hash(self) -> Int:

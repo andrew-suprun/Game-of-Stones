@@ -1,23 +1,8 @@
-from time import perf_counter_ns
-
+from eval import run
 from connect6 import Connect6
 from mcts import Mcts
 
-alias Game = Connect6[max_moves=20, max_places=15]
-alias Tree = Mcts[Game, 10]
-alias moves_str = "j10 l11-k8 k12-l12 i10-j8 m12-m13 h8-i8"
-
-
 fn main() raises:
-    var game = Tree.Game()
-    var tree = Tree()
-    var moves = moves_str.split(" ")
-    for move in moves:
-        _ = game.play_move(Tree.Game.Move(move))
-        print(move)
-        print(game)
-    print(game)
-    var start = perf_counter_ns()
-    var move = tree.search(game, 1000)
-    print("move", move, "time.ms", (perf_counter_ns() - start) // 1_000_000)
-    # print(tree)
+    run[Mcts[Connect6[max_moves=20, max_places=15], 40]](
+        "d4 c3-d2 e6-e3 b6-e2", 
+        "a4-c2 b5-e4 b1-f1 b7-d5 e1-g1 d1-f5 a5-a6 a2-f7 c5-g2 b2-c7 f2-f3 b3-b4")

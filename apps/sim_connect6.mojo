@@ -8,17 +8,18 @@ from sim import run
 
 alias Game = Connect6[max_moves=20, max_places=15]
 alias Tree1 = Negamax[Game]
-alias Tree2 = Mcts[Game, 10]
+alias Tree2 = Mcts[Game, 40]
+alias seed = 7
 
 
 fn main() raises:
-    print("Connect6: XF", Tree2.c)
+    print("Connect6: XF", Tree2.c, "seed", seed)
     run[Tree1, Tree2]("Negamax", "Mcts", openings())
     print()
 
 
 fn openings() -> List[List[String]]:
-    random.seed(2)
+    random.seed(seed)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(size / 2 - 2, size / 2 + 3):
