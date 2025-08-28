@@ -1,13 +1,14 @@
 from random import shuffle
 from testing import assert_true
 
+from score import Score
 from heap import heap_add
 
 
 def test_heap():
     @parameter
-    fn less(a: Int, b: Int, out r: Bool) capturing:
-        r = a < b
+    fn less(a: Int, b: Int) capturing -> Bool:
+        return a < b
 
     var values = List[Int]()
     var items = List[Int](capacity=20)
@@ -24,3 +25,24 @@ def test_heap():
         var parent = items[(i - 1) // 2]
         var child = items[i]
         assert_true(parent < child)
+
+
+def test_scores():
+    @parameter
+    fn less(a: Score, b: Score) capturing -> Bool:
+        return a < b
+
+    var items = List[Score](capacity=6)
+    heap_add[less](Score.loss(), items)
+    heap_add[less](Score.draw(), items)
+    heap_add[less](Score(1), items)
+    heap_add[less](Score(-1), items)
+    heap_add[less](Score(2), items)
+    heap_add[less](Score(-2), items)
+    heap_add[less](Score(0), items)
+    heap_add[less](Score.win(), items)
+    for item in items:
+        print(item)
+    for i in range(1, 6):
+        print(items[i // 2], items[i])
+        assert_true(items[i // 2] <= items[i])

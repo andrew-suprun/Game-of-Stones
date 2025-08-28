@@ -25,7 +25,7 @@ alias color_line = "gray20"
 alias d = window_height // (board_size + 1)
 alias r = d // 2
 
-alias duration = 20
+alias duration = 1000
 
 
 fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move: Int]() raises -> Bool:

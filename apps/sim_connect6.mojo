@@ -18,7 +18,7 @@ fn main() raises:
 
 
 fn openings() -> List[List[String]]:
-    random.seed(5)
+    random.seed(2)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(size / 2 - 2, size / 2 + 3):
