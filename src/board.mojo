@@ -6,7 +6,7 @@ from memory import memcpy
 from score import Score
 from heap import heap_add
 
-alias size = 19
+alias size = 7
 alias first = 0
 alias second = 1
 alias Scores = SIMD[DType.float32, 2]

@@ -104,6 +104,8 @@ struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Wr
         if not self.children:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
+            if len(moves) == 1 and not moves[0].score.is_decisive():
+                moves[0].score = Score.draw()
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move))
@@ -113,7 +115,7 @@ struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Wr
             _ = g.play_move(selected_child.move.move)
             selected_child._expand(g)
 
-        self.n_sims = 0
+        self.n_sims = 1
         var max_score = Score.loss()
         var all_draws = True
         var all_losses = True

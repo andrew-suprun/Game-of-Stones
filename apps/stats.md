@@ -1,16 +1,18 @@
-XF:   1   2   4   8  16  32
-C3: 106 107  97 109 113 102
-G3: 127 131 136 137 125 104
+timer: 200ms/m
 
-XF:   6   8  10  12  14  16  18
-C4: 108 115 117 114 110 106 104
+seed: 7
 
-XF:   2   4   6   8  10
-G4: 130 131 131 129 125
+xf  5: Negamax 92 Mcts 106 draw 2
+xf 10: Negamax 89 Mcts 110 draw 1
+xf 15: Negamax 92 Mcts 108 draw 0
+xf 20: Negamax 84 Mcts 116 draw 0
+xf 30: Negamax 99 Mcts 101 draw 0
+xf 40: Negamax 85 Mcts 114 draw 1
+xf 50: Negamax 96 Mcts 103 draw 1 
+xf 80: Negamax 107 Mcts 93 draw 0
 
-XF:   7   8   9  10  11  12
-C5: 109 115 115 113 118 113
+timer: 2s/m
 
-XF:   3   4   5   6   7   8
-G5: 139 142 141 144 145 142
+seed: 7
 
+xf 20: Negamax 104 Mcts 94 draw 2

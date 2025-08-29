@@ -75,9 +75,12 @@ struct Gomoku[max_places: Int](TGame):
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = self.board.score(place, self.turn)
-            if score.is_decisive():
+            if score.is_win():
+                moves.clear()
                 moves.append(MoveScore(Move(place), score))
-            moves.append(MoveScore(Move(place), board_score + self.board.score(place, self.turn).value / 2))
+                return
+            var move_score = Score.draw() if score.value == 0 else board_score + score.value / 2
+            moves.append(MoveScore(Move(place), move_score))
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._place, self.turn)
