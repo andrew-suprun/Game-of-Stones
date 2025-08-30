@@ -64,7 +64,7 @@ struct Connect6[max_moves: Int, max_places: Int, max_plies: Int](TGame):
     var board: Board[values, win_stones]
     var turn: Int
     var plies: Int
-    var _hash: UInt64  # TODO remove _hash
+    var _hash: UInt64
 
     fn __init__(out self):
         self.board = Board[values, win_stones]()

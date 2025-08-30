@@ -48,8 +48,7 @@ struct Negamax[G: TGame](TTree):
             max_depth += 1
         return self._best_move
 
-    # TODO: var alpha
-    fn _search(mut self, game: G, alpha: score.Score, beta: score.Score, depth: Int, max_depth: Int) -> score.Score:
+    fn _search(mut self, game: G, var alpha: score.Score, beta: score.Score, depth: Int, max_depth: Int) -> score.Score:
         @parameter
         fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
             return a.score > b.score
@@ -58,8 +57,6 @@ struct Negamax[G: TGame](TTree):
             print("\n#" + "|   " * depth + "--> search: depth", depth, "max_depth", max_depth, end="")
 
         # print("\n>> enter", end="")
-        var a = alpha
-        var b = beta
         if depth == max_depth:
             var move = game.move()
             if debug:
@@ -89,7 +86,7 @@ struct Negamax[G: TGame](TTree):
             if not child.score.is_decisive():
                 var child_game = game.copy()
                 _ = child_game.play_move(child.move)
-                child.score = -self._search(child_game, -b, -a, depth + 1, max_depth)
+                child.score = -self._search(child_game, -beta, -alpha, depth + 1, max_depth)
                 if perf_counter_ns() > self._deadline:
                     if debug:
                         print("\n#" + "|   " * depth + "<-- search: timeout", end="")
@@ -99,8 +96,8 @@ struct Negamax[G: TGame](TTree):
             var child_score = child.score if not child.score.is_draw() else 0
             if child_score > best_score:
                 best_score = child.score
-                if child.score > a:
-                    a = child_score
+                if child.score > alpha:
+                    alpha = child_score
 
                 if depth == 0:
                     self._best_move = child
@@ -109,7 +106,7 @@ struct Negamax[G: TGame](TTree):
 
             if debug:
                 print("\n#" + "|   " * depth + "< move", child.move, child.score, "| best score", best_score, end="")
-            if child_score > b:
+            if child_score > beta:
                 if debug:
                     print("\n#" + "|   " * depth + "cutoff", end="")
                 # print("<< exit3")
