@@ -42,7 +42,12 @@ struct Place(Copyable, Defaultable, EqualityComparable, Hashable, LessThanCompar
         hasher.update(self.y)
 
     fn connected_to[win_stones: Int](self, other: Place) -> Bool:
-        if self.x >= other.x + win_stones or other.x >= self.x + win_stones or self.y >= other.y + win_stones or other.y >= self.y + win_stones:
+        if (
+            self.x >= other.x + win_stones
+            or other.x >= self.x + win_stones
+            or self.y >= other.y + win_stones
+            or other.y >= self.y + win_stones
+        ):
             return False
         if self.x == other.x or self.y == other.y:
             return True
