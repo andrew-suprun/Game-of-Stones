@@ -11,6 +11,7 @@ alias Tree1 = Negamax[Game]
 alias Tree2 = Mcts[Game, 6]
 alias seed = 7
 
+
 fn main() raises:
     print("Gomoku: XF", Tree2.c, "seed", seed)
     run[Tree1, Tree2]("Negamax", "Mcts", openings())

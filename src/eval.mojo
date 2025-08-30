@@ -2,6 +2,7 @@ from time import perf_counter_ns
 
 from tree import TTree
 
+
 fn run[Tree: TTree](opening: String, script: String) raises:
     var game = Tree.Game()
     var tree = Tree()
