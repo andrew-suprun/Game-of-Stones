@@ -26,16 +26,17 @@ fn sim_opening[
     var t1 = T1()
     var t2 = T2()
     var turn = first
+    var plies = 0
 
     for move in opening:
         _ = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
+        plies += 1
 
     print("opening:", end="")
     for move in opening:
         print("", move, end="")
     print(g1)
-    print()
 
     while True:
         var move: String
@@ -51,6 +52,7 @@ fn sim_opening[
             print(name2, result)
         var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
+        plies += 1
         t1 = T1()
         t2 = T2()
         turn = 1 - turn
@@ -65,7 +67,9 @@ fn sim_opening[
     else:
         stats["draw"] += 1
 
-    print("\x1b[1G", end="")
+    print(g1)
+
+    # print("\x1b[1G", end="")
     for item in stats.items():
         print(item.key, item.value, "", end="")
     print()

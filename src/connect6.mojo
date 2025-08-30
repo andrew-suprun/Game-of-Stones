@@ -58,21 +58,24 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
-struct Connect6[max_moves: Int, max_places: Int](TGame):
+struct Connect6[max_moves: Int, max_places: Int, max_plies: Int](TGame):
     alias Move = Move
 
     var board: Board[values, win_stones]
     var turn: Int
+    var plies: Int
     var _hash: UInt64  # TODO remove _hash
 
     fn __init__(out self):
         self.board = Board[values, win_stones]()
         self.turn = 0
+        self.plies = 0
         self._hash = 0
 
     fn __copyinit__(out self, other: Self, /):
         self.board = other.board.copy()
         self.turn = other.turn
+        self.plies = other.plies
         self._hash = other._hash
 
     fn copy(self) -> Self:
@@ -81,11 +84,16 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
     fn move(self) -> MoveScore[Move]:
         var moves = List[MoveScore[Move]](capacity=1)
         self._moves(moves)
+        if self.plies == Self.max_plies:
+            moves[0].score = Score.draw()
         return moves[0]
 
     fn moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=max_moves)
         self._moves(moves)
+        if self.plies == Self.max_plies:
+            moves[-1].score = Score.draw()
+            return [moves[-1]]
         return moves
 
     fn _moves(self, mut moves: List[MoveScore[Move]]):
@@ -95,6 +103,8 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
 
         var places = List[Place](capacity=max_places)
         self.board.places(self.turn, places)
+        if len(places) <= 1:
+            print(self)
         debug_assert(len(places) > 1)
 
         var board_score = self.board._score if self.turn == first else -self.board._score
@@ -127,11 +137,10 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
 
                 board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
-                var move_score = Score.draw() if score1 + score2 == 0 else board_score + score1 + score2 - max_opp_score
+                var move_score = board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
     fn play_move(mut self, move: Move) -> Score:
-        var draw = self.board.score(move._p1, self.turn) + self.board.score(move._p2, self.turn) == 0
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
@@ -140,7 +149,8 @@ struct Connect6[max_moves: Int, max_places: Int](TGame):
         else:
             self._hash -= hash(move)
         self.turn = 1 - self.turn
-        if draw:
+        self.plies += 1
+        if self.plies > Self.max_plies:
             return Score.draw()
         return self.board._score
 

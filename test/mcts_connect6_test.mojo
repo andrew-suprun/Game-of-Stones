@@ -6,9 +6,9 @@ from connect6 import Connect6
 
 
 fn test_connect6() raises:
-    alias Game = Connect6[max_moves=32, max_places=20]
+    alias Game = Connect6[max_moves=32, max_places=20, max_plies=100]
     var game = Game()
-    var tree = Mcts[Game, 6]()
+    var tree = Mcts[Game, 8]()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     print(game)
@@ -21,9 +21,9 @@ fn test_connect6() raises:
 
 
 fn main() raises:
-    alias Game = Connect6[max_moves=8, max_places=6]
+    alias Game = Connect6[max_moves=8, max_places=6, max_plies=100]
     var game = Game()
-    var tree = Mcts[Game, 6]()
+    var tree = Mcts[Game, 8]()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     for _ in range(2):
@@ -32,8 +32,7 @@ fn main() raises:
             _ = tree.expand(game)
         print("best move", tree.best_move())
         var score = game.play_move(tree.best_move())
-        print(tree)
         print(tree.debug_roots())
         if score.is_decisive():
             break
-        tree = Mcts[Game, 6]()
+        tree = Mcts[Game, 8]()

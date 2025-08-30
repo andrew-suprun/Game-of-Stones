@@ -2,7 +2,7 @@ from game_of_stones import game_of_stones
 from gomoku import Gomoku
 from mcts import Mcts
 
-alias Game = Gomoku[max_places=15]
+alias Game = Gomoku[max_places=15, max_plies=100]
 alias Tree = Mcts[Game, c=6]
 
 

@@ -5,7 +5,7 @@ from game import TMove
 from mcts import Mcts
 from gomoku import Gomoku
 
-alias G = Gomoku[max_places=32]
+alias G = Gomoku[max_places=32, max_plies=100]
 
 
 fn bench_moves():
@@ -22,7 +22,7 @@ fn bench_moves():
 
 fn bench_expand():
     var game = G()
-    var tree = Mcts[G, 20]()
+    var tree = Mcts[G, 8]()
     try:
         _ = game.play_move(Gomoku.Move("j10"))
         _ = game.play_move(Gomoku.Move("i9"))

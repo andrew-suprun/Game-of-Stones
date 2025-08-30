@@ -3,8 +3,8 @@ from time import perf_counter_ns
 from gomoku import Gomoku
 from negamax import Negamax
 
-alias Game = Gomoku[max_places=20]
-alias script = "d4 b2 c4 f3 e3 e5 c5 f2 d3 f4 f5 c3 e4 g6 d6 d5 b6 a7 b4 a4 c2 b1 b5 e2 a6 c6 b7 b3 a3 e7 f6 g1 d2 d7 a2 g5 a5 d1 e6"
+alias Game = Gomoku[max_places=20, max_plies=100]
+alias script = "d4 d6 f3 b3 c5 b2 c4 e4 b5 e3 e5 d5 c3 c2 f1 e2 d2 f6 e1 c6 g6 a5 e6 f2 b1 c1 a2 g1 g4 d7 g5 c7"
 
 fn main() raises:
     var game = Game()
@@ -16,6 +16,7 @@ fn main() raises:
             print("exiting without search")
             return
     print(game)
+    print(game.board.str_scores())
     var start = perf_counter_ns()
-    var move = tree.search(game, 200)
+    var move = tree.search(game, 2000)
     print("search result", move, "time.ms", (perf_counter_ns() - start) // 1_000_000)

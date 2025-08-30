@@ -6,7 +6,7 @@ from memory import memcpy
 from score import Score
 from heap import heap_add
 
-alias size = 7
+alias size = 19
 alias first = 0
 alias second = 1
 alias Scores = SIMD[DType.float32, 2]
@@ -268,8 +268,6 @@ struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringa
                     var value = self.score(Place(x, y), table_idx)
                     if value.is_win():
                         str += "  Win "
-                    elif value == 0:
-                        str += " Draw "
                     else:
                         str += String(Int(value.value)).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"

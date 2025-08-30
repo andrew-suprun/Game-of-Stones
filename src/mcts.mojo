@@ -19,6 +19,8 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
     fn search(mut self, game: G, max_time_ms: Int) -> MoveScore[G.Move]:
         var moves = game.moves()
         debug_assert(len(moves) > 0)
+        if len(moves) == 1:
+            return moves[0]
         var all_draws = True
         for move in moves:
             if move.score.is_win():
@@ -104,8 +106,6 @@ struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Wr
         if not self.children:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
-            if len(moves) == 1 and not moves[0].score.is_decisive():
-                moves[0].score = Score.draw()
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move))
@@ -166,7 +166,7 @@ struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Wr
         self.write_to(writer, 0)
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self.move, " sims: ", self.n_sims, "\n")
+        writer.write(depth, ": ", "|   " * depth, self.move, " sims: ", self.n_sims, "\n")
         if self.children:
             for child in self.children:
                 child.write_to(writer, depth + 1)

@@ -35,21 +35,24 @@ struct Move(TMove):
         writer.write(self._place)
 
 
-struct Gomoku[max_places: Int](TGame):
+struct Gomoku[max_places: Int, max_plies: Int](TGame):
     alias Move = Move
 
     var board: Board[values, win_stones]
     var turn: Int
+    var plies: Int
     var _hash: UInt64
 
     fn __init__(out self):
         self.board = Board[values, win_stones]()
         self.turn = 0
+        self.plies = 0
         self._hash = 0
 
     fn __copyinit__(out self, other: Self, /):
         self.board = other.board.copy()
         self.turn = other.turn
+        self.plies = other.plies
         self._hash = other._hash
 
     fn copy(self) -> Self:
@@ -58,11 +61,16 @@ struct Gomoku[max_places: Int](TGame):
     fn move(self) -> MoveScore[Move]:
         var moves = List[MoveScore[Move]](capacity=1)
         self._moves(moves)
+        if self.plies == Self.max_plies:
+            moves[0].score = Score.draw()
         return moves[0]
 
     fn moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=max_places)
         self._moves(moves)
+        if self.plies == Self.max_plies:
+            moves[-1].score = Score.draw()
+            return [moves[-1]]
         return moves
 
     fn _moves(self, mut moves: List[MoveScore[Move]]):
@@ -79,8 +87,7 @@ struct Gomoku[max_places: Int](TGame):
                 moves.clear()
                 moves.append(MoveScore(Move(place), score))
                 return
-            var move_score = Score.draw() if score.value == 0 else board_score + score.value / 2
-            moves.append(MoveScore(Move(place), move_score))
+            moves.append(MoveScore(Move(place), board_score + score.value / 2))
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._place, self.turn)
@@ -89,6 +96,9 @@ struct Gomoku[max_places: Int](TGame):
         else:
             self._hash -= hash(move)
         self.turn = 1 - self.turn
+        self.plies += 1
+        if self.plies > Self.max_plies:
+            return Score.draw()
         return self.board._score
 
     fn hash(self) -> Int:

@@ -5,7 +5,7 @@ from negamax import Negamax
 from board import Board, first
 from connect6 import Connect6, Move
 
-alias C6 = Connect6[max_moves=20, max_places=12]
+alias C6 = Connect6[max_moves=20, max_places=12, max_plies=100]
 
 
 fn bench_moves():

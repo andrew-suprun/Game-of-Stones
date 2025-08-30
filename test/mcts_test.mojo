@@ -97,4 +97,4 @@ def test_tree():
             break
     print(t)
     print(t._best_child().move)
-    assert_true(String(t._best_child().move) == "<2> -9.448257")
+    assert_true(String(t._best_child().move) == "<2> 0.5595324")

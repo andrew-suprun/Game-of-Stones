@@ -1,24 +1,24 @@
 import random
 
 from board import Place, size
-from gomoku import Gomoku
+from connect6 import Connect6
 from mcts import Mcts
-from negamax import Negamax
+from gomoku import Gomoku
 from sim import run
 
-alias Game = Gomoku[max_places=15, max_plies=100]
-alias Tree1 = Negamax[Game]
-alias Tree2 = Mcts[Game, 6]
-alias seed = 7
+alias Game = Gomoku[max_places=20, max_plies=100]
+alias Tree1 = Mcts[Game, 6]
+alias Tree2 = Mcts[Game, 8]
+
 
 fn main() raises:
-    print("Gomoku: XF", Tree2.c, "seed", seed)
-    run[Tree1, Tree2]("Negamax", "Mcts", openings())
+    print("Gomoku")
+    run[Tree1, Tree2]("M6", "M8", openings())
     print()
 
 
 fn openings() -> List[List[String]]:
-    random.seed(seed)
+    random.seed(5)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(size / 2 - 2, size / 2 + 3):

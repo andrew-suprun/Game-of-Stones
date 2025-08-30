@@ -6,14 +6,14 @@ from negamax import Negamax
 from mcts import Mcts
 from sim import run
 
-alias Game = Connect6[max_moves=20, max_places=15]
-alias Tree1 = Mcts[Game, 10]
+alias Game = Connect6[max_moves=20, max_places=15, max_plies=100]
+alias Tree1 = Mcts[Game, 8]
 alias Tree2 = Mcts[Game, 10]
 
 
 fn main() raises:
     print("Connect6")
-    run[Tree1, Tree2]("M1", "M2", openings())
+    run[Tree1, Tree2]("M8 ", "M10", openings())
     print()
 
 
