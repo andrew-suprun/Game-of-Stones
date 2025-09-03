@@ -1,10 +1,8 @@
-from testing import assert_true, assert_false
-from random import seed, random_si64, random_float64
+import random
 from hashlib.hasher import Hasher
 
 from score import Score
 from game import TGame, TMove, MoveScore
-from mcts import Mcts
 
 
 @fieldwise_init
@@ -36,13 +34,38 @@ struct TestMove(TMove):
         writer.write("<", self._id, ">")
 
 
-struct TestGame(TGame):
+struct TestNode(Copyable, Movable):
+    var move: MoveScore[TestMove]
+    var children: List[Self]
+
+    fn __init__(out self, move: MoveScore[TestMove], depth: Int):
+        id = 10*move.move._id+1
+        var n_children = Int(random.random_si64(1, 5))
+        self.children = List[Self](capacity=n_children)
+        for _ in range(n_children):
+            var rand = random.random_si64(0, 12)
+            if rand == 0:
+                self.children.append(Self(MoveScore(TestMove(id), Score.win()), 0))
+            elif rand == 1 or depth == 0:
+                self.children.append(Self(MoveScore(TestMove(id), Score.draw()), 0))
+            else:
+                var child = Self(MoveScore(TestMove(id), Score(random.random_float64(-10, 10))), depth-1)
+                self.children.append(child^)
+            id += 1
+
+# struct TestGame(TGame):
+struct TestGame:
     alias Move = TestMove
 
-    var move_id: Int
+    var root: TestNode
 
     fn __init__(out self):
-        self.move_id = 1
+        random.seed(0)
+        self.root = TestNode(MoveScore(TestMove(), Score()), 0)
+
+    fn __init__(out self, depth: Int, seed: Int):
+        random.seed(seed)
+        self.root = TestNode(MoveScore(TestMove(), Score()), depth)
 
     fn __copyinit__(out self, other: Self, /):
         self.move_id = other.move_id
@@ -72,7 +95,6 @@ struct TestGame(TGame):
         return moves
 
     fn play_move(mut self, move: self.Move) -> Score:
-        self.move_id *= 10
         return 0
 
     fn hash(self) -> Int:
@@ -83,17 +105,3 @@ struct TestGame(TGame):
 
     fn write_to[W: Writer](self, mut writer: W):
         pass
-
-
-def test_tree():
-    seed(3)
-    var g = TestGame()
-    var t = Mcts[TestGame, 6]()
-    for i in range(20):
-        var done = t.expand(g)
-        if done:
-            print("break", i)
-            break
-    print(t)
-    print(t._best_child().move)
-    assert_true(String(t._best_child().move) == "<2> 0.5595324")

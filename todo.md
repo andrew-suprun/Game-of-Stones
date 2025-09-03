@@ -1,3 +1,8 @@
+* add Game.play_move
+* make game not Copyable
+
+
+
 U+26C0 ⛀ WHITE DRAUGHTS MAN
 U+26C1 ⛁ WHITE DRAUGHTS KING
 U+26C2 ⛂ BLACK DRAUGHTS MAN
