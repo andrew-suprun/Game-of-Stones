@@ -34,64 +34,59 @@ struct TestMove(TMove):
         writer.write("<", self._id, ">")
 
 
-struct TestNode(Copyable, Movable):
-    var move: MoveScore[TestMove]
-    var children: List[Self]
-
-    fn __init__(out self, move: MoveScore[TestMove], depth: Int):
-        id = 10*move.move._id+1
-        var n_children = Int(random.random_si64(1, 5))
-        self.children = List[Self](capacity=n_children)
-        for _ in range(n_children):
-            var rand = random.random_si64(0, 12)
-            if rand == 0:
-                self.children.append(Self(MoveScore(TestMove(id), Score.win()), 0))
-            elif rand == 1 or depth == 0:
-                self.children.append(Self(MoveScore(TestMove(id), Score.draw()), 0))
-            else:
-                var child = Self(MoveScore(TestMove(id), Score(random.random_float64(-10, 10))), depth-1)
-                self.children.append(child^)
-            id += 1
+alias zero_move = MoveScore(TestMove(), Score(0))
 
 # struct TestGame(TGame):
-struct TestGame:
+struct TestGame(Writable):
     alias Move = TestMove
 
-    var root: TestNode
+    var _moves: Dict[Int, MoveScore[TestMove]]
+    var _current_id: Int
 
     fn __init__(out self):
-        random.seed(0)
-        self.root = TestNode(MoveScore(TestMove(), Score()), 0)
+        self = Self(5, 0)
 
     fn __init__(out self, depth: Int, seed: Int):
         random.seed(seed)
-        self.root = TestNode(MoveScore(TestMove(), Score()), depth)
+        self._current_id = 0
+        self._moves = Dict[Int, MoveScore[TestMove]]()
+        self._moves[0] = MoveScore(TestMove(0), Score())
+        self._init_moves(0, depth)
 
-    fn __copyinit__(out self, other: Self, /):
-        self.move_id = other.move_id
+    fn _init_moves(mut self, var id: Int, depth: Int):
+        id *= 10
+        var n_children = Int(random.random_si64(1, 5))
+        for _ in range(n_children):
+            id += 1
+            var rand = random.random_si64(0, 12)
+            if rand == 0:
+                self._moves[id] = MoveScore(TestMove(id), Score.win())
+            elif rand == 1 or depth == 0:
+                self._moves[id] = MoveScore(TestMove(id), Score.draw())
+            else:
+                self._moves[id] = MoveScore(TestMove(id), Score(random.random_float64(-10, 10)))
+                self._init_moves(id, depth-1)
 
-    fn copy(self) -> Self:
-        return self
+    fn _current_move(self) -> MoveScore[TestMove]:
+        return self._moves.get(self._current_id, zero_move)
 
     fn score(self) -> Score:
-        return Score(random_float64(-10, 10))
+        return self._current_move().score
 
     fn move(self) -> MoveScore[TestMove]:
-        return MoveScore(TestMove(0), Score(random_float64(-10, 10)))
+        var move = self._current_move()
+        var child_id = move.move._id
+        return self._moves.get(child_id, zero_move)
 
     fn moves(self) -> List[MoveScore[TestMove]]:
         var moves = List[MoveScore[TestMove]]()
-        var n_moves = random_si64(2, 5)
-        var id = self.move_id
-        for _ in range(n_moves):
-            var rand = random_si64(0, 12)
-            if rand == 0:
-                moves.append(MoveScore(TestMove(id), Score.win()))
-            elif rand == 1:
-                moves.append(MoveScore(TestMove(id), Score.draw()))
-            else:
-                moves.append(MoveScore(TestMove(id), Score(random_float64(-10, 10))))
-            id += 1
+        var id = self._current_id*10
+        try:
+            while True:
+                id += 1
+                moves.append(self._moves[id])
+        except:
+            pass
         return moves
 
     fn play_move(mut self, move: self.Move) -> Score:
