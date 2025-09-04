@@ -6,7 +6,6 @@ from memory import memcpy
 from score import Score
 from heap import heap_add
 
-alias size = 19
 alias first = 0
 alias second = 1
 alias Scores = SIMD[DType.float32, 2]
@@ -64,7 +63,7 @@ struct Place(Copyable, Defaultable, EqualityComparable, Hashable, LessThanCompar
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-struct Board[values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringable, Writable):
+struct Board[size: Int, values: List[Float32], win_stones: Int](ExplicitlyCopyable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)

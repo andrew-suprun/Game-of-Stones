@@ -6,7 +6,7 @@ from connect6 import Connect6
 
 
 fn test_connect6() raises:
-    alias Game = Connect6[max_moves=32, max_places=20, max_plies=100]
+    alias Game = Connect6[size=19, max_moves=32, max_places=20, max_plies=100]
     var game = Game()
     var tree = Mcts[Game, 8]()
     _ = game.play_move("j10")
@@ -21,7 +21,7 @@ fn test_connect6() raises:
 
 
 fn main() raises:
-    alias Game = Connect6[max_moves=8, max_places=6, max_plies=100]
+    alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
     var game = Game()
     var tree = Mcts[Game, 8]()
     _ = game.play_move("j10")

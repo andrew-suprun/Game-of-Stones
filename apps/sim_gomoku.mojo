@@ -6,7 +6,7 @@ from mcts import Mcts
 from negamax import Negamax
 from sim import run
 
-alias Game = Gomoku[max_places=15, max_plies=100]
+alias Game = Gomoku[size=19, max_places=15, max_plies=100]
 alias Tree1 = Negamax[Game]
 alias Tree2 = Mcts[Game, 6]
 alias seed = 7

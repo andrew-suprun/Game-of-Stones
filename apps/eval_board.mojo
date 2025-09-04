@@ -8,7 +8,7 @@ alias values = List[Float32](0, 1, 5, 25, 125, 625, Float32.MAX)
 fn main() raises:
     var moves_str = "j10 j9-j12 i12-k12 h12-h9 i9-k11 h8-i8 h10-k10 j8-k8 g10-i10 l8-m8"
     var moves = moves_str.split(" ")
-    var board = Board[values, win_stones]()
+    var board = Board[19, values, win_stones]()
     var value = Score(0)
 
     var turn = first

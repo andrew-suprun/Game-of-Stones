@@ -6,7 +6,7 @@ from gomoku import Gomoku
 
 
 fn test_gomoku() raises:
-    alias Game = Gomoku[max_places=8, max_plies=100]
+    alias Game = Gomoku[size=19, max_places=8, max_plies=100]
     var game = Game()
     var tree = Mcts[Game, 6]()
     _ = game.play_move("j10")

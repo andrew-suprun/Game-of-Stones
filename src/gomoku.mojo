@@ -35,16 +35,16 @@ struct Move(TMove):
         writer.write(self._place)
 
 
-struct Gomoku[max_places: Int, max_plies: Int](TGame):
+struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
     alias Move = Move
 
-    var board: Board[values, win_stones]
+    var board: Board[size, values, win_stones]
     var turn: Int
     var plies: Int
     var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[values, win_stones]()
+        self.board = Board[size, values, win_stones]()
         self.turn = 0
         self.plies = 0
         self._hash = 0

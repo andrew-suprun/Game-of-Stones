@@ -6,7 +6,7 @@ from negamax import Negamax
 from mcts import Mcts
 from sim import run
 
-alias Game = Connect6[max_moves=20, max_places=15, max_plies=100]
+alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 alias Tree1 = Negamax[Game]
 alias Tree2 = Negamax[Game]
 

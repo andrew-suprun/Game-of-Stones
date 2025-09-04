@@ -4,7 +4,7 @@ from score import Score
 from negamax import Negamax
 from connect6 import Connect6
 
-alias C6 = Connect6[max_moves=16, max_places=12, max_plies=100]
+alias C6 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 
 fn test_connect6() raises:

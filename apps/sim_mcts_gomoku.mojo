@@ -6,7 +6,7 @@ from mcts import Mcts
 from gomoku import Gomoku
 from sim import run
 
-alias Game = Gomoku[max_places=20, max_plies=100]
+alias Game = Gomoku[size=19, max_places=20, max_plies=100]
 alias Tree1 = Mcts[Game, 6]
 alias Tree2 = Mcts[Game, 8]
 

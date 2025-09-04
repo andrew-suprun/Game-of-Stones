@@ -1,4 +1,4 @@
-* add Game.play_move
+* add Game.undo_move
 * make game not Copyable
 
 

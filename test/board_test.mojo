@@ -2,7 +2,7 @@ from testing import assert_true, assert_false
 from random import seed, random_si64
 
 from score import Score
-from board import Board, Place, size, first, second
+from board import Board, Place, first, second
 
 alias win_stones = 6
 alias values = List[Float32](0, 1, 5, 25, 125, 625)
@@ -10,16 +10,16 @@ alias values = List[Float32](0, 1, 5, 25, 125, 625)
 
 fn test_place_stone() raises:
     seed(7)
-    var board = Board[values, win_stones]()
+    var board = Board[19, values, win_stones]()
     var value = Score(0)
     var n = 0
     for i in range(200):
         var turn = i % 2
-        var xx = Int(random_si64(0, size - 1))
-        var yy = Int(random_si64(0, size - 1))
+        var xx = Int(random_si64(0, board.size - 1))
+        var yy = Int(random_si64(0, board.size - 1))
         if board[xx, yy] == board.empty:
-            for y in range(size):
-                for x in range(size):
+            for y in range(board.size):
+                for x in range(board.size):
                     if board[x, y] == board.empty:
                         var actual = board.score(Place(x, y), first)
                         var b = board
@@ -48,7 +48,7 @@ fn test_place_stone() raises:
 
 
 fn test_score() raises:
-    var board = Board[values, win_stones]()
+    var board = Board[19, values, win_stones]()
 
     board.place_stone("a1", first)
     board.place_stone("a2", first)
