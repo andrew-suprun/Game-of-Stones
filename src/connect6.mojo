@@ -72,23 +72,14 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.plies = 0
         self._hash = 0
 
-    fn __copyinit__(out self, other: Self, /):
-        self.board = other.board.copy()
-        self.turn = other.turn
-        self.plies = other.plies
-        self._hash = other._hash
-
-    fn copy(self) -> Self:
-        return self
-
-    fn move(self) -> MoveScore[Move]:
+    fn move(mut self) -> MoveScore[Move]:
         var moves = List[MoveScore[Move]](capacity=1)
         self._moves(moves)
         if self.plies == Self.max_plies:
             moves[0].score = Score.draw()
         return moves[0]
 
-    fn moves(self) -> List[MoveScore[Move]]:
+    fn moves(mut self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=max_moves)
         self._moves(moves)
         if self.plies == Self.max_plies:
@@ -96,7 +87,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             return [moves[-1]]
         return moves
 
-    fn _moves(self, mut moves: List[MoveScore[Move]]):
+    fn _moves(mut self, mut moves: List[MoveScore[Move]]):
         @parameter
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
@@ -116,29 +107,31 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 moves.append(MoveScore(Move(place1, place1), score1))
                 return
 
-            var board1 = self.board
-            board1.place_stone(place1, self.turn)
+            self.board.place_stone(place1, self.turn)
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j]
-                var score2 = board1.score(place2, self.turn)
+                var score2 = self.board.score(place2, self.turn)
 
                 if score2.is_win():
                     moves.clear()
                     moves.append(MoveScore(Move(place1, place2), score2))
+                    self.board.remove_stone(place1)
                     return
 
-                var board2 = board1
                 if debug:
-                    var board_value = board2.board_value(values)
+                    var board_value = self.board.board_value(values)
                     if self.turn:
                         board_value = -board_value
                     debug_assert(board_value == board_score + score1 + score2)
 
-                board2.place_stone(place2, self.turn)
-                var max_opp_score = board2.max_score(1 - self.turn)
+                self.board.place_stone(place2, self.turn)
+                var max_opp_score = self.board.max_score(1 - self.turn)
+                self.board.remove_stone(place2)
                 var move_score = board_score + score1 + score2 - max_opp_score
                 heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
+
+            self.board.remove_stone(place1)
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)
@@ -153,6 +146,17 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         if self.plies > Self.max_plies:
             return Score.draw()
         return self.board._score
+
+    fn undo_move(mut self, move: Move):
+        self.board.remove_stone(move._p2)
+        if move._p1 != move._p2:
+            self.board.remove_stone(move._p1)
+        if self.turn == first:
+            self._hash -= hash(move)
+        else:
+            self._hash += hash(move)
+        self.turn = 1 - self.turn
+        self.plies -= 1
 
     fn hash(self) -> Int:
         return Int(self._hash)

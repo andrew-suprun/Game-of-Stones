@@ -7,5 +7,5 @@ trait TTree:
     fn __init__(out self):
         ...
 
-    fn search(mut self, game: Game, max_time_ms: Int) -> MoveScore[Game.Move]:
+    fn search(mut self, mut game: Game, max_time_ms: Int) -> MoveScore[Game.Move]:
         ...

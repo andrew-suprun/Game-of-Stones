@@ -22,22 +22,22 @@ fn test_place_stone() raises:
                 for x in range(board.size):
                     if board[x, y] == board.empty:
                         var actual = board.score(Place(x, y), first)
-                        var b = board
-                        b.place_stone(Place(x, y), first)
-                        var expected = b.board_value(values) - value
+                        board.place_stone(Place(x, y), first)
+                        var expected = board.board_value(values) - value
+                        board.remove_stone(Place(x, y))
                         if actual != expected:
                             print(Place(x, y), "actual:", actual, "first:", expected, "n", n)
-                            print(b)
-                            print(b.str_scores())
+                            print(board)
+                            print(board.str_scores())
                             assert_true(False)
                         actual = board.score(Place(x, y), second)
-                        b = board
-                        b.place_stone(Place(x, y), second)
-                        expected = value - b.board_value(values)
+                        board.place_stone(Place(x, y), second)
+                        expected = value - board.board_value(values)
+                        board.remove_stone(Place(x, y))
                         if actual != expected:
                             print(Place(x, y), "actual:", actual, "second:", expected, "n", n)
-                            print(b)
-                            print(b.str_scores())
+                            print(board)
+                            print(board.str_scores())
                             assert_true(False)
             if turn == first:
                 value += board.score(Place(xx, yy), turn)
@@ -47,135 +47,33 @@ fn test_place_stone() raises:
             n += 1
 
 
+alias B = Board[19, values, win_stones]
+
+fn place_stones(mut board: B, player: Int, stones: List[String]) raises:
+    for stone in stones:
+        board.place_stone(Place(stone), player)
+
+fn check_results(mut board: B, player: Int, stones: List[String], expected: Score) raises:
+    for stone in stones:
+        board.place_stone(stone, player)
+        print("#", stone, board._score)
+        assert_true(board._score == expected)
+        board.remove_stone(stone)
+
+
 fn test_score() raises:
     var board = Board[19, values, win_stones]()
-
-    board.place_stone("a1", first)
-    board.place_stone("a2", first)
-    board.place_stone("a3", first)
-    board.place_stone("a4", first)
-    board.place_stone("a5", first)
-    board.place_stone("b2", first)
-    board.place_stone("c3", first)
-    board.place_stone("d4", first)
-    board.place_stone("e5", first)
-    board.place_stone("b1", first)
-    board.place_stone("c1", first)
-    board.place_stone("d1", first)
-    board.place_stone("e1", first)
-
-    board.place_stone("s1", second)
-    board.place_stone("s2", second)
-    board.place_stone("s3", second)
-    board.place_stone("s4", second)
-    board.place_stone("s5", second)
-    board.place_stone("r2", second)
-    board.place_stone("q3", second)
-    board.place_stone("p4", second)
-    board.place_stone("o5", second)
-    board.place_stone("r1", second)
-    board.place_stone("q1", second)
-    board.place_stone("p1", second)
-    board.place_stone("o1", second)
-
-    board.place_stone("s19", first)
-    board.place_stone("s18", first)
-    board.place_stone("s17", first)
-    board.place_stone("s16", first)
-    board.place_stone("s15", first)
-    board.place_stone("r18", first)
-    board.place_stone("q17", first)
-    board.place_stone("p16", first)
-    board.place_stone("o15", first)
-    board.place_stone("r19", first)
-    board.place_stone("q19", first)
-    board.place_stone("p19", first)
-    board.place_stone("o19", first)
-
-    board.place_stone("a19", second)
-    board.place_stone("a18", second)
-    board.place_stone("a17", second)
-    board.place_stone("a16", second)
-    board.place_stone("a15", second)
-    board.place_stone("b18", second)
-    board.place_stone("c17", second)
-    board.place_stone("d16", second)
-    board.place_stone("e15", second)
-    board.place_stone("b19", second)
-    board.place_stone("c19", second)
-    board.place_stone("d19", second)
-    board.place_stone("e19", second)
+    place_stones(board, first, ["a1", "a2", "a3", "a4", "a5", "b2", "c3", "d4", "e5", "b1", "c1", "d1", "e1"])
+    place_stones(board, second, ["s1", "s2", "s3", "s4", "s5", "r2", "q3", "p4", "o5", "r1", "q1", "p1", "o1"])
+    place_stones(board, first, ["s19", "s18", "s17", "s16", "s15", "r18", "q17", "p16", "o15", "r19", "q19", "p19", "o19"])
+    place_stones(board, second, ["a19", "a18", "a17", "a16", "a15", "b18", "c17", "d16", "e15", "b19", "c19", "d19", "e19"])
 
     print(board)
     print(board.str_scores())
 
-    print("#0", board._score)
     assert_true(not board._score.is_decisive())
 
-    var b = board
-    b.place_stone("f1", first)
-    print("#1", b._score)
-    assert_true(b._score.is_win())
-
-    b = board
-    b.place_stone("f6", first)
-    print("#2", b._score)
-    assert_true(b._score.is_win())
-
-    b = board
-    b.place_stone("a6", first)
-    print("#3", b._score)
-    assert_true(b._score.is_win())
-
-    b = board
-    b.place_stone("s6", second)
-    print("#4", b._score)
-    assert_true(b._score.is_loss())
-
-    b = board
-    b.place_stone("n6", second)
-    print("#5", b._score)
-    assert_true(b._score.is_loss())
-
-    b = board
-    b.place_stone("n1", second)
-    print("#6", b._score)
-    assert_true(b._score.is_loss())
-
-    b = board
-    b.place_stone("n19", first)
-    print("#7", b._score)
-    assert_true(b._score.is_win())
-
-    b = board
-    b.place_stone("n14", first)
-    print("#8", b._score)
-    assert_true(b._score.is_win())
-
-    b = board
-    b.place_stone("s14", first)
-    print("#9", b._score)
-    assert_true(b._score.is_win())
-
-    b = board
-    b.place_stone("a14", second)
-    print("#10", b._score)
-    assert_true(b._score.is_loss())
-
-    b = board
-    b.place_stone("f14", second)
-    print("#11", b._score)
-    assert_true(b._score.is_loss())
-
-    b = board
-    b.place_stone("f19", second)
-    print("#12", b._score)
-    assert_true(b._score.is_loss())
-
-
-fn test_connected_to() raises:
-    assert_false(Place(2, 5).connected_to[5](Place(7, 5)))
-    assert_true(Place(2, 5).connected_to[6](Place(7, 5)))
-    assert_true(Place(2, 5).connected_to[6](Place(7, 10)))
-    assert_true(Place(2, 5).connected_to[6](Place(3, 4)))
-    assert_false(Place(2, 5).connected_to[6](Place(3, 7)))
+    check_results(board, first, ["f1", "f6", "a6"], Score.win())
+    check_results(board, second, ["s6", "n6", "n1"], Score.loss())
+    check_results(board, first, ["n19", "n14", "s14"], Score.win())
+    check_results(board, second, ["a14", "f14", "f19"], Score.loss())

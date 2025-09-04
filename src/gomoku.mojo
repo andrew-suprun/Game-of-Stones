@@ -49,15 +49,6 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.plies = 0
         self._hash = 0
 
-    fn __copyinit__(out self, other: Self, /):
-        self.board = other.board.copy()
-        self.turn = other.turn
-        self.plies = other.plies
-        self._hash = other._hash
-
-    fn copy(self) -> Self:
-        return self
-
     fn move(self) -> MoveScore[Move]:
         var moves = List[MoveScore[Move]](capacity=1)
         self._moves(moves)
@@ -100,6 +91,15 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         if self.plies > Self.max_plies:
             return Score.draw()
         return self.board._score
+
+    fn undo_move(mut self, move: Move):
+        self.board.remove_stone(move._place)
+        if self.turn == first:
+            self._hash -= hash(move)
+        else:
+            self._hash += hash(move)
+        self.turn = 1 - self.turn
+        self.plies -= 1
 
     fn hash(self) -> Int:
         return Int(self._hash)

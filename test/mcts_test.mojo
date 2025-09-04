@@ -75,6 +75,9 @@ struct TestGame(TGame):
         self.move_id *= 10
         return 0
 
+    fn undo_move(mut self, move: self.Move):
+        pass
+
     fn hash(self) -> Int:
         return 0
 

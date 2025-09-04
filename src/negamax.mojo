@@ -20,7 +20,7 @@ struct Negamax[G: TGame](TTree):
         self._deadline = 0
         self._moves_cache = Dict[Int, List[MoveScore[G.Move]]]()
 
-    fn search(mut self, game: G, duration_ms: Int) -> MoveScore[G.Move]:
+    fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
         var moves = game.moves()
         debug_assert(len(moves) > 0)
         if len(moves) == 1:
@@ -48,7 +48,7 @@ struct Negamax[G: TGame](TTree):
             max_depth += 1
         return self._best_move
 
-    fn _search(mut self, game: G, var alpha: score.Score, beta: score.Score, depth: Int, max_depth: Int) -> score.Score:
+    fn _search(mut self, mut game: G, var alpha: score.Score, beta: score.Score, depth: Int, max_depth: Int) -> score.Score:
         @parameter
         fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
             return a.score > b.score
@@ -84,9 +84,9 @@ struct Negamax[G: TGame](TTree):
             if debug:
                 print("\n#" + "|   " * depth + "> move", child.move, child.score, end="")
             if not child.score.is_decisive():
-                var child_game = game.copy()
-                _ = child_game.play_move(child.move)
-                child.score = -self._search(child_game, -beta, -alpha, depth + 1, max_depth)
+                _ = game.play_move(child.move)
+                child.score = -self._search(game, -beta, -alpha, depth + 1, max_depth)
+                game.undo_move(child.move)
                 if perf_counter_ns() > self._deadline:
                     if debug:
                         print("\n#" + "|   " * depth + "<-- search: timeout", end="")
