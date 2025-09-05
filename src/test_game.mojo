@@ -76,9 +76,11 @@ struct TestGame(TGame):
         return self._current_move().score
 
     fn move(self) -> MoveScore[TestMove]:
-        var move = self._current_move()
-        var child_id = move.move._id
-        return self._moves.get(child_id, zero_move)
+        var result = MoveScore[TestMove](TestMove(), Score.loss())
+        for move in self.moves():
+            if result.score < move.score:
+                result = move
+        return result
 
     fn moves(self) -> List[MoveScore[TestMove]]:
         var moves = List[MoveScore[TestMove]]()
@@ -121,16 +123,13 @@ struct TestGame(TGame):
             return
 
 
-fn negamax(mut game: TestGame, depth: Int) -> Score:
-    if depth == 0:
-        return -game.move().score
+fn simple_negamax(mut game: TestGame, depth: Int) -> Score:
     var score = Score.loss()
     for move in game.moves():
         var new_score = game.play_move(move.move)
-        if new_score.is_decisive():
-            score = max(score, -new_score)
-        else:
-            score = max(score, -negamax(game, depth-1))
+        if depth > 0 and not new_score.is_decisive():
+            new_score = -simple_negamax(game, depth-1)
+        score = max(score, new_score)
         game.undo_move(move.move)
     return score
         
@@ -138,6 +137,6 @@ fn negamax(mut game: TestGame, depth: Int) -> Score:
 
 
 fn main():
-    var game = TestGame(5, 4)
+    var game = TestGame(depth=4, seed=3)
     print(game)
-    print("score", negamax(game, 6))
+    print("score", simple_negamax(game, depth=1))
