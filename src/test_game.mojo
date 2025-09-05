@@ -31,10 +31,11 @@ struct TestMove(TMove):
         r = String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write("<", self._id, ">")
+        writer.write("(", self._id, ")")
 
 
 alias zero_move = MoveScore(TestMove(), Score(0))
+
 
 # struct TestGame(TGame):
 struct TestGame(Writable):
@@ -55,17 +56,18 @@ struct TestGame(Writable):
 
     fn _init_moves(mut self, var id: Int, depth: Int):
         id *= 10
-        var n_children = Int(random.random_si64(1, 5))
+        var n_children = 1 if depth == 0 else Int(random.random_si64(1, 2 + depth))
         for _ in range(n_children):
             id += 1
             var rand = random.random_si64(0, 12)
-            if rand == 0:
+            if rand == 0 and depth < 3:
                 self._moves[id] = MoveScore(TestMove(id), Score.win())
-            elif rand == 1 or depth == 0:
+            elif rand == 1 and depth < 3:
                 self._moves[id] = MoveScore(TestMove(id), Score.draw())
             else:
-                self._moves[id] = MoveScore(TestMove(id), Score(random.random_float64(-10, 10)))
-                self._init_moves(id, depth-1)
+                self._moves[id] = MoveScore(TestMove(id), Score(random.random_si64(-10, 10)))
+                if depth > 0:
+                    self._init_moves(id, depth - 1)
 
     fn _current_move(self) -> MoveScore[TestMove]:
         return self._moves.get(self._current_id, zero_move)
@@ -80,7 +82,7 @@ struct TestGame(Writable):
 
     fn moves(self) -> List[MoveScore[TestMove]]:
         var moves = List[MoveScore[TestMove]]()
-        var id = self._current_id*10
+        var id = self._current_id * 10
         try:
             while True:
                 id += 1
@@ -90,7 +92,11 @@ struct TestGame(Writable):
         return moves
 
     fn play_move(mut self, move: self.Move) -> Score:
-        return 0
+        self._current_id = move._id
+        return self._current_move().score
+
+    fn undo_move(mut self, move: self.Move):
+        self._current_id = move._id // 10
 
     fn hash(self) -> Int:
         return 0
@@ -99,4 +105,27 @@ struct TestGame(Writable):
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        pass
+        self.write_to(writer, zero_move, 0)
+
+    fn write_to[W: Writer](self, mut writer: W, move: MoveScore[TestMove], depth: Int):
+        writer.write(depth, ": ", "|   " * depth, move, "\n")
+
+        var child_id = move.move._id * 10
+        try:
+            while True:
+                child_id += 1
+                var child = self._moves[child_id]
+                if child.move._id > 0:  # unnecessary check to quite LSP warning
+                    self.write_to(writer, child, depth + 1)
+        except:
+            return
+
+
+fn main():
+    var game = TestGame(5, 2)
+    print(game)
+    game._current_id = 624431
+    while game._current_id > 0:
+        var move = game._current_move()
+        print(move)
+        game.undo_move(move.move)

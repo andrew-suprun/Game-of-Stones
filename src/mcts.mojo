@@ -166,6 +166,6 @@ struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Wr
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write(depth, ": ", "|   " * depth, self.move, " sims: ", self.n_sims, "\n")
-        if self.children:
+        if self.children:  # unnecessary check to quite LSP warning
             for child in self.children:
                 child.write_to(writer, depth + 1)
