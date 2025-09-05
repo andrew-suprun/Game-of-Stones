@@ -129,7 +129,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
         for _ in range(n + win_stones - 1):
             self._scores_history.append((offset, self._scores[offset]))
             offset += delta
-        
+
         offset = start
 
         @parameter
@@ -147,7 +147,6 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
             stones -= self._places[offset]
             offset += delta
 
-    
     fn remove_stone(mut self, place: Place):
         self._score = self._score_history.pop()
         var idx = self._scores_history_idices.pop()
@@ -155,7 +154,6 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
             var scores = self._scores_history.pop()
             self._scores[scores[0]] = scores[1]
         self[Int(place.x), Int(place.y)] = Self.empty
-
 
     fn places(self, turn: Int, mut places: List[Place]):
         @parameter

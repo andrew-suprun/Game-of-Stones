@@ -24,6 +24,7 @@ fn bench_place_stone():
         board.remove_stone(Place(9, 0))
     keep(score.value)
 
+
 fn bench_places():
     var board = Board[19, values, win_stones]()
     var places = List[Place](capacity=20)

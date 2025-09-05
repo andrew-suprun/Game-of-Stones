@@ -49,9 +49,11 @@ fn test_place_stone() raises:
 
 alias B = Board[19, values, win_stones]
 
+
 fn place_stones(mut board: B, player: Int, stones: List[String]) raises:
     for stone in stones:
         board.place_stone(Place(stone), player)
+
 
 fn check_results(mut board: B, player: Int, stones: List[String], expected: Score) raises:
     for stone in stones:
