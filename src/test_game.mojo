@@ -43,6 +43,7 @@ struct TestGame(TGame):
 
     var _moves: Dict[Int, MoveScore[TestMove]]
     var _current_id: Int
+    var _hash: UInt64
 
     fn __init__(out self):
         self = Self(5, 0)
@@ -50,6 +51,7 @@ struct TestGame(TGame):
     fn __init__(out self, depth: Int, seed: Int):
         random.seed(seed)
         self._current_id = 0
+        self._hash = 0
         self._moves = Dict[Int, MoveScore[TestMove]]()
         self._moves[0] = MoveScore(TestMove(0), Score())
         self._init_moves(0, depth)
@@ -95,13 +97,15 @@ struct TestGame(TGame):
 
     fn play_move(mut self, move: self.Move) -> Score:
         self._current_id = move._id
+        self._hash += hash(move._id)
         return self._current_move().score
 
     fn undo_move(mut self, move: self.Move):
         self._current_id = move._id // 10
+        self._hash -= hash(move._id)
 
     fn hash(self) -> Int:
-        return 0
+        return Int(self._hash)
 
     fn __str__(self, out result: String):
         return String.write(self)
