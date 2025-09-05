@@ -38,7 +38,7 @@ alias zero_move = MoveScore(TestMove(), Score(0))
 
 
 # struct TestGame(TGame):
-struct TestGame(Writable):
+struct TestGame(TGame):
     alias Move = TestMove
 
     var _moves: Dict[Int, MoveScore[TestMove]]
@@ -65,7 +65,7 @@ struct TestGame(Writable):
             elif rand == 1 and depth < 3:
                 self._moves[id] = MoveScore(TestMove(id), Score.draw())
             else:
-                self._moves[id] = MoveScore(TestMove(id), Score(random.random_si64(-10, 10)))
+                self._moves[id] = MoveScore(TestMove(id), Score(random.random_float64(-10, 10)))
                 if depth > 0:
                     self._init_moves(id, depth - 1)
 
@@ -121,11 +121,23 @@ struct TestGame(Writable):
             return
 
 
-fn main():
-    var game = TestGame(5, 2)
-    print(game)
-    game._current_id = 624431
-    while game._current_id > 0:
-        var move = game._current_move()
-        print(move)
+fn negamax(mut game: TestGame, depth: Int) -> Score:
+    if depth == 0:
+        return -game.move().score
+    var score = Score.loss()
+    for move in game.moves():
+        var new_score = game.play_move(move.move)
+        if new_score.is_decisive():
+            score = max(score, -new_score)
+        else:
+            score = max(score, -negamax(game, depth-1))
         game.undo_move(move.move)
+    return score
+        
+        
+
+
+fn main():
+    var game = TestGame(5, 4)
+    print(game)
+    print("score", negamax(game, 6))
