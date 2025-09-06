@@ -4,6 +4,9 @@ from score import Score
 trait TGame(Defaultable, Stringable, Writable):
     alias Move: TMove
 
+    fn score(self) -> Score:
+        ...
+
     fn moves(mut self) -> List[MoveScore[Move]]:
         ...
 

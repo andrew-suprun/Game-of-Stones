@@ -114,7 +114,7 @@ struct TestGame(TGame):
         self.write_to(writer, zero_move, 0)
 
     fn write_to[W: Writer](self, mut writer: W, move: MoveScore[TestMove], depth: Int):
-        writer.write(depth, ": ", "|   " * depth, move, "\n")
+        writer.write("|   " * depth, move, "\n")
 
         var child_id = move.move._id * 10
         try:

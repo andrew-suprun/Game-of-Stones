@@ -5,7 +5,7 @@ from score import Score
 from negamax import Negamax
 from test_game import TestGame, simple_negamax
 
-fn test_connect6() raises:
+fn test_negamax() raises:
     var game = TestGame(depth=5, seed=3)
     print(game)
     var tree = Negamax[TestGame]()

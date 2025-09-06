@@ -1,4 +1,4 @@
-from sys import argv, env_get_bool
+from sys import env_get_bool
 from time import perf_counter_ns
 
 from score import Score
@@ -93,11 +93,10 @@ struct Negamax[G: TGame](TTree):
                     # print("<< exit2")
                     return score.Score(0)
 
-            var child_score = child.score if not child.score.is_draw() else 0
-            if child_score > best_score:
+            if child.score > best_score:
                 best_score = child.score
                 if child.score > alpha:
-                    alpha = child_score
+                    alpha = child.score
 
                 if depth == 0:
                     self._best_move = child
@@ -106,7 +105,7 @@ struct Negamax[G: TGame](TTree):
 
             if debug:
                 print("\n#" + "|   " * depth + "< move", child.move, child.score, "| best score", best_score, end="")
-            if child_score > beta:
+            if child.score > beta:
                 if debug:
                     print("\n#" + "|   " * depth + "cutoff", end="")
                 # print("<< exit3")
