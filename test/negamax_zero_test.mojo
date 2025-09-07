@@ -15,6 +15,6 @@ fn main():
     var game = TestGame(depth=5, seed=3)
     print(game)
 
-    var score = mtdf(game, 1, 2)
+    var score = mtdf(game, guess=0, max_depth=5)
     print("\nscore", score)
-    print("expected:", simple_negamax(game, 2))
+    print("expected:", simple_negamax(game, depth=5))
