@@ -1,19 +1,21 @@
 import random
 
-from board import Place, size
+from board import Place
 from connect6 import Connect6
 from negamax import Negamax
+from negamax_zero import NegamaxZero
 from mcts import Mcts
 from sim import run
 
-alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+alias size = 19
+alias Game = Connect6[size=size, max_moves=20, max_places=15, max_plies=100]
 alias Tree1 = Negamax[Game]
-alias Tree2 = Negamax[Game]
+alias Tree2 = NegamaxZero[Game]
 
 
 fn main() raises:
     print("Connect6")
-    run[Tree1, Tree2]("N1", "N2", openings())
+    run[Tree1, Tree2]("N1", "N0", openings())
     print()
 
 
