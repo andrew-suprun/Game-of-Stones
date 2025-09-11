@@ -9,14 +9,16 @@ from test_game import TestGame, simple_negamax
 
 fn test_mtdf() raises:
     var game = TestGame(depth=5, seed=3)
-    var tree = NegamaxZero[TestGame]()
-    var deadline = perf_counter_ns() + 1_000_000
-    print(game)
+    # print(game)
 
-    var score = tree.mtdf(game, guess=0, max_depth=5, deadline=deadline)
-    var expected = simple_negamax(game, depth=5)
-    print("score", score, "expected:", expected)
-    assert_true(score == expected)
+    for max_depth in range(0, 6):
+        var tree = NegamaxZero[TestGame]()
+        var deadline = perf_counter_ns() + 1_000_000
+        print("max_depth", max_depth)
+        var score = tree.mtdf(game, guess=0, max_depth=max_depth, deadline=deadline)
+        var expected = simple_negamax(game, depth=max_depth)
+        print("score", score, "expected:", expected)
+        assert_true(score == expected)
 
 fn main() raises:
     alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
