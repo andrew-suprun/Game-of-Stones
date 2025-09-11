@@ -10,10 +10,10 @@ from test_game import TestGame, simple_negamax
 fn test_mtdf() raises:
     var game = TestGame(depth=5, seed=3)
     var tree = NegamaxZero[TestGame]()
-    tree._deadline = perf_counter_ns() + 1_000_000
+    var deadline = perf_counter_ns() + 1_000_000
     print(game)
 
-    var score = tree.mtdf(game, guess=0, max_depth=5)
+    var score = tree.mtdf(game, guess=0, max_depth=5, deadline=deadline)
     var expected = simple_negamax(game, depth=5)
     print("score", score, "expected:", expected)
     assert_true(score == expected)
