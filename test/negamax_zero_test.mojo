@@ -22,10 +22,14 @@ fn test_mtdf() raises:
         assert_true(score == expected)
 
 fn main() raises:
-    alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
-    var game = Game()
-    var tree = NegamaxZero[Game]()
-    _ = game.play_move("j10")
-    _ = game.play_move("i9-i10")
-    var move = tree.search(game, 1000)
-    print("best move", move.move)
+    alias max_depth = 5
+
+    var game = TestGame(depth=5, seed=3)
+    var tree = NegamaxZero[TestGame]()
+    var deadline = perf_counter_ns() + 1_000_000
+    print("max_depth", max_depth)
+    var score = tree.mtdf(game, guess=0, max_depth=max_depth, deadline=deadline)
+    print("### SN ###")
+    var expected = simple_negamax(game, depth=max_depth)
+    print("score", score, "expected:", expected)
+    assert_true(score == expected)
