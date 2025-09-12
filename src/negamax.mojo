@@ -82,7 +82,7 @@ struct Negamax[G: TGame](TTree):
 
         for ref child in children:
             if debug:
-                print("\n#" + "|   " * depth + "> move", child.move, child.score, end="")
+                print("\n#" + "|   " * depth + ">", child.move, child.score, end="")
             if not child.score.is_decisive():
                 _ = game.play_move(child.move)
                 child.score = -self._search(game, -beta, -alpha, depth + 1, max_depth)
@@ -104,7 +104,7 @@ struct Negamax[G: TGame](TTree):
                         print("\n#|   set best move", child, end="")
 
             if debug:
-                print("\n#" + "|   " * depth + "< move", child.move, child.score, "| best score", best_score, end="")
+                print("\n#" + "|   " * depth + "<", child.move, child.score, "| best score", best_score, end="")
             if child.score > beta:
                 if debug:
                     print("\n#" + "|   " * depth + "cutoff", end="")

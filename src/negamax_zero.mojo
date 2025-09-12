@@ -41,7 +41,7 @@ struct NegamaxZero[G: TGame](TTree):
                 print(">> bounds:", lower_bound, "..", upper_bound)
             var beta = max(guess, lower_bound)
             print(">> guess", guess)
-            guess = self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
+            guess = -self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
             print("<< guess", guess)
             if guess <= beta:
                 upper_bound = guess
@@ -76,11 +76,18 @@ struct Node[G: TGame](Copyable, Movable):
                 return False
             return a.score > b.score
 
+        if debug:
+            print("|   " * depth + ">> NM: guess", guess, "depth", depth, "max_depth", max_depth)
+
         if deadline < perf_counter_ns():
+            if debug:
+                print("|   " * depth + "<< NM: deadline")
             return 0
 
         if self.max_depth == max_depth and self.children:
-            return -self.score
+            if debug:
+                print("|   " * depth + "<< NM: previously calculated move", self.move, "score", self.score)
+            return self.score
         
         if not self.children:
             var moves = game.moves()
@@ -91,39 +98,44 @@ struct Node[G: TGame](Copyable, Movable):
 
         debug_assert(len(self.children) > 0)
     
-        var best_score = Score.loss()
+        var best_child_score = Score.loss()
 
         if depth == max_depth:
             for child in self.children:
-                best_score = max(best_score, child.score)
-                print("  child", child.move, "score", child.score, "best score", best_score)
-            self.score = best_score
-            print("leaf", self.move, "score", self.score)
-            return best_score
+                best_child_score = max(best_child_score, child.score)
+                if debug:
+                    print("|   " * depth + "  child", child.move, "score", child.score)
+            self.score = -best_child_score
+            if debug:
+                print("|   " * depth + "<< NM: leaf: move", self.move, "score", self.score)
+            return self.score
 
         # sort[greater](self.children)
 
         for ref child in self.children:
             if debug:
-                print("|   " * depth + "> move", child.move)
+                print("|   " * depth + ">", child.move)
             if not child.score.is_decisive():
-                print(">> NM: move", child.move)
                 _ = game.play_move(child.move)
-                child.score = -child.negamax_zero(game, -guess, depth + 1, max_depth, deadline)
+                child.score = child.negamax_zero(game, -guess, depth + 1, max_depth, deadline)
                 game.undo_move(child.move)
-                print("<< NM: move", child.move, "score", child.score)
 
-            if child.score > best_score:
-                best_score = child.score
+            if child.score > best_child_score:
+                best_child_score = child.score
                 if depth == 0:
                     if debug:
-                        print("### best move", child.move)
+                        print("### best move", child.move, "score", child.score)
 
             if debug:
-                print("|   " * depth + "< move", child.move, best_score)
+                print("|   " * depth + "<", child.move, "score", child.score)
             if child.score > guess:
+                self.score = -best_child_score
                 if debug:
-                    print("|   " * depth + "cut-off:", child.score, ">", guess)
-                return best_score
+                    print("|   " * depth + "<< NM: cut-off: move", child.move, "score", child.score, ">", guess)
+                return self.score
 
-        return best_score
+        self.score = -best_child_score
+        if debug:
+            print("|   " * depth + "<< NM: move", self.move, "score", self.score)
+
+        return self.score
