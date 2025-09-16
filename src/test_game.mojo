@@ -133,13 +133,11 @@ fn simple_negamax(mut game: TestGame, depth: Int) -> Score:
         print(">", move.move)
         var new_score = game.play_move(move.move)
         if depth > 0 and not new_score.is_decisive():
-            new_score = -simple_negamax(game, depth-1)
+            new_score = -simple_negamax(game, depth - 1)
         score = max(score, new_score)
         game.undo_move(move.move)
         print("<", move.move, "score", score)
     return score
-        
-        
 
 
 fn main():

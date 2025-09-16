@@ -5,6 +5,7 @@ from score import Score
 from negamax import Negamax
 from test_game import TestGame, simple_negamax
 
+
 fn test_negamax() raises:
     var game = TestGame(depth=5, seed=3)
     print(game)
@@ -15,6 +16,7 @@ fn test_negamax() raises:
         var expected = simple_negamax(game, depth)
         print("depth:", depth, "negamax:", score, "expected", expected)
         assert_true(score == expected)
+
 
 fn main():
     var game = TestGame(depth=5, seed=2)

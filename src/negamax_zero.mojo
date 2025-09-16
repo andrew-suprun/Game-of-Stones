@@ -7,6 +7,7 @@ from game import TGame, MoveScore
 
 alias debug = env_get_bool["DEBUG", False]()
 
+
 struct NegamaxZero[G: TGame](TTree):
     alias Game = G
 
@@ -30,14 +31,14 @@ struct NegamaxZero[G: TGame](TTree):
             guess = self.mtdf(game, guess, max_depth, deadline)
             max_depth += 1
 
-        print("\n\n@@@<<<<", self._best_move, "\n")
+        print("\n\n@@@<<<< best move", self._best_move, "\n")
+        print("\n\n@@@<<<<      root", self._tree, "\n")
 
         return self._best_move
 
     fn mtdf(mut self, mut game: G, var guess: Score, max_depth: Int, deadline: UInt) -> Score:
         if debug:
-            print("\n====\n\n>> mtdf: guess", guess, "max_depth", max_depth)
-        print("\n====\n\n>> mtdf: guess", guess, "max_depth", max_depth)
+            print("\n====\n\n>> mtdf: guess:", guess, "max_depth:", max_depth, "root:", self._tree)
 
         while self._tree.bounds.lower < self._tree.bounds.upper and perf_counter_ns() < deadline:
             if debug:
@@ -60,10 +61,9 @@ struct NegamaxZero[G: TGame](TTree):
                     score = child.bounds.lower
                     move = child.move
             self._best_move = MoveScore(move, score)
-            print("### best move", move, "score", score)
 
         if debug:
-            print("<< mtdf: guess", guess, "best move", self._best_move.move)
+            print("<< mtdf: guess", guess, "best move", self._best_move)
         return guess
 
 
@@ -89,7 +89,6 @@ struct Bounds(Copyable, Defaultable, Movable, Stringable, Writable):
             writer.write("bounds: (", self.lower, " : ", self.upper, ")")
 
 
-
 struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
     var move: G.Move
     var bounds: Bounds
@@ -111,9 +110,6 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                 return False
             return a.bounds.upper > b.bounds.upper
 
-        if debug:
-            print("|   " * depth + ">> guess", guess, "depth", depth, "max_depth", max_depth)
-
         if deadline < perf_counter_ns():
             if debug:
                 print("|   " * depth + "<< deadline")
@@ -125,47 +121,46 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move, max_depth))
-        
-        sort[greater](self.children)
 
-        if depth < max_depth:
-            for ref child in self.children:
-                if not child.bounds.is_decisive():
-                    child.bounds = Bounds()
+            sort[greater](self.children)
+
+            if depth < max_depth:
+                for ref child in self.children:
+                    if not child.bounds.is_decisive():
+                        child.bounds = Bounds()
+        else:
+            sort[greater](self.children)
 
         if depth == max_depth:
             self.bounds = Bounds()
             for child in self.children:
                 self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
                 if debug:
-                    print("|   " * depth + "  child", child.move, child.bounds)
+                    print("|   " * depth + " leaf", child.move, child.bounds)
             self.bounds.lower = self.bounds.upper
-            if debug:
-                print("|   " * depth + "<< leaf:", self)
             return
-
 
         for ref child in self.children:
             if debug:
-                print("|   " * depth + ">", child)
+                print("|   " * depth + ">", depth, child)
             if not child.bounds.is_decisive():
                 _ = game.play_move(child.move)
                 child.negamax_zero(game, -guess, depth + 1, max_depth, deadline)
                 game.undo_move(child.move)
-                self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
+
+            self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
 
             if debug:
-                print("|   " * depth + "<", child)
+                print("|   " * depth + "<", depth, child)
             if self.bounds.upper < guess:
                 if debug:
-                    print("|   " * depth + "<< cut-off:", self, "guess:", guess)
+                    print("|   " * depth + "<< cut-off: guess:", guess)
                 return
+
         self.bounds.lower = Score.win()
         for child in self.children:
             self.bounds.lower = min(self.bounds.lower, -child.bounds.upper)
-            print("### child", child)
 
-        print("###  self", self)
         return
 
     fn __str__(self) -> String:
