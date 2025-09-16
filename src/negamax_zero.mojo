@@ -16,6 +16,7 @@ struct NegamaxZero[G: TGame](TTree):
     fn __init__(out self):
         var root = MoveScore[G.Move](G.Move(), score.Score(0))
         self._tree = Node[G](root, 0)
+        self._tree.bounds = Bounds()
         self._best_move = root
 
     fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
@@ -38,18 +39,19 @@ struct NegamaxZero[G: TGame](TTree):
             print("\n====\n\n>> mtdf: guess", guess, "max_depth", max_depth)
         print("\n====\n\n>> mtdf: guess", guess, "max_depth", max_depth)
 
-        var bounds = Bounds()
-        while bounds.lower < bounds.upper:
+        while self._tree.bounds.lower < self._tree.bounds.upper and perf_counter_ns() < deadline:
             if debug:
-                print("### ", bounds)
-            print(">> guess:", guess, bounds)
+                print("### ", self._tree.bounds)
             for child in self._tree.children:
                 print("    child", child.move)
 
-            bounds = self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
-            guess = max(guess, bounds.lower)
-            guess = min(guess, bounds.upper)
-        
+            self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
+            if self._tree.bounds.upper < guess:
+                guess = self._tree.bounds.upper
+            else:
+                guess = self._tree.bounds.lower
+
+        # TODO move to .search()
         if perf_counter_ns() < deadline:
             var move = self._tree.children[0].move
             var score = self._tree.children[0].bounds.lower
@@ -62,8 +64,6 @@ struct NegamaxZero[G: TGame](TTree):
 
         if debug:
             print("<< mtdf: guess", guess, "best move", self._best_move.move)
-        print("<< bounds:", bounds.lower, "..", bounds.upper, "| guess", guess)
-        print("<< mtdf: guess", guess, "best move", self._best_move.move)
         return guess
 
 
@@ -76,13 +76,6 @@ struct Bounds(Copyable, Defaultable, Movable, Stringable, Writable):
         self.lower = Score.loss()
         self.upper = Score.win()
 
-    fn __neg__(self) -> Self:
-        return Self(-self.upper, -self.lower)
-
-    fn set_max(mut self, other: Self):
-        self.lower = max(self.lower, other.lower)
-        self.upper = max(self.upper, other.upper)
-
     fn is_decisive(self) -> Bool:
         return self.lower.is_decisive() and self.lower == self.upper
 
@@ -93,7 +86,7 @@ struct Bounds(Copyable, Defaultable, Movable, Stringable, Writable):
         if self.lower == self.upper:
             writer.write("score: ", self.lower)
         else:
-            writer.write("bounds: ", self.lower, "..", self.upper)
+            writer.write("bounds: (", self.lower, " : ", self.upper, ")")
 
 
 
@@ -109,7 +102,7 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
         self.max_depth = max_depth
         self.children = List[Self]()
 
-    fn negamax_zero(mut self, mut game: G, guess: Score, depth: Int, max_depth: Int, deadline: UInt) -> Bounds:
+    fn negamax_zero(mut self, mut game: G, guess: Score, depth: Int, max_depth: Int, deadline: UInt):
         @parameter
         fn greater(a: Self, b: Self) -> Bool:
             if a.bounds.lower > b.bounds.lower:
@@ -124,7 +117,7 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
         if deadline < perf_counter_ns():
             if debug:
                 print("|   " * depth + "<< deadline")
-            return Bounds()
+            return
 
         if not self.children:
             var moves = game.moves()
@@ -141,46 +134,42 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                     child.bounds = Bounds()
 
         if depth == max_depth:
-            var max_bounds = Bounds(Score.loss(), Score.loss())
+            self.bounds = Bounds()
             for child in self.children:
-                max_bounds.lower = max(max_bounds.lower, child.bounds.lower)
-                max_bounds.upper = max(max_bounds.upper, child.bounds.upper)
+                self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
                 if debug:
                     print("|   " * depth + "  child", child.move, child.bounds)
-            self.bounds = -max_bounds
+            self.bounds.lower = self.bounds.upper
             if debug:
                 print("|   " * depth + "<< leaf:", self)
-            return self.bounds
+            return
 
-
-        var best_bounds = Bounds(Score.loss(), Score.loss())
 
         for ref child in self.children:
             if debug:
-                print("|   " * depth + ">", child.move)
+                print("|   " * depth + ">", child)
             if not child.bounds.is_decisive():
                 _ = game.play_move(child.move)
-                child.bounds = child.negamax_zero(game, -guess, depth + 1, max_depth, deadline)
+                child.negamax_zero(game, -guess, depth + 1, max_depth, deadline)
                 game.undo_move(child.move)
-
-            best_bounds.set_max(child.bounds)
+                self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
 
             if debug:
                 print("|   " * depth + "<", child)
-            if child.bounds.lower > guess:
-                self.bounds = -best_bounds
+            if self.bounds.upper < guess:
                 if debug:
-                    print("|   " * depth + "<< cut-off:", child, "guess:", guess)
-                return self.bounds
+                    print("|   " * depth + "<< cut-off:", self, "guess:", guess)
+                return
+        self.bounds.lower = Score.win()
+        for child in self.children:
+            self.bounds.lower = min(self.bounds.lower, -child.bounds.upper)
+            print("### child", child)
 
-        self.bounds = -best_bounds
-        if debug:
-            print("|   " * depth + "<< move", self)
-
-        return self.bounds
+        print("###  self", self)
+        return
 
     fn __str__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write("move: ", self.move, " ", self.bounds, " max depth: ", self.max_depth)
+        writer.write("move: ", self.move, "; ", self.bounds, "; max-depth: ", self.max_depth)
