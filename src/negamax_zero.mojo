@@ -21,6 +21,7 @@ struct NegamaxZero[G: TGame](TTree):
         self._best_move = root
 
     fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
+        self = Self()
         var deadline = perf_counter_ns() + 1_000_000 * duration_ms
         self._best_move = game.move()
         var max_depth = 0
@@ -206,13 +207,15 @@ fn main() raises:
     while True:
         var move1 = tree1.search(game1, 1000)
         print("zero", move1)
+        print("----")
         var move2 = tree2.search(game2, 1000)
         print("nmax", move2)
 
-        if move2.score.is_decisive():
+        _ = game1.play_move(move2.move)
+        var result = game2.play_move(move2.move)
+        print(game2)
+
+        if result.is_decisive():
             break
 
-        _ = game1.play_move(move2.move)
-        _ = game2.play_move(move2.move)
-        print(game2)
 
