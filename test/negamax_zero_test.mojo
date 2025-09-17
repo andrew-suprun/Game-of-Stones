@@ -17,7 +17,7 @@ fn test_mtdf() raises:
             var tree = NegamaxZero[TestGame]()
             var deadline = perf_counter_ns() + 1_000_000
             print("max_depth", max_depth)
-            var score = tree.mtdf(game, guess=0, max_depth=max_depth, deadline=deadline)
+            var score = -tree.mtdf(game, guess=0, max_depth=max_depth, deadline=deadline)
             print("### SN ###")
             var expected = simple_negamax(game, depth=max_depth)
             print("score", score, "expected:", expected)

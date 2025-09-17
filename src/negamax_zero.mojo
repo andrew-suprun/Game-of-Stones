@@ -5,7 +5,7 @@ from score import Score
 from tree import TTree
 from game import TGame, MoveScore
 
-alias debug = env_get_bool["DEBUG", False]()
+alias debug = env_get_bool["DEBUG2", False]()
 
 
 struct NegamaxZero[G: TGame](TTree):
@@ -23,16 +23,17 @@ struct NegamaxZero[G: TGame](TTree):
     fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
         var deadline = perf_counter_ns() + 1_000_000 * duration_ms
         self._best_move = game.move()
-        print("@@@>>>>", self._best_move, "\n")
-        var max_depth = 1
+        var max_depth = 0
         var guess: Score = 0
 
-        while perf_counter_ns() < deadline and not guess.is_win() and not guess.is_loss():
+        var start = perf_counter_ns()
+        while perf_counter_ns() < deadline and not guess.is_decisive():
+            if debug:
+                self.print_tree()
+            self._tree.reset_bounds()
             guess = self.mtdf(game, guess, max_depth, deadline)
+            print("mtdf move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns()-start)/1_000_000)
             max_depth += 1
-
-        print("\n\n@@@<<<< best move", self._best_move, "\n")
-        print("\n\n@@@<<<<      root", self._tree, "\n")
 
         return self._best_move
 
@@ -43,8 +44,6 @@ struct NegamaxZero[G: TGame](TTree):
         while self._tree.bounds.lower < self._tree.bounds.upper and perf_counter_ns() < deadline:
             if debug:
                 print("### ", self._tree.bounds)
-            for child in self._tree.children:
-                print("    child", child.move)
 
             self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
             if self._tree.bounds.upper < guess:
@@ -64,7 +63,15 @@ struct NegamaxZero[G: TGame](TTree):
 
         if debug:
             print("<< mtdf: guess", guess, "best move", self._best_move)
+            print(self._tree)
         return guess
+
+    fn print_tree(self):
+        self.print_tree(self._tree, 0)
+        
+    fn print_tree(self, node: Node, depth: Int):
+        pass
+
 
 
 @fieldwise_init
@@ -110,9 +117,17 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                 return False
             return a.bounds.upper > b.bounds.upper
 
+        if debug:
+            print("|   " * depth + "negamax_zero: guess:", guess)
+
         if deadline < perf_counter_ns():
             if debug:
                 print("|   " * depth + "<< deadline")
+            return
+
+        if self.bounds.upper < guess:
+            if debug:
+                print("|   " * depth + "<< cut-off.1: guess:", guess, self.bounds)
             return
 
         if not self.children:
@@ -143,7 +158,7 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
         for ref child in self.children:
             if debug:
                 print("|   " * depth + ">", depth, child)
-            if not child.bounds.is_decisive():
+            if child.bounds.lower < child.bounds.upper:
                 _ = game.play_move(child.move)
                 child.negamax_zero(game, -guess, depth + 1, max_depth, deadline)
                 game.undo_move(child.move)
@@ -154,7 +169,7 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                 print("|   " * depth + "<", depth, child)
             if self.bounds.upper < guess:
                 if debug:
-                    print("|   " * depth + "<< cut-off: guess:", guess)
+                    print("|   " * depth + "<< cut-off.2: guess:", guess)
                 return
 
         self.bounds.lower = Score.win()
@@ -163,8 +178,28 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
 
         return
 
+    fn reset_bounds(mut self):
+        if self.children: # this check is to prevent Mojo compiler warning
+            for ref child in self.children:
+                child.reset_bounds()
+        self.bounds = Bounds()
+
     fn __str__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write("move: ", self.move, "; ", self.bounds, "; max-depth: ", self.max_depth)
+
+
+from connect6 import Connect6
+fn main() raises:
+    alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
+    var game = Game()
+    var tree = NegamaxZero[Game]()
+    _ = game.play_move("j10")
+    _ = game.play_move("i9-i10")
+    var move = tree.search(game, 7000)
+    print(move)
+    _ = game.play_move(move.move)
+    print(game)
+
