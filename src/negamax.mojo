@@ -37,10 +37,12 @@ struct Negamax[G: TGame](TTree):
         self._deadline = perf_counter_ns() + 1_000_000 * duration_ms
         self._moves_cache.clear()
         self._best_move = game.move()
-        var max_depth = 1
+        var max_depth = 0
 
+        var start = perf_counter_ns()
         while perf_counter_ns() < self._deadline:
             var result = self._search(game, Score.loss(), Score.win(), 0, max_depth)
+            print("nmax move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns()-start)/1_000_000)
             if debug:
                 print()
             if result.is_decisive():

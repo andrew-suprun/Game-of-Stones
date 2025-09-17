@@ -192,14 +192,27 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
 
 
 from connect6 import Connect6
+from negamax import Negamax
 fn main() raises:
     alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
-    var game = Game()
-    var tree = NegamaxZero[Game]()
-    _ = game.play_move("j10")
-    _ = game.play_move("i9-i10")
-    var move = tree.search(game, 7000)
-    print(move)
-    _ = game.play_move(move.move)
-    print(game)
+    var game1 = Game()
+    var game2 = Game()
+    var tree1 = NegamaxZero[Game]()
+    var tree2 = Negamax[Game]()
+    _ = game1.play_move("j10")
+    _ = game1.play_move("i9-i10")
+    _ = game2.play_move("j10")
+    _ = game2.play_move("i9-i10")
+    while True:
+        var move1 = tree1.search(game1, 1000)
+        print("zero", move1)
+        var move2 = tree2.search(game2, 1000)
+        print("nmax", move2)
+
+        if move2.score.is_decisive():
+            break
+
+        _ = game1.play_move(move2.move)
+        _ = game2.play_move(move2.move)
+        print(game2)
 
