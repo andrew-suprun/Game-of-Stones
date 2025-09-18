@@ -13,7 +13,7 @@ fn test_negamax() raises:
     tree._deadline = perf_counter_ns() + 1_000_000_000
     for depth in range(6):
         var score = tree._search(game, Score.loss(), Score.win(), 0, depth)
-        var expected = simple_negamax(game, depth)
+        var expected = simple_negamax(game, 0, depth)
         print("depth:", depth, "negamax:", score, "expected", expected)
         assert_true(score == expected)
 
@@ -27,4 +27,4 @@ fn main():
         var score = tree._search(game, Score.loss(), Score.win(), 0, depth)
         print("depth:", depth)
         print("negamax:", score)
-        print("expected:", simple_negamax(game, depth))
+        print("expected:", simple_negamax(game, 0, depth))
