@@ -131,11 +131,12 @@ fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
     var score = Score.loss()
     for move in game.moves():
         print("|   "*depth, depth, "> ", move.move, sep="")
-        var new_score = game.play_move(move.move)
+        var new_score = move.score
         if depth < max_depth and not new_score.is_decisive():
+            _ = game.play_move(move.move)
             new_score = -simple_negamax(game, depth + 1, max_depth)
+            game.undo_move(move.move)
         score = max(score, new_score)
-        game.undo_move(move.move)
         print("|   "*depth, depth, "< ", move.move, "; score ", score, sep="")
     return score
 
@@ -146,31 +147,33 @@ from negamax_zero import NegamaxZero
 from time import perf_counter_ns
 
 alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
-alias max_depth = 1
+alias max_depth = 7
 
 fn main() raises:
     var game = Game()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     _ = game.play_move("i11-k9")
-    _ = game.play_move("h12-l8")
-    _ = game.play_move("j11-k11")
 
     var tree1 = NegamaxZero[Game]()
     var tree2 = Negamax[Game]()
 
-    var result1 = tree1.mtdf(game, 0, max_depth, perf_counter_ns() + 1_000_000)
-    print("====")
-    print("result1:", result1, "move", tree1._best_move)
-    print("====")
+    start = perf_counter_ns()
+    _ = tree1.mtdf(game, 0, max_depth - 1, start + 10_000_000_000)
+    print("==== zero.1:", tree1._best_move, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print()
 
-    tree2._deadline = perf_counter_ns() + 1_000_000
-    var result2 = tree2._search(game, Score.loss(), Score.win(), max_depth, max_depth)
-    print("====")
-    print("result2:", result2, "move", tree1._best_move)
-    print("====")
+    start = perf_counter_ns()
+    _ = tree1.mtdf(game, 0, max_depth, start + 10_000_000_000)
+    print("==== zero.2:", tree1._best_move, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print()
 
-    var expected = simple_negamax(game, 0, max_depth)
-    print("====")
-    print("expected:", expected)
-    print("====")
+    start = perf_counter_ns()
+    tree2._deadline = start + 10_000_000_000
+    _ = tree2._search(game, Score.loss(), Score.win(), 0, max_depth)
+    print("==== nmax:", tree1._best_move, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print()
+
+    # start = perf_counter_ns()
+    # var expected = simple_negamax(game, 0, max_depth)
+    # print("==== expected:", expected, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)

@@ -42,6 +42,7 @@ struct Negamax[G: TGame](TTree):
         var start = perf_counter_ns()
         while perf_counter_ns() < self._deadline:
             var result = self._search(game, Score.loss(), Score.win(), 0, max_depth)
+            print("nmax move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns()-start)/1_000_000)
             if debug:
                 print("nmax move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns()-start)/1_000_000)
             if result.is_decisive():
@@ -57,12 +58,10 @@ struct Negamax[G: TGame](TTree):
         if debug:
             print("#" + "|   " * depth + "--> search: depth", depth, "max_depth", max_depth)
 
-        # print(">> enter")
         if depth == max_depth:
             var move = game.move()
             if debug:
-                print("#" + "|   " * depth + "leaf: move", move)
-            # print("<< exit1")
+                print("#" + "|   " * depth + "leaf:", move)
             return move.score
 
         var children: List[MoveScore[G.Move]]
@@ -87,7 +86,6 @@ struct Negamax[G: TGame](TTree):
                 if perf_counter_ns() > self._deadline:
                     if debug:
                         print("#" + "|   " * depth + "<-- search: timeout")
-                    # print("<< exit2")
                     return score.Score(0)
 
             if child.score > best_score:
@@ -105,11 +103,9 @@ struct Negamax[G: TGame](TTree):
             if child.score > beta:
                 if debug:
                     print("#" + "|   " * depth + "cutoff")
-                # print("<< exit3")
                 return best_score
 
         self._moves_cache[game.hash()] = children^
         if debug:
             print("#" + "|   " * depth + "<-- search: best score", best_score)
-        # print("<< exit4")
         return best_score

@@ -31,7 +31,6 @@ struct NegamaxZero[G: TGame](TTree):
         while perf_counter_ns() < deadline and not guess.is_decisive():
             if debug:
                 self.print_tree()
-            self._tree.reset_bounds()
             guess = self.mtdf(game, guess, max_depth, deadline)
             print("mtdf move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns()-start)/1_000_000)
             max_depth += 1
@@ -40,9 +39,10 @@ struct NegamaxZero[G: TGame](TTree):
 
     fn mtdf(mut self, mut game: G, var guess: Score, max_depth: Int, deadline: UInt) -> Score:
         if debug:
-            print("\n====\n\n>> mtdf: guess:", guess, "max_depth:", max_depth, "root:", self._tree)
+            print(">> mtdf: guess:", guess, "max_depth:", max_depth, "root:", self._tree)
 
-        while self._tree.bounds.lower < self._tree.bounds.upper and perf_counter_ns() < deadline:
+        self._tree.bounds = Bounds()
+        while perf_counter_ns() < deadline:
             if debug:
                 print("### ", self._tree.bounds)
 
@@ -51,6 +51,9 @@ struct NegamaxZero[G: TGame](TTree):
                 guess = self._tree.bounds.upper
             else:
                 guess = self._tree.bounds.lower
+
+            if self._tree.bounds.lower == self._tree.bounds.upper:
+                break
 
         # TODO move to .search()
         if perf_counter_ns() < deadline:
@@ -118,9 +121,6 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                 return False
             return a.bounds.upper > b.bounds.upper
 
-        if debug:
-            print("|   " * depth + "negamax_zero: guess:", guess)
-
         if deadline < perf_counter_ns():
             if debug:
                 print("|   " * depth + "<< deadline")
@@ -137,22 +137,18 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move, max_depth))
-
-            sort[greater](self.children)
-
-            if depth < max_depth:
-                for ref child in self.children:
-                    if not child.bounds.is_decisive():
-                        child.bounds = Bounds()
-        else:
-            sort[greater](self.children)
+        sort[greater](self.children)
+        if depth < max_depth:
+            for ref child in self.children:
+                if not child.bounds.is_decisive():
+                    child.bounds = Bounds()
 
         if depth == max_depth:
             self.bounds = Bounds()
             for child in self.children:
                 self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
                 if debug:
-                    print("|   " * depth + " leaf", child.move, child.bounds)
+                    print("|   " * depth + " leaf", child)
             self.bounds.lower = self.bounds.upper
             return
 
@@ -178,12 +174,6 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
             self.bounds.lower = min(self.bounds.lower, -child.bounds.upper)
 
         return
-
-    fn reset_bounds(mut self):
-        if self.children: # this check is to prevent Mojo compiler warning
-            for ref child in self.children:
-                child.reset_bounds()
-        self.bounds = Bounds()
 
     fn __str__(self) -> String:
         return String.write(self)
