@@ -32,7 +32,7 @@ struct NegamaxZero[G: TGame](TTree):
             if debug:
                 self.print_tree()
             guess = self.mtdf(game, guess, max_depth, deadline)
-            print("mtdf move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns()-start)/1_000_000)
+            print("mtdf move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns() - start) / 1_000_000)
             max_depth += 1
 
         return self._best_move
@@ -72,10 +72,9 @@ struct NegamaxZero[G: TGame](TTree):
 
     fn print_tree(self):
         self.print_tree(self._tree, 0)
-        
+
     fn print_tree(self, node: Node, depth: Int):
         pass
-
 
 
 @fieldwise_init
@@ -184,6 +183,8 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
 
 from connect6 import Connect6
 from negamax import Negamax
+
+
 fn main() raises:
     alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
     var game1 = Game()
@@ -207,5 +208,3 @@ fn main() raises:
 
         if result.is_decisive():
             break
-
-

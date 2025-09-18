@@ -130,14 +130,14 @@ struct TestGame(TGame):
 fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
     var score = Score.loss()
     for move in game.moves():
-        print("|   "*depth, depth, "> ", move.move, sep="")
+        print("|   " * depth, depth, "> ", move.move, sep="")
         var new_score = move.score
         if depth < max_depth and not new_score.is_decisive():
             _ = game.play_move(move.move)
             new_score = -simple_negamax(game, depth + 1, max_depth)
             game.undo_move(move.move)
         score = max(score, new_score)
-        print("|   "*depth, depth, "< ", move.move, "; score ", score, sep="")
+        print("|   " * depth, depth, "< ", move.move, "; score ", score, sep="")
     return score
 
 
@@ -148,6 +148,7 @@ from time import perf_counter_ns
 
 alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
 alias max_depth = 7
+
 
 fn main() raises:
     var game = Game()
@@ -160,18 +161,18 @@ fn main() raises:
 
     start = perf_counter_ns()
     _ = tree1.mtdf(game, 0, max_depth - 1, start + 10_000_000_000)
-    print("==== zero.1:", tree1._best_move, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print("==== zero.1:", tree1._best_move, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
     print()
 
     start = perf_counter_ns()
     _ = tree1.mtdf(game, 0, max_depth, start + 10_000_000_000)
-    print("==== zero.2:", tree1._best_move, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print("==== zero.2:", tree1._best_move, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
     print()
 
     start = perf_counter_ns()
     tree2._deadline = start + 10_000_000_000
     _ = tree2._search(game, Score.loss(), Score.win(), 0, max_depth)
-    print("==== nmax:", tree1._best_move, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print("==== nmax:", tree1._best_move, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
     print()
 
     # start = perf_counter_ns()
