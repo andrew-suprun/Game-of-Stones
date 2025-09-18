@@ -12,35 +12,42 @@ struct NegamaxZero[G: TGame](TTree):
     alias Game = G
 
     var _tree: Node[G]
-    var _best_move: MoveScore[G.Move]
 
     fn __init__(out self):
         var root = MoveScore[G.Move](G.Move(), score.Score(0))
         self._tree = Node[G](root, 0)
         self._tree.bounds = Bounds()
-        self._best_move = root
 
     fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
         self = Self()
         var deadline = perf_counter_ns() + 1_000_000 * duration_ms
-        self._best_move = game.move()
+        var best_move = MoveScore[G.Move](G.Move(), score.Score(0))
         var max_depth = 0
         var guess: Score = 0
 
         var start = perf_counter_ns()
-        while perf_counter_ns() < deadline and not guess.is_decisive():
+        while not guess.is_decisive():
             if debug:
                 self.print_tree()
             guess = self.mtdf(game, guess, max_depth, deadline)
-            print("mtdf move:", self._best_move, "depth:", max_depth, "time", Float64(perf_counter_ns() - start) / 1_000_000)
+
+            if perf_counter_ns() >= deadline:
+                break
+
+            var move = self._tree.children[0].move
+            var score = self._tree.children[0].bounds.lower
+            for child in self._tree.children:
+                if child.bounds.lower > score:
+                    score = child.bounds.lower
+                    move = child.move
+            best_move = MoveScore(move, score)
+
+            print("mtdf move:", best_move, "depth:", max_depth, "time", Float64(perf_counter_ns() - start) / 1_000_000)
             max_depth += 1
 
-        return self._best_move
+        return best_move
 
     fn mtdf(mut self, mut game: G, var guess: Score, max_depth: Int, deadline: UInt) -> Score:
-        if debug:
-            print(">> mtdf: guess:", guess, "max_depth:", max_depth, "root:", self._tree)
-
         self._tree.bounds = Bounds()
         while perf_counter_ns() < deadline:
             if debug:
@@ -55,19 +62,6 @@ struct NegamaxZero[G: TGame](TTree):
             if self._tree.bounds.lower == self._tree.bounds.upper:
                 break
 
-        # TODO move to .search()
-        if perf_counter_ns() < deadline:
-            var move = self._tree.children[0].move
-            var score = self._tree.children[0].bounds.lower
-            for child in self._tree.children:
-                if child.bounds.lower > score:
-                    score = child.bounds.lower
-                    move = child.move
-            self._best_move = MoveScore(move, score)
-
-        if debug:
-            print("<< mtdf: guess", guess, "best move", self._best_move)
-            print(self._tree)
         return guess
 
     fn print_tree(self):
