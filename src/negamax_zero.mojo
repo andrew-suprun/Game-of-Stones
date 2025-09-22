@@ -22,7 +22,7 @@ struct NegamaxZero[G: TGame](TTree):
         self = Self()
         var deadline = perf_counter_ns() + 1_000_000 * duration_ms
         var best_move = MoveScore[G.Move](G.Move(), score.Score(0))
-        var max_depth = 0
+        var max_depth = 1
         var guess: Score = 0
 
         var start = perf_counter_ns()
@@ -48,18 +48,18 @@ struct NegamaxZero[G: TGame](TTree):
         return best_move
 
     fn mtdf(mut self, mut game: G, var guess: Score, max_depth: Int, deadline: UInt) -> Score:
-        # print("### mtdf: guess", guess, "max-depth:", max_depth)
+        print("### mtdf: guess", guess, "max-depth:", max_depth)
         self._tree.bounds = Bounds()
         while perf_counter_ns() < deadline:
             if debug:
                 print("### new", self._tree.bounds)
 
             self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
-            # if perf_counter_ns() >= deadline:
-            #     print("-- timeout --")
-            # print("root", self._tree, "guess", guess, "max-depth", max_depth)
-            # for child in self._tree.children:
-            #     print("  child", child)
+            if perf_counter_ns() >= deadline:
+                print("-- timeout --")
+            print("root", self._tree, "guess", guess, "max-depth", max_depth)
+            for child in self._tree.children:
+                print("  child", child)
 
             if self._tree.bounds.upper < guess:
                 guess = self._tree.bounds.upper
