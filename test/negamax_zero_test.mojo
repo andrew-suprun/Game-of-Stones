@@ -15,9 +15,14 @@ fn test_mtdf() raises:
         print("!!! seed", seed)
         for max_depth in range(0, 6):
             var tree = NegamaxZero[TestGame]()
-            var deadline = perf_counter_ns() + 1_000_000
+            var deadline = perf_counter_ns() + 1_000_000_000
             print("max_depth", max_depth)
-            var score = -tree.mtdf(game, guess=0, max_depth=max_depth, deadline=deadline)
+            var score = -tree.mtdf(game, guess=0, max_depth=max_depth + 1, deadline=deadline)
+            print("@@@ root", tree._tree)
+            for child in tree._tree.children:
+                if child.bounds.lower == -tree._tree.bounds.upper:
+                    print("@@@ best ", child)
+            print()
             print("### SN ###")
             var expected = simple_negamax(game, 0, max_depth)
             print("score", score, "expected:", expected)

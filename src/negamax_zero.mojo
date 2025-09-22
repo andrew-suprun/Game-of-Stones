@@ -175,6 +175,7 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
             
             self.depth = child.depth
             if child.depth == max_depth and child.bounds.lower == child.bounds.upper:
+                self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
                 if debug:
                     print("|   " * depth + "< skip")
                 continue
