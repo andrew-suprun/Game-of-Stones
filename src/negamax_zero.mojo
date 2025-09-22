@@ -52,7 +52,7 @@ struct NegamaxZero[G: TGame](TTree):
         self._tree.bounds = Bounds()
         while perf_counter_ns() < deadline:
             if debug:
-                print("### bounds", self._tree.bounds)
+                print("### new", self._tree.bounds)
 
             self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
             # if perf_counter_ns() >= deadline:
@@ -69,6 +69,8 @@ struct NegamaxZero[G: TGame](TTree):
             if self._tree.bounds.lower == self._tree.bounds.upper:
                 break
 
+        if debug:
+            print("### final", self._tree.bounds)
         return guess
 
     fn print_tree(self):
@@ -103,13 +105,13 @@ struct Bounds(Copyable, Defaultable, Movable, Stringable, Writable):
 struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
     var move: G.Move
     var bounds: Bounds
-    var max_depth: Int
+    var depth: Int
     var children: List[Self]
 
-    fn __init__(out self, move: MoveScore[G.Move], max_depth: Int):
+    fn __init__(out self, move: MoveScore[G.Move], depth: Int):
         self.move = move.move
         self.bounds = Bounds(move.score, move.score)
-        self.max_depth = max_depth
+        self.depth = depth
         self.children = List[Self]()
 
     fn negamax_zero(mut self, mut game: G, guess: Score, depth: Int, max_depth: Int, deadline: UInt):
@@ -121,83 +123,90 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                 return False
             return a.bounds.upper > b.bounds.upper
 
-        if deadline < perf_counter_ns():
-            if debug:
-                print("|   " * depth + "<< deadline")
-            return
+        # if debug:
+        #     print("|   " * depth + ">> negamax_zero: score:", guess, "depth", depth,  "max-depth", max_depth, "node", self)
 
-        if self.bounds.upper < guess:
-            if debug:
-                print("|   " * depth + "<< cut-off.1: guess:", guess, self.bounds)
-            # if depth == 0:
-            #     print("<< cut-off.1: guess:", guess, self)
-            return
+        # if deadline < perf_counter_ns():
+        #     if debug:
+        #         print("|   " * depth + "<< deadline")
+        #     return
 
-        if not self.children:
+        # if self.bounds.upper < guess:
+        #     if debug:
+        #         print("|   " * depth + "<< cut-off.1: guess:", guess, self)
+        #     return
+
+        if depth < max_depth and not self.children:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
             self.children.reserve(len(moves))
             for move in moves:
-                self.children.append(Self(move, max_depth))
+                self.children.append(Self(move, depth + 1))
         sort[greater](self.children)
-        for ref child in self.children:
-            if max_depth > child.max_depth and not child.bounds.is_decisive():
-                child.bounds = Bounds()
-                child.max_depth = max_depth
-        # if depth == 0 and max_depth > self.max_depth:
-        #     self.max_depth = max_depth
+        # TODO: Fix
+        # if depth < max_depth or max_depth > self.depth:
+        #     for ref child in self.children:
+        #         if not child.bounds.is_decisive():
+        #             child.bounds = Bounds()
+        #             child.depth = max_depth
+
+        # if depth == 0 and max_depth > self.depth:
+        #     self.depth = max_depth
         #     print("new bounds: guess:", guess)
         #     for child in self.children:
         #         print("  child", child)
 
-        if depth == max_depth:
+        if depth + 1 == max_depth:
+            self.depth = max_depth
             self.bounds = Bounds()
-            for child in self.children:
+            for ref child in self.children:
                 self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
+                child.depth = max_depth
                 if debug:
-                    print("|   " * depth + " leaf", child)
+                    print("|   " * depth + "== leaf", child)
             self.bounds.lower = self.bounds.upper
+            # if debug:
+            #     print("|   " * depth + "<< guess", guess, self)
             return
 
         for ref child in self.children:
-            # if depth == 0:
-            #     print(">> negamax: guess:", guess, "| child:", child)
-            if child.bounds.upper < -guess:
-                # if depth == 0:
-                #     print("<< negamax skip: guess:", guess, "| child:", child)
-                continue
             if debug:
                 print("|   " * depth + ">", depth, child)
-            if child.bounds.lower < child.bounds.upper:
+            
+            self.depth = child.depth
+            if child.depth == max_depth and child.bounds.lower == child.bounds.upper:
+                if debug:
+                    print("|   " * depth + "< skip")
+                continue
+            if child.bounds.lower < child.bounds.upper or not child.bounds.lower.is_decisive():
+                child.bounds = Bounds()
                 _ = game.play_move(child.move)
                 child.negamax_zero(game, -guess, depth + 1, max_depth, deadline)
                 game.undo_move(child.move)
 
             self.bounds.upper = min(self.bounds.upper, -child.bounds.lower)
 
-            if debug:
-                print("|   " * depth + "<", depth, child)
             if self.bounds.upper < guess:
                 if debug:
-                    print("|   " * depth + "<< cut-off.2: guess:", guess)
-                # if depth == 0:
-                #     print("<< negamax cut-off.2: guess:", guess, "| child:", child)
+                    print("|   " * depth + "<", depth,  "cut-off", child)
                 return
+            elif debug:
+                print("|   " * depth + "<", depth, child)
 
-            # if depth == 0:
-            #     print("<< negamax: guess:", guess, "| child:", child)
 
         self.bounds.lower = Score.win()
         for child in self.children:
             self.bounds.lower = min(self.bounds.lower, -child.bounds.upper)
 
+        # if debug:
+        #     print("|   " * depth + "<< exit", guess, self)
         return
 
     fn __str__(self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        writer.write("move: ", self.move, "; ", self.bounds, "; max-depth: ", self.max_depth)
+        writer.write("move: ", self.move, "; ", self.bounds, "; depth: ", self.depth)
 
 
 from connect6 import Connect6
