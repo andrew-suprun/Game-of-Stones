@@ -122,12 +122,7 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                 return False
             return a.bounds.upper > b.bounds.upper
 
-        if debug > 1:
-            print("|   " * depth + ">> negamax_zero: guess:", guess, "depth", depth, "max-depth", max_depth)
-
         if deadline < perf_counter_ns():
-            if debug > 1:
-                print("|   " * depth + "<< deadline")
             return
 
         if depth < max_depth and not self.children:
@@ -147,8 +142,6 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                 if debug > 1:
                     print("|   " * depth + "== leaf", child)
             self.bounds.lower = self.bounds.upper
-            if debug > 1:
-                print("|   " * depth + "<< guess:", guess, self)
             return
 
         for ref child in self.children:
@@ -180,8 +173,6 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
         for child in self.children:
             self.bounds.lower = min(self.bounds.lower, -child.bounds.upper)
 
-        if debug > 1:
-            print("|   " * depth + "<< exit: guess:", guess, self)
         return
 
     fn __str__(self) -> String:
