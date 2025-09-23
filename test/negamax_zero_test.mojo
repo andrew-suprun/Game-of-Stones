@@ -22,6 +22,7 @@ fn test_mtdf() raises:
             for child in tree._tree.children:
                 if child.bounds.lower == -tree._tree.bounds.upper:
                     print("@@@ best ", child)
+            tree.print_tree()
             print()
             print("### SN ###")
             var expected = simple_negamax(game, 0, max_depth)

@@ -140,6 +140,7 @@ fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
         print("|   " * depth, depth, "< ", move.move, "; score ", score, sep="")
     return score
 
+
 from connect6 import Connect6
 from negamax import Negamax
 from negamax_zero import NegamaxZero
@@ -147,6 +148,7 @@ from time import perf_counter_ns
 
 alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
 alias max_depth = 3
+
 
 fn main() raises:
     var game = Game()
@@ -158,7 +160,7 @@ fn main() raises:
 
     start = perf_counter_ns()
     var score = tree1.mtdf(game, 0, max_depth + 1, start + 10_000_000_000)
-    print("==== zero:", score, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print("==== zero:", score, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
     for child in tree1._tree.children:
         if child.bounds.lower == -tree1._tree.bounds.upper:
             print("best ", child)
@@ -167,9 +169,9 @@ fn main() raises:
     start = perf_counter_ns()
     tree2._deadline = start + 10_000_000_000
     _ = tree2._search(game, Score.loss(), Score.win(), 0, max_depth)
-    print("==== nmax:", tree2._best_move, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print("==== nmax:", tree2._best_move, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
     print()
 
     start = perf_counter_ns()
     var expected = simple_negamax(game, 0, max_depth)
-    print("==== expected:", expected, "time:", Float64(perf_counter_ns() - start)/1_000_000_000)
+    print("==== expected:", expected, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
