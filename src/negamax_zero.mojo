@@ -57,7 +57,7 @@ struct NegamaxZero[G: TGame](TTree):
             if debug > 1:
                 self.print_tree()
 
-            self._tree.negamax_zero(game, guess, 0, max_depth, deadline)
+            self._tree.negamax_zero(game, guess, max_depth, deadline)
             if debug > 0:
                 if perf_counter_ns() >= deadline:
                     print("-- timeout --")
@@ -113,6 +113,9 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
         self.max_depth = depth
         self.children = List[Self]()
 
+    fn negamax_zero(mut self, mut game: G, guess: Score, max_depth: Int, deadline: UInt):
+        self.negamax_zero(game, guess, 0, max_depth, deadline)
+
     fn negamax_zero(mut self, mut game: G, guess: Score, depth: Int, max_depth: Int, deadline: UInt):
         @parameter
         fn greater(a: Self, b: Self) -> Bool:
@@ -131,7 +134,6 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move, depth + 1))
-        sort[greater](self.children)
 
         if depth + 1 == max_depth:
             self.max_depth = max_depth
@@ -143,6 +145,8 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                     print("|   " * depth + "== leaf", child)
             self.bounds.lower = self.bounds.upper
             return
+        
+        sort[greater](self.children)
 
         for ref child in self.children:
             if debug > 1:
