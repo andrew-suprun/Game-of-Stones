@@ -23,7 +23,7 @@ fn test_place_stone() raises:
                     if board[x, y] == board.empty:
                         var actual = board.score(Place(x, y), first)
                         board.place_stone(Place(x, y), first)
-                        var expected = board.board_value(values) - value
+                        var expected = board.board_value(materialize[values]()) - value
                         board.remove_stone(Place(x, y))
                         if actual != expected:
                             print(Place(x, y), "actual:", actual, "first:", expected, "n", n)
@@ -32,7 +32,7 @@ fn test_place_stone() raises:
                             assert_true(False)
                         actual = board.score(Place(x, y), second)
                         board.place_stone(Place(x, y), second)
-                        expected = value - board.board_value(values)
+                        expected = value - board.board_value(materialize[values]())
                         board.remove_stone(Place(x, y))
                         if actual != expected:
                             print(Place(x, y), "actual:", actual, "second:", expected, "n", n)

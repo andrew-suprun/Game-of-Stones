@@ -62,7 +62,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         if self.plies == Self.max_plies:
             moves[-1].score = Score.draw()
             return [moves[-1]]
-        return moves
+        return moves^
 
     fn _moves(self, mut moves: List[MoveScore[Move]]):
         @parameter

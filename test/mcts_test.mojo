@@ -69,7 +69,7 @@ struct TestGame(TGame):
             else:
                 moves.append(MoveScore(TestMove(id), Score(random_float64(-10, 10))))
             id += 1
-        return moves
+        return moves^
 
     fn play_move(mut self, move: self.Move) -> Score:
         self.move_id *= 10
