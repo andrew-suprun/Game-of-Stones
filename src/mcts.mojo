@@ -35,7 +35,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
             if self.expand(game):
                 break
 
-        var child_node = self._best_child()
+        ref child_node = self._best_child()
         return child_node.move
 
     fn expand(mut self, mut game: G, out done: Bool):
@@ -56,10 +56,10 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
     fn best_move(self) -> G.Move:
         return self._best_child().move.move
 
-    fn _best_child(self) -> Self.MctsNode:
+    fn _best_child(self) -> ref [self.root.children] Self.MctsNode:
         debug_assert(len(self.root.children) > 0)
         var has_draw = False
-        var draw_node = self.root.children[-1]
+        var draw_node = Pointer(to=self.root.children[-1])
         var best_child = Pointer(to=self.root.children[-1])
         for ref child in self.root.children:
             if child.move.score.is_loss():
@@ -68,13 +68,13 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
                 return child
             elif child.move.score.is_draw():
                 has_draw = True
-                draw_node = child
+                draw_node = Pointer(to = child)
                 continue
 
             if best_child[].n_sims < child.n_sims or best_child[].n_sims == child.n_sims and best_child[].move.score < child.move.score:
                 best_child = Pointer(to=child)
         if has_draw and best_child[].move.score < 0:
-            return draw_node
+            return draw_node[]
         return best_child[]
 
     fn __str__(self) -> String:

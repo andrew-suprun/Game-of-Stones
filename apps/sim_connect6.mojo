@@ -32,5 +32,5 @@ fn openings() -> List[List[String]]:
         moves.append(String(places[0]) + "-" + String(places[1]))
         moves.append(String(places[2]) + "-" + String(places[3]))
         moves.append(String(places[4]) + "-" + String(places[5]))
-        result.append(moves)
-    return result
+        result.append(moves^)
+    return result^
