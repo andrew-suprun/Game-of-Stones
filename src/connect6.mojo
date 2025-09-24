@@ -85,7 +85,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         if self.plies == Self.max_plies:
             moves[-1].score = Score.draw()
             return [moves[-1]]
-        return moves
+        return moves^
 
     fn _moves(mut self, mut moves: List[MoveScore[Move]]):
         @parameter
@@ -120,7 +120,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     return
 
                 if debug:
-                    var board_value = self.board.board_value(values)
+                    var board_value = self.board.board_value(materialize[values]())
                     if self.turn:
                         board_value = -board_value
                     debug_assert(board_value == board_score + score1 + score2)

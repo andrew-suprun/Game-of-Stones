@@ -11,6 +11,44 @@ alias debug = env_get_int["DEBUG2", 0]()
 struct NegamaxZero[G: TGame](TTree):
     alias Game = G
 
+    var roots: List[Node[G]]
+
+    fn __init__(out self):
+        self.roots = List[Node[G]]()
+
+    fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
+        self.roots = List[Node[G]]()
+        var deadline = perf_counter_ns() + 1_000_000 * duration_ms
+        var moves = game.moves()
+        debug_assert(len(moves) > 0)
+
+        if len(moves) == 1:
+            return moves[0]
+
+        self.roots.reserve(len(moves))
+        for move in moves:
+            self.roots.append(Node(move, 0, Bounds()))
+
+        while True:
+            var max_lower_bound = Score.loss()
+            for ref node in self.roots:
+                if max_lower_bound < node.bounds.lower:
+                    max_lower_bound = node.bounds.lower
+        
+            var node_idx = -1
+
+            if max_lower_bound == Score.loss():
+                node_idx = 0
+            else:
+                for idx in range(len(self.roots)):
+                    ...
+
+
+        return MoveScore[G.Move](self.roots[0].move, self.roots[0].bounds.lower)
+
+struct NegamaxZeroX[G: TGame](TTree):
+    alias Game = G
+
     var _tree: Node[G]
 
     fn __init__(out self):
@@ -80,7 +118,7 @@ struct NegamaxZero[G: TGame](TTree):
 
 
 @fieldwise_init
-struct Bounds(Copyable, Defaultable, Movable, Stringable, Writable):
+struct Bounds(ImplicitlyCopyable, Defaultable, Movable, Stringable, Writable):
     var lower: Score
     var upper: Score
 
@@ -107,10 +145,19 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
     var max_depth: Int
     var children: List[Self]
 
-    fn __init__(out self, move: MoveScore[G.Move], depth: Int):
+    fn __init__(out self, move: MoveScore[G.Move], depth: Int, bounds: Bounds):
         self.move = move.move
-        self.bounds = Bounds(move.score, move.score)
+        self.bounds = bounds
         self.max_depth = depth
+        self.children = List[Self]()
+
+    fn __init__(out self, move: MoveScore[G.Move], depth: Int):
+        self = self.__init__(move, depth, Bounds(move.score, move.score))
+
+    fn __copyinit__(out self, existing: Self, /):
+        self.move = existing.move
+        self.bounds = existing.bounds
+        self.max_depth = existing.max_depth
         self.children = List[Self]()
 
     fn negamax_zero(mut self, mut game: G, guess: Score, max_depth: Int, deadline: UInt):

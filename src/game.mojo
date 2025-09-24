@@ -4,29 +4,29 @@ from score import Score
 trait TGame(Defaultable, Stringable, Writable):
     alias Move: TMove
 
-    fn moves(mut self) -> List[MoveScore[Move]]:
+    fn moves(mut self) -> List[MoveScore[Self.Move]]:
         ...
 
-    fn move(mut self) -> MoveScore[Move]:
+    fn move(mut self) -> MoveScore[Self.Move]:
         ...
 
-    fn play_move(mut self, move: Move) -> Score:
+    fn play_move(mut self, move: Self.Move) -> Score:
         ...
 
-    fn undo_move(mut self, move: Move):
+    fn undo_move(mut self, move: Self.Move):
         ...
 
     fn hash(self) -> Int:
         ...
 
 
-trait TMove(Copyable, Defaultable, Hashable, Movable, Stringable, Writable):
+trait TMove(ImplicitlyCopyable, Defaultable, Hashable, Movable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
 
 @fieldwise_init
-struct MoveScore[Move: TMove](Copyable, Movable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, Movable, Writable):
     var move: Move
     var score: Score
 
