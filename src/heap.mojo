@@ -2,9 +2,9 @@ fn heap_add[T: Movable & Copyable & Writable, //, less: fn (T, T, out Bool) capt
     if len(items) == items.capacity:
         if not less(items[0], item):
             return
-        items[0] = item
+        items[0] = item.copy()
         var idx = 0
-        var elem = items[idx]
+        var elem = items[idx].copy()
         while True:
             var first = idx
             var left_child_idx = idx * 2 + 1
@@ -16,15 +16,15 @@ fn heap_add[T: Movable & Copyable & Writable, //, less: fn (T, T, out Bool) capt
             if idx == first:
                 break
 
-            items[idx] = items[first]
+            items[idx] = items[first].copy()
             idx = first
-        items[idx] = elem
+        items[idx] = elem.copy()
         return
-    items.append(item)
+    items.append(item.copy())
     var child_idx = len(items) - 1
-    var child = items[child_idx]
+    var child = items[child_idx].copy()
     while child_idx > 0 and less(child, items[(child_idx - 1) // 2]):
         var parent_idx = (child_idx - 1) // 2
-        items[child_idx] = items[parent_idx]
+        items[child_idx] = items[parent_idx].copy()
         child_idx = parent_idx
-    items[child_idx] = child
+    items[child_idx] = child.copy()
