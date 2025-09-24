@@ -356,7 +356,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
 fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     alias result_size = win_stones * win_stones + 1
 
-    var s = scores
+    var s = materialize[scores]()
     s.append(Float32.MAX)
     v2 = List[Scores](Scores(1, -1))
     for i in range(win_stones - 1):

@@ -68,7 +68,7 @@ struct Negamax[G: TGame](TTree):
 
         var children: List[MoveScore[G.Move]]
         try:
-            children = self._moves_cache[game.hash()]
+            children = self._moves_cache.pop(game.hash())
         except:
             children = game.moves()
 
