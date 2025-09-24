@@ -20,7 +20,7 @@ trait TGame(Defaultable, Stringable, Writable):
         ...
 
 
-trait TMove(ImplicitlyCopyable, Defaultable, Hashable, Movable, Stringable, Writable):
+trait TMove(Defaultable, Hashable, ImplicitlyCopyable, Movable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 

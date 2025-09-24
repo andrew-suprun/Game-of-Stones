@@ -68,7 +68,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
                 return child
             elif child.move.score.is_draw():
                 has_draw = True
-                draw_node = Pointer(to = child)
+                draw_node = Pointer(to=child)
                 continue
 
             if best_child[].n_sims < child.n_sims or best_child[].n_sims == child.n_sims and best_child[].move.score < child.move.score:

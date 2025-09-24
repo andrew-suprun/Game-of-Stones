@@ -29,96 +29,81 @@ struct NegamaxZero[G: TGame](TTree):
         for move in moves:
             self.roots.append(Node(move, 0, Bounds()))
 
+        var max_depth = 8
+        var guess = Score(0)
+        var node = Pointer(to=self.roots[0])
         while True:
-            var max_lower_bound = Score.loss()
+            _ = game.play_move(node[].move)  # TODO handle decisive move
+            if debug > 0:
+                print("\n### move", node[].move, "guess", guess)
+            node[].negamax_zero(game, guess, max_depth, deadline)
+            game.undo_move(node[].move)
+
+            if debug > 0:
+                print("----")
+                for ref root in self.roots:
+                    print(root)
+
+            guess = Score.loss()
             for ref node in self.roots:
-                if max_lower_bound < node.bounds.lower:
-                    max_lower_bound = node.bounds.lower
-        
-            var node_idx = -1
+                guess = max(guess, node.bounds.lower)
 
-            if max_lower_bound == Score.loss():
-                node_idx = 0
-            else:
-                for idx in range(len(self.roots)):
-                    ...
+            var node_set = False
+            var top_selections = 0
+            for ref root in self.roots:
+                if root.bounds.lower == guess:
+                    top_selections += 1
+                    continue
 
+                if root.bounds.upper <= guess:
+                    continue
 
-        return MoveScore[G.Move](self.roots[0].move, self.roots[0].bounds.lower)
+                if not node_set or root.bounds.lower < node[].bounds.lower:
+                    node = Pointer(to=root)
+                    node_set = True
 
-struct NegamaxZeroX[G: TGame](TTree):
-    alias Game = G
+            if node_set:
+                if debug > 0:
+                    print("node set")
+                continue
 
-    var _tree: Node[G]
+            if debug > 0:
+                print("top_selections", top_selections)
 
-    fn __init__(out self):
-        var root = MoveScore[G.Move](G.Move(), score.Score(0))
-        self._tree = Node[G](root, 0)
-        self._tree.bounds = Bounds()
+            node_set = False
+            if top_selections == 1:
+                for ref root in self.roots:
+                    if root.bounds.lower == guess:
+                        node = Pointer(to=root)
+                        node_set = True
+                        break
 
-    fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
-        self = Self()
-        var deadline = perf_counter_ns() + 1_000_000 * duration_ms
-        var best_move = MoveScore[G.Move](G.Move(), score.Score(0))
-        var max_depth = 1
-        var guess: Score = 0
-
-        var start = perf_counter_ns()
-        while not guess.is_decisive():
-            if debug > 1:
-                self.print_tree()
-            guess = self.mtdf(game, guess, max_depth, deadline)
-
-            if perf_counter_ns() >= deadline:
+            if node_set:
                 break
 
-            var move = self._tree.children[0].move
-            var score = self._tree.children[0].bounds.lower
-            for child in self._tree.children:
-                if child.bounds.lower > score:
-                    score = child.bounds.lower
-                    move = child.move
-            best_move = MoveScore(move, score)
+            for ref root in self.roots:
+                if root.bounds.lower == guess:
+                    if not node_set:
+                        node_set = True
+                        node = Pointer(to=root)
+                    else:
+                        if node[].bounds.upper < root.bounds.upper:
+                            node = Pointer(to=root)
 
-            print("<<< mtdf move:", best_move, "depth:", max_depth, "time", Float64(perf_counter_ns() - start) / 1_000_000)
-            max_depth += 1
-
-        print("total time", Float64(perf_counter_ns() - start) / 1_000_000)
-
-        return best_move
-
-    fn mtdf(mut self, mut game: G, var guess: Score, max_depth: Int, deadline: UInt) -> Score:
-        self._tree.bounds = Bounds()
-        while perf_counter_ns() < deadline:
-            if debug > 0:
-                print("\n>>> mtdf: max-depth:", max_depth, "guess:", guess, self._tree.bounds)
-            if debug > 1:
-                self.print_tree()
-
-            self._tree.negamax_zero(game, guess, max_depth, deadline)
-            if debug > 0:
-                if perf_counter_ns() >= deadline:
-                    print("-- timeout --")
-                print("root", self._tree, "guess", guess, "max-depth", max_depth)
-                for child in self._tree.children:
-                    print("  child", child)
-
-            if self._tree.bounds.upper < guess:
-                guess = self._tree.bounds.upper
-            else:
-                guess = self._tree.bounds.lower
-
-            if self._tree.bounds.lower == self._tree.bounds.upper:
+            if node[].bounds.lower == node[].bounds.upper:
                 break
 
-        return guess
+        node = Pointer(to=self.roots[0])
+        for ref root in self.roots:
+            if root.bounds.lower == guess:
+                node = Pointer(to=root)
+                break
 
-    fn print_tree(self):
-        self._tree.print_tree()
+        return MoveScore[G.Move](node[].move, node[].bounds.lower)
 
 
 @fieldwise_init
-struct Bounds(ImplicitlyCopyable, Defaultable, Movable, Stringable, Writable):
+struct Bounds(Defaultable, ImplicitlyCopyable, Movable, Stringable, Writable):
     var lower: Score
     var upper: Score
 
@@ -192,7 +177,7 @@ struct Node[G: TGame](Copyable, Movable, Stringable, Writable):
                     print("|   " * depth + "== leaf", child)
             self.bounds.lower = self.bounds.upper
             return
-        
+
         sort[greater](self.children)
 
         for ref child in self.children:
@@ -265,3 +250,4 @@ fn main() raises:
 
         if result.is_decisive():
             break
+        break
