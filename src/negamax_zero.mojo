@@ -17,10 +17,15 @@ struct NegamaxZero[G: TGame](TTree):
         self.roots = List[Node[G]]()
 
     fn search(mut self, mut game: G, duration_ms: Int) -> MoveScore[G.Move]:
+        @parameter
+        fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
+            return a.score > b.score
+
         self.roots = List[Node[G]]()
         var deadline = perf_counter_ns() + 1_000_000 * duration_ms
         var moves = game.moves()
         debug_assert(len(moves) > 0)
+        # sort[greater](moves)
 
         if len(moves) == 1:
             return moves[0]
@@ -29,8 +34,8 @@ struct NegamaxZero[G: TGame](TTree):
         for move in moves:
             self.roots.append(Node(move, 0, Bounds()))
 
-        var max_depth = 7
-        # var guess = Score(23)
+        var max_depth = 9
+        # var guess = Score(0)
         var guess = Score.loss()
         var node = Pointer(to=self.roots[0])
         var start = perf_counter_ns()
@@ -245,19 +250,19 @@ fn main() raises:
     alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
     var game = Game()
     var tree1 = NegamaxZero[Game]()
-    var tree2 = Negamax[Game]()
+    # var tree2 = Negamax[Game]()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     while True:
-        var move1 = tree1.search(game, 2000)
+        var move1 = tree1.search(game, 20_000)
         print("zero", move1)
-        print("----")
-        var move2 = tree2.search(game, 2000)
-        print("nmax", move2)
+        # print("----")
+        # var move2 = tree2.search(game, 20_000)
+        # print("nmax", move2)
 
-        var result = game.play_move(move2.move)
-        print(game)
+        # var result = game.play_move(move2.move)
+        # print(game)
 
-        if result.is_decisive():
-            break
+        # if result.is_decisive():
+        #     break
         break
