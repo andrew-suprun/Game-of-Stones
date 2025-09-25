@@ -29,20 +29,29 @@ struct NegamaxZero[G: TGame](TTree):
         for move in moves:
             self.roots.append(Node(move, 0, Bounds()))
 
-        var max_depth = 8
-        var guess = Score(0)
+        var max_depth = 7
+        # var guess = Score(23)
+        var guess = Score.loss()
         var node = Pointer(to=self.roots[0])
+        var start = perf_counter_ns()
         while True:
-            _ = game.play_move(node[].move)  # TODO handle decisive move
             if debug > 0:
-                print("\n### move", node[].move, "guess", guess)
+                print("----")
+                print(">>", node[], "guess", guess)
+            _ = game.play_move(node[].move)  # TODO handle decisive move
             node[].negamax_zero(game, guess, max_depth, deadline)
             game.undo_move(node[].move)
 
+            if deadline < perf_counter_ns():
+                if debug > 0:
+                    print("@@@ deadline")
+                break
+
+
             if debug > 0:
-                print("----")
                 for ref root in self.roots:
                     print(root)
+                print("<<", node[], "guess", guess)
 
             guess = Score.loss()
             for ref node in self.roots:
@@ -63,12 +72,12 @@ struct NegamaxZero[G: TGame](TTree):
                     node_set = True
 
             if node_set:
-                if debug > 0:
-                    print("node set")
+                # if debug > 0:
+                #     print("node set")
                 continue
 
-            if debug > 0:
-                print("top_selections", top_selections)
+            # if debug > 0:
+            #     print("top_selections", top_selections)
 
             node_set = False
             if top_selections == 1:
@@ -99,6 +108,7 @@ struct NegamaxZero[G: TGame](TTree):
                 node = Pointer(to=root)
                 break
 
+        print("result", node[], "time", Float64(perf_counter_ns() - start) / 1_000_000)
         return MoveScore[G.Move](node[].move, node[].bounds.lower)
 
 
@@ -239,10 +249,10 @@ fn main() raises:
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     while True:
-        var move1 = tree1.search(game, 1000)
+        var move1 = tree1.search(game, 2000)
         print("zero", move1)
         print("----")
-        var move2 = tree2.search(game, 1000)
+        var move2 = tree2.search(game, 2000)
         print("nmax", move2)
 
         var result = game.play_move(move2.move)
