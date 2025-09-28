@@ -128,8 +128,14 @@ struct TestGame(TGame):
 
 
 fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
+    @parameter
+    fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
+        return a.score > b.score
+
     var score = Score.loss()
-    for move in game.moves():
+    var moves = game.moves()
+    sort[greater](moves)
+    for move in moves:
         print("|   " * depth, depth, "> ", move.move, sep="")
         var new_score = move.score
         if depth < max_depth and not new_score.is_decisive():
@@ -141,9 +147,10 @@ fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
     return score
 
 
+from compile import get_type_name
 from connect6 import Connect6
 from negamax import Negamax
-from negamax_zero import NegamaxZero
+from negamax_zero import Node
 from time import perf_counter_ns
 
 alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
@@ -155,23 +162,29 @@ fn main() raises:
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
 
-    var tree1 = NegamaxZero[Game]()
-    var tree2 = Negamax[Game]()
+    # var tree1 = NegamaxZero[Game]()
+    # var tree2 = Negamax[Game]()
 
+    var root = Node[Game](MoveScore[Game.Move](Game.Move(), Score()))
     start = perf_counter_ns()
-    var score = tree1.mtdf(game, 0, max_depth + 1, start + 10_000_000_000)
-    print("==== zero:", score, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
-    for child in tree1._tree.children:
-        if child.bounds.lower == -tree1._tree.bounds.upper:
-            print("best ", child)
-    print()
+    var complete = root.search(game, Score.loss(), Score.win(), 0, max_depth, start + 1_000_000_000)
 
-    start = perf_counter_ns()
-    tree2._deadline = start + 10_000_000_000
-    _ = tree2._search(game, Score.loss(), Score.win(), 0, max_depth)
-    print("==== nmax:", tree2._best_move, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
-    print()
+    # start = perf_counter_ns()
+    # tree2._deadline = start + 10_000_000_000
+    # _ = tree2._search(game, Score.loss(), Score.win(), 0, max_depth)
+    # print("==== nmax:", tree2._best_move, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    # print()
 
     start = perf_counter_ns()
     var expected = simple_negamax(game, 0, max_depth)
     print("==== expected:", expected, "time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
+
+    var best_move = root.children[0].copy()
+    print("### complete", complete)
+    for ref child in root.children:
+        print("### move", child)
+
+        if child.score > best_move.score:
+            best_move = child.copy()
+    print("### best move", best_move)
+    print()

@@ -9,10 +9,6 @@ alias debug = env_get_int["DEBUG2", 0]()
 
 
 fn search[Game: TGame](mut game: Game, duration_ms: Int) -> MoveScore[Game.Move]:
-    @parameter
-    fn greater(a: MoveScore[Game.Move], b: MoveScore[Game.Move]) -> Bool:
-        return a.score > b.score
-
     var root = Node[Game](MoveScore[Game.Move](Game.Move(), Score()))
     var deadline = perf_counter_ns() + 1_000_000 * duration_ms
 
@@ -22,7 +18,7 @@ fn search[Game: TGame](mut game: Game, duration_ms: Int) -> MoveScore[Game.Move]
     var best_score = Score.loss()
     while True:
         max_depth += 1
-        root.search(game, Score.loss(), Score.win(), max_depth, deadline)
+        _ = root.search(game, Score.loss(), Score.win(), max_depth, deadline)
 
         if debug > 0:
             print("---- max-depth", max_depth)
@@ -34,13 +30,17 @@ fn search[Game: TGame](mut game: Game, duration_ms: Int) -> MoveScore[Game.Move]
                 print("@@@ deadline")
             break
 
+        best_move = Game.Move()
+        best_score = Score.loss()
         for ref child in root.children:
+            if debug > 0:
+                print("### move", child)
             if best_score < child.score:
                 best_move = child.move
                 best_score = child.score
 
         if debug > 0:
-            print("### best move", best_move)
+            print("### best move", best_move, best_score)
 
     print("result", best_move, "time", Float64(perf_counter_ns() - start) / 1_000_000)
     return MoveScore[Game.Move](best_move, best_score)
@@ -61,63 +61,100 @@ struct Node[Game: TGame](Copyable, Movable, Stringable, Writable):
         self.score = existing.score
         self.children = List[Self]()
 
-    fn search(mut self, mut game: Game, var lower: Score, upper: Score, max_depth: Int, deadline: UInt):
-        self.search(game, lower, upper, 0, max_depth, deadline)
+    fn search(mut self, mut game: Game, lower: Score, var upper: Score, max_depth: Int, deadline: UInt):
+        _ = self.search(game, lower, upper, 0, max_depth, deadline)
 
-    fn search(mut self, mut game: Game, var lower: Score, upper: Score, depth: Int, max_depth: Int, deadline: UInt):
+    fn search(mut self, mut game: Game, lower: Score, var upper: Score, depth: Int, max_depth: Int, deadline: UInt, out complete: Bool):
         @parameter
         fn greater(a: Self, b: Self) -> Bool:
             return a.score > b.score
 
-        if deadline < perf_counter_ns():
-            return
+        if debug > 0:
+            print("|   " * depth + ">> search: (", lower, ":", upper, ") ", depth, "/", max_depth, sep="")
 
-        if depth < max_depth and not self.children:
+        if deadline < perf_counter_ns():
+            if debug > 0:
+                print("|   " * depth + "<< deadline")
+            return False
+
+        if depth <= max_depth and not self.children:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move))
 
+        self.score = Score.win()
         if depth == max_depth:
-            self.score = Score.win()
             for ref child in self.children:
                 self.score = min(self.score, -child.score)
                 if debug > 1:
                     print("|   " * depth + "== leaf", child)
-            return
+            if debug > 0:
+                print("|   " * depth + "<< search-1", self)
+            return True
 
         sort[greater](self.children)
 
-        self.score = Score.win()
-        var first_child = True
-        for ref child in self.children:
+        ref child = self.children[0]
+
+        if debug > 1:
+            print("|   " * depth + ">", depth, "first", child, "self", self, "|", lower, upper)
+
+        if child.score.is_win():
+            self.score = Score.loss()
             if debug > 1:
-                print("|   " * depth + ">", depth, child)
+                print("|   " * depth + "<", depth, "first losing", child.move, "self", self, "|", lower, upper)
+            return True
 
-            if not game.play_move(child.move).is_decisive():
-                if first_child:
-                    first_child = False
-                    child.search(game, -upper, -lower, depth + 1, max_depth, deadline)
+        _ = game.play_move(child.move)
+        _ = child.search(game, -upper, -lower, depth + 1, max_depth, deadline)
+        game.undo_move(child.move)
+        self.score = -child.score
+        upper = min(upper, self.score)
+        if debug > 1:
+            print("|   " * depth + "<", depth, "first", child, "self", self, "|", lower, upper)
+
+        for idx in range(1, len(self.children)):
+            ref child = self.children[idx]
+            if debug > 1:
+                print("|   " * depth + ">", depth, child, "|", lower, upper)
+
+            if not child.score.is_decisive():
+                _ = game.play_move(child.move)
+                var complete = child.search(game, -upper, -upper, depth + 1, max_depth, deadline)
+                self.score = min(self.score, -child.score)
+                upper = min(upper, self.score)
+                if debug > 1:
+                    print("|   " * depth + "=", depth, "zero", child, "self", self, "|", lower, upper)
+
+                if self.score > upper:
+                    game.undo_move(child.move)
                     if debug > 1:
-                        print("|   " * depth + "<", depth, "first", child)
+                        print("|   " * depth + "<", depth, "cut-off", child)
+                    return False
+
+                if complete:
+                    game.undo_move(child.move)
+
+                    if debug > 1:
+                        print("|   " * depth + "<", depth, "next-1", child, "|", lower, upper)
+                    continue
+
                 else:
-                    child.search(game, -lower, -lower, depth + 1, max_depth, deadline)
-                    if debug > 1:
-                        print("|   " * depth + "=", depth, "zero", child)
+                    _ = child.search(game, -upper, -lower, depth + 1, max_depth, deadline)
+                    self.score = min(self.score, -child.score)
+                    upper = min(upper, self.score)
 
-                    if -child.score < upper:
-                        game.undo_move(child.move)
-                        if debug > 1:
-                            print("|   " * depth + "<", depth, "cut-off", child)
-                        break
-                    if -child.score > lower:
-                        child.search(game, child.score, -lower, depth + 1, max_depth, deadline)
-                        if debug > 1:
-                            print("|   " * depth + "<", depth, "next", child)
+                game.undo_move(child.move)
 
-            lower = max(lower, -child.score)
-            game.undo_move(child.move)
+                if debug > 1:
+                    print("|   " * depth + "<", depth, "next-2", child, "|", lower, upper)
+
+        if debug > 0:
+            print("|   " * depth + "<< search-2", self)
+
+        return True
 
     fn __str__(self) -> String:
         return String.write(self)
@@ -146,7 +183,7 @@ fn main() raises:
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
     while True:
-        var move1 = search(game, 20_000)
+        var move1 = search(game, 1000)
         print("zero", move1)
         # print("----")
         # var move2 = tree2.search(game, 20_000)
