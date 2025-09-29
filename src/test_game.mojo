@@ -1,3 +1,5 @@
+alias debug = 2
+
 import random
 from hashlib.hasher import Hasher
 
@@ -127,6 +129,17 @@ struct TestGame(TGame):
             return
 
 
+fn simple_negamax[G: TGame](mut game: G, max_depth: Int) -> Score:
+    if debug > 0:
+        print(">> simple_negamax")
+
+    var score = simple_negamax(game, 0, max_depth)
+
+    if debug > 0:
+        print("<< simple_negamax result:", score)
+        
+    return score
+
 fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
     @parameter
     fn greater(a: MoveScore[G.Move], b: MoveScore[G.Move]) -> Bool:
@@ -136,14 +149,17 @@ fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
     var moves = game.moves()
     sort[greater](moves)
     for move in moves:
-        print("|   " * depth, depth, "> ", move.move, sep="")
+        if debug > 1:
+            print("|   " * depth, depth, "> ", move.move, sep="")
         var new_score = move.score
         if depth < max_depth and not new_score.is_decisive():
             _ = game.play_move(move.move)
             new_score = -simple_negamax(game, depth + 1, max_depth)
             game.undo_move(move.move)
         score = max(score, new_score)
-        print("|   " * depth, depth, "< ", move.move, "; score ", score, sep="")
+        if debug > 1:
+            print("|   " * depth, depth, "< ", move.move, "; score ", score, sep="")
+
     return score
 
 

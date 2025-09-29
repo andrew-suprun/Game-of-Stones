@@ -1,3 +1,5 @@
+alias debug = 2
+
 from sys import env_get_int
 from time import perf_counter_ns
 
@@ -5,7 +7,6 @@ from score import Score
 from tree import TTree
 from game import TGame
 
-alias debug = env_get_int["SEARCH_DEBUG", 0]()
 
 fn search[Tree: TTree](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) -> Tree.Game.Move:
     @parameter
@@ -19,7 +20,7 @@ fn search[Tree: TTree](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) ->
         print("> search")
         for root in roots:
             print("  > root:", root[0], root[1])
-    
+
     var (move, score) = roots[0]
     if len(roots) == 1 or score.is_decisive():
         if debug > 0:
@@ -47,7 +48,7 @@ fn search[Tree: TTree](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) ->
 
     if debug > 1:
         print("search results: idx:", idx)
-        for (move, score) in roots:
+        for move, score in roots:
             print("  move", move, score)
 
     idx = max(1, idx)
@@ -59,6 +60,7 @@ fn search[Tree: TTree](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) ->
             best_move = move
 
     return best_move
+
 
 fn main():
     pass
