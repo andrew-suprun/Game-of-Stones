@@ -110,8 +110,14 @@ struct Node[Game: TGame](Copyable, Movable, Stringable, Writable):
         _ = game.play_move(child.move)
         _ = child.search(game, -upper, -lower, depth + 1, max_depth, deadline)
         game.undo_move(child.move)
-        self.score = -child.score
+        self.score = min(self.score, -child.score)
         upper = min(upper, self.score)
+
+        if self.score > upper:
+            if debug > 1:
+                print("|   " * depth + "<", depth, "first cut-off", child)
+            return False
+
         if debug > 1:
             print("|   " * depth + "<", depth, "first", child, "self", self, "|", lower, upper)
 
@@ -145,6 +151,10 @@ struct Node[Game: TGame](Copyable, Movable, Stringable, Writable):
                     _ = child.search(game, -upper, -lower, depth + 1, max_depth, deadline)
                     self.score = min(self.score, -child.score)
                     upper = min(upper, self.score)
+
+                # _ = child.search(game, -upper, -lower, depth + 1, max_depth, deadline)
+                # self.score = min(self.score, -child.score)
+                # upper = min(upper, self.score)
 
                 game.undo_move(child.move)
 

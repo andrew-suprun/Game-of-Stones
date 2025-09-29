@@ -5,3 +5,4 @@ U+26C3 ⛃ BLACK DRAUGHTS KING
 
 
 pixi run mojo run -I src -D ASSERT=all -D DEBUG2=2 src/test_game.mojo > log.log; less log.log
+= 1 zero h12-m7
