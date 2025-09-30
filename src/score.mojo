@@ -1,4 +1,4 @@
-from utils.numerics import FPUtils, isinf, isnan, inf
+from utils.numerics import FPUtils, isinf, isnan, inf, nan
 
 
 struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, Writable):
@@ -16,8 +16,12 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, W
     fn draw() -> Score:
         return Score(-0.0)
 
+    @staticmethod
+    fn no_score() -> Score:
+        return nan[DType.float32]()
+
     fn __init__(out self):
-        self.value = 0.0
+        self = Self.no_score()
 
     fn __init__(out self, value: Float32):
         self.value = value
@@ -41,6 +45,9 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, W
 
     fn is_decisive(self) -> Bool:
         return isinf(self.value) or self.is_draw()
+
+    fn is_set(self) -> Bool:
+        return not isnan(self.value)
 
     fn __add__(self, other: Self) -> Score:
         return Score(self.value + other.value)

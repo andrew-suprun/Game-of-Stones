@@ -1,66 +1,75 @@
-alias debug = 2
-
 from sys import env_get_int
 from time import perf_counter_ns
 
 from score import Score
 from tree import TTree
-from game import TGame
+from game import TGame, MoveScore
 
 
-fn search[Tree: TTree](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) -> Tree.Game.Move:
+alias debug = env_get_int["SEARCH_DEBUG", 0]()
+
+
+fn search[Tree: TTree](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) -> MoveScore[Tree.Game.Move]:
     @parameter
-    fn greater(a: (Tree.Game.Move, Score), b: (Tree.Game.Move, Score)) -> Bool:
-        return a[1] > b[1]
+    fn greater(a: MoveScore[Tree.Game.Move], b: MoveScore[Tree.Game.Move]) -> Bool:
+        return a.score > b.score
 
     var roots = game.moves()
-    debug_assert(len(roots) > 0)
     sort[greater](roots)
-    if debug > 0:
-        print("> search")
-        for root in roots:
-            print("  > root:", root[0], root[1])
-
-    var (move, score) = roots[0]
-    if len(roots) == 1 or score.is_decisive():
+    debug_assert(len(roots) > 0)
+    if len(roots) == 1 or roots[0].score.is_decisive():
         if debug > 0:
-            print("< decisive-1:", root[0], root[1])
-        return move
+            print("< decisive:", roots[0])
+        return roots[0]
 
     var deadline = perf_counter_ns() + 1_000_000 * duration_ms
     var max_depth = 1
-    var idx = 0
-    while perf_counter_ns() < deadline:
-        var (move, _) = roots[idx]
-        game.play_move(move)
-        roots[idx][1] = tree.search(game, max_depth, deadline)
-        game.undo_move(move)
-        idx += 1
-        if idx == len(roots):
-            max_depth += 1
-            idx = 0
-            sort[greater](roots)
-            var (move, score) = roots[0]
-            if score.is_decisive():
-                if debug > 0:
-                    print("< decisive-2:", root[0], root[1])
-                return move
+    while True:
+        for idx in range(len(roots)):
+            ref root = roots[idx]
+            var score = game.play_move(root.move)
+            if score.is_set() and not score.is_decisive():
+                root.score = -tree.search(game, max_depth, deadline)
+                game.undo_move(root.move)
+            if not root.score.is_set():
+                if debug > 1:
+                    print("search results: idx:", idx)
+                    for root in roots:
+                        print("  root", root)
+                var best_root = roots[0]
+                for i in range(idx):
+                    if best_root.score < roots[i].score:
+                        best_root = roots[i]
+                return best_root
+        max_depth += 1
+        sort[greater](roots)
+        if roots[0].score.is_decisive():
+            if debug > 0:
+                print("< decisive-2:", roots[0])
+            return roots[0]
 
-    if debug > 1:
-        print("search results: idx:", idx)
-        for move, score in roots:
-            print("  move", move, score)
 
-    idx = max(1, idx)
-    var (best_move, best_score) = roots[0]
-    for i in range(idx):
-        var (move, score) = roots[i]
-        if best_score < score:
-            best_score = score
-            best_move = move
 
-    return best_move
+@fieldwise_init
+struct Negamax[G: TGame](TTree):
+    alias Game = G
 
+    fn search(mut self, mut game: G, lower: Score, upper: Score, max_depth: Int, deadline: UInt) -> Score:
+        return self.search(game, 0, max_depth, deadline)
+
+    fn search(mut self, mut game: G, depth: Int, max_depth: Int, deadline: UInt) -> Score:
+        if perf_counter_ns() > deadline:
+            return Score.no_score()
+        var score = Score.loss()
+        var moves = game.moves()
+        for move in moves:
+            var new_score = move.score
+            if depth < max_depth and not new_score.is_decisive():
+                new_score = -self.search(game, depth + 1, max_depth, deadline)
+                game.undo_move(move.move)
+            score = max(score, new_score)
+
+        return score
 
 fn main():
     pass
