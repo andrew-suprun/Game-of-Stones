@@ -49,23 +49,26 @@ fn search[Tree: TTree](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) ->
             return roots[0]
 
 
+trait Negamax:
+    alias Game: TGame
+
+    fn search(mut self, mut game: Self.Game, lower: Score, upper: Score, max_depth: Int, deadline: UInt) -> Score:
+        ...
 
 @fieldwise_init
-struct Negamax[G: TGame](TTree):
+struct BasicNegamax[G: TGame](Negamax):
     alias Game = G
 
-    fn search(mut self, mut game: G, lower: Score, upper: Score, max_depth: Int, deadline: UInt) -> Score:
-        return self.search(game, 0, max_depth, deadline)
-
-    fn search(mut self, mut game: G, depth: Int, max_depth: Int, deadline: UInt) -> Score:
+    fn search(mut self, mut game: G, lower: Score, upper: Score, depth: Int, deadline: UInt) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
         var score = Score.loss()
         var moves = game.moves()
         for move in moves:
             var new_score = move.score
-            if depth < max_depth and not new_score.is_decisive():
-                new_score = -self.search(game, depth + 1, max_depth, deadline)
+            if depth > 0 and not new_score.is_decisive():
+                _ = game.play_move(move.move)
+                new_score = -self.search(game, lower, upper, depth - 1, deadline)
                 game.undo_move(move.move)
             score = max(score, new_score)
 
