@@ -95,7 +95,9 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, W
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
-        if isinf(self.value):
+        if not self.is_set():
+            writer.write("no-score")
+        elif isinf(self.value):
             if self.value > 0:
                 writer.write("win")
             else:

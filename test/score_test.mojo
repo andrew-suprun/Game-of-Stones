@@ -28,5 +28,5 @@ def test_compare_scores():
     assert_true(d > Score(-1))
     assert_true(l < Score(-1))
     assert_true(d == -d)
-    var zero = Score()
+    var zero = Score(0.0)
     assert_true(zero == -zero)
