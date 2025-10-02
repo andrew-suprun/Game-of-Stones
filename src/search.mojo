@@ -9,11 +9,15 @@ from game import TGame, MoveScore
 alias debug = env_get_int["SEARCH_DEBUG", 0]()
 
 
-fn search[Tree: Negamax](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) -> MoveScore[Tree.Game.Move]:
+fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: Int) -> MoveScore[Tree.Game.Move]:
     @parameter
     fn greater(a: MoveScore[Tree.Game.Move], b: MoveScore[Tree.Game.Move]) -> Bool:
         return a.score > b.score
 
+    if debug > 0:
+        print("> search")
+
+    var tree = Tree()
     var roots = game.moves()
     sort[greater](roots)
     debug_assert(len(roots) > 0)
@@ -23,16 +27,21 @@ fn search[Tree: Negamax](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) 
         return roots[0]
 
     var deadline = perf_counter_ns() + 1_000_000 * duration_ms
-    var max_depth = 1
+    var max_depth = 0
     var best_root = roots[0]
     while True:
+        if debug > 1:
+            print("== max-depth:", max_depth)
         var first_root = True
-        best_root.score = Score.loss()
+        var start = perf_counter_ns()
         for ref root in roots:
             var score = game.play_move(root.move)
             if score.is_set() and not score.is_decisive():
-                root.score = -tree.search(game, best_root.score, Score.win(), max_depth, deadline)
+                root.score = -tree.search(game, Score.loss(), best_root.score, max_depth, deadline)
                 game.undo_move(root.move)
+
+            if debug > 1:
+                print("== root:", root)
 
             if not root.score.is_set():
                 if debug > 0:
@@ -40,7 +49,11 @@ fn search[Tree: Negamax](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) 
                 return best_root
 
             if first_root or root.score > best_root.score:
+                first_root = False
                 best_root = root
+
+        if debug > 0:
+            print("depth", max_depth + 1, "move", best_root, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
         max_depth += 1
         sort[greater](roots)
@@ -50,7 +63,7 @@ fn search[Tree: Negamax](mut tree: Tree, mut game: Tree.Game, duration_ms: Int) 
             return roots[0]
 
 
-trait Negamax:
+trait Negamax(Defaultable):
     alias Game: TGame
 
     fn search(mut self, mut game: Self.Game, lower: Score, upper: Score, max_depth: Int, deadline: UInt) -> Score:
@@ -67,10 +80,10 @@ struct BasicNegamax[G: TGame](Negamax):
             var new_score = move.score
             if depth > 0 and not new_score.is_decisive():
                 _ = game.play_move(move.move)
-                new_score = -self.search(game, lower, upper, depth - 1, deadline)
+                new_score = -self.search(game, -upper, -lower, depth - 1, deadline)
                 game.undo_move(move.move)
-                if perf_counter_ns() > deadline:
-                    return Score.no_score()
+            if not new_score.is_set() or perf_counter_ns() > deadline:
+                return Score.no_score()
             score = max(score, new_score)
 
         return score
@@ -83,18 +96,14 @@ fn main() raises:
     var tree = BasicNegamax[Game]()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
+    var start = perf_counter_ns()
+    var deadline = start + 5_000_000_000
     for depth in range(1, 8):
-        var start = perf_counter_ns()
-        var deadline = start + 4_000_000_000
-        var score = tree.search(game, Score.loss(), Score.win(), depth, deadline)
-        print("depth", depth, "score", score, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
-        # print("----")
-        # var move2 = tree2.search(game, 20_000)
-        # print("nmax", move2)
+        var score1 = tree.search(game, Score.loss(), Score.win(), depth, deadline)
+        print("depth", depth, "score-1", score1, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+        start = perf_counter_ns()
+        if not score1.is_set():
+            break
 
-        # var result = game.play_move(move2.move)
-        # print(game)
-
-        # if result.is_decisive():
-        #     break
-        # break
+    var score2 = search[BasicNegamax[Game]](game, 5_000)
+    print("score-2", score2, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
