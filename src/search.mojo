@@ -15,7 +15,7 @@ fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: Int) -> MoveScore[Tre
         return a.score > b.score
 
     if debug > 0:
-        print("> search")
+        print("\n> ID search")
 
     var tree = Tree()
     var roots = game.moves()
@@ -88,22 +88,41 @@ struct BasicNegamax[G: TGame](Negamax):
 
         return score
 
+@fieldwise_init
+struct AlphaBetaNegamax[G: TGame](Negamax):
+    alias Game = G
+
+    fn search(mut self, mut game: G, lower: Score, upper: Score, depth: Int, deadline: UInt) -> Score:
+        var alpha = lower
+        var score = Score.loss()
+        var moves = game.moves()
+        for move in moves:
+            var new_score = move.score
+            if depth > 0 and not new_score.is_decisive():
+                _ = game.play_move(move.move)
+                new_score = -self.search(game, -upper, -alpha, depth - 1, deadline)
+                game.undo_move(move.move)
+            if not new_score.is_set() or perf_counter_ns() > deadline:
+                return Score.no_score()
+            score = max(score, new_score)
+            alpha = max(alpha, new_score)
+            if alpha > upper:
+                break
+
+        return score
+
 from connect6 import Connect6
 
 fn main() raises:
     alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
     var game = Game()
-    var tree = BasicNegamax[Game]()
     _ = game.play_move("j10")
     _ = game.play_move("i9-i10")
-    var start = perf_counter_ns()
-    var deadline = start + 5_000_000_000
-    for depth in range(1, 8):
-        var score1 = tree.search(game, Score.loss(), Score.win(), depth, deadline)
-        print("depth", depth, "score-1", score1, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
-        start = perf_counter_ns()
-        if not score1.is_set():
-            break
+    var score = search[BasicNegamax[Game]](game, 5_000)
+    print("basic-score", score)
 
-    var score2 = search[BasicNegamax[Game]](game, 5_000)
-    print("score-2", score2, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    game = Game()
+    _ = game.play_move("j10")
+    _ = game.play_move("i9-i10")
+    score = search[AlphaBetaNegamax[Game]](game, 5_000)
+    print("ab-score", score)
