@@ -49,6 +49,7 @@ fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: Int) -> MoveScore[Tre
             if not root.score.is_set():
                 if debug > 0:
                     print("< best move:", best_move, "depth", max_depth)
+                tree.stats()
                 return best_move
 
             if first_move or root.score > best_move.score:
@@ -72,6 +73,9 @@ trait Negamax(Defaultable):
     fn search(mut self, mut game: Self.Game, var alpha: Score, beta: Score, max_depth: Int, deadline: UInt) -> Score:
         ...
 
+    fn stats(self):
+        ...
+
 @fieldwise_init
 struct BasicNegamax[G: TGame](Negamax):
     alias Game = G
@@ -91,9 +95,17 @@ struct BasicNegamax[G: TGame](Negamax):
 
         return score
 
+    fn stats(self):
+        ...
+
 @fieldwise_init
 struct AlphaBetaNegamax[G: TGame](Negamax):
     alias Game = G
+
+    var full: Int
+
+    fn __init__(out self):
+        self.full = 0
 
     fn search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, deadline: UInt) -> Score:
         var score = Score.loss()
@@ -103,6 +115,7 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
             if depth > 0 and not new_score.is_decisive():
                 _ = game.play_move(move.move)
                 new_score = -self.search(game, -beta, -alpha, depth - 1, deadline)
+                self.full += 1
                 game.undo_move(move.move)
             if not new_score.is_set() or perf_counter_ns() > deadline:
                 return Score.no_score()
@@ -113,15 +126,89 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
 
         return score
 
+    fn stats(self):
+        print("full", self.full)
+
+@fieldwise_init
+struct PrincipalVariationNegamax[G: TGame](Negamax):
+    alias Game = G
+
+    var full: Int
+    var zero: Int
+
+    fn __init__(out self):
+        self.full = 0
+        self.zero = 0
+
+    fn search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, deadline: UInt) -> Score:
+        var score = Score.loss()
+        var moves = game.moves()
+        var full_window = True
+        var zero_window = False
+        for move in moves:
+            var new_score = move.score
+            if depth == 0 or new_score.is_decisive():
+                score = max(score, new_score)
+                alpha = max(alpha, new_score)
+                if alpha > beta:
+                    break
+                continue
+
+            _ = game.play_move(move.move)
+
+            if zero_window:
+                self.zero += 1
+                new_score = -self.search(game, -alpha, -alpha, depth - 1, deadline)
+                if not new_score.is_set() or perf_counter_ns() > deadline:
+                    game.undo_move(move.move)
+                    return Score.no_score()
+                full_window = new_score > alpha
+
+            if full_window:
+                self.full += 1
+                new_score = -self.search(game, -beta, -alpha, depth - 1, deadline)
+                if not new_score.is_set() or perf_counter_ns() > deadline:
+                    game.undo_move(move.move)
+                    return Score.no_score()
+                score = max(score, new_score)
+                alpha = max(alpha, new_score)
+                if alpha > beta:
+                    game.undo_move(move.move)
+                    break
+                zero_window = True
+                full_window = False
+
+            game.undo_move(move.move)
+
+        return score
+
+    fn stats(self):
+        print("zero", self.zero, "full", self.full)
+
+
 from connect6 import Connect6
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 
+
+# fn run[Tree: Negamax](title: StaticString) raises:
+#     game = Game()
+#     _ = game.play_move("j10")
+#     _ = game.play_move("j9-i10")
+#     print(title, "Negamax")
+#     move = search[Tree](game, 20_000)
+#     print("move", move)
+#     print()
+
+alias timeout = 10_000
+
 fn main() raises:
+    # run[BasicNegamax[Game]]("Basic")
+
     var game = Game()
     _ = game.play_move("j10")
     _ = game.play_move("j9-i10")
     print("Basic Negamax")
-    var move = search[BasicNegamax[Game]](game, 20_000)
+    var move = search[BasicNegamax[Game]](game, timeout)
     print("move", move)
     print()
 
@@ -129,33 +216,42 @@ fn main() raises:
     _ = game.play_move("j10")
     _ = game.play_move("j9-i10")
     print("Alpha-Beta Negamax")
-    move = search[AlphaBetaNegamax[Game]](game, 20_000)
+    move = search[AlphaBetaNegamax[Game]](game, timeout)
     print("move", move)
     print()
 
-    print("Basic Negamax")
-    for depth in range(1, 5):
-        game = Game()
-        _ = game.play_move("j10")
-        _ = game.play_move("j9-i10")
-
-        var tree = BasicNegamax[Game]()
-        var start = perf_counter_ns()
-        var score = tree.search(game, Score.loss(), Score.win(), depth, perf_counter_ns() + 20_000_000_000)
-        print("depth", depth, "score", score, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
-
+    game = Game()
+    _ = game.play_move("j10")
+    _ = game.play_move("j9-i10")
+    print("Principal Variation Negamax")
+    move = search[PrincipalVariationNegamax[Game]](game, timeout)
+    print("move", move)
     print()
 
-    print("Alpha-Beta Negamax")
-    for depth in range(1, 5):
-        game = Game()
-        _ = game.play_move("j10")
-        _ = game.play_move("j9-i10")
 
-        var tree = AlphaBetaNegamax[Game]()
-        var start = perf_counter_ns()
-        var score = tree.search(game, Score.loss(), Score.win(), depth, perf_counter_ns() + 20_000_000_000)
-        print("depth", depth, "score", score, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    # print("Basic Negamax")
+    # for depth in range(1, 5):
+    #     game = Game()
+    #     _ = game.play_move("j10")
+    #     _ = game.play_move("j9-i10")
 
-    print()
+    #     var tree = BasicNegamax[Game]()
+    #     var start = perf_counter_ns()
+    #     var score = tree.search(game, Score.loss(), Score.win(), depth, perf_counter_ns() + 20_000_000_000)
+    #     print("depth", depth, "score", score, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+
+    # print()
+
+    # print("Alpha-Beta Negamax")
+    # for depth in range(1, 5):
+    #     game = Game()
+    #     _ = game.play_move("j10")
+    #     _ = game.play_move("j9-i10")
+
+    #     var tree = AlphaBetaNegamax[Game]()
+    #     var start = perf_counter_ns()
+    #     var score = tree.search(game, Score.loss(), Score.win(), depth, perf_counter_ns() + 20_000_000_000)
+    #     print("depth", depth, "score", score, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+
+    # print()
 
