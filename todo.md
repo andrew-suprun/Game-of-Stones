@@ -1,4 +1,4 @@
-* bench ...Negamax searches
+* bench ...Negamax searches (zero window vs. full window)
 
 
 U+26C0 ⛀ WHITE DRAUGHTS MAN

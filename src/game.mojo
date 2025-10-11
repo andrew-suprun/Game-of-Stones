@@ -25,9 +25,15 @@ trait TMove(Defaultable, Hashable, ImplicitlyCopyable, Movable, Stringable, Writ
         ...
 
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, Movable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, Movable, Stringable, Representable, Writable):
     var move: Move
     var score: Score
+
+    fn __str__(self) -> String:
+        return String.write(self)
+
+    fn __repr__(self) -> String:
+        return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move)
