@@ -1,7 +1,7 @@
 from utils.numerics import FPUtils, isinf, isnan, inf, nan
 
 
-struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, Writable):
+struct Score(GreaterThanComparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, Writable):
     var value: Float32
 
     @staticmethod
@@ -64,29 +64,29 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, W
     fn __mul__(self, other: Self) -> Score:
         return Score(self.value * other.value)
 
-    fn __eq__(self, other: Self) -> Bool:
-        if self.is_win() and not other.is_win():
-            return False
-        if self.is_loss() and not other.is_loss():
-            return False
-        if self.is_draw() and not other.is_draw():
-            return False
-        return self.value == other.value
+    # fn __eq__(self, other: Self) -> Bool:
+    #     if self.is_win() and not other.is_win():
+    #         return False
+    #     if self.is_loss() and not other.is_loss():
+    #         return False
+    #     if self.is_draw() and not other.is_draw():
+    #         return False
+    #     return self.value == other.value
 
-    fn __ne__(self, other: Self) -> Bool:
-        return not (self == other)
+    # fn __ne__(self, other: Self) -> Bool:
+    #     return not (self == other)
 
-    fn __lt__(self, other: Self) -> Bool:
-        return self.value < other.value
+    # fn __lt__(self, other: Self) -> Bool:
+    #     return self.value < other.value
 
-    fn __le__(self, other: Self) -> Bool:
-        return self.value <= other.value
+    # fn __le__(self, other: Self) -> Bool:
+    #     return self.value <= other.value
 
     fn __gt__(self, other: Self) -> Bool:
         return self.value > other.value
 
-    fn __ge__(self, other: Self) -> Bool:
-        return self.value >= other.value
+    # fn __ge__(self, other: Self) -> Bool:
+    #     return self.value >= other.value
 
     fn __neg__(self) -> Self:
         return Score(-self.value) if self.value != 0.0 else self

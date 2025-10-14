@@ -1,5 +1,5 @@
 from random import shuffle
-from testing import assert_true
+from testing import assert_true, assert_false
 
 from score import Score
 from heap import heap_add
@@ -30,7 +30,7 @@ def test_heap():
 def test_scores():
     @parameter
     fn less(a: Score, b: Score) capturing -> Bool:
-        return a < b
+        return b < a
 
     var items = List[Score](capacity=6)
     heap_add[less](Score.loss(), items)
@@ -45,4 +45,4 @@ def test_scores():
         print(item)
     for i in range(1, 6):
         print(items[i // 2], items[i])
-        assert_true(items[i // 2] <= items[i])
+        assert_false(items[i // 2] > items[i])

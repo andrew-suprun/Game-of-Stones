@@ -90,7 +90,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
     fn _moves(mut self, mut moves: List[MoveScore[Move]]):
         @parameter
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
-            return a.score < b.score
+            return b.score > a.score
 
         var places = List[Place](capacity=max_places)
         self.board.places(self.turn, places)
@@ -123,7 +123,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     var board_value = self.board.board_value(materialize[values]())
                     if self.turn:
                         board_value = -board_value
-                    debug_assert(board_value == board_score + score1 + score2)
+                    debug_assert(board_value.value == board_score.value + score1.value + score2.value)
 
                 self.board.place_stone(place2, self.turn)
                 var max_opp_score = self.board.max_score(1 - self.turn)
