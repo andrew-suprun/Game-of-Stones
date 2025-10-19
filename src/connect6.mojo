@@ -93,7 +93,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
     fn _moves(mut self, mut moves: List[MoveScore[Move]]):
         @parameter
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
-            return b.score > a.score
+            return a.score < b.score
 
         var places = List[Place](capacity=max_places)
         self.board.places(self.turn, places)

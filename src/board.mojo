@@ -158,11 +158,11 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
     fn places(self, turn: Int, mut places: List[Place]):
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
-            r = self.score(b, first) > self.score(a, first)
+            r = self.score(a, first) < self.score(b, first)
 
         @parameter
         fn less_second(a: Place, b: Place, out r: Bool):
-            r = self.score(b, second) > self.score(a, second)
+            r = self.score(a, second) < self.score(b, second)
 
         if turn == first:
             for y in range(size):
