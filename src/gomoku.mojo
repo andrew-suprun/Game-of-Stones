@@ -31,6 +31,9 @@ struct Move(TMove):
     fn __str__(self) -> String:
         return String.write(self)
 
+    fn __repr__(self) -> String:
+        return String.write(self)
+
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
 

@@ -17,11 +17,11 @@ fn bench_full_window():
         pass
     var tree = AlphaBetaNegamax[C6]()
     var start = perf_counter_ns()
-    var score = tree.search(game, Score.loss(), Score.win(), 3, perf_counter_ns() + 20_000_000_000)
+    var score = tree._search(game, 23, 88, 0, 5, perf_counter_ns() + 20_000_000_000)
     print("score", score, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
 fn main() raises:
-    print("--- alpha-beta ---")
+    print("--- 23-88 ---")
     var report = benchmark.run[bench_full_window]()
-    print("full window", report.mean(benchmark.Unit.ms), "msec")
+    print("25-25", report.mean(benchmark.Unit.ms), "msec")
     report.print_full()
