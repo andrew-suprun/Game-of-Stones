@@ -16,7 +16,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
     fn __init__(out self):
         self.root = Self.MctsNode(MoveScore(G.Move(), Score(0)))
 
-    fn search(mut self, mut game: G, max_time_ms: Int) -> MoveScore[G.Move]:
+    fn search(mut self, mut game: G, max_time_ms: UInt) -> MoveScore[G.Move]:
         var moves = game.moves()
         debug_assert(len(moves) > 0)
         if len(moves) == 1:

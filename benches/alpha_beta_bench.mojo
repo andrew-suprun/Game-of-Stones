@@ -20,6 +20,7 @@ fn bench_full_window():
     var score = tree._search(game, 23, 88, 0, 5, perf_counter_ns() + 20_000_000_000)
     print("score", score, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
+
 fn main() raises:
     print("--- 23-88 ---")
     var report = benchmark.run[bench_full_window]()

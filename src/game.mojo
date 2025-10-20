@@ -20,12 +20,13 @@ trait TGame(Defaultable, Stringable, Writable):
         ...
 
 
-trait TMove(Defaultable, Hashable, ImplicitlyCopyable, Movable, Stringable, Representable, Writable):
+trait TMove(Defaultable, Hashable, ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
+
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, Movable, Stringable, Representable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
     var move: Move
     var score: Score
 

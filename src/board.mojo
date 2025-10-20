@@ -56,7 +56,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
     var _places: InlineArray[Int8, size * size]
     var _scores: InlineArray[Scores, size * size]
     var _score: Score
-    var _scores_history: List[(Int, Scores)]
+    var _scores_history: List[Tuple[Int, Scores]]
     var _scores_history_idices: List[Int]
     var _score_history: List[Score]
 
@@ -64,7 +64,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
         self._places = InlineArray[Int8, size * size](fill=0)
         self._scores = InlineArray[Scores, size * size](uninitialized=True)
         self._score = 0
-        self._scores_history = List[(Int, Scores)]()
+        self._scores_history = List[Tuple[Int, Scores]]()
         self._scores_history_idices = List[Int]()
         self._score_history = List[Score]()
 

@@ -7,11 +7,11 @@ from tree import TTree
 from game import TGame, MoveScore
 
 
-fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: Int) -> MoveScore[Tree.Game.Move]:
+fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: UInt) -> MoveScore[Tree.Game.Move]:
     var tree = Tree()
     var best_move = MoveScore[Tree.Game.Move](Tree.Game.Move(), Score.no_score())
     var depth = 1
-    var deadline = perf_counter_ns() + 1_000_000 * duration_ms
+    var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
     while perf_counter_ns() < deadline:
         var move = tree.search(game, depth, deadline)
         if not move.score.is_set():
@@ -25,6 +25,7 @@ trait Negamax(Defaultable):
 
     fn search(mut self, mut game: Self.Game, max_depth: Int, deadline: UInt) -> MoveScore[Self.Game.Move]:
         ...
+
 
 @fieldwise_init
 struct BasicNegamax[G: TGame](Negamax):
@@ -50,6 +51,7 @@ struct BasicNegamax[G: TGame](Negamax):
 
         return score
 
+
 @fieldwise_init
 struct AlphaBetaNegamax[G: TGame](Negamax):
     alias Game = G
@@ -59,7 +61,7 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
 
     fn __init__(out self):
         self.best_move = G.Move()
-        self.logger = Logger(prefix = "ab: ")
+        self.logger = Logger(prefix="ab: ")
 
     fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         var score = self._search(game, Score.loss(), Score.win(), 0, depth, deadline)
@@ -113,7 +115,7 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
 
     fn __init__(out self):
         self.best_move = G.Move()
-        self.logger = Logger(prefix = "pv: ")
+        self.logger = Logger(prefix="pv: ")
 
     fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         var score = self._search(game, Score.loss(), Score.win(), 0, depth, deadline)
@@ -168,7 +170,6 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                     alpha = score
                 continue
 
-
             # zero window
             self.logger.debug("|  " * depth, depth, " > zero-window-move: ", move.move, " [", alpha, ":", alpha, "]", sep="")
             _ = game.play_move(move.move)
@@ -176,7 +177,9 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
             best_score = max(best_score, score)
             if score > beta or score.is_win():
                 game.undo_move(move.move)
-                self.logger.debug("|  " * depth, depth, " < zero-window-move: ", move.move, " cut-score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep="")
+                self.logger.debug(
+                    "|  " * depth, depth, " < zero-window-move: ", move.move, " cut-score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep=""
+                )
                 self.logger.info("|  " * depth, depth, " << search: cut-zero-window-score: ", best_score, sep="")
                 return score
             if score < alpha or depth + 1 == max_depth:
@@ -191,7 +194,9 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
             game.undo_move(move.move)
             best_score = max(best_score, score)
             if score > beta or score.is_win():
-                self.logger.debug("|  " * depth, depth, " < full-window-move: ", move.move, " cut-score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep="")
+                self.logger.debug(
+                    "|  " * depth, depth, " < full-window-move: ", move.move, " cut-score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep=""
+                )
                 self.logger.info("|  " * depth, depth, " << search: cut-full-window-score: ", best_score, sep="")
                 return score
 
@@ -203,6 +208,7 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
 
 
 from connect6 import Connect6
+
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 
 
@@ -216,6 +222,7 @@ alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 #     print()
 
 alias timeout = 200
+
 
 fn main() raises:
     # run[BasicNegamax[Game]]("Basic")
@@ -243,7 +250,6 @@ fn main() raises:
     # move = search[PrincipalVariationNegamax[Game]](game, timeout)
     # print("move", move)
     # print()
-
 
     # print("Basic Negamax")
     # for depth in range(1, 5):

@@ -137,8 +137,9 @@ fn simple_negamax[G: TGame](mut game: G, max_depth: Int) -> Score:
 
     if debug > 0:
         print("<< simple_negamax result:", score)
-        
+
     return score
+
 
 fn simple_negamax[G: TGame](mut game: G, depth: Int, max_depth: Int) -> Score:
     @parameter
