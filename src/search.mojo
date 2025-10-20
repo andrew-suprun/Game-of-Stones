@@ -125,41 +125,42 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
             return a.score > b.score
 
         debug_assert(depth >= 1)
-        self.logger.debug("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
         var best_score = Score.loss()
         var moves = game.moves()
         if depth == max_depth:
             for move in moves:
                 best_score = max(best_score, move.score)
-            self.logger.debug("|  " * depth, depth, " << search: max-depth score: ", best_score, sep="")
+            # self.logger.debug("|  " * depth, depth, " << search: max-depth score: ", best_score, sep="")
             return best_score
 
         var first_move = True
-        var start = perf_counter_ns()
         sort[greater](moves)
+        self.logger.info("|  " * depth, depth, " >> search [", alpha, ":", beta, "] moves: ", len(moves), sep="")
         for move in moves:
             if move.score.is_decisive():
                 self.logger.debug("|  " * depth, depth, " <> decisive move: ", move, sep="")
                 if move.score.is_win():
-                    self.logger.debug("|  " * depth, depth, " < cut-winning-move [", alpha, ":", beta, "]", sep="")
+                    self.logger.debug("|  " * depth, depth, " < move: ", move.move, " cut-winning-move [", alpha, ":", beta, "]", sep="")
                     return move.score
                 best_score = max(best_score, move.score)
                 alpha = max(alpha, move.score)
                 continue
 
-            self.logger.debug("|  " * depth, depth, " > move: ", move.move, sep="")
+            var start = perf_counter_ns()
 
             # first move
             if first_move:
+                self.logger.debug("|  " * depth, depth, " > first-move: ", move.move, " [", alpha, ":", beta, "]", sep="")
                 _ = game.play_move(move.move)
                 var score = -self._search(game, -beta, -alpha, depth + 1, max_depth, deadline)
                 game.undo_move(move.move)
                 best_score = max(best_score, score)
                 if score > beta or score.is_win():
-                    self.logger.debug("|  " * depth, depth, " < cut-first-move [", alpha, ":", beta, "]", sep="")
+                    self.logger.debug("|  " * depth, depth, " < move: ", move.move, " cut-score: ", score, " [", alpha, ":", beta, "]", sep="")
+                    self.logger.info("|  " * depth, depth, " << search: cut-first-move-score: ", best_score, sep="")
                     return score
 
-                self.logger.debug("|  " * depth, depth, " < first-move-score: ", score, " alpha: ", alpha, sep="")
+                self.logger.debug("|  " * depth, depth, " < first-move: ", move.move, " score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep="")
                 if score < alpha:
                     continue
                 else:
@@ -169,32 +170,35 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
 
 
             # zero window
+            self.logger.debug("|  " * depth, depth, " > zero-window-move: ", move.move, " [", alpha, ":", alpha, "]", sep="")
             _ = game.play_move(move.move)
             var score = -self._search(game, -alpha, -alpha, depth + 1, max_depth, deadline)
             best_score = max(best_score, score)
             if score > beta or score.is_win():
                 game.undo_move(move.move)
-                self.logger.debug("|  " * depth, depth, " < cut-zero-window [", alpha, ":", beta, "]", sep="")
+                self.logger.debug("|  " * depth, depth, " < zero-window-move: ", move.move, " cut-score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep="")
+                self.logger.info("|  " * depth, depth, " << search: cut-zero-window-score: ", best_score, sep="")
                 return score
-            if not score > alpha or depth + 1 == max_depth:
+            if score < alpha or depth + 1 == max_depth:
                 game.undo_move(move.move)
-                self.logger.debug("|  " * depth, depth, " < zero-window-score: ", score, " alpha: ", alpha, sep="")
+                self.logger.debug("|  " * depth, depth, " < zero-window-move: ", move.move, " score: ", score, " [", alpha, ":", alpha, "] ns: ", perf_counter_ns() - start, sep="")
                 continue
-            else:
-                alpha = score
+            alpha = max(alpha, score)
 
             # full window
+            self.logger.debug("|  " * depth, depth, " > full-window-move: ", move.move, " [", alpha, ":", beta, "]", sep="")
             score = -self._search(game, -beta, -alpha, depth + 1, max_depth, deadline)
             game.undo_move(move.move)
             best_score = max(best_score, score)
-            alpha = max(alpha, score)
             if score > beta or score.is_win():
-                self.logger.debug("|  " * depth, depth, " < cut-full-window [", alpha, ":", beta, "]", sep="")
+                self.logger.debug("|  " * depth, depth, " < full-window-move: ", move.move, " cut-score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep="")
+                self.logger.info("|  " * depth, depth, " << search: cut-full-window-score: ", best_score, sep="")
                 return score
 
-            self.logger.debug("|  " * depth, depth, " < full-window-score: ", score, " alpha: ", alpha, sep="")
+            self.logger.debug("|  " * depth, depth, " < full-window-move: ", move.move, " score: ", score, " [", alpha, ":", beta, "] ns: ", perf_counter_ns() - start, sep="")
+            alpha = max(alpha, score)
 
-        self.logger.debug("|  " * depth, depth, " << search: score: ", best_score, " ns: ", perf_counter_ns() - start, sep="")
+        self.logger.info("|  " * depth, depth, " << search: score: ", best_score, sep="")
         return best_score
 
 
@@ -254,18 +258,18 @@ fn main() raises:
 
     # print()
 
-    print("Alpha-Beta Negamax")
-    for depth in range(3, 4):
-        game = Game()
-        _ = game.play_move("j10")
-        _ = game.play_move("j9-i10")
+    # print("Alpha-Beta Negamax")
+    # for depth in range(3, 4):
+    #     game = Game()
+    #     _ = game.play_move("j10")
+    #     _ = game.play_move("j9-i10")
 
-        var tree = AlphaBetaNegamax[Game]()
-        var start = perf_counter_ns()
-        var move = tree.search(game, depth, perf_counter_ns() + 20_000_000_000)
-        print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    #     var tree = AlphaBetaNegamax[Game]()
+    #     var start = perf_counter_ns()
+    #     var move = tree.search(game, depth, perf_counter_ns() + 20_000_000_000)
+    #     print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
-    print()
+    # print()
 
     print("Principal Variation Negamax")
     for depth in range(3, 4):
