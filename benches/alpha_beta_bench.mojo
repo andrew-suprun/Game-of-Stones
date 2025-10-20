@@ -23,6 +23,6 @@ fn bench_full_window():
 
 fn main() raises:
     print("--- 23-88 ---")
-    var report = benchmark.run[bench_full_window]()
-    print("25-25", report.mean(benchmark.Unit.ms), "msec")
-    report.print_full()
+    var report = benchmark.run[bench_full_window](0, 1, 3, 6)
+    print("23-88", report.mean(benchmark.Unit.ms), "msec")
+    # report.print_full()

@@ -35,6 +35,6 @@ fn bench_places():
 
 fn main() raises:
     print("--- board ---")
-    print("update_row ", benchmark.run[bench_update_row]().mean(Unit.ms))
-    print("place_stone", benchmark.run[bench_place_stone]().mean(Unit.ms))
-    print("places     ", benchmark.run[bench_places]().mean(Unit.ms))
+    print("update_row ", benchmark.run[bench_update_row](0, 1, 3, 6).mean(Unit.ms))
+    print("place_stone", benchmark.run[bench_place_stone](0, 1, 3, 6).mean(Unit.ms))
+    print("places     ", benchmark.run[bench_places](0, 1, 3, 6).mean(Unit.ms))

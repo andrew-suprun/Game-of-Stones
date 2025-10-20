@@ -84,9 +84,9 @@ fn rand() -> Float32:
 
 fn main() raises:
     print("--- basic ---")
-    print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt]().mean(Unit.ms))
-    print("InlineArray SIMD Int16", benchmark.run[benchInlineArraySIMDInt16]().mean(Unit.ms))
-    print("List        SIMD Int  ", benchmark.run[benchListSIMDInt]().mean(Unit.ms))
-    print("List        SIMD Int16", benchmark.run[benchListSIMDInt16]().mean(Unit.ms))
-    print("InlineArray SIMD Float", benchmark.run[benchInlineArraySIMDFloat]().mean(Unit.ms))
-    print("List        SIMD Float", benchmark.run[benchListSIMDFloat]().mean(Unit.ms))
+    print("InlineArray SIMD Int  ", benchmark.run[benchInlineArraySIMDInt](0, 1, 3, 6).mean(Unit.ms))
+    print("InlineArray SIMD Int16", benchmark.run[benchInlineArraySIMDInt16](0, 1, 3, 6).mean(Unit.ms))
+    print("List        SIMD Int  ", benchmark.run[benchListSIMDInt](0, 1, 3, 6).mean(Unit.ms))
+    print("List        SIMD Int16", benchmark.run[benchListSIMDInt16](0, 1, 3, 6).mean(Unit.ms))
+    print("InlineArray SIMD Float", benchmark.run[benchInlineArraySIMDFloat](0, 1, 3, 6).mean(Unit.ms))
+    print("List        SIMD Float", benchmark.run[benchListSIMDFloat](0, 1, 3, 6).mean(Unit.ms))

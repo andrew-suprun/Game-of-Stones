@@ -37,5 +37,5 @@ fn bench_expand():
 
 fn main() raises:
     print("--- gomoku ---")
-    print("moves ", benchmark.run[bench_moves]().mean(Unit.ms), "msec")
-    print("expand", benchmark.run[bench_expand]().mean(Unit.ms), "msec")
+    print("moves ", benchmark.run[bench_moves](0, 1, 3, 6).mean(Unit.ms), "msec")
+    print("expand", benchmark.run[bench_expand](0, 1, 3, 6).mean(Unit.ms), "msec")
