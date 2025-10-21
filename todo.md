@@ -1,33 +1,30 @@
-* bench ...Negamax searches (zero window vs. full window)
+Basic Negamax
+s:  depth 1 move h11-h12 5.0 time 0.001727
+s:  depth 2 move h11-i11 -2.0 time 0.034298
+s:  depth 3 move h11-i11 10.0 time 0.666576
+s:  depth 4 move h11-h12 6.0 time 12.77043
+move h11-h12 6.0
+
+Alpha-Beta Negamax
+s:  depth 1 move h11-h12 5.0 time 0.001688
+s:  depth 2 move h11-i11 -2.0 time 0.011321
+s:  depth 3 move h11-i11 10.0 time 0.126794
+s:  depth 4 move h11-h12 6.0 time 0.576606
+s:  depth 5 move k8-l8 24.0 time 2.542268
+s:  depth 6 move h11-h12 8.0 time 7.683382
+move h11-h12 8.0
+
+Principal Variation Negamax
+s:  depth 1 move h11-h12 5.0 time 0.001696
+s:  depth 2 move h11-i11 -2.0 time 0.014685
+s:  depth 3 move h11-i11 10.0 time 0.111044
+s:  depth 4 move h11-h12 6.0 time 0.60526
+s:  depth 5 move k8-l8 24.0 time 2.63815
+s:  depth 6 move h11-h12 8.0 time 6.247481
+move h11-h12 8.0
 
 
 U+26C0 ⛀ WHITE DRAUGHTS MAN
 U+26C1 ⛁ WHITE DRAUGHTS KING
 U+26C2 ⛂ BLACK DRAUGHTS MAN
 U+26C3 ⛃ BLACK DRAUGHTS KING
-
-
-Basic Negamax
-depth 1 score 5.0 time 0.001743
-depth 2 score -2.0 time 0.034224
-depth 3 score 10.0 time 0.672999
-depth 4 score 6.0 time 12.99393
-depth 5 score no-score time 120.000068
-
-Alpha-Beta Negamax
-depth 1 move `0 5.0 time 0.001721
-depth 2 move `0 -2.0 time 0.011367
-depth 3 move `0 10.0 time 0.127251
-depth 4 move `0 6.0 time 0.577447
-depth 5 move `0 24.0 time 2.583278
-depth 6 move `0 8.0 time 7.755973
-depth 7 move `0 14.0 time 49.806912
-
-Principal Variation Negamax
-depth 1 move `0 5.0 time 0.001701
-depth 2 move `0 -2.0 time 0.014784
-depth 3 move `0 10.0 time 0.112445
-depth 4 move `0 6.0 time 0.608599
-depth 5 move `0 24.0 time 2.670621
-depth 6 move `0 8.0 time 6.352943
-depth 7 move `0 14.0 time 37.310342
