@@ -1,3 +1,8 @@
+* set skipped nodes to Score.no_score()
+
+ab: 0 > move: i11-k8 [10.0:win]
+ab: 0 > node: i11-k8 [10.0:win]
+
 Basic Negamax
 s:  depth 1 move h11-h12 5.0 time 0.001727
 s:  depth 2 move h11-i11 -2.0 time 0.034298
@@ -22,6 +27,7 @@ s:  depth 4 move h11-h12 6.0 time 0.60526
 s:  depth 5 move k8-l8 24.0 time 2.63815
 s:  depth 6 move h11-h12 8.0 time 6.247481
 move h11-h12 8.0
+
 
 
 U+26C0 ⛀ WHITE DRAUGHTS MAN
