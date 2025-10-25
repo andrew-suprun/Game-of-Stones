@@ -1,7 +1,4 @@
 from hashlib.hasher import Hasher
-from builtin.sort import sort
-from utils.numerics import isinf
-from memory import memcpy
 
 from score import Score
 from heap import heap_add

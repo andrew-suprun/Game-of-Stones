@@ -1,8 +1,5 @@
 * set skipped nodes to Score.no_score()
 
-ab: 0 > move: i11-k8 [10.0:win]
-ab: 0 > node: i11-k8 [10.0:win]
-
 Basic Negamax
 s:  depth 1 move h11-h12 5.0 time 0.001727
 s:  depth 2 move h11-i11 -2.0 time 0.034298
