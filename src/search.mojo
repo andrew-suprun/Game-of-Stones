@@ -159,7 +159,8 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
 struct AlphaBetaNegamaxWithMemory[G: TGame](Negamax):
     alias Game = G
 
-    var roots: List[AlphaBetaNode[G]]
+    var root: AlphaBetaNode[G]
+    var best_move: MoveScore[G.Move]
     var logger: Logger
 
     @staticmethod
@@ -167,39 +168,14 @@ struct AlphaBetaNegamaxWithMemory[G: TGame](Negamax):
         return "Alpha-Beta Negamax With Memory"
 
     fn __init__(out self):
-        self.roots = List[AlphaBetaNode[G]]()
+        self.root = AlphaBetaNode[G](G.Move(), Score.no_score())
+        self.best_move = MoveScore[G.Move](G.Move(), Score.no_score())
         self.logger = Logger(prefix="ab+: ")
 
     fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
-        if not self.roots:
-            var moves = game.moves()
-            debug_assert(len(moves) > 0)
-            self.roots = List[AlphaBetaNode[G]](capacity = len(moves))
-            for move in moves:
-                self.roots.append(AlphaBetaNode[G](move.move, move.score))
-        
-        sort[AlphaBetaNode[G].greater](self.roots)
-        var alpha = Score.loss()
-        var best_move = MoveScore[G.Move](self.roots[0].move, Score.loss())
-
-        for ref root in self.roots:
-            self.logger.trace("0 > move: ", root.move, " score: ", root.score, " [", alpha, ":", Score.win(), "]", sep="")
-            if not root.score.is_decisive():
-                _ = game.play_move(root.move)
-                root.score = -root._search(game, Score.loss(), -alpha, 1, depth, deadline, self.logger)
-                game.undo_move(root.move)
-            self.logger.trace("0 < move: ", root.move, " score: ", root.score, " best-score: ", best_move.score, " [", alpha, ":win]", sep="")
-            self.logger.debug("     move: ", root.move, " score: ", root.score, " best-score: ", best_move.score, " [", alpha, ":win]", sep="")
-
-            if not root.score.is_set():
-                return best_move
-
-            if root.score > alpha:
-                alpha = root.score
-                best_move = MoveScore[G.Move](root.move, root.score)
-                self.logger.debug("best-move:", root.move, "score:", root.score)
-
-        return best_move
+        debug_assert(depth >= 1)
+        _ = self.root._search(game, Score.loss(), Score.win(), 0, depth, deadline, self.best_move, self.logger)
+        return self.best_move
 
 
 struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
@@ -212,7 +188,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, mut best_move: MoveScore[G.Move], logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
@@ -243,7 +219,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                 logger.trace("|  " * depth, depth, " > move: ", node.move, " score ", node.score, " [", alpha, ":", beta, "]", sep="")
             if not node.score.is_decisive():
                 _ = game.play_move(node.move)
-                node.score = -node._search(game, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                node.score = -node._search(game, -beta, -alpha, depth + 1, max_depth, deadline, best_move, logger)
                 game.undo_move(node.move)
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " < move: ", node.move, " score ", node.score, " best-score ", best_score, " [", alpha, ":", beta, "]", sep="")
@@ -256,6 +232,8 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
             if node.score > best_score:
                 best_score = node.score
+                if depth == 0:
+                    best_move = MoveScore(node.move, node.score)
 
             if best_score > beta:
                 if depth <= trace_level:
