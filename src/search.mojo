@@ -61,12 +61,10 @@ struct BasicNegamax[G: TGame](Negamax):
 
         var best_score = Score.loss()
         var moves = game.moves()
-        debug_assert(len(moves) > 0)
-        sort[Self.greater](moves)
         for ref move in moves:
             if depth < max_depth and not move.score.is_decisive():
                 _ = game.play_move(move.move)
-                move.score = -self._search(game, -beta, -alpha, depth + 1, max_depth, deadline)
+                move.score = -self._search(game, Score.loss(), Score.win(), depth + 1, max_depth, deadline)
                 game.undo_move(move.move)
             if not move.score.is_set():
                 return Score.no_score()
@@ -75,12 +73,7 @@ struct BasicNegamax[G: TGame](Negamax):
                 best_score = move.score
                 if depth == 0:
                     self.best_move = move.move
-                    print("best-move", self.best_move, best_score)
             
-            alpha = max(alpha, move.score)
-            if alpha > beta:
-                break
-
         return best_score
 
     @staticmethod
@@ -92,7 +85,7 @@ struct BasicNegamax[G: TGame](Negamax):
 struct AlphaBetaNegamax[G: TGame](Negamax):
     alias Game = G
 
-    var best_move: G.Move
+    var best_move: MoveScore[G.Move]
     var logger: Logger
 
     @staticmethod
@@ -100,37 +93,13 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
         return "Alpha-Beta Negamax"
 
     fn __init__(out self):
-        self.best_move = G.Move()
+        self.best_move = MoveScore[G.Move](G.Move(), Score.no_score())
         self.logger = Logger(prefix="ab: ")
 
     fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         debug_assert(depth >= 1)
-        var moves = game.moves()
-        debug_assert(len(moves) > 0)
-        
-        sort[Self.greater](moves)
-        var alpha = Score.loss()
-        var best_move = MoveScore[G.Move](moves[0].move, Score.loss())
-
-        for ref move in moves:
-            self.logger.trace("0 > move: ", move.move, " score: ", move.score, " [", alpha, ":", Score.win(), "]", sep="")
-            if not move.score.is_decisive():
-                _ = game.play_move(move.move)
-                move.score = -self._search(game, Score.loss(), -alpha, 1, depth, deadline)
-                game.undo_move(move.move)
-            self.logger.trace("0 < move: ", move.move, " score: ", move.score, " best-score: ", best_move.score, " [", alpha, ":win]", sep="")
-            self.logger.info("     move: ", move.move, " score: ", move.score, " best-score: ", best_move.score, " [", alpha, ":win]", sep="")
-
-            if not move.score.is_set():
-                return best_move
-
-            if move.score > alpha:
-                alpha = move.score
-                best_move = MoveScore[G.Move](move.move, move.score)
-                self.logger.info("best-move:", move.move, "score:", move.score)
-
-        return best_move
-
+        _ = self._search(game, Score.loss(), Score.win(), 0, depth, deadline)
+        return self.best_move
 
     fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
         if perf_counter_ns() > deadline:
@@ -167,6 +136,8 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
 
             if move.score > best_score:
                 best_score = move.score
+                if depth == 0:
+                    self.best_move = move
 
             if best_score > beta:
                 if depth <= trace_level:
@@ -218,7 +189,7 @@ struct AlphaBetaNegamaxWithMemory[G: TGame](Negamax):
                 root.score = -root._search(game, Score.loss(), -alpha, 1, depth, deadline, self.logger)
                 game.undo_move(root.move)
             self.logger.trace("0 < move: ", root.move, " score: ", root.score, " best-score: ", best_move.score, " [", alpha, ":win]", sep="")
-            self.logger.info("     move: ", root.move, " score: ", root.score, " best-score: ", best_move.score, " [", alpha, ":win]", sep="")
+            self.logger.debug("     move: ", root.move, " score: ", root.score, " best-score: ", best_move.score, " [", alpha, ":win]", sep="")
 
             if not root.score.is_set():
                 return best_move
@@ -226,7 +197,7 @@ struct AlphaBetaNegamaxWithMemory[G: TGame](Negamax):
             if root.score > alpha:
                 alpha = root.score
                 best_move = MoveScore[G.Move](root.move, root.score)
-                self.logger.info("best-move:", root.move, "score:", root.score)
+                self.logger.debug("best-move:", root.move, "score:", root.score)
 
         return best_move
 
@@ -447,18 +418,18 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
 from connect6 import Connect6
 
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
-# alias timeout = 15_000
-alias timeout = 4_000
+alias timeout = 15_000
+# alias timeout = 4_000
 
 
 fn main() raises:
-    # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # print("Basic Negamax")
-    # var move = search[BasicNegamax[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move("j10")
+    _ = game.play_move("j9-i10")
+    print("Basic Negamax")
+    var move = search[BasicNegamax[Game]](game, timeout)
+    print("move", move)
+    print()
 
     game = Game()
     _ = game.play_move("j10")
