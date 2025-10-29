@@ -338,14 +338,12 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
             if state == zero_window:
                 b = alpha
             if depth <= trace_level:
-                self.logger.trace("|  " * depth, depth, " > move: ", move.move, " [", alpha, ":", b, "] beta: ", beta, " state: ", state, sep="")
+                self.logger.trace("|  " * depth, depth, " > move: ", move.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, sep="")
                     
             move.score = -self._search(game, -b, -alpha, depth + 1, max_depth, deadline)
 
             if depth <= trace_level:
-                self.logger.trace("|  " * depth, depth, " < move: ", move.move, " [", alpha, ":", b, "] beta: ", beta, " state: ", state, " score: ", move.score, sep="")
-
-            best_score = max(best_score, move.score)
+                self.logger.trace("|  " * depth, depth, " < move: ", move.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, "; score: ", move.score, sep="")
 
             if not move.score.is_set():
                 game.undo_move(move.move)
@@ -354,25 +352,32 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                 return Score.no_score()
 
             if move.score < alpha:
-                game.undo_move(move.move)
                 state = zero_window
+                game.undo_move(move.move)
                 idx = idx + 1
-            elif move.score < beta:
+            elif move.score <= beta:
                 alpha = move.score
-                if state != zero_window:
-                    game.undo_move(move.move)
+                if move.score > best_score:
                     if depth == 0:
                         self.best_move = move
                         self.logger.debug("best move", self.best_move)
-                    idx = idx + 1
-                    state = zero_window
-                else:
+                if state == zero_window:
                     state = full_window
+                else:
+                    state = zero_window
+                    game.undo_move(move.move)
+                    idx = idx + 1
             else:
-                game.undo_move(move.move)
-                if depth <= trace_level:
-                    self.logger.trace("|  " * depth, depth, " << search: cut-score: ", move.score, sep="")
-                return move.score
+                if state == zero_window:
+                    state = full_window
+                    alpha = move.score
+                else:
+                    if depth <= trace_level:
+                        self.logger.trace("|  " * depth, depth, " << search: cut-score: ", move.score, sep="")
+                    game.undo_move(move.move)
+                    return move.score
+            best_score = max(best_score, move.score)
+
 
         if depth <= trace_level:
             self.logger.trace("|  " * depth, depth, " << search: score: ", best_score, sep="")
@@ -424,7 +429,7 @@ fn main() raises:
     # print("move", move)
     # print()
 
-    alias depth = 1
+    alias depth = 5
 
     # print("Basic Negamax")
     # game = Game()
