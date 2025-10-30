@@ -356,26 +356,22 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                 game.undo_move(move.move)
                 idx = idx + 1
             elif move.score <= beta:
-                alpha = move.score
                 if move.score > best_score:
                     if depth == 0:
                         self.best_move = move
                         self.logger.debug("best move", self.best_move)
-                if state == zero_window:
+                if state == zero_window and move.score > alpha:
                     state = full_window
                 else:
                     state = zero_window
                     game.undo_move(move.move)
                     idx = idx + 1
+                alpha = move.score
             else:
-                if state == zero_window:
-                    state = full_window
-                    alpha = move.score
-                else:
-                    if depth <= trace_level:
-                        self.logger.trace("|  " * depth, depth, " << search: cut-score: ", move.score, sep="")
-                    game.undo_move(move.move)
-                    return move.score
+                if depth <= trace_level:
+                    self.logger.trace("|  " * depth, depth, " << search: cut-score: ", move.score, sep="")
+                game.undo_move(move.move)
+                return move.score
             best_score = max(best_score, move.score)
 
 
@@ -405,29 +401,29 @@ fn main() raises:
     # print("move", move)
     # print()
 
-    # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # print("Alpha-Beta Negamax")
-    # move = search[AlphaBetaNegamax[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move("j10")
+    _ = game.play_move("j9-i10")
+    print("Alpha-Beta Negamax")
+    move = search[AlphaBetaNegamax[Game]](game, timeout)
+    print("move", move)
+    print()
 
-    # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # print("Principal Variation Negamax")
-    # move = search[PrincipalVariationNegamax[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move("j10")
+    _ = game.play_move("j9-i10")
+    print("Principal Variation Negamax")
+    move = search[PrincipalVariationNegamax[Game]](game, timeout)
+    print("move", move)
+    print()
 
-    # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # print("Alpha-Beta Negamax With Memory")
-    # move = search[AlphaBetaNegamaxWithMemory[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move("j10")
+    _ = game.play_move("j9-i10")
+    print("Alpha-Beta Negamax With Memory")
+    move = search[AlphaBetaNegamaxWithMemory[Game]](game, timeout)
+    print("move", move)
+    print()
 
     alias depth = 5
 
@@ -443,28 +439,27 @@ fn main() raises:
 
     # print()
 
-    print("Alpha-Beta Negamax: depth", depth)
-    game = Game()
-    _ = game.play_move("j10")
-    _ = game.play_move("j9-i10")
-    print(game)
+    # print("Alpha-Beta Negamax: depth", depth)
+    # game = Game()
+    # _ = game.play_move("j10")
+    # _ = game.play_move("j9-i10")
 
-    var ab_tree = AlphaBetaNegamax[Game]()
-    start = perf_counter_ns()
-    var ab_move = ab_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
-    print("depth", depth, "move", ab_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    # var ab_tree = AlphaBetaNegamax[Game]()
+    # start = perf_counter_ns()
+    # var ab_move = ab_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
+    # print("depth", depth, "move", ab_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
-    print()
+    # print()
 
-    print("Principal Variation Negamax")
-    game = Game()
-    _ = game.play_move("j10")
-    _ = game.play_move("j9-i10")
+    # print("Principal Variation Negamax")
+    # game = Game()
+    # _ = game.play_move("j10")
+    # _ = game.play_move("j9-i10")
 
-    var pv_tree = PrincipalVariationNegamax[Game]()
-    start = perf_counter_ns()
-    var pv_move = pv_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
-    print("depth", depth, "move", pv_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    # var pv_tree = PrincipalVariationNegamax[Game]()
+    # start = perf_counter_ns()
+    # var pv_move = pv_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
+    # print("depth", depth, "move", pv_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
 
@@ -474,7 +469,7 @@ fn main() raises:
     # _ = game.play_move("j9-i10")
 
     # var abm_tree = AlphaBetaNegamaxWithMemory[Game]()
-    # var start = perf_counter_ns()
+    # start = perf_counter_ns()
     # var abm_move = abm_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
     # print("depth", depth, "move", abm_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
