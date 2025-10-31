@@ -144,6 +144,8 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
                 if depth == 0:
                     self.best_move = move
                     self.logger.debug("best move", self.best_move)
+            elif depth == 0:
+                self.logger.debug("     move", move)
 
             if best_score > beta:
                 if depth <= trace_level:
@@ -239,6 +241,8 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                 if depth == 0:
                     best_move = MoveScore(child.move, child.score)
                     logger.debug("best move", best_move)
+            elif depth == 0:
+                logger.debug("     move", child.move, child.score)
 
             if best_score > beta:
                 if depth <= trace_level:
@@ -354,6 +358,8 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                 return Score.no_score()
 
             if move.score < alpha:
+                if depth == 0:
+                    self.logger.debug("     move", move)
                 state = zero_window
                 game.undo_move(move.move)
                 idx = idx + 1
@@ -362,6 +368,8 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                     if depth == 0:
                         self.best_move = move
                         self.logger.debug("best move", self.best_move)
+                elif depth == 0:
+                    self.logger.debug("     move", move)
                 if state == zero_window and move.score > alpha:
                     state = full_window
                 else:
@@ -487,6 +495,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 return Score.no_score()
 
             if child.score < alpha:
+                if depth == 0:
+                    logger.debug("     move", child.move, child.score)
                 state = zero_window
                 game.undo_move(child.move)
                 idx = idx + 1
@@ -495,6 +505,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                     if depth == 0:
                         best_move = MoveScore[G.Move](child.move, child.score)
                         logger.debug("best move", best_move)
+                elif depth == 0:
+                    logger.debug("     move", child.move, child.score)
                 if state == zero_window and child.score > alpha:
                     state = full_window
                 else:
@@ -538,39 +550,39 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 from connect6 import Connect6
 
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
-alias timeout = 300_000
+# alias timeout = 300_000
 # alias timeout = 120_000
 # alias timeout = 60_000
-# alias timeout = 200
+alias timeout = 1000
 
 alias m1 = "j10"
 alias m2 = "j9-i11"
 
 fn main() raises:
-    # game = Game()
-    # _ = game.play_move(m1)
-    # _ = game.play_move(m2)
-    # print(game)
-    # print("Basic Negamax")
-    # var move = search[BasicNegamax[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move(m1)
+    _ = game.play_move(m2)
+    print(game)
+    print("Basic Negamax")
+    var move = search[BasicNegamax[Game]](game, timeout)
+    print("move", move)
+    print()
 
-    # game = Game()
-    # _ = game.play_move(m1)
-    # _ = game.play_move(m2)
-    # print("Alpha-Beta Negamax")
-    # move = search[AlphaBetaNegamax[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move(m1)
+    _ = game.play_move(m2)
+    print("Alpha-Beta Negamax")
+    move = search[AlphaBetaNegamax[Game]](game, timeout)
+    print("move", move)
+    print()
 
-    # game = Game()
-    # _ = game.play_move(m1)
-    # _ = game.play_move(m2)
-    # print("Principal Variation Negamax")
-    # move = search[PrincipalVariationNegamax[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move(m1)
+    _ = game.play_move(m2)
+    print("Principal Variation Negamax")
+    move = search[PrincipalVariationNegamax[Game]](game, timeout)
+    print("move", move)
+    print()
 
     game = Game()
     _ = game.play_move(m1)
