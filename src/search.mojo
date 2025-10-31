@@ -23,6 +23,10 @@ fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: UInt) -> MoveScore[Tr
             break
         logger.info("#", Tree.name(), "depth", depth, "move", move, "time", (perf_counter_ns() - start) / 1_000_000_000)
         best_move = move
+        var score = game.play_move(move.move)
+        game.undo_move(move.move)
+        if score.is_decisive():
+            break
         depth += 1
     return best_move
 
@@ -222,7 +226,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                 child.score = -child._search(game, -beta, -alpha, depth + 1, max_depth, deadline, best_move, logger)
                 game.undo_move(child.move)
                 if depth <= trace_level:
-                    logger.trace("|  " * depth, depth, " < move: ", child.move, " ", child.score, " [", alpha, ":", beta, "]", sep="")
+                    logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", beta, "] score: ", child.score, sep="")
             else:
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " < decisive move: ", child.move, " ", child.score, " [", alpha, ":", beta, "]", sep="")
@@ -318,7 +322,7 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                     if depth <= trace_level:
                         self.logger.trace("|  " * depth, depth, " << search: win", sep="")
                     if depth == 0:
-                        best_move = MoveScore[G.Move](child.move, Score.win())
+                        self.best_move = MoveScore[G.Move](move.move, Score.win())
                     return Score.win()
                 if move.score > beta:
                     if depth <= trace_level:
@@ -534,132 +538,112 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 from connect6 import Connect6
 
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
-alias timeout = 60_000
+alias timeout = 300_000
+# alias timeout = 120_000
+# alias timeout = 60_000
 # alias timeout = 200
 
+alias m1 = "j10"
+alias m2 = "j9-i11"
 
 fn main() raises:
     # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # _ = game.play_move("i11-k9")
-    # _ = game.play_move("j11-k10")
-    # _ = game.play_move("h12-i12")
-    # _ = game.play_move("k11-l11")
-    # # print(game)
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
+    # print(game)
     # print("Basic Negamax")
     # var move = search[BasicNegamax[Game]](game, timeout)
     # print("move", move)
     # print()
 
     # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # _ = game.play_move("i11-k9")
-    # _ = game.play_move("j11-k10")
-    # _ = game.play_move("h12-i12")
-    # _ = game.play_move("k11-l11")
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
     # print("Alpha-Beta Negamax")
     # move = search[AlphaBetaNegamax[Game]](game, timeout)
     # print("move", move)
     # print()
 
     # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # _ = game.play_move("i11-k9")
-    # _ = game.play_move("j11-k10")
-    # _ = game.play_move("h12-i12")
-    # _ = game.play_move("k11-l11")
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
     # print("Principal Variation Negamax")
     # move = search[PrincipalVariationNegamax[Game]](game, timeout)
     # print("move", move)
     # print()
 
-    # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-    # _ = game.play_move("i11-k9")
-    # _ = game.play_move("j11-k10")
-    # _ = game.play_move("h12-i12")
-    # _ = game.play_move("k11-l11")
-    # print("Alpha-Beta Negamax With Memory")
-    # move = search[AlphaBetaNegamaxWithMemory[Game]](game, timeout)
-    # print("move", move)
-    # print()
+    game = Game()
+    _ = game.play_move(m1)
+    _ = game.play_move(m2)
+    print("Alpha-Beta Negamax With Memory")
+    move = search[AlphaBetaNegamaxWithMemory[Game]](game, timeout)
+    print("move", move)
+    print()
 
     game = Game()
-    _ = game.play_move("j10")
-    _ = game.play_move("j9-i10")
-    _ = game.play_move("i11-k9")
-    _ = game.play_move("j11-k10")
-    _ = game.play_move("h12-i12")
-    _ = game.play_move("k11-l11")
-    print(game)
+    _ = game.play_move(m1)
+    _ = game.play_move(m2)
     print("Principal Variation Negamax With Memory")
     move = search[PrincipalVariationNegamaxWithMemory[Game]](game, timeout)
     print("move", move)
     print()
 
+    ########################
+
     alias depth = 6
 
     # print("Basic Negamax")
     # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
     # var tree = BasicNegamax[Game]()
-    # var start = perf_counter_ns()
-    # var move = tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
+    # start = perf_counter_ns()
+    # move = tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
     # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
 
     # print("Alpha-Beta Negamax: depth", depth)
     # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
     # var ab_tree = AlphaBetaNegamax[Game]()
     # start = perf_counter_ns()
-    # var ab_move = ab_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
-    # print("depth", depth, "move", ab_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
-
-    # print()
-
-    # print("Principal Variation Negamax")
-    # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-
-    # var pv_tree = PrincipalVariationNegamax[Game]()
-    # start = perf_counter_ns()
-    # var pv_move = pv_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
-    # print("depth", depth, "move", pv_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    # move = ab_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
+    # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
 
     # print("Alpha-Beta Negamax With Memory: depth", depth)
     # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
     # var abm_tree = AlphaBetaNegamaxWithMemory[Game]()
     # start = perf_counter_ns()
-    # var abm_move = abm_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
-    # print("depth", depth, "move", abm_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    # move = abm_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
+    # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+
+    # print()
+
+    # print("Principal Variation Negamax")
+    # game = Game()
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
+    # var pv_tree = PrincipalVariationNegamax[Game]()
+    # start = perf_counter_ns()
+    # move = pv_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
+    # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
 
     # print("Principal Variation Negamax With Memory: depth", depth)
     # game = Game()
-    # _ = game.play_move("j10")
-    # _ = game.play_move("j9-i10")
-
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
+    # # print(game)
     # var pvm_tree = PrincipalVariationNegamaxWithMemory[Game]()
     # start = perf_counter_ns()
-    # var pvm_move = pvm_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
-    # print("depth", depth, "move", pvm_move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
+    # move = pvm_tree.search(game, depth, perf_counter_ns() + 120_000_000_000)
+    # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
-    # print()
-
+    
