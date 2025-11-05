@@ -22,61 +22,61 @@
    a b c d e f g h i j k l m n o p q r s
 
 Basic Negamax
-s:  # Basic Negamax depth 1 move i9-k11 20.0 time 0.001752
-s:  # Basic Negamax depth 2 move k11-l10 18.0 time 0.034656
-s:  # Basic Negamax depth 3 move h8-i9 21.0 time 0.684984
-s:  # Basic Negamax depth 4 move i9-k11 11.0 time 13.26406
-s:  # Basic Negamax depth 5 move i9-k11 33.0 time 250.300854
+s:  # Basic Negamax depth 1 move i9-k11 20.0 time 0.001511
+s:  # Basic Negamax depth 2 move k11-l10 18.0 time 0.029459
+s:  # Basic Negamax depth 3 move h8-i9 21.0 time 0.611697
+s:  # Basic Negamax depth 4 move i9-k11 11.0 time 11.460596
+s:  # Basic Negamax depth 5 move i9-k11 33.0 time 213.554924
 move i9-k11 33.0
 
 Alpha-Beta Negamax
-s:  # Alpha-Beta Negamax depth 1 move i9-k11 20.0 time 0.001728
-s:  # Alpha-Beta Negamax depth 2 move k11-l10 18.0 time 0.008307
-s:  # Alpha-Beta Negamax depth 3 move h8-i9 21.0 time 0.069505
-s:  # Alpha-Beta Negamax depth 4 move i9-k11 11.0 time 0.229924
-s:  # Alpha-Beta Negamax depth 5 move i9-k11 33.0 time 1.460372
-s:  # Alpha-Beta Negamax depth 6 move h8-i9 4.0 time 6.917614
-s:  # Alpha-Beta Negamax depth 7 move i9-k11 15.0 time 30.941389
-s:  # Alpha-Beta Negamax depth 8 move i9-k11 17.0 time 83.811951
-s:  # Alpha-Beta Negamax depth 9 move i9-k11 17.0 time 176.558819
-move i9-k11 17.0
+s:  # Alpha-Beta Negamax depth 1 move i9-k11 20.0 time 0.001448
+s:  # Alpha-Beta Negamax depth 2 move k11-l10 18.0 time 0.007305
+s:  # Alpha-Beta Negamax depth 3 move h8-i9 21.0 time 0.059117
+s:  # Alpha-Beta Negamax depth 4 move i9-k11 11.0 time 0.196
+s:  # Alpha-Beta Negamax depth 5 move i9-k11 33.0 time 1.250322
+s:  # Alpha-Beta Negamax depth 6 move h8-i9 4.0 time 5.989397
+s:  # Alpha-Beta Negamax depth 7 move i9-k11 15.0 time 26.417151
+s:  # Alpha-Beta Negamax depth 8 move i9-k11 17.0 time 71.367365
+s:  # Alpha-Beta Negamax depth 9 move i9-k11 13.0 time 194.711779
+move i9-k11 13.0
 
 Principal Variation Negamax
-s:  # Principal Variation Negamax depth 1 move i9-k11 20.0 time 0.0017
-s:  # Principal Variation Negamax depth 2 move k11-l10 18.0 time 0.010192
-s:  # Principal Variation Negamax depth 3 move h8-i9 21.0 time 0.083664
-s:  # Principal Variation Negamax depth 4 move i9-k11 11.0 time 0.191323
-s:  # Principal Variation Negamax depth 5 move i9-k11 33.0 time 1.420178
-s:  # Principal Variation Negamax depth 6 move h8-i9 4.0 time 7.420145
-s:  # Principal Variation Negamax depth 7 move i9-k11 15.0 time 22.147059
-s:  # Principal Variation Negamax depth 8 move i9-k11 17.0 time 61.678217
-s:  # Principal Variation Negamax depth 9 move i9-k11 17.0 time 207.047177
-move i9-k11 17.0
+s:  # Principal Variation Negamax depth 1 move i9-k11 20.0 time 0.001451
+s:  # Principal Variation Negamax depth 2 move k11-l10 18.0 time 0.008981
+s:  # Principal Variation Negamax depth 3 move h8-i9 21.0 time 0.097733
+s:  # Principal Variation Negamax depth 4 move i9-k11 11.0 time 0.178301
+s:  # Principal Variation Negamax depth 5 move i9-k11 33.0 time 1.234455
+s:  # Principal Variation Negamax depth 6 move h8-i9 4.0 time 6.316742
+s:  # Principal Variation Negamax depth 7 move i9-k11 15.0 time 19.099104
+s:  # Principal Variation Negamax depth 8 move i9-k11 17.0 time 51.941215
+s:  # Principal Variation Negamax depth 9 move i9-k11 13.0 time 221.122912
+move i9-k11 13.0
 
 Alpha-Beta Negamax With Memory
-s:  # Alpha-Beta Negamax With Memory depth 1 move i9-k11 20.0 time 0.001724
-s:  # Alpha-Beta Negamax With Memory depth 2 move k11-l10 18.0 time 0.00666
-s:  # Alpha-Beta Negamax With Memory depth 3 move h8-i9 21.0 time 0.061448
-s:  # Alpha-Beta Negamax With Memory depth 4 move i9-k11 11.0 time 0.166847
-s:  # Alpha-Beta Negamax With Memory depth 5 move i9-k11 33.0 time 0.847454
-s:  # Alpha-Beta Negamax With Memory depth 6 move h8-i9 4.0 time 3.121922
-s:  # Alpha-Beta Negamax With Memory depth 7 move i9-k11 15.0 time 16.245117
-s:  # Alpha-Beta Negamax With Memory depth 8 move i9-k11 17.0 time 16.869164
-s:  # Alpha-Beta Negamax With Memory depth 9 move i9-k11 13.0 time 91.4936
-s:  # Alpha-Beta Negamax With Memory depth 10 move i9-k11 11.0 time 171.185761
+s:  # Alpha-Beta Negamax With Memory depth 1 move i9-k11 20.0 time 0.002124
+s:  # Alpha-Beta Negamax With Memory depth 2 move k11-l10 18.0 time 0.009156
+s:  # Alpha-Beta Negamax With Memory depth 3 move h8-i9 21.0 time 0.09043
+s:  # Alpha-Beta Negamax With Memory depth 4 move i9-k11 11.0 time 0.145185
+s:  # Alpha-Beta Negamax With Memory depth 5 move i9-k11 33.0 time 0.725906
+s:  # Alpha-Beta Negamax With Memory depth 6 move h8-i9 4.0 time 2.686021
+s:  # Alpha-Beta Negamax With Memory depth 7 move i9-k11 15.0 time 13.882117
+s:  # Alpha-Beta Negamax With Memory depth 8 move i9-k11 17.0 time 14.147553
+s:  # Alpha-Beta Negamax With Memory depth 9 move i9-k11 13.0 time 79.21218
+s:  # Alpha-Beta Negamax With Memory depth 10 move i9-k11 11.0 time 189.099197
 move i9-k11 11.0
 
 Principal Variation Negamax With Memory
-s:  # Principal Variation Negamax With Memory depth 1 move i9-k11 20.0 time 0.001708
-s:  # Principal Variation Negamax With Memory depth 2 move k11-l10 18.0 time 0.006667
-s:  # Principal Variation Negamax With Memory depth 3 move h8-i9 21.0 time 0.048998
-s:  # Principal Variation Negamax With Memory depth 4 move i9-k11 11.0 time 0.161699
-s:  # Principal Variation Negamax With Memory depth 5 move i9-k11 33.0 time 0.7616
-s:  # Principal Variation Negamax With Memory depth 6 move h8-i9 4.0 time 2.814572
-s:  # Principal Variation Negamax With Memory depth 7 move i9-k11 15.0 time 13.36183
-s:  # Principal Variation Negamax With Memory depth 8 move i9-k11 17.0 time 14.170193
-s:  # Principal Variation Negamax With Memory depth 9 move i9-k11 13.0 time 73.233325
-s:  # Principal Variation Negamax With Memory depth 10 move h8-i9 12.0 time 195.439035
+s:  # Principal Variation Negamax With Memory depth 1 move i9-k11 20.0 time 0.001458
+s:  # Principal Variation Negamax With Memory depth 2 move k11-l10 18.0 time 0.00589
+s:  # Principal Variation Negamax With Memory depth 3 move h8-i9 21.0 time 0.043765
+s:  # Principal Variation Negamax With Memory depth 4 move i9-k11 11.0 time 0.13899
+s:  # Principal Variation Negamax With Memory depth 5 move i9-k11 33.0 time 0.653001
+s:  # Principal Variation Negamax With Memory depth 6 move h8-i9 4.0 time 2.407216
+s:  # Principal Variation Negamax With Memory depth 7 move i9-k11 15.0 time 11.300668
+s:  # Principal Variation Negamax With Memory depth 8 move i9-k11 17.0 time 12.004115
+s:  # Principal Variation Negamax With Memory depth 9 move i9-k11 13.0 time 62.736942
+s:  # Principal Variation Negamax With Memory depth 10 move h8-i9 12.0 time 210.707869
 move h8-i9 12.0
 
 

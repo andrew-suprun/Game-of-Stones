@@ -1,19 +1,16 @@
 from score import Score
 
 
-trait TGame(Defaultable, Stringable, Writable):
+trait TGame(Copyable, Defaultable, Movable, Stringable, Writable):
     alias Move: TMove
 
-    fn moves(mut self) -> List[MoveScore[Self.Move]]:
+    fn moves(self) -> List[MoveScore[Self.Move]]:
         ...
 
-    fn move(mut self) -> MoveScore[Self.Move]:
+    fn move(self) -> MoveScore[Self.Move]:
         ...
 
     fn play_move(mut self, move: Self.Move) -> Score:
-        ...
-
-    fn undo_move(mut self, move: Self.Move):
         ...
 
     fn hash(self) -> Int:

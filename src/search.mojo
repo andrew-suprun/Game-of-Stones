@@ -10,7 +10,7 @@ from game import TGame, MoveScore
 alias trace_level = env_get_int["TRACE_LEVEL", 8]()
 
 
-fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: UInt) -> MoveScore[Tree.Game.Move]:
+fn search[Tree: Negamax](game: Tree.Game, duration_ms: UInt) -> MoveScore[Tree.Game.Move]:
     var logger = Logger(prefix="s:  ")
     var tree = Tree()
     var best_move = MoveScore[Tree.Game.Move](Tree.Game.Move(), Score.no_score())
@@ -23,8 +23,8 @@ fn search[Tree: Negamax](mut game: Tree.Game, duration_ms: UInt) -> MoveScore[Tr
             break
         logger.info("#", Tree.name(), "depth", depth, "move", move, "time", (perf_counter_ns() - start) / 1_000_000_000)
         best_move = move
-        var score = game.play_move(move.move)
-        game.undo_move(move.move)
+        var g = game.copy()
+        var score = g.play_move(move.move)
         if score.is_decisive():
             break
         depth += 1
@@ -38,7 +38,7 @@ trait Negamax(Defaultable):
     fn name() -> StaticString:
         ...
 
-    fn search(mut self, mut game: Self.Game, max_depth: Int, deadline: UInt) -> MoveScore[Self.Game.Move]:
+    fn search(mut self, game: Self.Game, max_depth: Int, deadline: UInt) -> MoveScore[Self.Game.Move]:
         ...
     
 
@@ -54,22 +54,22 @@ struct BasicNegamax[G: TGame](Negamax):
     fn __init__(out self):
         self.best_move = G.Move()
 
-    fn search(mut self, mut game: Self.Game, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
+    fn search(mut self, game: Self.Game, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         debug_assert(depth >= 1)
         var score = self._search(game, Score.loss(), Score.win(), 0, depth, deadline)
         return MoveScore(self.best_move, score)
 
-    fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
+    fn _search(mut self, game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
         var best_score = Score.loss()
         var moves = game.moves()
         for ref move in moves:
+            var g = game.copy()
             if depth < max_depth and not move.score.is_decisive():
-                _ = game.play_move(move.move)
-                move.score = -self._search(game, Score.loss(), Score.win(), depth + 1, max_depth, deadline)
-                game.undo_move(move.move)
+                _ = g.play_move(move.move)
+                move.score = -self._search(g, Score.loss(), Score.win(), depth + 1, max_depth, deadline)
             if not move.score.is_set():
                 return Score.no_score()
             
@@ -100,12 +100,12 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
         self.best_move = MoveScore[G.Move](G.Move(), Score.no_score())
         self.logger = Logger(prefix="ab: ")
 
-    fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
+    fn search(mut self, game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         debug_assert(depth >= 1)
         _ = self._search(game, Score.loss(), Score.win(), 0, depth, deadline)
         return self.best_move
 
-    fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
+    fn _search(mut self, game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
@@ -122,12 +122,12 @@ struct AlphaBetaNegamax[G: TGame](Negamax):
             self.logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
 
         for ref move in moves:
+            var g = game.copy()
             if depth <= trace_level:
                 self.logger.trace("|  " * depth, depth, " > move: ", move.move, " [", alpha, ":", beta, "]", sep="")
             if not move.score.is_decisive():
-                _ = game.play_move(move.move)
-                move.score = -self._search(game, -beta, -alpha, depth + 1, max_depth, deadline)
-                game.undo_move(move.move)
+                _ = g.play_move(move.move)
+                move.score = -self._search(g, -beta, -alpha, depth + 1, max_depth, deadline)
                 if depth <= trace_level:
                     self.logger.trace("|  " * depth, depth, " < move: ", move.move, " [", alpha, ":", beta, "]", " score: ", move.score, sep="")
             else:
@@ -180,7 +180,7 @@ struct AlphaBetaNegamaxWithMemory[G: TGame](Negamax):
         self.best_move = MoveScore[G.Move](G.Move(), Score.no_score())
         self.logger = Logger(prefix="ab+: ")
 
-    fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
+    fn search(mut self, game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         debug_assert(depth >= 1)
         _ = self.root._search(game, Score.loss(), Score.win(), 0, depth, deadline, self.best_move, self.logger)
         return self.best_move
@@ -196,7 +196,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, mut best_move: MoveScore[G.Move], logger: Logger) -> Score:
+    fn _search(mut self, game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, mut best_move: MoveScore[G.Move], logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
@@ -221,12 +221,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                 child.score = Score.no_score()
 
         for ref child in self.children:
+            var g = game.copy()
             if depth <= trace_level:
                 logger.trace("|  " * depth, depth, " > move: ", child.move, " [", alpha, ":", beta, "]", sep="")
             if not child.score.is_decisive():
-                _ = game.play_move(child.move)
-                child.score = -child._search(game, -beta, -alpha, depth + 1, max_depth, deadline, best_move, logger)
-                game.undo_move(child.move)
+                _ = g.play_move(child.move)
+                child.score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, best_move, logger)
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", beta, "] score: ", child.score, sep="")
             else:
@@ -294,12 +294,12 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
         self.best_move = MoveScore[G.Move](G.Move(), Score.no_score())
         self.logger = Logger(prefix="pv: ")
 
-    fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
+    fn search(mut self, game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         debug_assert(depth >= 1)
         _ = self._search(game, Score.loss(), Score.win(), 0, depth, deadline)
         return self.best_move
 
-    fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
+    fn _search(mut self, game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
@@ -314,6 +314,7 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
 
         var idx = 0
         var state = first_move
+        var g = game.copy()
         if depth <= trace_level:
             self.logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
 
@@ -337,8 +338,11 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                 idx += 1
                 continue
 
+            if state == zero_window:
+                g = game.copy()
+
             if state != full_window:
-                _ = game.play_move(move.move)
+                _ = g.play_move(move.move)
 
             var b = beta
             if state == zero_window:
@@ -346,13 +350,12 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
             if depth <= trace_level:
                 self.logger.trace("|  " * depth, depth, " > move: ", move.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, sep="")
                     
-            move.score = -self._search(game, -b, -alpha, depth + 1, max_depth, deadline)
+            move.score = -self._search(g, -b, -alpha, depth + 1, max_depth, deadline)
 
             if depth <= trace_level:
                 self.logger.trace("|  " * depth, depth, " < move: ", move.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, "; score: ", move.score, sep="")
 
             if not move.score.is_set():
-                game.undo_move(move.move)
                 if depth <= trace_level:
                     self.logger.trace("|  " * depth, depth, " << search: timeout", sep="")
                 return Score.no_score()
@@ -361,7 +364,6 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                 if depth == 0:
                     self.logger.debug("     move", move)
                 state = zero_window
-                game.undo_move(move.move)
                 idx = idx + 1
             elif move.score <= beta:
                 if move.score > best_score:
@@ -374,13 +376,11 @@ struct PrincipalVariationNegamax[G: TGame](Negamax):
                     state = full_window
                 else:
                     state = zero_window
-                    game.undo_move(move.move)
                     idx = idx + 1
                 alpha = move.score
             else:
                 if depth <= trace_level:
                     self.logger.trace("|  " * depth, depth, " << search: cut-score: ", move.score, sep="")
-                game.undo_move(move.move)
                 return move.score
             best_score = max(best_score, move.score)
 
@@ -411,7 +411,7 @@ struct PrincipalVariationNegamaxWithMemory[G: TGame](Negamax):
         self.best_move = MoveScore[G.Move](G.Move(), Score.no_score())
         self.logger = Logger(prefix="pv+: ")
 
-    fn search(mut self, mut game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
+    fn search(mut self, game: G, depth: Int, deadline: UInt) -> MoveScore[G.Move]:
         debug_assert(depth >= 1)
         _ = self.root._search(game, Score.loss(), Score.win(), 0, depth, deadline, self.best_move, self.logger)
         return self.best_move
@@ -427,7 +427,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, mut game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, mut best_move: MoveScore[G.Move], logger: Logger) -> Score:
+    fn _search(mut self, game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, mut best_move: MoveScore[G.Move], logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
@@ -454,6 +454,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
         var idx = 0
         var state = first_move
+        var g = game.copy()
         while idx < len(self.children):
             ref child = self.children[idx]
             if child.score.is_decisive():
@@ -474,8 +475,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 idx += 1
                 continue
 
+            if state == zero_window:
+                g = game.copy()
+
             if state != full_window:
-                _ = game.play_move(child.move)
+                _ = g.play_move(child.move)
 
             var b = beta
             if state == zero_window:
@@ -483,13 +487,12 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             if depth <= trace_level:
                 logger.trace("|  " * depth, depth, " > move: ", child.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, sep="")
                     
-            child.score = -child._search(game, -b, -alpha, depth + 1, max_depth, deadline, best_move, logger)
+            child.score = -child._search(g, -b, -alpha, depth + 1, max_depth, deadline, best_move, logger)
 
             if depth <= trace_level:
                 logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, "; score: ", child.score, sep="")
 
             if not child.score.is_set():
-                game.undo_move(child.move)
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " << search: timeout", sep="")
                 return Score.no_score()
@@ -498,7 +501,6 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 if depth == 0:
                     logger.debug("     move", child.move, child.score)
                 state = zero_window
-                game.undo_move(child.move)
                 idx = idx + 1
             elif child.score <= beta:
                 if child.score > best_score:
@@ -511,13 +513,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                     state = full_window
                 else:
                     state = zero_window
-                    game.undo_move(child.move)
                     idx = idx + 1
                 alpha = child.score
             else:
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " << search: cut-score: ", child.score, sep="")
-                game.undo_move(child.move)
                 return child.score
             best_score = max(best_score, child.score)
 
@@ -553,10 +553,10 @@ alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 # from gomoku import Gomoku
 # alias Game = Gomoku[size=19, max_places=20, max_plies=100]
 
-# alias timeout = 300_000
+alias timeout = 300_000
 # alias timeout = 120_000
 # alias timeout = 60_000
-alias timeout = 1000
+# alias timeout = 1000
 
 alias m1 = "j10"
 alias m2 = "j9-i11"
@@ -570,32 +570,32 @@ fn main() raises:
     print("Basic Negamax")
     var move = search[BasicNegamax[Game]](game, timeout)
     print("move", move)
-    print()
 
+    print()
     game = Game()
     _ = game.play_move(m1)
     _ = game.play_move(m2)
     print("Alpha-Beta Negamax")
     move = search[AlphaBetaNegamax[Game]](game, timeout)
     print("move", move)
-    print()
 
+    print()
     game = Game()
     _ = game.play_move(m1)
     _ = game.play_move(m2)
     print("Principal Variation Negamax")
     move = search[PrincipalVariationNegamax[Game]](game, timeout)
     print("move", move)
-    print()
 
+    print()
     game = Game()
     _ = game.play_move(m1)
     _ = game.play_move(m2)
     print("Alpha-Beta Negamax With Memory")
     move = search[AlphaBetaNegamaxWithMemory[Game]](game, timeout)
     print("move", move)
-    print()
 
+    print()
     game = Game()
     _ = game.play_move(m1)
     _ = game.play_move(m2)
@@ -606,7 +606,7 @@ fn main() raises:
 
     ########################
 
-    alias depth = 6
+    alias depth = 1
 
     # print("Basic Negamax")
     # game = Game()
@@ -618,7 +618,6 @@ fn main() raises:
     # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
-
     # print("Alpha-Beta Negamax: depth", depth)
     # game = Game()
     # _ = game.play_move(m1)
@@ -629,7 +628,6 @@ fn main() raises:
     # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
-
     # print("Alpha-Beta Negamax With Memory: depth", depth)
     # game = Game()
     # _ = game.play_move(m1)
@@ -640,7 +638,6 @@ fn main() raises:
     # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
-
     # print("Principal Variation Negamax")
     # game = Game()
     # _ = game.play_move(m1)
@@ -651,7 +648,6 @@ fn main() raises:
     # print("depth", depth, "move", move, "time", Float64(perf_counter_ns() - start) / 1_000_000_000)
 
     # print()
-
     # print("Principal Variation Negamax With Memory: depth", depth)
     # game = Game()
     # _ = game.play_move(m1)
