@@ -1,4 +1,5 @@
 from hashlib.hasher import Hasher
+from memory import memcpy
 
 from score import Score
 from heap import heap_add
@@ -44,7 +45,7 @@ struct Place(Copyable, Defaultable, EqualityComparable, Hashable, LessThanCompar
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writable):
+struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
     alias white = Int8(win_stones)
@@ -53,17 +54,11 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
     var _places: InlineArray[Int8, size * size]
     var _scores: InlineArray[Scores, size * size]
     var _score: Score
-    var _scores_history: List[Tuple[Int, Scores]]
-    var _scores_history_idices: List[Int]
-    var _score_history: List[Score]
 
     fn __init__(out self):
         self._places = InlineArray[Int8, size * size](fill=0)
         self._scores = InlineArray[Scores, size * size](uninitialized=True)
         self._score = 0
-        self._scores_history = List[Tuple[Int, Scores]]()
-        self._scores_history_idices = List[Int]()
-        self._score_history = List[Score]()
 
         for y in range(size):
             var v = 1 + min(win_stones - 1, y, size - 1 - y, size - win_stones)
@@ -75,9 +70,21 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
                 var total = v + h + t1 + t2
                 self.setvalues(Place(x, y), Scores(total, total))
 
+    fn __copyinit__(out self, existing: Self, /):
+        self._places = InlineArray[Int8, size * size](uninitialized=True)
+        memcpy(dest=self._places.unsafe_ptr(), src=existing._places.unsafe_ptr(), count=size * size)
+
+        self._scores = InlineArray[Scores, size * size](uninitialized=True)
+        memcpy(dest=self._scores.unsafe_ptr(), src=existing._scores.unsafe_ptr(), count=size * size)
+
+        self._score = existing._score
+
+    fn __moveinit__(out self, deinit existing: Self):
+        self._places = existing._places^
+        self._scores = existing._scores^
+        self._score = existing._score^
+
     fn place_stone(mut self, place: Place, turn: Int):
-        self._score_history.append(self._score)
-        self._scores_history_idices.append(len(self._scores_history))
         var scores = self.value_table[turn]
 
         var x = Int(place.x)
@@ -124,7 +131,6 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
         var stones = Int8(0)
 
         for _ in range(n + win_stones - 1):
-            self._scores_history.append((offset, self._scores[offset]))
             offset += delta
 
         offset = start
@@ -143,14 +149,6 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Stringable, Writ
                     self._scores[offset + j * delta] += scores
             stones -= self._places[offset]
             offset += delta
-
-    fn remove_stone(mut self, place: Place):
-        self._score = self._score_history.pop()
-        var idx = self._scores_history_idices.pop()
-        while idx < len(self._scores_history):
-            var scores = self._scores_history.pop()
-            self._scores[scores[0]] = scores[1]
-        self[Int(place.x), Int(place.y)] = Self.empty
 
     fn places(self, turn: Int, mut places: List[Place]):
         @parameter

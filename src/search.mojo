@@ -548,8 +548,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
 
 from connect6 import Connect6
-
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+
+# from gomoku import Gomoku
+# alias Game = Gomoku[size=19, max_places=20, max_plies=100]
+
 # alias timeout = 300_000
 # alias timeout = 120_000
 # alias timeout = 60_000
@@ -557,6 +560,7 @@ alias timeout = 1000
 
 alias m1 = "j10"
 alias m2 = "j9-i11"
+# alias m2 = "i8"
 
 fn main() raises:
     game = Game()
