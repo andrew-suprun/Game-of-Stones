@@ -30,7 +30,8 @@ def test_heap():
 def test_scores():
     @parameter
     fn less(a: Score, b: Score) capturing -> Bool:
-        return b < a
+        print(a, b, a < b)
+        return a < b
 
     var items = List[Score](capacity=6)
     heap_add[less](Score.loss(), items)
@@ -45,4 +46,8 @@ def test_scores():
         print(item)
     for i in range(1, 6):
         print(items[i // 2], items[i])
-        assert_false(items[i // 2] > items[i])
+        assert_true(items[i // 2] <= items[i])
+
+def main():
+    test_heap()
+    test_scores()

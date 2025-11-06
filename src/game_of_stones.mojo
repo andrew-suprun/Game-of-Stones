@@ -1,13 +1,10 @@
 from time import perf_counter_ns
 from python import Python, PythonObject
 import random
-import sys
 
-from score import Score
 from board import Place
 from tree import TTree
-from game import TGame, TMove
-from gomoku import Gomoku
+from game import TGame
 
 alias board_size = 19
 alias window_height = 1000

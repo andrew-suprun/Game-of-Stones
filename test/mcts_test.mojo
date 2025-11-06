@@ -44,11 +44,11 @@ struct TestGame(TGame):
     fn __init__(out self):
         self.move_id = 1
 
-    fn __copyinit__(out self, other: Self, /):
-        self.move_id = other.move_id
+    fn __copyinit__(out self, existing: Self, /):
+        self.move_id = existing.move_id
 
-    fn copy(self) -> Self:
-        return self
+    fn __moveinit__(out self, deinit existing: Self):
+        self.move_id = existing.move_id
 
     fn score(self) -> Score:
         return Score(random_float64(-10, 10))
@@ -88,7 +88,7 @@ struct TestGame(TGame):
         pass
 
 
-def test_tree():
+def main():
     seed(3)
     var g = TestGame()
     var t = Mcts[TestGame, 6]()
