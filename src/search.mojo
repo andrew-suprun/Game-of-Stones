@@ -547,11 +547,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             return False
 
 
-from connect6 import Connect6
-alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+# from connect6 import Connect6
+# alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 
-# from gomoku import Gomoku
-# alias Game = Gomoku[size=19, max_places=20, max_plies=100]
+from gomoku import Gomoku
+alias Game = Gomoku[size=19, max_places=20, max_plies=100]
 
 alias timeout = 300_000
 # alias timeout = 120_000
@@ -559,41 +559,41 @@ alias timeout = 300_000
 # alias timeout = 1000
 
 alias m1 = "j10"
-alias m2 = "j9-i11"
-# alias m2 = "i8"
+# alias m2 = "j9-i11"
+alias m2 = "j9"
 
 fn main() raises:
-    game = Game()
-    _ = game.play_move(m1)
-    _ = game.play_move(m2)
-    print(game)
-    print("Basic Negamax")
-    var move = search[BasicNegamax[Game]](game, timeout)
-    print("move", move)
+    # game = Game()
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
+    # print(game)
+    # print("Basic Negamax")
+    # var move = search[BasicNegamax[Game]](game, timeout)
+    # print("move", move)
 
-    print()
-    game = Game()
-    _ = game.play_move(m1)
-    _ = game.play_move(m2)
-    print("Alpha-Beta Negamax")
-    move = search[AlphaBetaNegamax[Game]](game, timeout)
-    print("move", move)
+    # print()
+    # game = Game()
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
+    # print("Alpha-Beta Negamax")
+    # move = search[AlphaBetaNegamax[Game]](game, timeout)
+    # print("move", move)
 
-    print()
-    game = Game()
-    _ = game.play_move(m1)
-    _ = game.play_move(m2)
-    print("Principal Variation Negamax")
-    move = search[PrincipalVariationNegamax[Game]](game, timeout)
-    print("move", move)
+    # print()
+    # game = Game()
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
+    # print("Principal Variation Negamax")
+    # move = search[PrincipalVariationNegamax[Game]](game, timeout)
+    # print("move", move)
 
-    print()
-    game = Game()
-    _ = game.play_move(m1)
-    _ = game.play_move(m2)
-    print("Alpha-Beta Negamax With Memory")
-    move = search[AlphaBetaNegamaxWithMemory[Game]](game, timeout)
-    print("move", move)
+    # print()
+    # game = Game()
+    # _ = game.play_move(m1)
+    # _ = game.play_move(m2)
+    # print("Alpha-Beta Negamax With Memory")
+    # move = search[AlphaBetaNegamaxWithMemory[Game]](game, timeout)
+    # print("move", move)
 
     print()
     game = Game()

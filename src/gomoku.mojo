@@ -95,15 +95,6 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
             return Score.draw()
         return self.board._score
 
-    fn undo_move(mut self, move: Move):
-        self.board.remove_stone(move._place)
-        if self.turn == first:
-            self._hash -= hash(move)
-        else:
-            self._hash += hash(move)
-        self.turn = 1 - self.turn
-        self.plies -= 1
-
     fn hash(self) -> Int:
         return Int(self._hash)
 
