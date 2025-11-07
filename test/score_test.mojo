@@ -3,7 +3,7 @@ from testing import assert_true, assert_false
 from score import Score
 
 
-def test_compare_scores():
+def main():
     var w = Score.win()
     var l = Score.loss()
     var d = Score.draw()

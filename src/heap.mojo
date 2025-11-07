@@ -1,4 +1,4 @@
-fn heap_add[T: Movable & Copyable & Writable, //, less: fn (T, T, out Bool) capturing](item: T, mut items: List[T]):
+fn heap_add[T: Movable & Copyable & Writable, //, less: fn (T, T) capturing -> Bool](item: T, mut items: List[T]):
     if len(items) == items.capacity:
         if not less(items[0], item):
             return
