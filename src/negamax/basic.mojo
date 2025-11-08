@@ -2,9 +2,9 @@ from time import perf_counter_ns
 
 from score import Score
 from game import TGame, MoveScore
-from negamax import Negamax
+from negamax import Search
 
-struct Basic[G: TGame](Negamax):
+struct Basic[G: TGame](Search):
     alias Game = G
 
     var best_move: G.Move

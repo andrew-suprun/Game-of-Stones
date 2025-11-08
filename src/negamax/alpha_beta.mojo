@@ -3,11 +3,11 @@ from sys import env_get_int
 
 from score import Score
 from game import TGame, MoveScore
-from negamax import Negamax
+from negamax import Search
 
 alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
-struct AlphaBeta[G: TGame](Negamax):
+struct AlphaBeta[G: TGame](Search):
     alias Game = G
 
     var best_move: MoveScore[G.Move]

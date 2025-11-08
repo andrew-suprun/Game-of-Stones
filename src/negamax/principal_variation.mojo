@@ -3,7 +3,7 @@ from sys import env_get_int
 
 from score import Score
 from game import TGame, MoveScore
-from negamax import Negamax
+from negamax import Search
 
 alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
@@ -12,7 +12,7 @@ alias zero_window: Int = 1
 alias full_window: Int = 2
 
 
-struct PrincipalVariation[G: TGame](Negamax):
+struct PrincipalVariation[G: TGame](Search):
     alias Game = G
 
     var best_move: MoveScore[G.Move]
