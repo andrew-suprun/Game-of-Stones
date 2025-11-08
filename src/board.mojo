@@ -12,7 +12,7 @@ alias Stones = SIMD[DType.int64, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Copyable, Defaultable, EqualityComparable, Hashable, LessThanComparable, Movable, Stringable, Writable):
+struct Place(Copyable, Defaultable, Comparable, Hashable, Movable, Stringable, Writable):
     var x: Int8
     var y: Int8
 
@@ -27,9 +27,6 @@ struct Place(Copyable, Defaultable, EqualityComparable, Hashable, LessThanCompar
 
     fn __eq__(self, other: Self) -> Bool:
         return self.x == other.x and self.y == other.y
-
-    fn __ne__(self, other: Self) -> Bool:
-        return self.x != other.x or self.y != other.y
 
     fn __lt__(self, other: Self) -> Bool:
         return self.x < other.x or self.x == other.x and self.y < other.y
