@@ -103,7 +103,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 b = alpha
             if depth <= trace_level:
                 logger.trace("|  " * depth, depth, " > move: ", child.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, sep="")
-                    
+
             child.score = -child._search(g, -b, -alpha, depth + 1, max_depth, deadline, best_move, logger)
 
             if depth <= trace_level:
@@ -138,17 +138,16 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 return child.score
             best_score = max(best_score, child.score)
 
-
         if depth <= trace_level:
             logger.trace("|  " * depth, depth, " << search: score: ", best_score, sep="")
         return best_score
 
     fn write_to[W: Writer](self, mut writer: W):
-        self.write_to(writer, depth = 0)
-        
+        self.write_to(writer, depth=0)
+
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write("|   " * depth, self.move, " ", self.score, "\n")
-        if self.children: # TODO silence the compiler warning
+        if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_to(writer, depth + 1)
 
@@ -162,5 +161,3 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 return True
         else:
             return False
-
-

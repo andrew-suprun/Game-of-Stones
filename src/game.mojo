@@ -10,6 +10,7 @@ trait TGame(Copyable, Defaultable, Movable, Stringable, Writable):
     fn play_move(mut self, move: Self.Move) -> Score:
         ...
 
+
 trait TMove(Defaultable, Hashable, ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...

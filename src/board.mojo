@@ -12,7 +12,7 @@ alias Stones = SIMD[DType.int64, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Copyable, Defaultable, Comparable, Hashable, Movable, Stringable, Writable):
+struct Place(Comparable, Copyable, Defaultable, Hashable, Movable, Stringable, Writable):
     var x: Int8
     var y: Int8
 

@@ -15,13 +15,13 @@ trait Search(Defaultable):
 
     fn search(mut self, game: Self.Game, max_depth: Int, deadline: UInt) -> MoveScore[Self.Game.Move]:
         ...
-    
+
 
 struct Negamax[S: Search](TTree):
     alias Game = S.Game
 
     var tree: S
-    
+
     @staticmethod
     fn name() -> StaticString:
         return S.name()

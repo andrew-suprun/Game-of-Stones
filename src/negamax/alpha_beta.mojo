@@ -7,6 +7,7 @@ from negamax import Search
 
 alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
+
 struct AlphaBeta[G: TGame](Search):
     alias Game = G
 
@@ -38,7 +39,7 @@ struct AlphaBeta[G: TGame](Search):
             return best_score
 
         sort[Self.greater](moves)
-        
+
         if depth <= trace_level:
             self.logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
 
@@ -72,7 +73,7 @@ struct AlphaBeta[G: TGame](Search):
                 if depth <= trace_level:
                     self.logger.trace("|  " * depth, depth, " << search: cut-score: ", best_score, sep="")
                 return best_score
-            
+
             alpha = max(alpha, move.score)
 
         if depth <= trace_level:

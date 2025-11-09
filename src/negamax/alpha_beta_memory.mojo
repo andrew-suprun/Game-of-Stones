@@ -7,6 +7,7 @@ from negamax import Search
 
 alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
+
 struct AlphaBetaMemory[G: TGame](Search):
     alias Game = G
 
@@ -91,7 +92,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " << search: cut-score: ", best_score, sep="")
                 return best_score
-            
+
             alpha = max(alpha, child.score)
 
         if depth <= trace_level:
@@ -99,11 +100,11 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
         return best_score
 
     fn write_to[W: Writer](self, mut writer: W):
-        self.write_to(writer, depth = 0)
-        
+        self.write_to(writer, depth=0)
+
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write("|   " * depth, self.move, " ", self.score, "\n")
-        if self.children: # TODO silence the compiler warning
+        if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_to(writer, depth + 1)
 

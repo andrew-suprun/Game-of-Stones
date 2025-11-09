@@ -48,6 +48,7 @@ def test_scores():
         print(items[i // 2], items[i])
         assert_true(items[i // 2] <= items[i])
 
+
 def main():
     test_heap()
     test_scores()

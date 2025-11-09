@@ -81,7 +81,7 @@ struct PrincipalVariation[G: TGame](Search):
                 b = alpha
             if depth <= trace_level:
                 self.logger.trace("|  " * depth, depth, " > move: ", move.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, sep="")
-                    
+
             move.score = -self._search(g, -b, -alpha, depth + 1, max_depth, deadline)
 
             if depth <= trace_level:
@@ -115,7 +115,6 @@ struct PrincipalVariation[G: TGame](Search):
                     self.logger.trace("|  " * depth, depth, " << search: cut-score: ", move.score, sep="")
                 return move.score
             best_score = max(best_score, move.score)
-
 
         if depth <= trace_level:
             self.logger.trace("|  " * depth, depth, " << search: score: ", best_score, sep="")

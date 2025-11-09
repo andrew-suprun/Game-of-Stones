@@ -48,7 +48,6 @@ fn test_place_stone() raises:
             n += 1
 
 
-
 alias B = Board[19, values, win_stones]
 
 
