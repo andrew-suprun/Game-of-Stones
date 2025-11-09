@@ -87,13 +87,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.plies = existing.plies
         self._hash = existing._hash
 
-    fn move(self) -> MoveScore[Move]:
-        var moves = List[MoveScore[Move]](capacity=1)
-        self._moves(moves)
-        if self.plies == Self.max_plies:
-            moves[0].score = Score.draw()
-        return moves[0]
-
     fn moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=max_moves)
         self._moves(moves)
@@ -159,9 +152,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         if self.plies > Self.max_plies:
             return Score.draw()
         return self.board._score
-
-    fn hash(self) -> Int:
-        return Int(self._hash)
 
     fn __str__(self, out str: String):
         return String(self.board)

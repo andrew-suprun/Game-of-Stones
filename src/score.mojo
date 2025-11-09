@@ -23,9 +23,6 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, W
     fn __init__(out self):
         self = Self.no_score()
 
-    fn __init__(out self, value: Float32):
-        self.value = value
-
     @implicit
     fn __init__(out self, value: IntLiteral):
         self.value = value

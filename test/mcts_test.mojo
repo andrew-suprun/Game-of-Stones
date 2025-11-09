@@ -53,9 +53,6 @@ struct TestGame(TGame):
     fn score(self) -> Score:
         return Score(random_float64(-10, 10))
 
-    fn move(self) -> MoveScore[TestMove]:
-        return MoveScore(TestMove(0), Score(random_float64(-10, 10)))
-
     fn moves(self) -> List[MoveScore[TestMove]]:
         var moves = List[MoveScore[TestMove]]()
         var n_moves = random_si64(2, 5)
@@ -77,9 +74,6 @@ struct TestGame(TGame):
 
     fn undo_move(mut self, move: self.Move):
         pass
-
-    fn hash(self) -> Int:
-        return 0
 
     fn __str__(self, out result: String):
         return String.write(self)
