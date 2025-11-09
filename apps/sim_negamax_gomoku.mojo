@@ -1,19 +1,21 @@
 import random
 
 from board import Place
-from connect6 import Connect6
-from mcts import Mcts
 from gomoku import Gomoku
+from negamax import Negamax
+from negamax.alpha_beta_memory import AlphaBetaMemory
+from negamax.principal_variation_memory import PrincipalVariationMemory
 from sim import run
 
+alias size = 19
 alias Game = Gomoku[size=19, max_places=15, max_plies=100]
-alias Tree1 = Mcts[Game, 6]
-alias Tree2 = Mcts[Game, 8]
+alias Tree1 = Negamax[AlphaBetaMemory[Game]]
+alias Tree2 = Negamax[PrincipalVariationMemory[Game]]
 
 
 fn main() raises:
-    print("Gomoku")
-    run[Tree1, Tree2]("M6", "M8", openings())
+    print("Connect6")
+    run[Tree1, Tree2]("AB", "PV", openings())
     print()
 
 
@@ -21,13 +23,13 @@ fn openings() -> List[List[String]]:
     random.seed(5)
     var result = List[List[String]]()
     var places = List[String]()
-    for j in range(Game.size / 2 - 2, Game.size / 2 + 3):
-        for i in range(Game.size / 2 - 2, Game.size / 2 + 3):
-            if i != Game.size / 2 or j != Game.size / 2:
+    for j in range(size / 2 - 2, size / 2 + 3):
+        for i in range(size / 2 - 2, size / 2 + 3):
+            if i != size / 2 or j != size / 2:
                 places.append(String(Place(Int8(i), Int8(j))))
     for _ in range(100):
         random.shuffle(places)
-        moves = List(String(Place(Int8(Game.size / 2), Int8(Game.size / 2))))
+        moves = List(String(Place(Int8(size / 2), Int8(size / 2))))
         moves.append(String(places[0]))
         moves.append(String(places[1]))
         moves.append(String(places[2]))

@@ -20,5 +20,5 @@ fn run[Tree: TTree](opening: String, script: String) raises:
         if score.is_decisive():
             return
         var start = perf_counter_ns()
-        var move = tree.search(game, 200)
+        var move = tree.search(game, 20)
         print("search result", move, "time.ms", (perf_counter_ns() - start) // 1_000_000)

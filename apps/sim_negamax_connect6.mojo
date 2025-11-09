@@ -3,19 +3,19 @@ import random
 from board import Place
 from connect6 import Connect6
 from negamax import Negamax
-from negamax_zero import NegamaxZero
-from mcts import Mcts
+from negamax.alpha_beta_memory import AlphaBetaMemory
+from negamax.principal_variation_memory import PrincipalVariationMemory
 from sim import run
 
 alias size = 19
 alias Game = Connect6[size=size, max_moves=20, max_places=15, max_plies=100]
-alias Tree1 = Negamax[Game]
-alias Tree2 = NegamaxZero[Game]
+alias Tree1 = Negamax[AlphaBetaMemory[Game]]
+alias Tree2 = Negamax[PrincipalVariationMemory[Game]]
 
 
 fn main() raises:
     print("Connect6")
-    run[Tree1, Tree2]("N1", "N0", openings())
+    run[Tree1, Tree2]("AB", "PV", openings())
     print()
 
 
@@ -33,5 +33,5 @@ fn openings() -> List[List[String]]:
         moves.append(String(places[0]) + "-" + String(places[1]))
         moves.append(String(places[2]) + "-" + String(places[3]))
         moves.append(String(places[4]) + "-" + String(places[5]))
-        result.append(moves)
-    return result
+        result.append(moves^)
+    return result^

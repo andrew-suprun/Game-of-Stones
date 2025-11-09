@@ -3,11 +3,12 @@ import random
 from board import Place
 from connect6 import Connect6
 from negamax import Negamax
+from negamax.principal_variation_memory import PrincipalVariationMemory
 from mcts import Mcts
 from sim import run
 
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
-alias Tree1 = Negamax[Game]
+alias Tree1 = Negamax[PrincipalVariationMemory[Game]]
 alias Tree2 = Mcts[Game, 8]
 alias seed = 7
 
