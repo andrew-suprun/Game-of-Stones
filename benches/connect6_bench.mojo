@@ -1,7 +1,6 @@
 from benchmark import benchmark, Unit, keep
 
 from game import TMove, Score
-from negamax import Negamax
 from board import Board, first
 from connect6 import Connect6, Move
 

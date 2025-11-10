@@ -3,12 +3,11 @@ import random
 from board import Place
 from gomoku import Gomoku
 from mcts import Mcts
-from negamax import Negamax
-from negamax.principal_variation_memory import PrincipalVariationMemory
+from principal_variation_negamax import PrincipalVariationNegamax
 from sim import run
 
 alias Game = Gomoku[size=19, max_places=15, max_plies=100]
-alias Tree1 = Negamax[PrincipalVariationMemory[Game]]
+alias Tree1 = PrincipalVariationNegamax[Game]
 alias Tree2 = Mcts[Game, 6]
 alias seed = 7
 

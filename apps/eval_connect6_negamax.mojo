@@ -1,11 +1,12 @@
 from eval import run
 from connect6 import Connect6
-from negamax import Negamax
-from negamax.principal_variation_memory import PrincipalVariationMemory
+from principal_variation_negamax import PrincipalVariationNegamax
+from alpha_beta_negamax import AlphaBetaNegamax
 
-alias Game = Connect6[size=7, max_moves=20, max_places=15, max_plies=100]
-alias Tree = Negamax[PrincipalVariationMemory[Game]]
+alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+# alias Tree = AlphaBetaNegamax[Game]
+alias Tree = PrincipalVariationNegamax[Game]
 
 
 fn main() raises:
-    run[Tree]("d4 c3-d2 e6-e3 b6-e2", "a4-c2 b5-e4 b1-f1 b7-d5 e1-g1 d1-f5 a5-a6 a2-f7 c5-g2 b2-c7 f2-f3 b3-b4")
+    run[Tree]("j10 i9-i10 k10-l10 g6-g10", "i11-l8")

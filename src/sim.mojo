@@ -1,8 +1,10 @@
+from time import perf_counter_ns
+
 from tree import TTree
 from score import Score
 from board import first
 
-alias timeout = 200
+alias timeout = 5_000
 alias black = True
 alias white = False
 
@@ -37,21 +39,24 @@ fn sim_opening[
     for move in opening:
         print("", move, end="")
     print(g1)
+    # print()
 
     while True:
+        start = perf_counter_ns()
         var move: String
         if turn == first:
             var result = t1.search(g1, timeout)
             move = String(result.move)
             score = result.score
-            print(name1, result)
+            print(name1, result, "time", (perf_counter_ns() - start) / 1_000_000_000)
         else:
             var result = t2.search(g2, timeout)
             move = String(result.move)
             score = -result.score
-            print(name2, result)
+            print(name2, result, "time", (perf_counter_ns() - start) / 1_000_000_000)
         var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
+        print(g1)
         plies += 1
         t1 = T1()
         t2 = T2()
@@ -67,7 +72,8 @@ fn sim_opening[
     else:
         stats["draw"] += 1
 
-    print(g1)
+    # print(g1)
+    # print()
 
     # print("\x1b[1G", end="")
     for item in stats.items():

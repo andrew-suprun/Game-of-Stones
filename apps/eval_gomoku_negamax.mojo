@@ -1,10 +1,9 @@
 from eval import run
 from gomoku import Gomoku
-from negamax import Negamax
-from negamax.principal_variation_memory import PrincipalVariationMemory
+from principal_variation_negamax import PrincipalVariationNegamax
 
 alias Game = Gomoku[size=7, max_places=20, max_plies=100]
-alias Tree = Negamax[PrincipalVariationMemory[Game]]
+alias Tree = PrincipalVariationNegamax[Game]
 
 
 fn main() raises:

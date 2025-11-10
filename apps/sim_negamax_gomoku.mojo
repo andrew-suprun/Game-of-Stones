@@ -2,15 +2,14 @@ import random
 
 from board import Place
 from gomoku import Gomoku
-from negamax import Negamax
-from negamax.alpha_beta_memory import AlphaBetaMemory
-from negamax.principal_variation_memory import PrincipalVariationMemory
+from alpha_beta_negamax import AlphaBetaNegamax
+from principal_variation_negamax import PrincipalVariationNegamax
 from sim import run
 
 alias size = 19
 alias Game = Gomoku[size=19, max_places=15, max_plies=100]
-alias Tree1 = Negamax[AlphaBetaMemory[Game]]
-alias Tree2 = Negamax[PrincipalVariationMemory[Game]]
+alias Tree1 = AlphaBetaNegamax[Game]
+alias Tree2 = PrincipalVariationNegamax[Game]
 
 
 fn main() raises:
