@@ -28,10 +28,11 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var best_move = MoveScore[G.Move](G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
-        var start = perf_counter_ns()
         while perf_counter_ns() < deadline:
+            var start = perf_counter_ns()
             _ = self.root._search(game, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             best_move = MoveScore[G.Move](self.root.children[0].move, self.root.children[0].score)
+            logger.debug("==== depth ", depth, " best-move ", best_move, " time ", (perf_counter_ns() - start) / 1_000_000_000)
             for child in self.root.children:
                 if child.score.is_win():
                     best_move =  MoveScore[G.Move](child.move, child.score)
@@ -43,7 +44,6 @@ struct AlphaBetaNegamax[G: TGame](TTree):
             if best_move.score.is_decisive():
                 break
             depth += 1
-            logger.debug("--- depth", depth, "best move", best_move, "time", (perf_counter_ns() - start) / 1_000_000_000)
 
         return best_move
 
