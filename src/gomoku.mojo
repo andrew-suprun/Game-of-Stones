@@ -18,12 +18,15 @@ struct Move(TMove):
     fn __init__(out self):
         self = Self(Place())
 
-    fn __init__(out self, p1: Place):
-        self._place = p1
+    fn __init__(out self, place: Place):
+        self._place = place
 
     @implicit
     fn __init__(out self, move: String) raises:
         self._place = Place(String(move))
+
+    fn __eq__(self: Self, other: Self) -> Bool:
+        return self.place == other.place
 
     fn __hash__[H: Hasher](self, mut hasher: H):
         hasher.update(self._place)

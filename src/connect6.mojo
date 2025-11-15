@@ -44,6 +44,9 @@ struct Move(TMove):
             self._p1 = p2
             self._p2 = p1
 
+    fn __eq__(self: Self, other: Self) -> Bool:
+        return self._p1 == other._p1 and self._p2 == other._p2
+
     fn __hash__[H: Hasher](self, mut hasher: H):
         hasher.update(self._p1)
         hasher.update(self._p2)

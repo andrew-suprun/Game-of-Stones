@@ -36,7 +36,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
             var start = perf_counter_ns()
             _ = self.root._search(game, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             best_move = MoveScore[G.Move](self.root.children[0].move, self.root.children[0].score)
-            logger.debug("==== depth ", depth, " best-move ", best_move, " time ", (perf_counter_ns() - start) / 1_000_000_000)
             for child in self.root.children:
                 if child.score.is_win():
                     best_move = MoveScore[G.Move](child.move, child.score)
@@ -45,9 +44,13 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                     break
                 if child.score > best_move.score:
                     best_move = MoveScore[G.Move](child.move, child.score)
+            logger.debug("--depth-", depth, best_move, " time ", (perf_counter_ns() - start) / 1_000_000_000)
             if best_move.score.is_decisive():
                 break
             depth += 1
+
+        for child in self.root.children:
+            logger.debug("  child", child.move, child.score)
 
         return best_move
 
@@ -116,25 +119,26 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 logger.trace("|  " * depth, depth, " > move: ", child.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, sep="")
 
             start = perf_counter_ns()
-            child.score = -child._search(g, -b, -alpha, depth + 1, max_depth, deadline, logger)
-            if depth == 0:
-                logger.debug("     move ", child.move, " ", child.score, " [", alpha, ":", b, "] time ", (perf_counter_ns() - start) / 1_000_000_000)
+            var score = -child._search(g, -b, -alpha, depth + 1, max_depth, deadline, logger)
+            # if depth == 0:
+            #     logger.debug("     move", child.move, child.score, " [", alpha, ":", b, "] time ", (perf_counter_ns() - start) / 1_000_000_000)
 
             if depth <= trace_level:
                 logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, "; score: ", child.score, sep="")
 
-            if not child.score.is_set():
+            if not score.is_set():
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " << search: timeout", sep="")
                 return Score.no_score()
+
+            child.score = score
 
             if child.score < alpha:
                 state = zero_window
                 idx = idx + 1
             elif child.score <= beta and child.score < Score.win():
-                if child.score > best_score:
-                    if depth == 0:
-                        logger.debug("best move ", child.move)
+                if depth == 0 and child.score > best_score:
+                    logger.debug("best move", child.move, child.score, " [", alpha, ":", b, "] time ", (perf_counter_ns() - start) / 1_000_000_000)
                 if state == zero_window and child.score > alpha:
                     state = full_window
                 else:
@@ -142,6 +146,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                     idx = idx + 1
                 alpha = child.score
             else:
+                if depth == 0:
+                    logger.debug("best move", child.move, child.score, " [", alpha, ":", b, "] time ", (perf_counter_ns() - start) / 1_000_000_000)
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " << search: cut-score: ", child.score, sep="")
                 return child.score

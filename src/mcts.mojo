@@ -1,6 +1,7 @@
 from memory import Pointer
 from time import perf_counter_ns
 from math import log
+from logger import Logger
 
 from score import Score
 from tree import TTree
@@ -12,9 +13,11 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
     alias MctsNode = Node[G, c]
 
     var root: Self.MctsNode
+    var logger: Logger
 
     fn __init__(out self):
         self.root = Self.MctsNode(MoveScore(G.Move(), Score(0)))
+        self.logger = Logger(prefix="mcts: ")
 
     fn search(mut self, game: G, max_time_ms: UInt) -> MoveScore[G.Move]:
         var moves = game.moves()
@@ -30,13 +33,25 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
         if all_draws:
             return moves[0]
         self.root = Self.MctsNode(MoveScore(G.Move(), Score(0)))
-        var deadline = perf_counter_ns() + max_time_ms * 1_000_000
+        var best_node = Self.MctsNode(MoveScore(G.Move(), Score(0)))
+        var start = perf_counter_ns()
+        var deadline = start + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
-            if self.expand(game):
+            var done = self.expand(game)
+            ref best_child = self._best_child()
+            if best_node.move.move != best_child.move.move:
+                best_node = best_child.copy()
+                self.logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+
+            if done:
                 break
 
-        ref child_node = self._best_child()
-        return child_node.move
+        for child in self.root.children:
+            self.logger.debug("  child", child.move.move, child.move.score, child.n_sims)
+
+        ref result = self._best_child()
+        self.logger.debug("result   ", result.move, "sims:", result.n_sims, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+        return result.move
 
     fn expand(mut self, game: G, out done: Bool):
         if self.root.move.score.is_decisive():
@@ -55,7 +70,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
         return undecided < 2
 
     fn best_move(self) -> G.Move:
-        return self._best_child().move.move
+        return self._best_child().move
 
     fn _best_child(self) -> ref [self.root.children] Self.MctsNode:
         debug_assert(len(self.root.children) > 0)
@@ -166,6 +181,6 @@ struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Wr
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write(depth, ": ", "|   " * depth, self.move, " sims: ", self.n_sims, "\n")
-        if self.children:  # unnecessary check to quite LSP warning
+        if self.children:  # unnecessary check to silence LSP warning
             for child in self.children:
                 child.write_to(writer, depth + 1)

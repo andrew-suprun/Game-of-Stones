@@ -1,4 +1,4 @@
-from game import TGame, Score, MoveScore
+from game import TGame, MoveScore
 
 
 trait TTree:

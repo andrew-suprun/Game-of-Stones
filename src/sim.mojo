@@ -4,24 +4,30 @@ from tree import TTree
 from score import Score
 from board import first
 
-alias timeout = 5_000
+alias timeout = 500
 alias black = True
 alias white = False
 
 
 fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[String]]) raises:
     var stats = {name1: 0, name2: 0, "draw": 0}
+    var n = 1
     for opening in openings:
+        print("\n", n, ":", sep="", end="")
+        for move in opening:
+            print("", move, end="")
+        print()
         sim_opening[T1, T2](name1, name2, opening, stats)
         sim_opening[T2, T1](name2, name1, opening, stats)
+        n += 1
 
 
 fn sim_opening[
     T1: TTree, T2: TTree
 ](name1: String, name2: String, opening: List[String], mut stats: Dict[String, Int],) raises:
-    print()
-    print(name1, "vs.", name2)
-    print()
+    # print()
+    # print(name1, "vs.", name2)
+    # print()
 
     var g1 = T1.Game()
     var g2 = T2.Game()
@@ -35,10 +41,10 @@ fn sim_opening[
         _ = g2.play_move(T2.Game.Move(move))
         plies += 1
 
-    print("opening:", end="")
-    for move in opening:
-        print("", move, end="")
-    print(g1)
+    # print("opening:", end="")
+    # for move in opening:
+    #     print("", move, end="")
+    # # print(g1)
     # print()
 
     while True:
@@ -48,15 +54,15 @@ fn sim_opening[
             var result = t1.search(g1, timeout)
             move = String(result.move)
             score = result.score
-            print(name1, result, "time", (perf_counter_ns() - start) / 1_000_000_000)
+            # print(name1, result, "time", (perf_counter_ns() - start) / 1_000_000_000)
         else:
             var result = t2.search(g2, timeout)
             move = String(result.move)
             score = -result.score
-            print(name2, result, "time", (perf_counter_ns() - start) / 1_000_000_000)
+            # print(name2, "", result, " time ", (perf_counter_ns() - start) / 1_000_000_000)
         var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
-        print(g1)
+        # print(g1)
         plies += 1
         t1 = T1()
         t2 = T2()
@@ -76,6 +82,7 @@ fn sim_opening[
     # print()
 
     # print("\x1b[1G", end="")
+    print("  ", end="")
     for item in stats.items():
         print(item.key, item.value, "", end="")
     print()
