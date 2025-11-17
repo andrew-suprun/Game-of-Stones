@@ -42,15 +42,17 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
             if best_node.move.move != best_child.move.move:
                 best_node = best_child.copy()
                 self.logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+                for child in self.root.children:
+                    self.logger.debug("  child", child.move.move, child.move.score, child.n_sims)
+
 
             if done:
                 break
 
-        for child in self.root.children:
-            self.logger.debug("  child", child.move.move, child.move.score, child.n_sims)
-
         ref result = self._best_child()
         self.logger.debug("result   ", result.move, "sims:", result.n_sims, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+        for child in self.root.children:
+            self.logger.debug("  child", child.move.move, child.move.score, child.n_sims)
         return result.move
 
     fn expand(mut self, game: G, out done: Bool):

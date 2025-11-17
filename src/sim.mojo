@@ -4,27 +4,56 @@ from tree import TTree
 from score import Score
 from board import first
 
-alias timeout = 500
+alias timeout = 100
 alias black = True
 alias white = False
 
 
 fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[String]]) raises:
-    var stats = {name1: 0, name2: 0, "draw": 0}
+    var first_wins = 0
+    var second_wins = 0
     var n = 1
     for opening in openings:
-        print("\n", n, ":", sep="", end="")
+        print()
+        print("------")
+        print()
+        print("opening ", n, ":", sep="", end="")
         for move in opening:
             print("", move, end="")
         print()
-        sim_opening[T1, T2](name1, name2, opening, stats)
-        sim_opening[T2, T1](name2, name1, opening, stats)
+        print()
+        var winner1 = sim_opening[T1, T2](name1, name2, opening)
+        print()
+        print("winner:", winner1)
+        print()
+        var winner2 = sim_opening[T2, T1](name2, name1, opening)
+        print()
+        print("winner:", winner2)
+        print()
+
+        var first = 0
+        var second = 0
+        if winner1 == name1:
+            first += 1
+        if winner1 == name2:
+            second += 1
+        if winner2 == name1:
+            first += 1
+        if winner2 == name2:
+            second += 1
+        if first > second:
+            first_wins += 1
+        if first < second:
+            second_wins += 1
+
+        print("result: ", name1, ": ", first_wins, " - ", name2, ": ", second_wins, sep="")
+
         n += 1
 
 
 fn sim_opening[
     T1: TTree, T2: TTree
-](name1: String, name2: String, opening: List[String], mut stats: Dict[String, Int],) raises:
+](name1: String, name2: String, opening: List[String]) raises -> String:
     # print()
     # print(name1, "vs.", name2)
     # print()
@@ -54,12 +83,12 @@ fn sim_opening[
             var result = t1.search(g1, timeout)
             move = String(result.move)
             score = result.score
-            # print(name1, result, "time", (perf_counter_ns() - start) / 1_000_000_000)
+            print("  ", rpad(name1, 7), " ", rpad(String(result.move), 8), lpad(String(result.score), 8), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
         else:
             var result = t2.search(g2, timeout)
             move = String(result.move)
             score = -result.score
-            # print(name2, "", result, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+            print("  ", rpad(name2, 7), " ", rpad(String(result.move), 8), lpad(String(result.score), 8), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
         var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
         # print(g1)
@@ -72,17 +101,19 @@ fn sim_opening[
             break
 
     if score.is_win():
-        stats[name1] += 1
+        return name1
     elif score.is_loss():
-        stats[name2] += 1
+        return name2
     else:
-        stats["draw"] += 1
+        return "draw"
 
-    # print(g1)
-    # print()
 
-    # print("\x1b[1G", end="")
-    print("  ", end="")
-    for item in stats.items():
-        print(item.key, item.value, "", end="")
-    print()
+fn lpad(var text: String, width: Int) -> String:
+    while len(text) < width:
+        text = " " + text
+    return text
+
+fn rpad(var text: String, width: Int) -> String:
+    while len(text) < width:
+        text = text + " "
+    return text

@@ -12,7 +12,7 @@ alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 
 # alias Tree1 = Negamax[AlphaBetaNegamax[Game]
 alias Tree1 = PrincipalVariationNegamax[Game]
-alias Tree2 = Mcts[Game, 10]
+alias Tree2 = Mcts[Game, 8]
 alias seed = 7
 
 
