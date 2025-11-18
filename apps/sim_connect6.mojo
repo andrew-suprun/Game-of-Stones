@@ -10,15 +10,15 @@ from sim import run
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 
 
-# alias Tree1 = Negamax[AlphaBetaNegamax[Game]
-alias Tree1 = PrincipalVariationNegamax[Game]
+alias Tree1 = AlphaBetaNegamax[Game]
+# alias Tree1 = PrincipalVariationNegamax[Game]
 alias Tree2 = Mcts[Game, 2]
 alias seed = 7
 
 
 fn main() raises:
     print("Connect6: XF", Tree2.c, "seed", seed)
-    run[Tree1, Tree2]("Negamax", "Mcts", openings())
+    run[Tree1, Tree2]("ABN", "MCTS", openings())
     print()
 
 

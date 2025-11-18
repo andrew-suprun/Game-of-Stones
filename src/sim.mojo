@@ -4,7 +4,7 @@ from traits import TTree
 from score import Score
 from board import first
 
-alias timeout = 8000
+alias timeout = 1000
 alias black = True
 alias white = False
 

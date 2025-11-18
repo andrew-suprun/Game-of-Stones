@@ -26,27 +26,14 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var best_move = MoveScore[G.Move](G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
-        while perf_counter_ns() < deadline:
+        while True:
             var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
-                break
-            best_move = MoveScore[G.Move](self.root.children[0].move, self.root.children[0].score)
-            for child in self.root.children:
-                if child.score.is_win():
-                    best_move =  MoveScore[G.Move](child.move, child.score)
-                    break
-                if not child.score.is_set():
-                    break
-                if child.score > best_move.score:
-                    best_move = MoveScore[G.Move](child.move, child.score)
+                return best_move
             self.logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
-            for child in self.root.children:
-                self.logger.debug("  child", child.move, child.score)
             if best_move.score.is_decisive():
-                break
+                return best_move
             depth += 1
-
-        return best_move
 
 
 struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
@@ -135,10 +122,4 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
     @staticmethod
     @parameter
     fn greater(a: Self, b: Self) -> Bool:
-        if a.score.is_set():
-            if b.score.is_set():
-                return a.score > b.score
-            else:
-                return True
-        else:
-            return False
+        return a.score > b.score

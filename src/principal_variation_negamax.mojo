@@ -30,16 +30,14 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         var best_move = MoveScore[G.Move](G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
-        while perf_counter_ns() < deadline:
+        while True:
             var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
-                break
+                return best_move
             self.logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
             if best_move.score.is_decisive():
-                break
+                return best_move
             depth += 1
-
-        return best_move
 
 struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
     var move: G.Move
@@ -159,10 +157,4 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
     @staticmethod
     @parameter
     fn greater(a: Self, b: Self) -> Bool:
-        if a.score.is_set():
-            if b.score.is_set():
-                return a.score > b.score
-            else:
-                return True
-        else:
-            return False
+        return a.score > b.score
