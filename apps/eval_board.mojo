@@ -1,4 +1,4 @@
-from game import Score
+from traits import Score
 from board import Board, Place, first, second
 
 alias win_stones = 6

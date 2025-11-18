@@ -1,7 +1,7 @@
 from benchmark import benchmark, Unit, keep
 
 from score import Score
-from game import TMove
+from traits import TMove
 from mcts import Mcts
 from gomoku import Gomoku
 

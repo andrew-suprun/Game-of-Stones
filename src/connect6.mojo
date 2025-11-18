@@ -2,7 +2,7 @@ from sys import env_get_string
 from hashlib.hasher import Hasher
 
 from score import Score
-from game import TGame, TMove, MoveScore
+from traits import TGame, TMove, MoveScore
 from board import Board, Place, first
 from heap import heap_add
 

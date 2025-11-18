@@ -1,10 +1,10 @@
 from time import perf_counter_ns
 
-from tree import TTree
+from traits import TTree
 from score import Score
 from board import first
 
-alias timeout = 100
+alias timeout = 8000
 alias black = True
 alias white = False
 

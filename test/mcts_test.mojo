@@ -3,7 +3,7 @@ from random import seed, random_si64, random_float64
 from hashlib.hasher import Hasher
 
 from score import Score
-from game import TGame, TMove, MoveScore
+from traits import TGame, TMove, MoveScore
 from mcts import Mcts
 
 

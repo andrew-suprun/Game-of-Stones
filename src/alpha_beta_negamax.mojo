@@ -3,8 +3,7 @@ from sys import env_get_int
 from logger import Logger
 
 from score import Score
-from game import TGame, MoveScore
-from tree import TTree
+from traits import TTree, TGame, MoveScore
 
 alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
@@ -29,8 +28,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         while perf_counter_ns() < deadline:
-            var start = perf_counter_ns()
-            var score = self.root._search(game, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
+            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
                 break
             best_move = MoveScore[G.Move](self.root.children[0].move, self.root.children[0].score)
@@ -42,13 +40,12 @@ struct AlphaBetaNegamax[G: TGame](TTree):
                     break
                 if child.score > best_move.score:
                     best_move = MoveScore[G.Move](child.move, child.score)
-            logger.debug("--depth-", depth, best_move, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+            logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
+            for child in self.root.children:
+                logger.debug("  child", child.move, child.score)
             if best_move.score.is_decisive():
                 break
             depth += 1
-
-        for child in self.root.children:
-            logger.debug("  child", child.move, child.score)
 
         return best_move
 
@@ -63,7 +60,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, game: G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    fn _search(mut self, game: G, mut best_move: MoveScore[G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
@@ -80,6 +77,10 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
             return best_score
 
         sort[Self.greater](self.children)
+        if depth == 0:
+            best_move = MoveScore[G.Move](self.children[0].move, self.children[0].score)
+            logger.debug("best move", best_move)
+
         if depth <= trace_level:
             logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
 
@@ -93,10 +94,9 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                 logger.trace("|  " * depth, depth, " > move: ", child.move, " [", alpha, ":", beta, "]", sep="")
             if not child.score.is_decisive():
                 _ = g.play_move(child.move)
-                start = perf_counter_ns()
-                child.score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                child.score = -child._search(g, best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
                 # if depth == 0:
-                #     logger.debug("     move", child.move, child.score, " [", alpha, ":", beta, "] time ", (perf_counter_ns() - start) / 1_000_000_000)
+                #     logger.debug("     move", child.move, child.score, " [", alpha, ":", beta, "] time ", (deadline - perf_counter_ns()) / 1_000_000_000)
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", beta, "] score: ", child.score, sep="")
             else:
@@ -109,9 +109,8 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
             if child.score > best_score:
                 best_score = child.score
                 if depth == 0:
-                    logger.debug("best move", child.move)
-                    for move in self.children:
-                        logger.debug("  child", move.move, move.score)
+                    best_move = MoveScore[G.Move](child.move, child.score)
+                    logger.debug("best move", best_move)
 
 
             if best_score > beta or best_score.is_win():

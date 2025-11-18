@@ -1,7 +1,7 @@
 import benchmark
 from time import perf_counter_ns
 
-from game import Score
+from traits import Score
 from search import AlphaBetaNegamax
 from connect6 import Connect6
 

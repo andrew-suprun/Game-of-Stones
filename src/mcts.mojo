@@ -1,11 +1,10 @@
 from memory import Pointer
 from time import perf_counter_ns
-from math import log
+from math import sqrt
 from logger import Logger
 
 from score import Score
-from tree import TTree
-from game import TGame, MoveScore
+from traits import TTree, TGame, MoveScore
 
 
 struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
@@ -34,25 +33,26 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
             return moves[0]
         self.root = Self.MctsNode(MoveScore(G.Move(), Score(0)))
         var best_node = Self.MctsNode(MoveScore(G.Move(), Score(0)))
-        var start = perf_counter_ns()
-        var deadline = start + max_time_ms * 1_000_000
+        var deadline = perf_counter_ns() + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
             var done = self.expand(game)
             ref best_child = self._best_child()
             if best_node.move.move != best_child.move.move:
                 best_node = best_child.copy()
-                self.logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+                var sec = (deadline - perf_counter_ns()) / 1_000_000_000
+                self.logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", sec)
                 for child in self.root.children:
-                    self.logger.debug("  child", child.move.move, child.move.score, child.n_sims)
-
+                    self.logger.debug("  child", child.move, "sims:", child.n_sims)
 
             if done:
                 break
 
         ref result = self._best_child()
-        self.logger.debug("result   ", result.move, "sims:", result.n_sims, " time ", (perf_counter_ns() - start) / 1_000_000_000)
+        var sec = (deadline - perf_counter_ns()) / 1_000_000_000
+        self.logger.debug("result   ", result.move, "sims:", result.n_sims, " time ", sec)
         for child in self.root.children:
-            self.logger.debug("  child", child.move.move, child.move.score, child.n_sims)
+            self.logger.debug("  child", child.move, "sims:", child.n_sims)
+
         return result.move
 
     fn expand(mut self, game: G, out done: Bool):
@@ -165,7 +165,7 @@ struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Wr
             ref child = nodes[child_idx]
             if child.move.score.is_decisive():
                 continue
-            var v = child.move.score - Self.c * log(Score(child.n_sims).value)
+            var v = child.move.score - Self.c * Score(sqrt(Float64(child.n_sims)))
             if maxV < v:
                 maxV = v
                 selected_child_idx = child_idx

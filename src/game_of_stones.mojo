@@ -3,8 +3,7 @@ from python import Python, PythonObject
 import random
 
 from board import Place
-from tree import TTree
-from game import TGame
+from traits import TTree, TGame
 
 alias board_size = 19
 alias window_height = 1000

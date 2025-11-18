@@ -6,18 +6,18 @@ from mcts import Mcts
 from sim import run
 
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
-alias Tree1 = Mcts[Game, 8]
-alias Tree2 = Mcts[Game, 10]
+alias Tree1 = Mcts[Game, 2]
+alias Tree2 = Mcts[Game, 3]
 
 
 fn main() raises:
     print("Connect6")
-    run[Tree1, Tree2]("M8 ", "M10", openings())
+    run[Tree1, Tree2]("M2", "M3", openings())
     print()
 
 
 fn openings() -> List[List[String]]:
-    random.seed(5)
+    random.seed(7)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(Game.size / 2 - 2, Game.size / 2 + 3):

@@ -1,6 +1,16 @@
 from score import Score
 
 
+trait TTree:
+    alias Game: TGame
+
+    fn __init__(out self):
+        ...
+
+    fn search(mut self, game: Self.Game, max_time_ms: UInt) -> MoveScore[Self.Game.Move]:
+        ...
+
+
 trait TGame(Copyable, Defaultable, Movable, Stringable, Writable):
     alias Move: TMove
 
