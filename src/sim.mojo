@@ -4,12 +4,11 @@ from traits import TTree
 from score import Score
 from board import first
 
-alias timeout = 1000
 alias black = True
 alias white = False
 
 
-fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[String]]) raises:
+fn run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
     var first_wins = 0
     var second_wins = 0
     var n = 1
@@ -22,11 +21,11 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
             print("", move, end="")
         print()
         print()
-        var winner1 = sim_opening[T1, T2](name1, name2, opening)
+        var winner1 = sim_opening[T1, T2](name1, time1, name2, time2, opening)
         print()
         print("winner:", winner1)
         print()
-        var winner2 = sim_opening[T2, T1](name2, name1, opening)
+        var winner2 = sim_opening[T2, T1](name2, time2, name1, time1, opening)
         print()
         print("winner:", winner2)
         print()
@@ -53,7 +52,7 @@ fn run[T1: TTree, T2: TTree](name1: String, name2: String, openings: List[List[S
 
 fn sim_opening[
     T1: TTree, T2: TTree
-](name1: String, name2: String, opening: List[String]) raises -> String:
+](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     # print()
     # print(name1, "vs.", name2)
     # print()
@@ -78,17 +77,18 @@ fn sim_opening[
 
     while True:
         start = perf_counter_ns()
+        var name_size = max(len(name1), len(name2)) + 1
         var move: String
         if turn == first:
-            var result = t1.search(g1, timeout)
+            var result = t1.search(g1, time1)
             move = String(result.move)
             score = result.score
-            print("  ", rpad(name1, 7), " ", rpad(String(result.move), 8), lpad(String(result.score), 8), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
+            print("  ", rpad(name1, name_size), rpad(String(result.move), 8), lpad(String(result.score), 7), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
         else:
-            var result = t2.search(g2, timeout)
+            var result = t2.search(g2, time2)
             move = String(result.move)
             score = -result.score
-            print("  ", rpad(name2, 7), " ", rpad(String(result.move), 8), lpad(String(result.score), 8), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
+            print("  ", rpad(name2, name_size), rpad(String(result.move), 8), lpad(String(result.score), 7), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
         var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
         # print(g1)
