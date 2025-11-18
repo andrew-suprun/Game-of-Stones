@@ -27,7 +27,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.logger = Logger(prefix="pvs: ")
 
     fn search(mut self, game: G, duration_ms: UInt) -> MoveScore[G.Move]:
-        var logger = Logger(prefix="s:  ")
         var best_move = MoveScore[G.Move](G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
@@ -35,7 +34,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
             var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
                 break
-            logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
+            self.logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
             if best_move.score.is_decisive():
                 break
             depth += 1

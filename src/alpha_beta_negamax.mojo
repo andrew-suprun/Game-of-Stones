@@ -23,7 +23,6 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         self.logger = Logger(prefix="abs: ")
 
     fn search(mut self, game: G, duration_ms: UInt) -> MoveScore[G.Move]:
-        var logger = Logger(prefix="s:  ")
         var best_move = MoveScore[G.Move](G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
@@ -40,9 +39,9 @@ struct AlphaBetaNegamax[G: TGame](TTree):
                     break
                 if child.score > best_move.score:
                     best_move = MoveScore[G.Move](child.move, child.score)
-            logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
+            self.logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
             for child in self.root.children:
-                logger.debug("  child", child.move, child.score)
+                self.logger.debug("  child", child.move, child.score)
             if best_move.score.is_decisive():
                 break
             depth += 1
