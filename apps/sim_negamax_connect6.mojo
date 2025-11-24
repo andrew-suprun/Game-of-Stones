@@ -14,7 +14,7 @@ alias Tree2 = PrincipalVariationNegamax[Game]
 
 fn main() raises:
     print("Connect6")
-    run[Tree1, Tree2]("AB", "PV", openings())
+    run[Tree1, Tree2]("AB", 1000, "PV", 1000, openings())
     print()
 
 

@@ -14,7 +14,7 @@ alias seed = 7
 
 fn main() raises:
     print("Gomoku: XF", Tree2.c, "seed", seed)
-    run[Tree1, Tree2]("Negamax", "Mcts", openings())
+    run[Tree1, Tree2]("Negamax", 1000, "Mcts", 1000, openings())
     print()
 
 

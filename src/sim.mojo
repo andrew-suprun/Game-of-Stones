@@ -50,9 +50,7 @@ fn run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: U
         n += 1
 
 
-fn sim_opening[
-    T1: TTree, T2: TTree
-](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     # print()
     # print(name1, "vs.", name2)
     # print()
@@ -112,6 +110,7 @@ fn lpad(var text: String, width: Int) -> String:
     while len(text) < width:
         text = " " + text
     return text
+
 
 fn rpad(var text: String, width: Int) -> String:
     while len(text) < width:

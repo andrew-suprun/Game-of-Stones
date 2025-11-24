@@ -8,17 +8,17 @@ from traits import TTree, TGame, MoveScore
 
 
 struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
-    alias Game = G
-    alias MctsNode = Node[G, c]
+    alias Game = Self.G
+    alias MctsNode = Node[Self.G, Self.c]
 
     var root: Self.MctsNode
     var logger: Logger
 
     fn __init__(out self):
-        self.root = Self.MctsNode(MoveScore(G.Move(), Score(0)))
+        self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
         self.logger = Logger(prefix="mcts: ")
 
-    fn search(mut self, game: G, max_time_ms: UInt) -> MoveScore[G.Move]:
+    fn search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
         var moves = game.moves()
         debug_assert(len(moves) > 0)
         if len(moves) == 1:
@@ -31,8 +31,8 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
                 all_draws = False
         if all_draws:
             return moves[0]
-        self.root = Self.MctsNode(MoveScore(G.Move(), Score(0)))
-        var best_node = Self.MctsNode(MoveScore(G.Move(), Score(0)))
+        self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
+        var best_node = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
             var done = self.expand(game)
@@ -55,7 +55,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
 
         return result.move
 
-    fn expand(mut self, game: G, out done: Bool):
+    fn expand(mut self, game: Self.G, out done: Bool):
         if self.root.move.score.is_decisive():
             return True
 
@@ -110,16 +110,16 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
 
 
 struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Writable):
-    var move: MoveScore[G.Move]
+    var move: MoveScore[Self.G.Move]
     var children: List[Self]
     var n_sims: Int32
 
-    fn __init__(out self, move: MoveScore[G.Move]):
+    fn __init__(out self, move: MoveScore[Self.G.Move]):
         self.move = move
         self.children = List[Self]()
         self.n_sims = 1
 
-    fn _expand(mut self, mut game: G):
+    fn _expand(mut self, mut game: Self.G):
         if not self.children:
             var moves = game.moves()
             debug_assert(len(moves) > 0)

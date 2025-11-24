@@ -9,7 +9,8 @@ alias Tree1 = Mcts[Game, 2]
 # alias Tree2 = AlphaBetaNegamax[Game]
 alias Tree2 = PrincipalVariationNegamax[Game]
 
-alias script = "j10 j12-l9 h9-i11 h8-k11 k9-l10 h12-i7 f9-g9 h14-i9 i10-n6 i13-m7 f16-h10 k10-k12 g10-i12 f10-g11 e9-k15 d9-h11"
+alias script = "j10 h8-l8 l11-i12 h11-j12 h13-i14 h7-h10 h9-i11 i10-i13 f15-g14"
+
 
 fn main() raises:
     print("--- MCTS ---")

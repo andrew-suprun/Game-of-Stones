@@ -26,7 +26,7 @@ struct Move(TMove):
         self._place = Place(String(move))
 
     fn __eq__(self: Self, other: Self) -> Bool:
-        return self.place == other.place
+        return self._place == other._place
 
     fn __hash__[H: Hasher](self, mut hasher: H):
         hasher.update(self._place)
@@ -44,19 +44,19 @@ struct Move(TMove):
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
     alias Move = Move
 
-    var board: Board[size, values, win_stones]
+    var board: Board[Self.size, values, win_stones]
     var turn: Int
     var plies: Int
     var _hash: UInt64
 
     fn __init__(out self):
-        self.board = Board[size, values, win_stones]()
+        self.board = Board[Self.size, values, win_stones]()
         self.turn = 0
         self.plies = 0
         self._hash = 0
 
     fn moves(self) -> List[MoveScore[Move]]:
-        var moves = List[MoveScore[Move]](capacity=max_places)
+        var moves = List[MoveScore[Move]](capacity=Self.max_places)
         self._moves(moves)
         if self.plies == Self.max_plies:
             moves[-1].score = Score.draw()
@@ -68,7 +68,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
 
-        var places = List[Place](capacity=max_places)
+        var places = List[Place](capacity=Self.max_places)
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:

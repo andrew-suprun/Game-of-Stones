@@ -45,34 +45,34 @@ struct Place(Comparable, Copyable, Defaultable, Hashable, Movable, Stringable, W
 struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movable, Stringable, Writable):
     alias empty = Int8(0)
     alias black = Int8(1)
-    alias white = Int8(win_stones)
-    alias value_table = _value_table[win_stones, values]()
+    alias white = Int8(Self.win_stones)
+    alias value_table = _value_table[Self.win_stones, Self.values]()
 
-    var _places: InlineArray[Int8, size * size]
-    var _scores: InlineArray[Scores, size * size]
+    var _places: InlineArray[Int8, Self.size * Self.size]
+    var _scores: InlineArray[Scores, Self.size * Self.size]
     var _score: Score
 
     fn __init__(out self):
-        self._places = InlineArray[Int8, size * size](fill=0)
-        self._scores = InlineArray[Scores, size * size](uninitialized=True)
+        self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
+        self._scores = InlineArray[Scores, Self.size * Self.size](uninitialized=True)
         self._score = 0
 
-        for y in range(size):
-            var v = 1 + min(win_stones - 1, y, size - 1 - y, size - win_stones)
-            for x in range(size):
-                var h = 1 + min(win_stones - 1, x, size - 1 - x, size - win_stones)
-                var m = 1 + min(x, y, size - 1 - x, size - 1 - y, size - win_stones)
-                var t1 = max(0, min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y))
-                var t2 = max(0, min(win_stones, m, 2 * size - 1 - win_stones + 1 - y - x, x + y - win_stones + 1 + 1))
+        for y in range(Self.size):
+            var v = 1 + min(Self.win_stones - 1, y, Self.size - 1 - y, Self.size - Self.win_stones)
+            for x in range(Self.size):
+                var h = 1 + min(Self.win_stones - 1, x, Self.size - 1 - x, Self.size - Self.win_stones)
+                var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y, Self.size - Self.win_stones)
+                var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
+                var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
                 var total = v + h + t1 + t2
                 self.setvalues(Place(x, y), Scores(total, total))
 
     fn __copyinit__(out self, existing: Self, /):
-        self._places = InlineArray[Int8, size * size](uninitialized=True)
-        memcpy(dest=self._places.unsafe_ptr(), src=existing._places.unsafe_ptr(), count=size * size)
+        self._places = InlineArray[Int8, Self.size * Self.size](uninitialized=True)
+        memcpy(dest=self._places.unsafe_ptr(), src=existing._places.unsafe_ptr(), count=Self.size * Self.size)
 
-        self._scores = InlineArray[Scores, size * size](uninitialized=True)
-        memcpy(dest=self._scores.unsafe_ptr(), src=existing._scores.unsafe_ptr(), count=size * size)
+        self._scores = InlineArray[Scores, Self.size * Self.size](uninitialized=True)
+        memcpy(dest=self._scores.unsafe_ptr(), src=existing._scores.unsafe_ptr(), count=Self.size * Self.size)
 
         self._score = existing._score
 
@@ -92,57 +92,57 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
         else:
             self._score -= self.score(place, second)
 
-        var x_start = max(0, x - win_stones + 1)
-        var x_end = min(x + win_stones, size) - win_stones + 1
+        var x_start = max(0, x - Self.win_stones + 1)
+        var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
         var n = x_end - x_start
-        self._update_row(y * size + x_start, 1, n, scores)
+        self._update_row(y * Self.size + x_start, 1, n, scores)
 
-        var y_start = max(0, y - win_stones + 1)
-        var y_end = min(y + win_stones, size) - win_stones + 1
+        var y_start = max(0, y - Self.win_stones + 1)
+        var y_end = min(y + Self.win_stones, Self.size) - Self.win_stones + 1
         n = y_end - y_start
-        self._update_row(y_start * size + x, size, n, scores)
+        self._update_row(y_start * Self.size + x, Self.size, n, scores)
 
-        var m = 1 + min(x, y, size - 1 - x, size - 1 - y)
+        var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y)
 
-        n = min(win_stones, m, size - win_stones + 1 - y + x, size - win_stones + 1 - x + y)
+        n = min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y)
         if n > 0:
-            var mn = min(x, y, win_stones - 1)
+            var mn = min(x, y, Self.win_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
-            self._update_row(y_start * size + x_start, size + 1, n, scores)
+            self._update_row(y_start * Self.size + x_start, Self.size + 1, n, scores)
 
-        n = min(win_stones, m, 2 * size - win_stones - y - x, x + y - win_stones + 2)
+        n = min(Self.win_stones, m, 2 * Self.size - Self.win_stones - y - x, x + y - Self.win_stones + 2)
         if n > 0:
-            var mn = min(size - 1 - x, y, win_stones - 1)
+            var mn = min(Self.size - 1 - x, y, Self.win_stones - 1)
             var x_start = x + mn
             var y_start = y - mn
-            self._update_row(y_start * size + x_start, size - 1, n, scores)
+            self._update_row(y_start * Self.size + x_start, Self.size - 1, n, scores)
 
         if turn == first:
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
 
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, win_stones * win_stones + 1]):
+    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
-        for _ in range(n + win_stones - 1):
+        for _ in range(n + Self.win_stones - 1):
             offset += delta
 
         offset = start
 
         @parameter
-        for i in range(win_stones - 1):
+        for i in range(Self.win_stones - 1):
             stones += self._places[offset + i * delta]
 
         for _ in range(n):
-            stones += self._places[offset + delta * (win_stones - 1)]
+            stones += self._places[offset + delta * (Self.win_stones - 1)]
             var scores = scores[stones]
             if scores[0] != 0 or scores[1] != 0:
 
                 @parameter
-                for j in range(win_stones):
+                for j in range(Self.win_stones):
                     self._scores[offset + j * delta] += scores
             stones -= self._places[offset]
             offset += delta
@@ -157,27 +157,27 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
             r = self.score(a, second) < self.score(b, second)
 
         if turn == first:
-            for y in range(size):
-                for x in range(size):
+            for y in range(Self.size):
+                for x in range(Self.size):
                     if self[x, y] == self.empty:
                         heap_add[less_first](Place(x, y), places)
         else:
-            for y in range(size):
-                for x in range(size):
+            for y in range(Self.size):
+                for x in range(Self.size):
                     if self[x, y] == self.empty:
                         heap_add[less_second](Place(x, y), places)
 
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
-        result = self._places[y * size + x]
+        result = self._places[y * Self.size + x]
 
     fn __setitem__(mut self, x: Int, y: Int, value: Int8):
-        self._places[y * size + x] = value
+        self._places[y * Self.size + x] = value
 
     fn score(self, place: Place, turn: Int) -> Score:
-        return Score(self._scores[Int(place.y) * size + Int(place.x)][turn])
+        return Score(self._scores[Int(place.y) * Self.size + Int(place.x)][turn])
 
     fn setvalues(mut self, place: Place, value: Scores):
-        self._scores[Int(place.y) * size + Int(place.x)] = value
+        self._scores[Int(place.y) * Self.size + Int(place.x)] = value
 
     fn __str__(self) -> String:
         return String.write(self)
@@ -191,13 +191,13 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
     fn write[W: Writer](self, mut writer: W) raises:
         writer.write("\n  ")
 
-        for i in range(size):
+        for i in range(Self.size):
             writer.write(String.format(" {}", chr(i + ord("a"))))
         writer.write("\n")
 
-        for y in range(size):
+        for y in range(Self.size):
             writer.write(String(y + 1).rjust(2))
-            for x in range(size):
+            for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
                     writer.write(" X") if x == 0 else writer.write("─X")
@@ -207,21 +207,21 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
                     if y == 0:
                         if x == 0:
                             writer.write(" ┌")
-                        elif x == size - 1:
+                        elif x == Self.size - 1:
                             writer.write("─┐")
                         else:
                             writer.write("─┬")
-                    elif y == size - 1:
+                    elif y == Self.size - 1:
                         if x == 0:
                             writer.write(" └")
-                        elif x == size - 1:
+                        elif x == Self.size - 1:
                             writer.write("─┘")
                         else:
                             writer.write("─┴")
                     else:
                         if x == 0:
                             writer.write(" ├")
-                        elif x == size - 1:
+                        elif x == Self.size - 1:
                             writer.write("─┤")
                         else:
                             writer.write("─┼")
@@ -229,7 +229,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
 
         writer.write("  ")
 
-        for i in range(size):
+        for i in range(Self.size):
             writer.write(String.format(" {}", chr(i + ord("a"))))
         writer.write("\n")
 
@@ -242,13 +242,13 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
 
     fn str_scores_raises(self, table_idx: Int, out str: String) raises:
         str = "\n   │"
-        for i in range(size):
+        for i in range(Self.size):
             str += String.format("    {} ", chr(i + ord("a")))
         str += "│\n"
-        str += "───┼" + "──────" * size + "┼───\n"
-        for y in range(size):
+        str += "───┼" + "──────" * Self.size + "┼───\n"
+        for y in range(Self.size):
             str += String(y + 1).rjust(2) + " │"
-            for x in range(size):
+            for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
                     str += "    X "
@@ -261,73 +261,73 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
                     else:
                         str += String(Int(value.value)).rjust(5, " ") + " "
             str += "│ " + String(y + 1).rjust(2) + "\n"
-        str += "───┼" + "──────" * size + "┼───"
+        str += "───┼" + "──────" * Self.size + "┼───"
         if not table_idx:
             str += "\n   │"
-            for i in range(size):
+            for i in range(Self.size):
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
     fn board_value(self, scores: List[Float32]) -> Score:
         var value = Score(0)
-        for y in range(size):
+        for y in range(Self.size):
             var stones = Int8(0)
-            for x in range(win_stones - 1):
+            for x in range(Self.win_stones - 1):
                 stones += self[x, y]
-            for x in range(size - win_stones + 1):
-                stones += self[x + win_stones - 1, y]
+            for x in range(Self.size - Self.win_stones + 1):
+                stones += self[x + Self.win_stones - 1, y]
                 value += self._calc_value(stones, scores)
                 stones -= self[x, y]
 
-        for x in range(size):
+        for x in range(Self.size):
             var stones = Int8(0)
-            for y in range(win_stones - 1):
+            for y in range(Self.win_stones - 1):
                 stones += self[x, y]
-            for y in range(size - win_stones + 1):
-                stones += self[x, y + win_stones - 1]
+            for y in range(Self.size - Self.win_stones + 1):
+                stones += self[x, y + Self.win_stones - 1]
                 value += self._calc_value(stones, scores)
                 stones -= self[x, y]
 
-        for y in range(size - win_stones + 1):
+        for y in range(Self.size - Self.win_stones + 1):
             var stones = Int8(0)
-            for x in range(win_stones - 1):
+            for x in range(Self.win_stones - 1):
                 stones += self[x, y + x]
-            for x in range(size - win_stones + 1 - y):
-                stones += self[x + win_stones - 1, x + y + win_stones - 1]
+            for x in range(Self.size - Self.win_stones + 1 - y):
+                stones += self[x + Self.win_stones - 1, x + y + Self.win_stones - 1]
                 value += self._calc_value(stones, scores)
                 stones -= self[x, x + y]
 
-        for x in range(1, size - win_stones + 1):
+        for x in range(1, Self.size - Self.win_stones + 1):
             var stones = Int8(0)
-            for y in range(win_stones - 1):
+            for y in range(Self.win_stones - 1):
                 stones += self[x + y, y]
-            for y in range(size - win_stones + 1 - x):
-                stones += self[x + y + win_stones - 1, y + win_stones - 1]
+            for y in range(Self.size - Self.win_stones + 1 - x):
+                stones += self[x + y + Self.win_stones - 1, y + Self.win_stones - 1]
                 value += self._calc_value(stones, scores)
                 stones -= self[x + y, y]
 
-        for y in range(size - win_stones + 1):
+        for y in range(Self.size - Self.win_stones + 1):
             var stones = Int8(0)
-            for x in range(win_stones - 1):
-                stones += self[size - 1 - x, x + y]
-            for x in range(size - win_stones + 1 - y):
-                stones += self[size - 1 - x - win_stones + 1, x + y + win_stones - 1]
+            for x in range(Self.win_stones - 1):
+                stones += self[Self.size - 1 - x, x + y]
+            for x in range(Self.size - Self.win_stones + 1 - y):
+                stones += self[Self.size - 1 - x - Self.win_stones + 1, x + y + Self.win_stones - 1]
                 value += self._calc_value(stones, scores)
-                stones -= self[size - 1 - x, x + y]
+                stones -= self[Self.size - 1 - x, x + y]
 
-        for x in range(1, size - win_stones + 1):
+        for x in range(1, Self.size - Self.win_stones + 1):
             var stones = Int8(0)
-            for y in range(win_stones - 1):
-                stones += self[size - 1 - x - y, y]
-            for y in range(size - win_stones + 1 - x):
-                stones += self[size - win_stones - x - y, y + win_stones - 1]
+            for y in range(Self.win_stones - 1):
+                stones += self[Self.size - 1 - x - y, y]
+            for y in range(Self.size - Self.win_stones + 1 - x):
+                stones += self[Self.size - Self.win_stones - x - y, y + Self.win_stones - 1]
                 value += self._calc_value(stones, scores)
-                stones -= self[size - 1 - x - y, y]
+                stones -= self[Self.size - 1 - x - y, y]
         return value
 
     fn _calc_value(self, stones: Int8, scores: List[Float32]) -> Score:
-        var black = stones % win_stones
-        var white = stones // win_stones
+        var black = stones % Self.win_stones
+        var white = stones // Self.win_stones
         if white == 0:
             return Score(scores[black])
         elif black == 0:
@@ -337,10 +337,10 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
     fn max_score(self, player: Int) -> Score:
         var max_scores = self._scores[0]
 
-        for y in range(size):
-            for x in range(size):
+        for y in range(Self.size):
+            for x in range(Self.size):
                 if self[x, y] == self.empty:
-                    max_scores = max(max_scores, self._scores[y * size + x])
+                    max_scores = max(max_scores, self._scores[y * Self.size + x])
 
         return Score(max_scores[player])
 

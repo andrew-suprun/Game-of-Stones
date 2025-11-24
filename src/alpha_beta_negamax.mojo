@@ -9,9 +9,9 @@ alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):
-    alias Game = G
+    alias Game = Self.G
 
-    var root: AlphaBetaNode[G]
+    var root: AlphaBetaNode[Self.G]
     var logger: Logger
 
     @staticmethod
@@ -19,11 +19,11 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         return "Alpha-Beta Negamax With Memory"
 
     fn __init__(out self):
-        self.root = AlphaBetaNode[G](G.Move(), Score.no_score())
+        self.root = AlphaBetaNode[Self.G](Self.G.Move(), Score.no_score())
         self.logger = Logger(prefix="abs: ")
 
-    fn search(mut self, game: G, duration_ms: UInt) -> MoveScore[G.Move]:
-        var best_move = MoveScore[G.Move](G.Move(), Score.loss())
+    fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
+        var best_move = MoveScore[Self.G.Move](Self.G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         while True:
@@ -37,16 +37,16 @@ struct AlphaBetaNegamax[G: TGame](TTree):
 
 
 struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
-    var move: G.Move
+    var move: Self.G.Move
     var score: Score
     var children: List[Self]
 
-    fn __init__(out self, move: G.Move, score: Score):
+    fn __init__(out self, move: Self.G.Move, score: Score):
         self.move = move
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, game: G, mut best_move: MoveScore[G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score.no_score()
 
@@ -64,7 +64,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
         sort[Self.greater](self.children)
         if depth == 0:
-            best_move = MoveScore[G.Move](self.children[0].move, self.children[0].score)
+            best_move = MoveScore[Self.G.Move](self.children[0].move, self.children[0].score)
             logger.debug("best move", best_move)
 
         if depth <= trace_level:
@@ -95,9 +95,8 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
             if child.score > best_score:
                 best_score = child.score
                 if depth == 0:
-                    best_move = MoveScore[G.Move](child.move, child.score)
+                    best_move = MoveScore[Self.G.Move](child.move, child.score)
                     logger.debug("best move", best_move)
-
 
             if best_score > beta or best_score.is_win():
                 if depth <= trace_level:
