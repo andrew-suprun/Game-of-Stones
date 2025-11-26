@@ -11,29 +11,42 @@ struct Tree[G: TGame, n_leaves: Int](TTree, Representable, Stringable, Writable)
     var free: NodeId
 
     fn __init__(out self):
-        self.nodes = List(Node[Self.G.Move](Self.G.Move()))
+        self.nodes = List(Node(Self.G.Move(), parent_id=null_id))
         self.leaves = List[NodeIdScore](capacity=Self.n_leaves)
         self.leaves.append(NodeIdScore(root_id, Score()))
         self.heap = List[NodeIdScore](capacity=Self.n_leaves)
         self.free = null_id
 
+    fn __getitem__(ref self, id: NodeId) -> ref [self.nodes] Node[Self.G.Move]:
+        return self.nodes[id]
+
     fn search(mut self, game: Self.Game, max_time_ms: UInt) -> MoveScore[Self.Game.Move]:
         return MoveScore(Self.Game.Move(), Score())
 
-    fn alloc_node(mut self, move: Self.G.Move, /, parent: NodeId = null_id, first_child: NodeId = null_id, next_sibling: NodeId = null_id) -> ref [self.nodes] Node[Self.G.Move]:
+    fn alloc_node(mut self, move: Self.G.Move, /, parent_id: NodeId) -> NodeId:
         if self.free != null_id:
-            var id = self.free
-            self.free = self.nodes[id].next_sibling
-            ref result = self.nodes[id]
-            result.move = move
-            result.active = True
-            result.parent = parent
-            result.first_child = first_child
-            result.next_sibling = next_sibling
-            return result
+            var child_id = self.free
+            self.free = self.nodes[child_id].next_sibling
+            ref child = self.nodes[child_id]
+            child.move = move
+            child.active = True
+            child.parent = parent_id
+            child.first_child = null_id
+            if parent_id != null_id:
+                ref parent = self[parent_id]
+                child.next_sibling = parent.first_child
+                parent.first_child = child_id
+            else:
+                child.next_sibling = null_id
+            return child_id
         else:
-            self.nodes.append(Node(move, parent=parent, first_child=first_child, next_sibling=next_sibling))
-            return ref self.nodes[-1]
+            self.nodes.append(Node(move, parent_id=parent_id))
+            var child_id = len(self.nodes)
+            if parent_id != null_id:
+                ref parent = self[parent_id]
+                self[child_id].next_sibling = parent.first_child
+                parent.first_child = child_id
+            return child_id
 
     fn free_node(mut self, parent: NodeId):
         var id = self.nodes[parent].first_child
@@ -75,12 +88,12 @@ struct Node[Move: TMove](Copyable, Movable):
     var first_child: NodeId
     var next_sibling: NodeId
 
-    fn __init__(out self, move: Self.Move, /, parent: NodeId = null_id, first_child: NodeId = null_id, next_sibling: NodeId = null_id):
+    fn __init__(out self, move: Self.Move, /, parent_id: NodeId):
         self.move = move
         self.active = True
-        self.parent = parent
-        self.first_child = first_child
-        self.next_sibling = next_sibling
+        self.parent = parent_id
+        self.first_child = null_id
+        self.next_sibling = null_id
 
 
 @register_passable
@@ -107,5 +120,13 @@ struct NodeIdScore(ImplicitlyCopyable, Movable, Representable, Stringable, Writa
             writer.write(" ", self.score)
 
 
+from connect6 import Connect6
+
+alias Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
+
+
 fn main():
-    pass
+    var tree = Tree[Game, 20]()
+    ref node = tree[0]
+    node.parent = 123
+    print(node.parent)
