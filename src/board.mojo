@@ -79,7 +79,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
     fn __moveinit__(out self, deinit existing: Self):
         self._places = existing._places^
         self._scores = existing._scores^
-        self._score = existing._score^
+        self._score = existing._score
 
     fn place_stone(mut self, place: Place, turn: Int):
         var scores = self.value_table[turn]

@@ -27,7 +27,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.logger = Logger(prefix="pvs: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var best_move = MoveScore[Self.G.Move](Self.G.Move(), Score.loss())
+        var best_move = MoveScore(Self.G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         while True:
@@ -68,7 +68,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
         sort[Self.greater](self.children)
         if depth == 0:
-            best_move = MoveScore[Self.G.Move](self.children[0].move, self.children[0].score)
+            best_move = MoveScore(self.children[0].move, self.children[0].score)
 
         if depth <= trace_level:
             logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
@@ -89,7 +89,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                     if depth <= trace_level:
                         logger.trace("|  " * depth, depth, " << search: cut-score: ", best_score, sep="")
                     if depth == 0:
-                        best_move = MoveScore[Self.G.Move](child.move, child.score)
+                        best_move = MoveScore(child.move, child.score)
                     return child.score
 
                 alpha = max(alpha, child.score)
@@ -123,7 +123,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             child.score = score
 
             if depth == 0 and child.score > best_score:
-                best_move = MoveScore[Self.G.Move](child.move, child.score)
+                best_move = MoveScore(child.move, child.score)
                 logger.debug("best move", best_move, " [", alpha, ":", b, "] time ", (deadline - perf_counter_ns()) / 1_000_000_000)
 
             if child.score < alpha:
