@@ -23,7 +23,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         return "Principal Variation Negamax With Memory"
 
     fn __init__(out self):
-        self.root = PrincipalVariationNode[Self.G](Self.G.Move(), Score.no_score())
+        self.root = PrincipalVariationNode[Self.G](Self.G.Move(), Score())
         self.logger = Logger(prefix="pvs: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
@@ -52,7 +52,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
     fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
-            return Score.no_score()
+            return Score()
 
         if not self.children:
             var moves = game.moves()
@@ -75,7 +75,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
         for ref child in self.children:
             if not child.score.is_decisive():
-                child.score = Score.no_score()
+                child.score = Score()
 
         var idx = 0
         var state = first_move
@@ -118,7 +118,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             if not score.is_set():
                 if depth <= trace_level:
                     logger.trace("|  " * depth, depth, " << search: timeout", sep="")
-                return Score.no_score()
+                return Score()
 
             child.score = score
 

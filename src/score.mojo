@@ -17,12 +17,8 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, W
     fn draw() -> Score:
         return Score(-0.0)
 
-    @staticmethod
-    fn no_score() -> Score:
-        return nan[DType.float32]()
-
     fn __init__(out self):
-        self = Self.no_score()
+        self = nan[DType.float32]()
 
     @implicit
     fn __init__(out self, value: IntLiteral):

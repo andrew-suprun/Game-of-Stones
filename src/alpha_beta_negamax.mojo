@@ -19,7 +19,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         return "Alpha-Beta Negamax With Memory"
 
     fn __init__(out self):
-        self.root = AlphaBetaNode[Self.G](Self.G.Move(), Score.no_score())
+        self.root = AlphaBetaNode[Self.G](Self.G.Move(), Score())
         self.logger = Logger(prefix="abs: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
@@ -48,7 +48,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
     fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
-            return Score.no_score()
+            return Score()
 
         if not self.children:
             var moves = game.moves()
@@ -72,7 +72,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
         for ref child in self.children:
             if not child.score.is_decisive():
-                child.score = Score.no_score()
+                child.score = Score()
 
         for ref child in self.children:
             var g = game.copy()
@@ -90,7 +90,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                     logger.trace("|  " * depth, depth, " < decisive move: ", child.move, " ", child.score, " [", alpha, ":", beta, "]", sep="")
 
             if not child.score.is_set():
-                return Score.no_score()
+                return Score()
 
             if child.score > best_score:
                 best_score = child.score
