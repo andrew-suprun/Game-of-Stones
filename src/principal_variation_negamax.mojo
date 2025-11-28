@@ -24,7 +24,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
     fn __init__(out self):
         self.root = PrincipalVariationNode[Self.G](Self.G.Move(), Score())
-        self.logger = Logger(prefix="pvs: ")
+        self.logger = Logger(prefix="pvs1: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
         var best_move = MoveScore(Self.G.Move(), Score.loss())
