@@ -28,11 +28,22 @@ struct PrincipalVariationNegamax2[G: TGame](TTree):
         while True:
             logger.trace(">>> depth", depth)
             sort[Self.greater](roots)
-            ref first_root = roots[0]
-            if first_root.move.score.is_loss() or first_root.move.score.is_win():
-                logger.debug("return1: depth", depth, "best move", first_root.move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
-                return first_root.move
 
+            if roots[0].move.score.is_win():
+                logger.debug("return1: depth", depth, "best move", roots[0].move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
+                return roots[0].move
+
+            while True:
+                if roots[-1].move.score.is_loss():
+                    logger.trace("= removing:", roots[-1].move.move)
+                    _ = roots.pop()
+                else:
+                    break
+
+            for ref root in roots:
+                root.move.score = Score.loss()
+
+            ref first_root = roots[0]
             var g = game.copy()
             _ = g.play_move(first_root.move.move)
             logger.trace("> move-1: ", first_root.move.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
@@ -44,11 +55,10 @@ struct PrincipalVariationNegamax2[G: TGame](TTree):
             logger.trace("< move-1: ", first_root.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
 
             for ref root in roots[1:]:
-                if root.move.score.is_decisive():
-                    logger.trace(" skipping", root.move)
+                if root.move.score.is_draw():
+                    logger.trace(" skipping draw", root.move)
                     continue
 
-                root.move.score = Score.loss()
                 g = game.copy()
                 _ = g.play_move(root.move.move)
                 logger.trace("> move-2: ", root.move.move, " [", -alpha, ":", -alpha, "]", sep="")
