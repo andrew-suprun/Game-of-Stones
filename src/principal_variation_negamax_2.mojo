@@ -22,41 +22,63 @@ struct PrincipalVariationNegamax2[G: TGame](TTree):
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
         var roots = [PrincipalVariationNode(move) for move in game.moves()]
-        # var best_move = roots[0].move
         var logger = Logger(prefix="pvs2: ")
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         while True:
+            logger.trace(">>> depth", depth)
             sort[Self.greater](roots)
             ref first_root = roots[0]
-            best_move = first_root.move
-            logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
             if first_root.move.score.is_loss() or first_root.move.score.is_win():
-                return MoveScore[Self.G.Move](first_root.move.move, first_root.move.score)
+                logger.debug("return1: depth", depth, "best move", first_root.move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
+                return first_root.move
 
             var g = game.copy()
             _ = g.play_move(first_root.move.move)
-            var alpha = first_root._search(g, Score.loss(), Score.win(), 1, depth, deadline, logger)
+            logger.trace("> move: ", first_root.move.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
+            var alpha = -first_root._search(g, Score.loss(), Score.win(), 1, depth, deadline, logger)
             if not alpha.is_set():
-                return best_move
+                return first_root.move
 
-            for i in range(1, len(roots)):
-                ref root = roots[i]
+            first_root.move.score = alpha
+            logger.trace("< move: ", first_root.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
+
+            for ref root in roots[1:]:
+                if root.move.score.is_decisive():
+                    logger.trace(" skipping", root.move)
+                    continue
+
+                root.move.score = Score.loss()
                 g = game.copy()
-                _ = g.play_move(first_root.move.move)
-                var score = root._search(g, alpha, alpha, 1, depth, deadline, logger)
-                if not alpha.is_set():
+                _ = g.play_move(root.move.move)
+                logger.trace("> move: ", root.move.move, " [", alpha, ":", alpha, "]", sep="")
+                root.move.score = -root._search(g, alpha, alpha, 1, depth, deadline, logger)
+                logger.trace("< move: ", root.move, " [", alpha, ":", alpha, "]", sep="")
+                if not root.move.score.is_set():
+                    var best_move = Self._best_move(roots)
+                    logger.debug("best move 1", best_move)
                     return best_move
-                elif score > alpha:
-                    best_move = root.move
-                    logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
-                    alpha = score
-                    score = root._search(g, alpha, Score.win(), 1, depth, deadline, logger)
+                elif root.move.score > alpha:
+                    alpha = root.move.score
+                    logger.trace("> move: ", root.move.move, " [", Score.loss(), ":", alpha, "]", sep="")
+                    root.move.score = -root._search(g, Score.loss(), alpha, 1, depth, deadline, logger)
+                    logger.trace("< move: ", root.move, " [", Score.loss(), ":", alpha, "]", sep="")
+                    logger.debug(" move3", root.move)
                     if not alpha.is_set():
+                        var best_move = Self._best_move(roots)
+                        logger.debug("best move 2", best_move)
                         return best_move
-                    alpha = max(alpha, score)
+                    alpha = max(alpha, root.move.score)
 
             depth += 1
+
+    @staticmethod
+    fn _best_move(roots: List[PrincipalVariationNode[Self.G]]) -> MoveScore[Self.G.Move]:
+        var best_move = roots[0].move
+        for root in roots:
+            if best_move.score < root.move.score:
+                best_move = root.move
+        return best_move
 
     @staticmethod
     @parameter
@@ -77,10 +99,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             return Score()
 
         if not self.children:
-            var moves = game.moves()
-            self.children = List[Self](capacity=len(moves))
-            for move in moves:
-                self.children.append(Self(move))
+            self.children = [Self(move) for move in game.moves()]
 
         var best_score = Score.loss()
         if depth == max_depth:
@@ -89,6 +108,9 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             return best_score
 
         sort[Self.greater](self.children)
+
+        # if alpha == beta:
+        #     var best_move = 
 
         if depth <= trace_level:
             logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
