@@ -35,13 +35,13 @@ struct PrincipalVariationNegamax2[G: TGame](TTree):
 
             var g = game.copy()
             _ = g.play_move(first_root.move.move)
-            logger.trace("> move: ", first_root.move.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
+            logger.trace("> move-1: ", first_root.move.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
             var alpha = -first_root._search(g, Score.loss(), Score.win(), 1, depth, deadline, logger)
             if not alpha.is_set():
                 return first_root.move
 
             first_root.move.score = alpha
-            logger.trace("< move: ", first_root.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
+            logger.trace("< move-1: ", first_root.move, " [", Score.loss(), ":", Score.win(), "]", sep="")
 
             for ref root in roots[1:]:
                 if root.move.score.is_decisive():
@@ -51,19 +51,18 @@ struct PrincipalVariationNegamax2[G: TGame](TTree):
                 root.move.score = Score.loss()
                 g = game.copy()
                 _ = g.play_move(root.move.move)
-                logger.trace("> move: ", root.move.move, " [", alpha, ":", alpha, "]", sep="")
-                root.move.score = -root._search(g, alpha, alpha, 1, depth, deadline, logger)
-                logger.trace("< move: ", root.move, " [", alpha, ":", alpha, "]", sep="")
+                logger.trace("> move-2: ", root.move.move, " [", -alpha, ":", -alpha, "]", sep="")
+                root.move.score = -root._search(g, -alpha, -alpha, 1, depth, deadline, logger)
+                logger.trace("< move-2: ", root.move, " [", -alpha, ":", -alpha, "]", sep="")
                 if not root.move.score.is_set():
                     var best_move = Self._best_move(roots)
                     logger.debug("best move 1", best_move)
                     return best_move
                 elif root.move.score > alpha:
                     alpha = root.move.score
-                    logger.trace("> move: ", root.move.move, " [", Score.loss(), ":", alpha, "]", sep="")
-                    root.move.score = -root._search(g, Score.loss(), alpha, 1, depth, deadline, logger)
-                    logger.trace("< move: ", root.move, " [", Score.loss(), ":", alpha, "]", sep="")
-                    logger.debug(" move3", root.move)
+                    logger.trace("> move-3: ", root.move.move, " [", -alpha, ":", Score.win(), "]", sep="")
+                    root.move.score = -root._search(g, -alpha, Score.win(), 1, depth, deadline, logger)
+                    logger.trace("< move-3: ", root.move, " [", -alpha, ":", Score.win(), "]", sep="")
                     if not alpha.is_set():
                         var best_move = Self._best_move(roots)
                         logger.debug("best move 2", best_move)
