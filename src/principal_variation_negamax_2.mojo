@@ -150,9 +150,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         var idx = 0
         while idx < len(self.children):
             ref child = self.children[idx]
+            logger.trace(" idx-1", idx, "move", child.move)
 
             if child.score.is_decisive():
                 self.score = max(self.score, -child.score)
+                alpha = max(alpha, -child.score)
                 
                 if self.score > beta:
                     if logger.level >= Level.TRACE:
@@ -172,6 +174,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             _ = g.play_move(child.move)
             var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
             self.score = max(self.score, score)
+            alpha = max(alpha, -child.score)
 
             if self.score > beta:
                 if logger.level >= Level.TRACE:
@@ -180,7 +183,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 break 
             else:
                 if logger.level >= Level.TRACE:
-                    logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", beta, "] ; score: ", child.score, sep="")
+                    logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", beta, "]; score: ", child.score, sep="")
                 
                 if self.score >= alpha:
                     break
@@ -198,9 +201,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
         while idx < len(self.children):
             ref child = self.children[idx]
+            logger.trace(" idx-2", idx, "move", child.move)
 
             if child.score.is_decisive():
                 self.score = max(self.score, -child.score)
+                alpha = max(alpha, -child.score)
                 
                 if self.score > beta:
                     if logger.level >= Level.TRACE:
@@ -214,7 +219,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 continue
 
             if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " > move [scout]: ", child.move, " zero bound: ", alpha, "]", sep="")
+                logger.trace("|  " * depth, depth, " > move [scout]: ", child.move, " zero bound: ", alpha, sep="")
 
             var g = game.copy()
             _ = g.play_move(child.move)
