@@ -75,9 +75,50 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             if not child.score.is_decisive():
                 child.score = Score()
 
+        # Zero window search
         if alpha == beta:
             if logger.level >= Level.TRACE:
                 logger.trace("|  " * depth, depth, " >> search zero bound: ", alpha, sep="")
+
+            for ref child in self.children:
+                if child.score.is_decisive():
+                    self.score = max(self.score, -child.score)
+                    if self.score > beta:
+                        if logger.level >= Level.TRACE:
+                            logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                        break
+
+                    if logger.level >= Level.TRACE:
+                        logger.trace("|  " * depth, depth, " = move: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                    
+                    continue
+
+                if logger.level >= Level.TRACE:
+                    logger.trace("|  " * depth, depth, " > move: ", child.move, " zero bound: ", alpha, sep="")
+
+                var g = game.copy()
+                _ = g.play_move(child.move)
+                var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+
+                self.score = max(self.score, score)
+                
+                if self.score > beta:
+                    if logger.level >= Level.TRACE:
+                        logger.trace("|  " * depth, depth, " < move [cut]: ", child.move, " zero bound: ", alpha, "]; score: ", child.score, sep="")
+
+                    break
+                else:
+                    if logger.level >= Level.TRACE:
+                        logger.trace("|  " * depth, depth, " < move: ", child.move, " zero bound: ", alpha, "; score: ", child.score, sep="")
+
+            if logger.level >= Level.TRACE:
+                logger.trace("|  " * depth, depth, " << search zero bound: ", alpha, "; score: ", self.score, sep="")
+
+            return self.score
+
+        # Full window search
+        if logger.level >= Level.TRACE:
+            logger.trace("|  " * depth, depth, " >> search [full window]: [", alpha, ":", beta, "]", sep="")
 
             for ref child in self.children:
                 if logger.level >= Level.TRACE:
@@ -109,38 +150,93 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         var idx = 0
         while idx < len(self.children):
             ref child = self.children[idx]
+
+            if child.score.is_decisive():
+                self.score = max(self.score, -child.score)
+                
+                if self.score > beta:
+                    if logger.level >= Level.TRACE:
+                        logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                    break
+
+                if logger.level >= Level.TRACE:
+                    logger.trace("|  " * depth, depth, " = move: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                
+                idx += 1
+                continue
+
             if logger.level >= Level.TRACE:
                 logger.trace("|  " * depth, depth, " > move: ", child.move, " [", alpha, ":", beta, "]", sep="")
 
-            var score = -child.score
-            if not score.is_decisive():
-                var g = game.copy()
-                _ = g.play_move(child.move)
-                score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
-
+            var g = game.copy()
+            _ = g.play_move(child.move)
+            var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
             self.score = max(self.score, score)
 
             if self.score > beta:
                 if logger.level >= Level.TRACE:
                     logger.trace("|  " * depth, depth, " < move [cut]: ", child.move, " [", alpha, ":", beta, "]; score: ", child.score, sep="")
 
-                break
+                break 
             else:
                 if logger.level >= Level.TRACE:
-                    logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", beta, "; score: ", child.score, sep="")
+                    logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", beta, "] ; score: ", child.score, sep="")
                 
                 if self.score >= alpha:
                     break
             idx += 1
 
-        if self.score > beta:
-            if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " << search: [", alpha, ":", beta, "]; score: ", self.score, sep="")
+        if logger.level >= Level.TRACE:
+            logger.trace("|  " * depth, depth, " << search [full window]: [", alpha, ":", beta, "]; score: ", self.score, sep="")
 
+        if self.score > beta:
             return self.score
 
+        # Scout search
+        if logger.level >= Level.TRACE:
+            logger.trace("|  " * depth, depth, " >> search [scout]: [", alpha, ":", beta, "]", sep="")
+
         while idx < len(self.children):
-            ...
+            ref child = self.children[idx]
+
+            if child.score.is_decisive():
+                self.score = max(self.score, -child.score)
+                
+                if self.score > beta:
+                    if logger.level >= Level.TRACE:
+                        logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                    break
+
+                if logger.level >= Level.TRACE:
+                    logger.trace("|  " * depth, depth, " = move: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                
+                idx += 1
+                continue
+
+            if logger.level >= Level.TRACE:
+                logger.trace("|  " * depth, depth, " > move [scout]: ", child.move, " zero bound: ", alpha, "]", sep="")
+
+            var g = game.copy()
+            _ = g.play_move(child.move)
+            var score = -child._search(g, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
+            self.score = max(self.score, score)
+
+            if self.score > alpha:
+                if logger.level >= Level.TRACE:
+                    logger.trace("|  " * depth, depth, " < move [scout fail]: ", child.move, " zero bound: ", alpha, "; score: ", child.score, sep="")
+
+                alpha = self.score
+                ... # TODO Full window re-search
+            else:
+                if logger.level >= Level.TRACE:
+                    logger.trace("|  " * depth, depth, " < move [scout]: ", child.move, " zero bound: ", alpha, "; score: ", child.score, sep="")
+                
+                if self.score >= alpha:
+                    break
+            idx += 1
+
+        if logger.level >= Level.TRACE:
+            logger.trace("|  " * depth, depth, " << search [scout]: [", alpha, ":", beta, "]; score: ", self.score, sep="")
 
         return self.score
 
