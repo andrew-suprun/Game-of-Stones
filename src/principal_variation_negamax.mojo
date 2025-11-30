@@ -64,9 +64,15 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         if depth == max_depth:
             for child in self.children:
                 best_score = max(best_score, child.score)
+            self.score = -best_score
             return best_score
 
         sort[Self.greater](self.children)
+
+        if self.children[0].score.is_win():
+            self.score = Score.loss()
+            return self.score
+
         if depth == 0:
             best_move = MoveScore(self.children[0].move, self.children[0].score)
 
