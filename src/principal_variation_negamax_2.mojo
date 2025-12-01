@@ -170,21 +170,18 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             _ = g.play_move(child.move)
 
             if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " > move [scout]: ", child.move, " zero bound: ", alpha, sep="")
+                logger.trace("|  " * depth, depth, " > move [scout zero]: ", child.move, " zero bound: ", alpha, sep="")
             var score = -child._search(g, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
             if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " < move [scout]: ", child.move, " zero bound: ", alpha, "; score: ", child.score, sep="")
+                logger.trace("|  " * depth, depth, " < move [scout zero]: ", child.move, " zero bound: ", alpha, "; score: ", child.score, sep="")
 
             self.score = max(self.score, score)
 
-            if self.score > alpha:
+            if child.score > -alpha:
+                alpha = -child.score
                 if logger.level >= Level.TRACE:
-                    logger.trace("|  " * depth, depth, " full search here: score: ", self.score, " alpha: ", alpha, sep="")
-                alpha = self.score
+                    logger.trace("|  " * depth, depth, " DO full search here ", child.move, " [", alpha, ":", beta, "]", sep="")
                 ... # TODO Full window re-search
-            else:
-                if self.score >= alpha:
-                    break
             idx += 1
 
         return self.score
