@@ -6,6 +6,18 @@ from score import Score
 from traits import TTree, TGame, MoveScore
 
 
+# TODO Use this after unpacked arguments are supported
+fn debug[*Ts: Writable](logger: Logger, depth: Int, *values: *Ts):
+    if not logger._is_disabled[Level.DEBUG]():
+        logger.debug("|  " * depth, depth, *values, sep="")
+
+
+fn trace[*Ts: Writable](logger: Logger, depth: Int, *values: *Ts):
+    if not logger._is_disabled[Level.DEBUG]():
+        logger.trace("|  " * depth, depth, *values, sep="")
+
+
+
 struct PrincipalVariationNegamax2[G: TGame](TTree):
     alias Game = Self.G
 
@@ -55,6 +67,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
     fn _search(mut self, game: Self.G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
+            if not logger._is_disabled[Level.DEBUG]():
+                logger.debug("|  " * depth, depth, " == search: ", self.move, " [", alpha, ":", beta, "]; timeout", sep="")
             return Score()
 
         if not self.children:
@@ -65,12 +79,19 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             for child in self.children:
                 self.score = max(self.score, -child.score)
 
+            if not logger._is_disabled[Level.DEBUG]():
+                logger.debug("|  " * depth, depth, " == search [leaf]: ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
             return self.score
 
         sort[Self.greater](self.children)
 
         if self.children[0].score.is_win():
+            if not logger._is_disabled[Level.DEBUG]():
+                logger.debug("|  " * depth, depth, " == search: ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
             return Score.loss()
+
+        if not logger._is_disabled[Level.DEBUG]():
+            logger.debug("|  " * depth, depth, " >> search: ", self.move, " [", alpha, ":", beta, "]", sep="")
 
         for ref child in self.children[1:]:
             if not child.score.is_decisive():
@@ -82,12 +103,12 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 if child.score.is_decisive():
                     self.score = max(self.score, -child.score)
                     if self.score > beta:
-                        if logger.level >= Level.TRACE:
-                            logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                        if not logger._is_disabled[Level.TRACE]():
+                            logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " [", -beta, ":", -alpha, "]; score:", child.score, sep="")
                         break
 
-                    if logger.level >= Level.TRACE:
-                        logger.trace("|  " * depth, depth, " = move: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
+                    if not logger._is_disabled[Level.DEBUG]():
+                        logger.trace("|  " * depth, depth, " = move: ", child.move, " [", -beta, ":", -alpha, "]; score:", child.score, sep="")
                     
                     continue
 
@@ -95,17 +116,19 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 var g = game.copy()
                 _ = g.play_move(child.move)
 
-                if logger.level >= Level.TRACE:
-                    logger.trace("|  " * depth, depth, " > move [zero window]: ", child.move, " zero bound: ", alpha, sep="")
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " > move [zero window]: ", child.move, " [", -beta, ":", -alpha, "]", sep="")
                 var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
-                if logger.level >= Level.TRACE:
-                    logger.trace("|  " * depth, depth, " < move [zero window]: ", child.move, " zero bound: ", alpha, "]; score: ", child.score, sep="")
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " < move [zero window]: ", child.move, " [", -beta, ":", -alpha, "]", child.score, sep="")
 
                 self.score = max(self.score, score)
                 
                 if self.score > beta:
                     break
 
+            if not logger._is_disabled[Level.DEBUG]():
+                logger.debug("|  " * depth, depth, " << search [zero window]: ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
             return self.score
 
         # Full window search
@@ -118,11 +141,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 alpha = max(alpha, -child.score)
                 
                 if self.score > beta:
-                    if logger.level >= Level.TRACE:
+                    if not logger._is_disabled[Level.TRACE]():
                         logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " score:", child.score, sep="")
                     break
 
-                if logger.level >= Level.TRACE:
+                if not logger._is_disabled[Level.TRACE]():
                     logger.trace("|  " * depth, depth, " = move: ", child.move, " score:", child.score, sep="")
                 
                 idx += 1
@@ -131,11 +154,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             var g = game.copy()
             _ = g.play_move(child.move)
 
-            if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " > move [full window]: ", child.move, " [", alpha, ":", beta, "]", sep="")
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " > move [full window]: ", child.move, " [", -beta, ":", -alpha, "]", sep="")
             var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
-            if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " < move [full window]: ", child.move, " [", alpha, ":", beta, "]; score: ", child.score, sep="")
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " < move [full window]: ", child.move," [", -beta, ":", -alpha, "]; score:", child.score, sep="")
 
             self.score = max(self.score, score)
             alpha = max(alpha, -child.score)
@@ -145,6 +168,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 break 
 
         if self.score > beta:
+            if not logger._is_disabled[Level.DEBUG]():
+                logger.debug("|  " * depth, depth, " << search [cut]: ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
             return self.score
 
         # Scout search
@@ -156,11 +181,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 alpha = max(alpha, -child.score)
                 
                 if self.score > beta:
-                    if logger.level >= Level.TRACE:
+                    if not logger._is_disabled[Level.TRACE]():
                         logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
                     break
 
-                if logger.level >= Level.TRACE:
+                if not logger._is_disabled[Level.TRACE]():
                     logger.trace("|  " * depth, depth, " = move: ", child.move, " zero bound: ", alpha, " score:", child.score, sep="")
                 
                 idx += 1
@@ -169,21 +194,30 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             var g = game.copy()
             _ = g.play_move(child.move)
 
-            if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " > move [scout zero]: ", child.move, " zero bound: ", alpha, sep="")
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " > move [scout zero]: ", child.move," [", -alpha, ":", -alpha, "]", sep="")
             var score = -child._search(g, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
-            if logger.level >= Level.TRACE:
-                logger.trace("|  " * depth, depth, " < move [scout zero]: ", child.move, " zero bound: ", alpha, "; score: ", child.score, sep="")
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " < move [scout zero]: ", child.move, " [", -alpha, ":", -alpha, "]; score:", child.score, sep="")
 
             self.score = max(self.score, score)
 
+            # TODO skip full window if depth == max_depth - 1
             if child.score > -alpha:
                 alpha = -child.score
-                if logger.level >= Level.TRACE:
-                    logger.trace("|  " * depth, depth, " DO full search here ", child.move, " [", alpha, ":", beta, "]", sep="")
-                ... # TODO Full window re-search
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " > move [scout full]: ", child.move, " [", -beta, ":", -alpha, "]", sep="")
+                var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " < move [scout full]: ", child.move, " [", -beta, ":", -alpha, "]; score: ", child.score, sep="")
+                
+                self.score = max(self.score, score)
+                alpha = max(alpha, score)
+                # TODO Finish
             idx += 1
 
+        if not logger._is_disabled[Level.DEBUG]():
+            logger.debug("|  " * depth, depth, " << search: ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
         return self.score
 
     fn write_to[W: Writer](self, mut writer: W):
