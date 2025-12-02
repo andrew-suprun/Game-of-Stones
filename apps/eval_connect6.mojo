@@ -6,11 +6,10 @@ from alpha_beta_negamax import AlphaBetaNegamax
 
 alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 # alias Tree1 = Mcts[Game, 2]
-# alias Tree2 = AlphaBetaNegamax[Game]
-alias Tree2 = PrincipalVariationNegamax2[Game]
+alias Tree2 = AlphaBetaNegamax[Game]
+# alias Tree2 = PrincipalVariationNegamax2[Game]
 
-alias script = "j10 h8-l8 l11-i12 h11-j12 h13-i14 h7-h10 h9-i11 i10-i13 f15-g14 e16-k10 f11-g12"
-# alias script = "j10 h8-l8 l11-i12 h11-j12 h13-i14 h7-h10 h9-i11 i10-i13 f15-g14 e16-k10 f11-g12 e10-f10"
+alias script = "j10 h10-i12 i10-l9 j9-j8"
 
 
 fn main() raises:

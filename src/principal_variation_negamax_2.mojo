@@ -154,10 +154,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
             self.score = min(self.score, -child.score)
             alpha = max(alpha, child.score)
-            idx += 1
 
             if alpha != Score.loss() and child.score >= alpha:
                 break
+
+            idx += 1
 
         # Scout search
         while idx < len(self.children):

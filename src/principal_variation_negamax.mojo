@@ -1,6 +1,6 @@
 from time import perf_counter_ns
 from sys import env_get_int
-from logger import Logger
+from logger import Logger, Level
 
 from score import Score
 from traits import TTree, TGame, MoveScore
@@ -149,12 +149,13 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         return best_score
 
     @always_inline
-    fn _logged_search(mut self, game: Self.G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger, out within_deadline: Bool):
+    fn _logged_search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if not logger._is_disabled[Level.TRACE]():
             logger.trace("|  " * depth, depth, " > move: ", self.move, " [", -beta, ":", -alpha, "]", sep="")
-        within_deadline = self._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+        var score = self._search(game, best_move, alpha, beta, depth, max_depth, deadline, logger)
         if not logger._is_disabled[Level.TRACE]():
             logger.trace("|  " * depth, depth, " < move: ", self.move, " [", -beta, ":", -alpha, "]; score: ", self.score, sep="")
+        return score
 
     fn write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, depth=0)

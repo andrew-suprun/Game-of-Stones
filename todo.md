@@ -87,8 +87,6 @@ U+26C2 ⛂ BLACK DRAUGHTS MAN
 U+26C3 ⛃ BLACK DRAUGHTS KING
 
 
-s:  # Alpha-Beta Negamax depth 5
-ab: 0 < move:
-
-s:  # Alpha-Beta Negamax With Memory depth 5
-ab+: 0 < move:
+opening 7: j10 h10-i12 i10-l9 j9-j8
+ab i9-l10     18.0  0.201053s
+pv i9-l10      win  0.201045s
