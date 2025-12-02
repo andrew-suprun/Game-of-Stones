@@ -73,7 +73,6 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
             return best_score
 
-
         sort[Self.greater](self.children)
 
         if self.children[0].score.is_win():
@@ -82,7 +81,6 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
         if depth == 0:
             best_move = MoveScore(self.children[0].move, self.children[0].score)
-
 
         for ref child in self.children:
             if not child.score.is_decisive():
