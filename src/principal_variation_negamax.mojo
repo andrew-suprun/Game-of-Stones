@@ -31,7 +31,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         while True:
-            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
+            var score = self.root._logged_search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
                 return best_move
             self.logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
@@ -52,6 +52,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
     fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
+            if not logger._is_disabled[Level.DEBUG]():
+                logger.debug("|  " * depth, depth, " == search: ", self.move, " [", alpha, ":", beta, "]; timeout", sep="")
             return Score()
 
         if not self.children:
@@ -65,7 +67,12 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             for child in self.children:
                 best_score = max(best_score, child.score)
             self.score = -best_score
+
+            if not logger._is_disabled[Level.DEBUG]():
+                logger.debug("|  " * depth, depth, " == search [leaf]: ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
+
             return best_score
+
 
         sort[Self.greater](self.children)
 
@@ -76,8 +83,6 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         if depth == 0:
             best_move = MoveScore(self.children[0].move, self.children[0].score)
 
-        if depth <= trace_level:
-            logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
 
         for ref child in self.children:
             if not child.score.is_decisive():
@@ -111,15 +116,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             var b = beta
             if state == zero_window:
                 b = alpha
-            if depth <= trace_level:
-                logger.trace("|  " * depth, depth, " > move: ", child.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, sep="")
 
-            var score = -child._search(g, best_move, -b, -alpha, depth + 1, max_depth, deadline, logger)
-            # if depth == 0:
-            #     logger.debug("     move", child.move, child.score, " [", alpha, ":", b, "] time ", (deadline - perf_counter_ns()) / 1_000_000_000)
-
-            if depth <= trace_level:
-                logger.trace("|  " * depth, depth, " < move: ", child.move, " [", alpha, ":", b, "]; beta: ", beta, "; state: ", state, "; score: ", child.score, sep="")
+            var score = -child._logged_search(g, best_move, -b, -alpha, depth + 1, max_depth, deadline, logger)
 
             if not score.is_set():
                 if depth <= trace_level:
@@ -151,6 +149,14 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         if depth <= trace_level:
             logger.trace("|  " * depth, depth, " << search: score: ", best_score, sep="")
         return best_score
+
+    @always_inline
+    fn _logged_search(mut self, game: Self.G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger, out within_deadline: Bool):
+        if not logger._is_disabled[Level.TRACE]():
+            logger.trace("|  " * depth, depth, " > move: ", self.move, " [", -beta, ":", -alpha, "]", sep="")
+        within_deadline = self._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+        if not logger._is_disabled[Level.TRACE]():
+            logger.trace("|  " * depth, depth, " < move: ", self.move, " [", -beta, ":", -alpha, "]; score: ", self.score, sep="")
 
     fn write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, depth=0)

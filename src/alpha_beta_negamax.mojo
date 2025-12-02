@@ -67,9 +67,6 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
             best_move = MoveScore(self.children[0].move, self.children[0].score)
             logger.debug("best move", best_move)
 
-        if depth <= trace_level:
-            logger.trace("|  " * depth, depth, " >> search [", alpha, ":", beta, "]", sep="")
-
         for ref child in self.children:
             if not child.score.is_decisive():
                 child.score = Score()
@@ -99,14 +96,10 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                     logger.debug("best move", best_move)
 
             if best_score > beta or best_score.is_win():
-                if depth <= trace_level:
-                    logger.trace("|  " * depth, depth, " << search: cut-score: ", best_score, sep="")
                 return best_score
 
             alpha = max(alpha, child.score)
 
-        if depth <= trace_level:
-            logger.trace("|  " * depth, depth, " << search: score: ", best_score, sep="")
         return best_score
 
     fn write_to[W: Writer](self, mut writer: W):
