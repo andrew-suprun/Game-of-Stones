@@ -112,12 +112,17 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 if not child._logged_search("zero window", g, -alpha, -alpha, depth + 1, max_depth, deadline, logger):
                     return False
 
+                if child.score.is_win():
+                    self.score = Score.loss()
+                    return True
+
                 self.score = min(self.score, -child.score)
                 
                 if child.score > beta:
                     if not logger._is_disabled[Level.TRACE]():
                         logger.trace("|  " * depth, depth, " = move [cut]: ", child.move, " [", alpha, ":", beta, "]; score: ", child.score, sep="")
                     return True
+            return True
 
         # Full window search
         var idx = 0
@@ -144,6 +149,10 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
 
             if not child._logged_search("full window", g, -beta, -alpha, depth + 1, max_depth, deadline, logger):
                 return False
+
+            if child.score.is_win():
+                self.score = Score.loss()
+                return True
 
             self.score = min(self.score, -child.score)
             alpha = max(alpha, child.score)
@@ -177,6 +186,10 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
             if not child._logged_search("scout zero", g, -alpha, -alpha, depth + 1, max_depth, deadline, logger):
                 return False
 
+            if child.score.is_win():
+                self.score = Score.loss()
+                return True
+
             self.score = min(self.score, -child.score)
 
             # TODO skip full window if depth == max_depth - 1
@@ -185,6 +198,10 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 if not child._logged_search("scout full", g, -beta, -alpha, depth + 1, max_depth, deadline, logger):
                     return False
                 
+                if child.score.is_win():
+                    self.score = Score.loss()
+                    return True
+
                 self.score = min(self.score, -child.score)
                 alpha = max(alpha, child.score)
                 # TODO Finish
