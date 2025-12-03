@@ -149,7 +149,9 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         return best_score
 
     @always_inline
-    fn _logged_search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    fn _logged_search(
+        mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger
+    ) -> Score:
         if not logger._is_disabled[Level.TRACE]():
             logger.trace("|  " * depth, depth, " > move: ", self.move, " [", -beta, ":", -alpha, "]", sep="")
         var score = self._search(game, best_move, alpha, beta, depth, max_depth, deadline, logger)
