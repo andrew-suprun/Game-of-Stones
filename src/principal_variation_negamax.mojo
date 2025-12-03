@@ -175,7 +175,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 if not logger._is_disabled[Level.TRACE]():
                     logger.trace("|  " * depth, depth, " < [scout zero window] ", child.move, " [", alpha, ":", beta, "]: score: ", child.score, sep="")
 
-            if child.score >= alpha and alpha < beta and depth < max_depth - 1:
+            if child.score >= alpha and depth < max_depth - 1:
                 if not logger._is_disabled[Level.TRACE]():
                     logger.trace("|  " * depth, depth, " > [scout full window] ", child.move, " [", alpha, ":", beta, "]", sep="")
                 if not child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger):
