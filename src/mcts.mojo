@@ -41,8 +41,6 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
                 best_node = best_child.copy()
                 var sec = (deadline - perf_counter_ns()) / 1_000_000_000
                 self.logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", sec)
-                for child in self.root.children:
-                    self.logger.debug("  child", child.move, "sims:", child.n_sims)
 
             if done:
                 break
@@ -50,8 +48,6 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
         ref result = self._best_child()
         var sec = (deadline - perf_counter_ns()) / 1_000_000_000
         self.logger.debug("result   ", result.move, "sims:", result.n_sims, " time ", sec)
-        for child in self.root.children:
-            self.logger.debug("  child", child.move, "sims:", child.n_sims)
 
         return result.move
 

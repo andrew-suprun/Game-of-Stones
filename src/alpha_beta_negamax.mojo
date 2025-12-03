@@ -48,8 +48,8 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
     fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
-            if not logger._is_disabled[Level.DEBUG]():
-                logger.debug("|  " * depth, depth, " = [timeout] ", sep="")
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " = [timeout] ", sep="")
             return Score()
 
         if not self.children:
@@ -73,7 +73,6 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
         if depth == 0:
             best_move = MoveScore(self.children[0].move, self.children[0].score)
-            logger.debug("best move", best_move)
 
         for ref child in self.children:
             if not child.score.is_decisive():
@@ -90,11 +89,8 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
             if child.score > best_score:
                 best_score = child.score
-                if not logger._is_disabled[Level.TRACE]():
-                    logger.trace("|  " * depth, depth, " = new best score ", best_score, " [", alpha, ":", beta, "]", sep="")
                 if depth == 0:
                     best_move = MoveScore(child.move, child.score)
-                    logger.debug("best move", best_move)
 
             if best_score > beta or best_score.is_win():
                 if not logger._is_disabled[Level.TRACE]():

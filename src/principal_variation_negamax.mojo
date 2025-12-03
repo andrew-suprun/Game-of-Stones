@@ -5,11 +5,16 @@ from logger import Logger, Level
 from score import Score
 from traits import TTree, TGame, MoveScore
 
-alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
-alias first_move: Int = 0
-alias zero_window: Int = 1
-alias full_window: Int = 2
+# TODO Use this after unpacked arguments are supported
+fn debug[*Ts: Writable](logger: Logger, depth: Int, *values: *Ts):
+    if not logger._is_disabled[Level.DEBUG]():
+        logger.debug("|  " * depth, depth, *values, sep="")
+
+
+fn trace[*Ts: Writable](logger: Logger, depth: Int, *values: *Ts):
+    if not logger._is_disabled[Level.DEBUG]():
+        logger.trace("|  " * depth, depth, *values, sep="")
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
@@ -24,20 +29,29 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
     fn __init__(out self):
         self.root = PrincipalVariationNode[Self.G](Self.G.Move(), Score())
-        self.logger = Logger(prefix="pvs1: ")
+        self.logger = Logger(prefix="pvs: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var best_move = MoveScore(Self.G.Move(), Score.loss())
-        var depth = 1
+        var max_depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         while True:
-            var score = self.root._logged_search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
-            if not score.is_set():
+            var within_deadline = self.root._search(game, Score.loss(), Score.win(), 0, max_depth, deadline, self.logger)
+            var best_move = self._best_move()
+            if not within_deadline:
                 return best_move
-            self.logger.debug("--depth-", depth, best_move, " time ", (deadline - perf_counter_ns()) / 1_000_000_000)
+            self.logger.debug("=== max depth:", max_depth, " move:", best_move, " time remaining:", (deadline - perf_counter_ns()) / 1_000_000_000)
             if best_move.score.is_decisive():
                 return best_move
-            depth += 1
+            max_depth += 1
+
+    fn _best_move(self) -> MoveScore[Self.G.Move]:
+        var best_move = self.root.children[0].move
+        var best_score = self.root.children[0].score
+        for node in self.root.children:
+            if best_score < node.score:
+                best_move = node.move
+                best_score = node.score
+        return MoveScore(best_move, best_score)
 
 
 struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
@@ -50,114 +64,140 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    fn _search(mut self, game: Self.G, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger, out within_deadline: Bool):
         if perf_counter_ns() > deadline:
-            if not logger._is_disabled[Level.DEBUG]():
-                logger.debug("|  " * depth, depth, " == search: ", self.move, " [", alpha, ":", beta, "]; timeout", sep="")
-            return Score()
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " = [timeout] ", sep="")
+            return False
 
         if not self.children:
-            var moves = game.moves()
-            self.children = List[Self](capacity=len(moves))
-            for move in moves:
-                self.children.append(Self(move.move, move.score))
+            self.children = [Self(move.move, move.score) for move in game.moves()]
 
-        var best_score = Score.loss()
         if depth == max_depth:
+            self.score = Score.win()
             for child in self.children:
-                best_score = max(best_score, child.score)
-            self.score = -best_score
-
-            if not logger._is_disabled[Level.DEBUG]():
-                logger.debug("|  " * depth, depth, " == search [leaf]: ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
-
-            return best_score
+                self.score = min(self.score, -child.score)
+            return True
 
         sort[Self.greater](self.children)
 
         if self.children[0].score.is_win():
             self.score = Score.loss()
-            return self.score
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " = [decisive] ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
+            return True
 
-        if depth == 0:
-            best_move = MoveScore(self.children[0].move, self.children[0].score)
-
-        for ref child in self.children:
+        for ref child in self.children[1:]:
             if not child.score.is_decisive():
                 child.score = Score()
 
+        var best_score = Score.loss()
         var idx = 0
-        var state = first_move
-        var g = game.copy()
+
+         # Full window search
         while idx < len(self.children):
             ref child = self.children[idx]
-            if child.score.is_decisive():
-                if depth <= trace_level:
-                    logger.trace("|  " * depth, depth, " = decisive-move: ", child.move, " ", child.score, " [", alpha, ":", beta, "]", sep="")
-                if child.score > beta or child.score.is_win():
-                    if depth <= trace_level:
-                        logger.trace("|  " * depth, depth, " << search: cut-score: ", best_score, sep="")
-                    if depth == 0:
-                        best_move = MoveScore(child.move, child.score)
-                    return child.score
 
-                alpha = max(alpha, child.score)
+            if child.score.is_decisive():
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " = [full window] ", child.move, " score: ", child.score, sep="")
+                if best_score < child.score:
+                    best_score = child.score
+                    alpha = max(alpha, child.score)
+                if child.score > beta or child.score.is_win():
+                    self.score = -best_score
+                    return True
+
                 idx += 1
                 continue
 
-            if state == zero_window:
-                g = game.copy()
+            var g = game.copy()
+            _ = g.play_move(child.move)
 
-            if state != full_window:
-                _ = g.play_move(child.move)
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " > [full window] ", child.move, " [", alpha, ":", beta, "]", sep="")
+            if not child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger):
+                return False
 
-            var b = beta
-            if state == zero_window:
-                b = alpha
+            if best_score < child.score:
+                best_score = child.score
+                alpha = max(alpha, best_score)
 
-            var score = -child._logged_search(g, best_move, -b, -alpha, depth + 1, max_depth, deadline, logger)
-
-            if not score.is_set():
-                if depth <= trace_level:
-                    logger.trace("|  " * depth, depth, " << search: timeout", sep="")
-                return Score()
-
-            child.score = score
-
-            if depth == 0 and child.score > best_score:
-                best_move = MoveScore(child.move, child.score)
-                logger.debug("best move", best_move, " [", alpha, ":", b, "] time ", (deadline - perf_counter_ns()) / 1_000_000_000)
-
-            if child.score < alpha:
-                state = zero_window
-                idx = idx + 1
-            elif child.score <= beta and child.score < Score.win():
-                if state == zero_window and child.score > alpha:
-                    state = full_window
-                else:
-                    state = zero_window
-                    idx = idx + 1
-                alpha = child.score
+            if child.score > beta or child.score.is_win():
+                self.score = -child.score
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " < [full window cut] ", child.move, " [", alpha, ":", beta, "]: score: ", child.score, sep="")
+                return True
             else:
-                if depth <= trace_level:
-                    logger.trace("|  " * depth, depth, " << search: cut-score: ", child.score, sep="")
-                return child.score
-            best_score = max(best_score, child.score)
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " < [full window] ", child.move, " [", alpha, ":", beta, "]: score: ", child.score, sep="")
 
-        if depth <= trace_level:
-            logger.trace("|  " * depth, depth, " << search: score: ", best_score, sep="")
-        return best_score
+            idx += 1
 
-    @always_inline
-    fn _logged_search(
-        mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger
-    ) -> Score:
-        if not logger._is_disabled[Level.TRACE]():
-            logger.trace("|  " * depth, depth, " > move: ", self.move, " [", -beta, ":", -alpha, "]", sep="")
-        var score = self._search(game, best_move, alpha, beta, depth, max_depth, deadline, logger)
-        if not logger._is_disabled[Level.TRACE]():
-            logger.trace("|  " * depth, depth, " < move: ", self.move, " [", -beta, ":", -alpha, "]; score: ", self.score, sep="")
-        return score
+            if alpha != Score.loss() and child.score >= alpha:
+                break
+
+        # Scout search
+        while idx < len(self.children):
+            ref child = self.children[idx]
+
+            if child.score.is_decisive():
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " = [scout window] ", child.move, " score: ", child.score, sep="")
+                if best_score < child.score:
+                    best_score = child.score
+                    alpha = max(alpha, best_score)
+                if child.score > beta or child.score.is_win():
+                    self.score = -best_score
+                    return True
+
+                idx += 1
+                continue
+
+            var g = game.copy()
+            _ = g.play_move(child.move)
+
+            if not logger._is_disabled[Level.TRACE]():
+                logger.trace("|  " * depth, depth, " > [scout zero window] ", child.move, " [", alpha, ":", beta, "]", sep="")
+            if not child._search(g, -alpha, -alpha, depth + 1, max_depth, deadline, logger):
+                return False
+
+            if best_score < child.score:
+                best_score = child.score
+                alpha = max(alpha, best_score)
+
+            if child.score > beta or child.score.is_win():
+                self.score = -best_score
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " < [scout zero window cut] ", child.move, " [", alpha, ":", beta, "]: score: ", child.score, sep="")
+                return True
+            else:
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " < [scout zero window] ", child.move, " [", alpha, ":", beta, "]: score: ", child.score, sep="")
+
+            if child.score >= alpha and alpha < beta and depth < max_depth - 1:
+                if not logger._is_disabled[Level.TRACE]():
+                    logger.trace("|  " * depth, depth, " > [scout full window] ", child.move, " [", alpha, ":", beta, "]", sep="")
+                if not child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger):
+                    return False
+
+                if best_score < child.score:
+                    best_score = child.score
+                    alpha = max(alpha, best_score)
+
+                if child.score > beta or child.score.is_win():
+                    self.score = -best_score
+                    if not logger._is_disabled[Level.TRACE]():
+                        logger.trace("|  " * depth, depth, " < [scout full window cut] ", child.move, " [", alpha, ":", beta, "]: score: ", child.score, sep="")
+                    return True
+                else:
+                    if not logger._is_disabled[Level.TRACE]():
+                        logger.trace("|  " * depth, depth, " < [scout full window] ", child.move, " [", alpha, ":", beta, "]: score: ", child.score, sep="")
+
+            idx += 1
+
+        self.score = -best_score
+        return True
 
     fn write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, depth=0)
