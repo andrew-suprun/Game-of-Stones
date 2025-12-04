@@ -11,13 +11,13 @@ alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
 # alias Tree = PrincipalVariationNegamax[Game]
 # alias Tree = Mcts[Game, 2]
 
-# alias Tree1 = Mcts[Game, 2]
-alias Tree1 = AlphaBetaNegamax[Game]
+alias Tree1 = Mcts[Game, 2]
+# alias Tree1 = AlphaBetaNegamax[Game]
 alias Tree2 = PrincipalVariationNegamax[Game]
 
 
 fn main() raises:
-    run[Tree1, Tree2]("ab", 200, "pv", 200, openings())
+    run[Tree1, Tree2]("mcts", 1000, "pvs", 1000, openings())
 
 
 fn openings() -> List[List[String]]:
