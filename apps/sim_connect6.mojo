@@ -15,71 +15,26 @@ alias Tree1 = Mcts[Game, 2]
 # alias Tree1 = AlphaBetaNegamax[Game]
 alias Tree2 = PrincipalVariationNegamax[Game]
 
+alias seed = 7
+
 
 fn main() raises:
-    run[Tree1, Tree2]("mcts", 1000, "pvs", 1000, openings())
+    run[Tree1, Tree2]("mcts", 2000, "pvs", 2000, openings())
 
 
 fn openings() -> List[List[String]]:
-    return [
-        ["j10", "h8-h11", "l10-i9", "l12-k10"],
-        ["j10", "h8-l8", "l11-i12", "h11-j12"],
-        ["j10", "h9-i11", "l10-l11", "h11-k11"],
-        ["j10", "h9-k8", "i10-j9", "l8-j8"],
-        ["j10", "h9-l8", "h8-l9", "k10-j12"],
-        ["j10", "h10-h8", "i10-i9", "k8-i8"],
-        ["j10", "h10-i12", "i10-l9", "j9-j8"],
-        ["j10", "h10-i8", "j8-k10", "k8-l10"],
-        ["j10", "h10-j11", "h8-l9", "k12-j8"],
-        ["j10", "h11-j12", "i10-l8", "k10-k9"],
-        ["j10", "h11-k12", "k8-k11", "k10-k9"],
-        ["j10", "h12-h10", "i11-i12", "k11-j9"],
-        ["j10", "h12-l11", "j9-l8", "j12-l10"],
-        ["j10", "i9-h12", "h11-h10", "i10-j12"],
-        ["j10", "i9-j8", "k12-k9", "h12-k8"],
-        ["j10", "i9-l8", "k9-k12", "k8-l10"],
-        ["j10", "i10-h10", "i9-i12", "l12-k8"],
-        ["j10", "i10-h11", "h9-k8", "l12-k9"],
-        ["j10", "i10-k9", "h12-l10", "h8-j11"],
-        ["j10", "i11-h12", "l9-h11", "k8-l11"],
-        ["j10", "i11-j9", "j8-k12", "l10-k11"],
-        ["j10", "i11-k12", "k11-i9", "l12-i8"],
-        ["j10", "i11-l9", "l12-h11", "h8-k8"],
-        ["j10", "i12-j11", "j8-h12", "l10-l8"],
-        ["j10", "j8-i10", "j9-l8", "j12-h9"],
-        ["j10", "j8-i11", "j12-h10", "i12-j11"],
-        ["j10", "j8-i12", "j9-l11", "i9-h12"],
-        ["j10", "j8-i8", "k9-j9", "k10-h10"],
-        ["j10", "j8-k10", "k11-i11", "h9-h8"],
-        ["j10", "j9-k9", "h9-k10", "j8-j12"],
-        ["j10", "j11-i10", "l11-k10", "l9-k9"],
-        ["j10", "j11-l12", "i9-k11", "h11-h9"],
-        ["j10", "j11-l9", "i9-k10", "l10-j8"],
-        ["j10", "j12-h11", "k9-i8", "j9-i11"],
-        ["j10", "j12-i11", "l11-l9", "k12-h9"],
-        ["j10", "j12-l9", "h9-i11", "h8-k11"],
-        ["j10", "k8-j9", "l11-h8", "i9-l10"],
-        ["j10", "k8-l11", "k11-h12", "k12-j12"],
-        ["j10", "k9-h8", "k12-l12", "k11-k8"],
-        ["j10", "k9-i11", "i12-l10", "i9-l8"],
-        ["j10", "k9-i11", "j12-l9", "l12-l10"],
-        ["j10", "k9-j11", "l10-h10", "k11-l9"],
-        ["j10", "k9-j9", "l11-i9", "h10-l12"],
-        ["j10", "k9-k8", "i11-l9", "l12-h11"],
-        ["j10", "k10-i8", "k9-k11", "i11-i9"],
-        ["j10", "k11-h12", "k8-i8", "l8-j12"],
-        ["j10", "k11-l11", "i12-i9", "l12-l10"],
-        ["j10", "k12-h8", "h12-i10", "i11-k10"],
-        ["j10", "l9-h11", "j9-l11", "l10-k12"],
-        ["j10", "l9-i10", "h11-k8", "k9-j8"],
-        ["j10", "l9-k11", "i8-i12", "l12-h8"],
-        ["j10", "l9-l12", "i12-j12", "l11-h10"],
-        ["j10", "l10-i11", "h10-j11", "h8-l12"],
-        ["j10", "l11-j8", "k10-i8", "h12-i10"],
-        ["j10", "l11-l8", "i8-l9", "j9-k10"],
-        ["j10", "l12-h10", "l8-j12", "h9-j9"],
-        ["j10", "l12-h11", "h10-i8", "i12-j12"],
-        ["j10", "l12-h9", "l8-i9", "k12-i8"],
-        ["j10", "l12-j11", "k10-k8", "h12-h11"],
-        ["j10", "l12-k12", "l10-h10", "i9-k11"],
-    ]
+    random.seed(seed)
+    var result = List[List[String]]()
+    var places = List[String]()
+    for j in range(Game.size / 2 - 2, Game.size / 2 + 3):
+        for i in range(Game.size / 2 - 2, Game.size / 2 + 3):
+            if i != Game.size / 2 or j != Game.size / 2:
+                places.append(String(Place(Int8(i), Int8(j))))
+    for _ in range(100):
+        random.shuffle(places)
+        moves = List(String(Place(Int8(Game.size / 2), Int8(Game.size / 2))))
+        moves.append(String(places[0]) + "-" + String(places[1]))
+        moves.append(String(places[2]) + "-" + String(places[3]))
+        moves.append(String(places[4]) + "-" + String(places[5]))
+        result.append(moves^)
+    return result^
