@@ -37,10 +37,8 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
         var max_depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
+        var start = perf_counter_ns()
         while True:
-            var start: UInt = 0
-            if not self.logger._is_disabled[Level.DEBUG]():
-                start = perf_counter_ns()
             var within_deadline = self.root._search(game, Score.loss(), Score.win(), 0, max_depth, deadline, self.logger)
             var best_move = self._best_move()
             if not within_deadline:
@@ -95,7 +93,6 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 logger.trace("|  " * depth, depth, " = [decisive] ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
             return True
 
-        #TODO get rid of it
         for ref child in self.children[1:]:
             if not child.score.is_decisive():
                 child.score = Score()

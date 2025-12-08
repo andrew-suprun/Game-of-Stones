@@ -26,19 +26,20 @@ struct Mtdf[G: TGame](TTree):
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
         var max_depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
-        var score = Score(0)
         while True:
+            var score = Score(0)
             var start: UInt = 0
             if not self.logger._is_disabled[Level.DEBUG]():
                 start = perf_counter_ns()
 
             while True:
+                self.logger.debug(">>> depth:", max_depth, " alpha:", score)
                 if not self.root._search(game, score, 0, max_depth, deadline, self.logger):
                     var best_move = self._best_move()
                     self.logger.debug("=== result:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
                     return best_move
                 var best_move = self._best_move()
-                self.logger.debug("--- depth:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+                self.logger.debug("<<< depth:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
                 if best_move.score == score:
                     break
                 score = best_move.score
@@ -55,6 +56,7 @@ struct Mtdf[G: TGame](TTree):
         var best_move = self.root.children[0].move
         var best_score = self.root.children[0].score
         for node in self.root.children:
+            self.logger.debug("  child:", node.move, node.score)
             if best_score < node.score:
                 best_move = node.move
                 best_score = node.score
