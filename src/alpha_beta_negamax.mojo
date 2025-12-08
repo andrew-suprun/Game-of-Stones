@@ -1,6 +1,6 @@
 from time import perf_counter_ns
 from sys import env_get_int
-from logger import Logger, Level
+from logger import Logger
 
 from score import Score
 from traits import TTree, TGame, MoveScore
@@ -26,11 +26,12 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var best_move = MoveScore(Self.G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
+        var start = perf_counter_ns()
         while True:
             var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
                 return best_move
-            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time remaining:", (deadline - perf_counter_ns()) / 1_000_000_000)
+            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
             if best_move.score.is_decisive():
                 return best_move
             depth += 1
@@ -48,8 +49,6 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
     fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
-            if not logger._is_disabled[Level.TRACE]():
-                logger.trace("|  " * depth, depth, " = [timeout] ", sep="")
             return Score()
 
         if not self.children:
@@ -62,12 +61,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
         if depth == max_depth:
             for child in self.children:
                 best_score = max(best_score, child.score)
-            if not logger._is_disabled[Level.TRACE]():
-                logger.trace("|  " * depth, depth, " = [max depth] ", self.move, " score: ", -best_score, sep="")
             return best_score
-
-        if not logger._is_disabled[Level.TRACE]():
-            logger.trace("|  " * depth, depth, " > ", self.move, " [", alpha, ":", beta, "]", sep="")
 
         sort[Self.greater](self.children)
 
@@ -93,14 +87,10 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
                     best_move = MoveScore(child.move, child.score)
 
             if best_score > beta or best_score.is_win():
-                if not logger._is_disabled[Level.TRACE]():
-                    logger.trace("|  " * depth, depth, " < [cut] ", self.move,  " score: ", -best_score, sep="")
                 return best_score
 
             alpha = max(alpha, child.score)
 
-        if not logger._is_disabled[Level.TRACE]():
-            logger.trace("|  " * depth, depth, " < ", self.move, " score: ", -best_score, sep="")
         return best_score
 
     fn write_to[W: Writer](self, mut writer: W):
