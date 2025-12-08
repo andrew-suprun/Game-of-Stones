@@ -6,10 +6,10 @@ from mcts import Mcts
 from principal_variation_negamax import PrincipalVariationNegamax
 from sim import run
 
-alias Game = Gomoku[size=19, max_places=15, max_plies=100]
-alias Tree1 = PrincipalVariationNegamax[Game]
-alias Tree2 = Mcts[Game, 6]
-alias seed = 7
+comptime Game = Gomoku[size=19, max_places=15, max_plies=100]
+comptime Tree1 = PrincipalVariationNegamax[Game]
+comptime Tree2 = Mcts[Game, 6]
+comptime seed = 7
 
 
 fn main() raises:
@@ -28,7 +28,7 @@ fn openings() -> List[List[String]]:
                 places.append(String(Place(Int8(i), Int8(j))))
     for _ in range(100):
         random.shuffle(places)
-        moves = List(String(Place(Int8(Game.size / 2), Int8(Game.size / 2))))
+        moves = [String(Place(Int8(Game.size / 2), Int8(Game.size / 2)))]
         moves.append(String(places[0]))
         moves.append(String(places[1]))
         moves.append(String(places[2]))

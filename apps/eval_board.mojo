@@ -1,8 +1,8 @@
 from traits import Score
 from board import Board, Place, first, second
 
-alias win_stones = 6
-alias values = List[Float32](0, 1, 5, 25, 125, 625, Float32.MAX)
+comptime win_stones = 6
+comptime values: List[Float32] = [0, 1, 5, 25, 125, 625, Float32.MAX]
 
 
 fn main() raises:

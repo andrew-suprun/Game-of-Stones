@@ -6,7 +6,7 @@ from score import Score
 from traits import TTree, TGame, MoveScore
 
 
-alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
+comptime trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
 
 # TODO Use this after unpacked arguments are supported
@@ -21,7 +21,7 @@ fn trace[*Ts: Writable](logger: Logger, depth: Int, *values: *Ts):
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
-    alias Game = Self.G
+    comptime Game = Self.G
 
     var root: PrincipalVariationNode[Self.G]
     var logger: Logger

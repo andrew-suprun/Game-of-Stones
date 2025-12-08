@@ -5,7 +5,7 @@ from traits import TMove
 from mcts import Mcts
 from gomoku import Gomoku
 
-alias G = Gomoku[size=19, max_places=32, max_plies=100]
+comptime G = Gomoku[size=19, max_places=32, max_plies=100]
 
 
 fn bench_moves():

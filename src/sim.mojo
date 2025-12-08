@@ -4,8 +4,8 @@ from traits import TTree
 from score import Score
 from board import first
 
-alias black = True
-alias white = False
+comptime black = True
+comptime white = False
 
 
 fn run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:

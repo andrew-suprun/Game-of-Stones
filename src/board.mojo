@@ -4,10 +4,10 @@ from memory import memcpy
 from score import Score
 from heap import heap_add
 
-alias first = 0
-alias second = 1
-alias Scores = SIMD[DType.float32, 2]
-alias Stones = SIMD[DType.int64, 2]
+comptime first = 0
+comptime second = 1
+comptime Scores = SIMD[DType.float32, 2]
+comptime Stones = SIMD[DType.int64, 2]
 
 
 @fieldwise_init
@@ -43,10 +43,10 @@ struct Place(Comparable, Copyable, Defaultable, Hashable, Movable, Stringable, W
 
 
 struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movable, Stringable, Writable):
-    alias empty = Int8(0)
-    alias black = Int8(1)
-    alias white = Int8(Self.win_stones)
-    alias value_table = _value_table[Self.win_stones, Self.values]()
+    comptime empty = Int8(0)
+    comptime black = Int8(1)
+    comptime white = Int8(Self.win_stones)
+    comptime value_table = _value_table[Self.win_stones, Self.values]()
 
     var _places: InlineArray[Int8, Self.size * Self.size]
     var _scores: InlineArray[Scores, Self.size * Self.size]
@@ -346,11 +346,11 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movabl
 
 
 fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
-    alias result_size = win_stones * win_stones + 1
+    comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
     s.append(Float32.MAX)
-    v2 = List[Scores](Scores(1, -1))
+    var v2: List[Scores] = [Scores(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
     var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=0))

@@ -5,11 +5,11 @@ from logger import Logger, Level
 from score import Score
 from traits import TTree, TGame, MoveScore
 
-alias trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
+comptime trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):
-    alias Game = Self.G
+    comptime Game = Self.G
 
     var root: AlphaBetaNode[Self.G]
     var logger: Logger

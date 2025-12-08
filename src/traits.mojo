@@ -2,7 +2,7 @@ from score import Score
 
 
 trait TTree:
-    alias Game: TGame
+    comptime Game: TGame
 
     fn __init__(out self):
         ...
@@ -12,7 +12,7 @@ trait TTree:
 
 
 trait TGame(Copyable, Defaultable, Movable, Stringable, Writable):
-    alias Move: TMove
+    comptime Move: TMove
 
     fn moves(self) -> List[MoveScore[Self.Move]]:
         ...

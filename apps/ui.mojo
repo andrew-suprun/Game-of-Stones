@@ -6,15 +6,15 @@ from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
 
-# alias Game = Gomoku[size=19, max_places=20, max_plies=100]
-# alias stones_per_move = 1
+# comptime Game = Gomoku[size=19, max_places=20, max_plies=100]
+# comptime stones_per_move = 1
 
-alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
-alias stones_per_move = 2
+comptime Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+comptime stones_per_move = 2
 
-# alias Tree = Mcts[Game, 8]
-# alias Tree = AlphaBetaNegamax[Game]
-alias Tree = PrincipalVariationNegamax[Game]
+# comptime Tree = Mcts[Game, 8]
+# comptime Tree = AlphaBetaNegamax[Game]
+comptime Tree = PrincipalVariationNegamax[Game]
 
 
 fn main() raises:

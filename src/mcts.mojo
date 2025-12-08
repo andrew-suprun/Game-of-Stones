@@ -8,8 +8,8 @@ from traits import TTree, TGame, MoveScore
 
 
 struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
-    alias Game = Self.G
-    alias MctsNode = Node[Self.G, Self.c]
+    comptime Game = Self.G
+    comptime MctsNode = Node[Self.G, Self.c]
 
     var root: Self.MctsNode
     var logger: Logger
@@ -67,8 +67,8 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
                 undecided += 1
         return undecided < 2
 
-    fn best_move(self) -> G.Move:
-        return self._best_child().move
+    fn best_move(self) -> Self.G.Move:
+        return self._best_child().move.move
 
     fn _best_child(self) -> ref [self.root.children] Self.MctsNode:
         debug_assert(len(self.root.children) > 0)

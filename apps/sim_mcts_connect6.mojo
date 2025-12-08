@@ -5,14 +5,14 @@ from connect6 import Connect6
 from mcts import Mcts
 from sim import run
 
-alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
-alias Tree1 = Mcts[Game, 2]
-alias Tree2 = Mcts[Game, 3]
+comptime Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+comptime Tree1 = Mcts[Game, 2]
+comptime Tree2 = Mcts[Game, 3]
 
 
 fn main() raises:
     print("Connect6")
-    run[Tree1, Tree2]("M2", "M3", openings())
+    run[Tree1, Tree2]("M2", 500, "M3", 500, openings())
     print()
 
 
@@ -26,7 +26,7 @@ fn openings() -> List[List[String]]:
                 places.append(String(Place(Int8(i), Int8(j))))
     for _ in range(100):
         random.shuffle(places)
-        moves = List(String(Place(Int8(Game.size / 2), Int8(Game.size / 2))))
+        moves = [String(Place(Int8(Game.size / 2), Int8(Game.size / 2)))]
         moves.append(String(places[0]) + "-" + String(places[1]))
         moves.append(String(places[2]) + "-" + String(places[3]))
         moves.append(String(places[4]) + "-" + String(places[5]))

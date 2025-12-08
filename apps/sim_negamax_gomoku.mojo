@@ -6,15 +6,15 @@ from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 from sim import run
 
-alias size = 19
-alias Game = Gomoku[size=19, max_places=15, max_plies=100]
-alias Tree1 = AlphaBetaNegamax[Game]
-alias Tree2 = PrincipalVariationNegamax[Game]
+comptime size = 19
+comptime Game = Gomoku[size=19, max_places=15, max_plies=100]
+comptime Tree1 = AlphaBetaNegamax[Game]
+comptime Tree2 = PrincipalVariationNegamax[Game]
 
 
 fn main() raises:
     print("Connect6")
-    run[Tree1, Tree2]("AB", "PV", openings())
+    run[Tree1, Tree2]("AB", 500, "PV", 500, openings())
     print()
 
 
@@ -28,7 +28,7 @@ fn openings() -> List[List[String]]:
                 places.append(String(Place(Int8(i), Int8(j))))
     for _ in range(100):
         random.shuffle(places)
-        moves = List(String(Place(Int8(size / 2), Int8(size / 2))))
+        moves = [String(Place(Int8(size / 2), Int8(size / 2)))]
         moves.append(String(places[0]))
         moves.append(String(places[1]))
         moves.append(String(places[2]))

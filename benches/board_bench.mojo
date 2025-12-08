@@ -3,8 +3,8 @@ from benchmark import benchmark, Unit, keep
 from traits import Score
 from board import Board, Place, first, _value_table
 
-alias win_stones = 6
-alias values = List[Float32](0, 1, 5, 25, 125, 625)
+comptime win_stones = 6
+comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 
 fn bench_update_row():

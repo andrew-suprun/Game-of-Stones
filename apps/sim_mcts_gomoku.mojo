@@ -6,14 +6,14 @@ from mcts import Mcts
 from gomoku import Gomoku
 from sim import run
 
-alias Game = Gomoku[size=19, max_places=15, max_plies=100]
-alias Tree1 = Mcts[Game, 6]
-alias Tree2 = Mcts[Game, 8]
+comptime Game = Gomoku[size=19, max_places=15, max_plies=100]
+comptime Tree1 = Mcts[Game, 6]
+comptime Tree2 = Mcts[Game, 8]
 
 
 fn main() raises:
     print("Gomoku")
-    run[Tree1, Tree2]("M6", "M8", openings())
+    run[Tree1, Tree2]("M6", 500, "M8", 500, openings())
     print()
 
 
@@ -27,7 +27,7 @@ fn openings() -> List[List[String]]:
                 places.append(String(Place(Int8(i), Int8(j))))
     for _ in range(100):
         random.shuffle(places)
-        moves = List(String(Place(Int8(Game.size / 2), Int8(Game.size / 2))))
+        moves = [String(Place(Int8(Game.size / 2), Int8(Game.size / 2)))]
         moves.append(String(places[0]))
         moves.append(String(places[1]))
         moves.append(String(places[2]))

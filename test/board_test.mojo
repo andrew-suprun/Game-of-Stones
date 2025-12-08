@@ -4,9 +4,9 @@ from random import seed, random_si64
 from score import Score
 from board import Board, Place, first, second
 
-alias size = 19
-alias win_stones = 6
-alias values = List[Float32](0, 1, 5, 25, 125, 625)
+comptime size = 19
+comptime win_stones = 6
+comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 
 fn test_place_stone() raises:
@@ -48,7 +48,7 @@ fn test_place_stone() raises:
             n += 1
 
 
-alias B = Board[19, values, win_stones]
+comptime B = Board[19, values, win_stones]
 
 
 fn place_stones(mut board: B, player: Int, stones: List[String]) raises:

@@ -7,14 +7,14 @@ from principal_variation_negamax import PrincipalVariationNegamax
 from mcts import Mcts
 from sim import run
 
-alias Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 
-alias Tree1 = Mcts[Game, 2]
-# alias Tree = AlphaBetaNegamax[Game]
-alias Tree2 = PrincipalVariationNegamax[Game]
+comptime Tree1 = Mcts[Game, 2]
+# comptime Tree = AlphaBetaNegamax[Game]
+comptime Tree2 = PrincipalVariationNegamax[Game]
 
-alias seed = 7
+comptime seed = 7
 
 
 fn main() raises:
@@ -31,7 +31,7 @@ fn openings() -> List[List[String]]:
                 places.append(String(Place(Int8(i), Int8(j))))
     for _ in range(100):
         random.shuffle(places)
-        moves = List(String(Place(Int8(Game.size / 2), Int8(Game.size / 2))))
+        moves = [String(Place(Int8(Game.size / 2), Int8(Game.size / 2)))]
         moves.append(String(places[0]) + "-" + String(places[1]))
         moves.append(String(places[2]) + "-" + String(places[3]))
         moves.append(String(places[4]) + "-" + String(places[5]))

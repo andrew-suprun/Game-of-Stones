@@ -5,10 +5,10 @@ from score import Score
 from traits import TGame, TMove, MoveScore
 from board import Board, Place, first
 
-alias debug = env_get_string["ASSERT_MODE", ""]()
+comptime debug = env_get_string["ASSERT_MODE", ""]()
 
-alias win_stones = 5
-alias values = List[Float32](0, 1, 5, 25, 125)
+comptime win_stones = 5
+comptime values: List[Float32] = [0, 1, 5, 25, 125]
 
 
 @register_passable("trivial")
@@ -42,7 +42,7 @@ struct Move(TMove):
 
 
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
-    alias Move = Move
+    comptime Move = Move
 
     var board: Board[Self.size, values, win_stones]
     var turn: Int
