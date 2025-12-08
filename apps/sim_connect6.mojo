@@ -1,25 +1,24 @@
+import random
+
+from board import Place
 from connect6 import Connect6
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 from mcts import Mcts
 from sim import run
 
-alias Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+alias Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
-
-# alias Tree = AlphaBetaNegamax[Game]
-# alias Tree = PrincipalVariationNegamax[Game]
-# alias Tree = Mcts[Game, 2]
 
 alias Tree1 = Mcts[Game, 2]
-# alias Tree1 = AlphaBetaNegamax[Game]
+# alias Tree = AlphaBetaNegamax[Game]
 alias Tree2 = PrincipalVariationNegamax[Game]
 
 alias seed = 7
 
 
 fn main() raises:
-    run[Tree1, Tree2]("mcts", 2000, "pvs", 2000, openings())
+    run[Tree1, Tree2]("mcts", 4000, "pvs", 4000, openings())
 
 
 fn openings() -> List[List[String]]:

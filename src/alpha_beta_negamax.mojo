@@ -74,6 +74,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
         if depth == 0:
             best_move = MoveScore(self.children[0].move, self.children[0].score)
 
+        #TODO get rid of it
         for ref child in self.children:
             if not child.score.is_decisive():
                 child.score = Score()

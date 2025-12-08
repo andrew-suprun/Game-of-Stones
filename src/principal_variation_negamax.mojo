@@ -95,6 +95,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
                 logger.trace("|  " * depth, depth, " = [decisive] ", self.move, " [", alpha, ":", beta, "]; score: ", self.score, sep="")
             return True
 
+        #TODO get rid of it
         for ref child in self.children[1:]:
             if not child.score.is_decisive():
                 child.score = Score()
