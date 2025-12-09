@@ -9,7 +9,7 @@ from principal_variation_negamax import PrincipalVariationNegamax
 # comptime Game = Gomoku[size=19, max_places=20, max_plies=100]
 # comptime stones_per_move = 1
 
-comptime Game = Connect6[size=19, max_moves=20, max_places=15, max_plies=100]
+comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 comptime stones_per_move = 2
 
 # comptime Tree = Mcts[Game, 8]

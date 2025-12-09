@@ -21,7 +21,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.logger = Logger(prefix="pvs: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var max_depth = 1
+        var max_depth = 0
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:

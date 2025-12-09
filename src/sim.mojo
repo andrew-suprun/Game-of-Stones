@@ -83,12 +83,12 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, 
             var result = t1.search(g1, time1)
             move = String(result.move)
             score = result.score
-            print("  ", rpad(name1, name_size), rpad(String(result.move), 8), lpad(String(result.score), 7), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
+            print("  ", name1.ljust(name_size), String(result.move).ljust(8), String(result.score).rjust(7), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
         else:
             var result = t2.search(g2, time2)
             move = String(result.move)
             score = -result.score
-            print("  ", rpad(name2, name_size), rpad(String(result.move), 8), lpad(String(result.score), 7), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
+            print("  ", name2.ljust(name_size), String(result.move).ljust(8), String(result.score).rjust(7), "  ", (perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
         var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
         # print(g1)
@@ -106,15 +106,3 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, 
         return name2
     else:
         return "draw"
-
-
-fn lpad(var text: String, width: Int) -> String:
-    while len(text) < width:
-        text = " " + text
-    return text
-
-
-fn rpad(var text: String, width: Int) -> String:
-    while len(text) < width:
-        text = text + " "
-    return text

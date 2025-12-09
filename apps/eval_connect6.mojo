@@ -11,7 +11,7 @@ comptime Game = Connect6[size=19, max_moves=6, max_places=6, max_plies=100]
 comptime Tree = PrincipalVariationNegamax[Game]
 # comptime Tree = Mtdf[Game]
 
-comptime script = "j10 h10-i12 i10-l9 j9-j8"
+comptime script = "j10 h15-o15 i9-i10 f2-n5 h10-i11 b18-m18"
 
 
 fn main() raises:

@@ -2,6 +2,7 @@ from time import perf_counter_ns
 from python import Python, PythonObject
 import random
 
+from score import Score
 from board import Place
 from traits import TTree, TGame
 
@@ -67,25 +68,28 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
 
     fn run(mut self) raises -> Bool:
         var move = Self.Tree.Game.Move("j10")
-        self.play_move(move, 0)
+        self.play_move(move, 0, 0)
 
         while not self.app_complete and not self.game_complete_confirmed:
             self.human_move()
             self.engine_move()
         return self.app_complete
 
-    fn play_move(mut self, move: Self.Tree.Game.Move, time_ms: UInt) raises:
+    fn play_move(mut self, move: Self.Tree.Game.Move, score: Score, time_ms: UInt) raises:
         self.moves.append(move)
         self.selected.clear()
-        var score = self.game.play_move(move)
+        var board_score = self.game.play_move(move)
         self.tree = Self.Tree()
-        print("move", move, "score", score, end="")
-        print(" ms", time_ms, end="")
-        if score.is_decisive():
-            print(" terminal", end="")
+        print("move", move, end="")
+        if score != 0:
+            print(" score", score, end="")
+
+        if time_ms > 0:
+            print(" ms", time_ms, end="")
+
         print()
-        print(self.game)
-        if score.is_decisive():
+        # print(self.game)
+        if board_score.is_decisive():
             self.game_complete = True
 
         self.turn = 1 - self.turn
@@ -110,7 +114,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
                     self.tree = Self.Tree()
                     self.game = Self.Tree.Game()
                     for move in moves:
-                        self.play_move(move, 0)
+                        self.play_move(move, 0, 0)
 
                 elif event.key == self.pygame.K_RETURN:
                     if self.game_complete:
@@ -126,7 +130,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
                         else:
                             var place2 = self.selected[1]
                             move = Self.Tree.Game.Move(String(place1) + "-" + String(place2))
-                        self.play_move(move, 0)
+                        self.play_move(move, 0, 0)
                         self.selected.clear()
                         self.draw()
                         return
@@ -162,13 +166,13 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
 
         if len(self.moves) == 1:
             var move = Self.first_white_move()
-            self.play_move(move, 0)
+            self.play_move(move, 0, 0)
             self.draw()
             return
 
         var start = perf_counter_ns()
         var move = self.tree.search(self.game, duration)
-        self.play_move(move.move, (perf_counter_ns() - start) // 1_000_000)
+        self.play_move(move.move, move.score, (perf_counter_ns() - start) // 1_000_000)
         self.draw()
 
     fn draw(self) raises:
