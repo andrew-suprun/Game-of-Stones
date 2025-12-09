@@ -65,9 +65,8 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
 
         sort[Self.greater](self.children)
 
-        if depth == 0:
-            best_move = MoveScore(self.children[0].move, self.children[0].score)
-
+        best_move = MoveScore(self.children[0].move, self.children[0].score)
+        var deeper_best_move = MoveScore(Self.G.Move(), 0)
         for ref child in self.children:
             if not child.score.is_decisive():
                 child.score = Score()
@@ -76,15 +75,14 @@ struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
             var g = game.copy()
             if not child.score.is_decisive():
                 _ = g.play_move(child.move)
-                child.score = -child._search(g, best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                child.score = -child._search(g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
 
             if not child.score.is_set():
                 return Score()
 
             if child.score > best_score:
                 best_score = child.score
-                if depth == 0:
-                    best_move = MoveScore(child.move, child.score)
+                best_move = MoveScore(child.move, child.score)
 
             if best_score > beta or best_score.is_win():
                 return best_score
