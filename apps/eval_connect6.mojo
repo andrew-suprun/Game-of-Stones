@@ -7,8 +7,8 @@ from mtdf import Mtdf
 
 comptime Game = Connect6[size=19, max_moves=6, max_places=6, max_plies=100]
 # comptime Tree = Mcts[Game, 2]
-comptime Tree = AlphaBetaNegamax[Game]
-# comptime Tree = PrincipalVariationNegamax[Game]
+# comptime Tree = AlphaBetaNegamax[Game]
+comptime Tree = PrincipalVariationNegamax[Game]
 # comptime Tree = Mtdf[Game]
 
 comptime script = "j10 i9-i10"
