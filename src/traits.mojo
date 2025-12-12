@@ -11,7 +11,7 @@ trait TTree:
         ...
 
 
-trait TGame(Copyable, Defaultable, Movable, Stringable, Writable):
+trait TGame(Copyable, Defaultable, Stringable, Writable):
     comptime Move: TMove
 
     fn moves(self) -> List[MoveScore[Self.Move]]:
@@ -22,14 +22,14 @@ trait TGame(Copyable, Defaultable, Movable, Stringable, Writable):
 
 
 @register_passable
-trait TMove(Defaultable, Equatable, Hashable, ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
+trait TMove(Defaultable, Equatable, Hashable, ImplicitlyCopyable, Representable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
 
 @register_passable
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, Writable):
     var move: Self.Move
     var score: Score
 

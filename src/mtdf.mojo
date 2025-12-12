@@ -63,7 +63,7 @@ struct Mtdf[G: TGame](TTree):
         return MoveScore(best_move, best_score)
 
 
-struct MtdfNode[G: TGame](Copyable, Movable, Writable):
+struct MtdfNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
     var score: Score
     var children: List[Self]

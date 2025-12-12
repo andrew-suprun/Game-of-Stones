@@ -37,7 +37,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
             depth += 1
 
 
-struct AlphaBetaNode[G: TGame](Copyable, Movable, Writable):
+struct AlphaBetaNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
     var score: Score
     var children: List[Self]

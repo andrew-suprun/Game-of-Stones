@@ -140,7 +140,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
-                heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
+                if move_score != Score.loss():
+                    heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)

@@ -12,7 +12,7 @@ comptime Stones = SIMD[DType.int64, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Comparable, Copyable, Defaultable, Hashable, Movable, Stringable, Writable):
+struct Place(Comparable, Copyable, Defaultable, Hashable, Stringable, Writable):
     var x: Int8
     var y: Int8
 
@@ -42,7 +42,7 @@ struct Place(Comparable, Copyable, Defaultable, Hashable, Movable, Stringable, W
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Movable, Stringable, Writable):
+struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Stringable, Writable):
     comptime empty = Int8(0)
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)

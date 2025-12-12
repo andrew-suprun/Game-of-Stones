@@ -105,7 +105,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
         return result
 
 
-struct Node[G: TGame, c: Score](Copyable, Movable, Representable, Stringable, Writable):
+struct Node[G: TGame, c: Score](Copyable, Representable, Stringable, Writable):
     var move: MoveScore[Self.G.Move]
     var children: List[Self]
     var n_sims: Int32

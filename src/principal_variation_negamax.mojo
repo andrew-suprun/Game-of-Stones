@@ -35,7 +35,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
             depth += 1
 
 
-struct PrincipalVariationNode[G: TGame](Copyable, Movable, Writable):
+struct PrincipalVariationNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
     var score: Score
     var children: List[Self]
