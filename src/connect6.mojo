@@ -47,10 +47,6 @@ struct Move(TMove):
     fn __eq__(self: Self, other: Self) -> Bool:
         return self._p1 == other._p1 and self._p2 == other._p2
 
-    fn __hash__[H: Hasher](self, mut hasher: H):
-        hasher.update(self._p1)
-        hasher.update(self._p2)
-
     fn __str__(self) -> String:
         return String.write(self)
 
@@ -70,25 +66,21 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
     var board: Board[Self.size, values, win_stones]
     var turn: Int
     var plies: Int
-    var _hash: UInt64
 
     fn __init__(out self):
         self.board = Board[Self.size, values, win_stones]()
         self.turn = 0
         self.plies = 0
-        self._hash = 0
 
     fn __copyinit__(out self, existing: Self, /):
         self.board = existing.board.copy()
         self.turn = existing.turn
         self.plies = existing.plies
-        self._hash = existing._hash
 
     fn __moveinit__(out self, deinit existing: Self):
         self.board = existing.board^
         self.turn = existing.turn
         self.plies = existing.plies
-        self._hash = existing._hash
 
     fn moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=Self.max_moves)
@@ -147,10 +139,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
-        if self.turn == first:
-            self._hash += hash(move)
-        else:
-            self._hash -= hash(move)
         self.turn = 1 - self.turn
         self.plies += 1
         if self.plies > Self.max_plies:

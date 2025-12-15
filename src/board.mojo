@@ -12,7 +12,7 @@ comptime Stones = SIMD[DType.int64, 2]
 
 @fieldwise_init
 @register_passable("trivial")
-struct Place(Comparable, Copyable, Defaultable, Hashable, Stringable, Writable):
+struct Place(Comparable, Copyable, Defaultable, Stringable, Writable):
     var x: Int8
     var y: Int8
 
@@ -30,10 +30,6 @@ struct Place(Comparable, Copyable, Defaultable, Hashable, Stringable, Writable):
 
     fn __lt__(self, other: Self) -> Bool:
         return self.x < other.x or self.x == other.x and self.y < other.y
-
-    fn __hash__[H: Hasher](self, mut hasher: H):
-        hasher.update(self.x)
-        hasher.update(self.y)
 
     fn __str__(self) -> String:
         return String.write(self)

@@ -22,7 +22,7 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
 
 
 @register_passable
-trait TMove(Defaultable, Equatable, Hashable, ImplicitlyCopyable, Representable, Stringable, Writable):
+trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
