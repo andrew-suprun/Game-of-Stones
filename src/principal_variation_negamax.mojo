@@ -11,16 +11,29 @@ comptime nil: Idx = 0
 
 
 @register_passable("trivial")
-struct Node[G: TGame](Copyable):
+struct Node[G: TGame](Copyable, Comparable):
     var move: Self.G.Move
     var score: Score
     var first_child: Idx
     var last_child: Idx
 
-    fn __init__(out self, move: Self.G.Move, score: Score):
-        self.move = move
-        self.score = score
-        self.children = List[Self]()
+    fn __init__(out self):
+        self.move = Self.G.Move()
+        self.score = Score()
+        self.first_child = 0
+        self.last_child = 0
+
+    fn __lt__(self, rhs: Self) -> Bool:
+        return self.score < rhs.score
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.score == rhs.score
+
+    @staticmethod
+    @parameter
+    fn greater(a: Self, b: Self) -> Bool:
+        return a.score > b.score
+
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
     comptime Game = Self.G
@@ -99,9 +112,11 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 best_score = max(best_score, self.nodes[child_idx].score)
             return best_score
 
-        var span = self.nodes[Int(parent.first_child) : Int(parent.last_child)]
+        var span = Span(self.nodes)
         sort(span)
-        # sort(self.nodes[Int(parent.first_child) : Int(parent.last_child)])
+        # sort(self.nodes)
+        # sort[Node.greater](self.nodes)
+        # sort[Self.greater](self.nodes[Int(parent.first_child) : Int(parent.last_child)])
 
         if self.nodes[parent_idx].score.is_win():
             return Score.win()
@@ -136,7 +151,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
             if best_score < child.score:
                 best_score = child.score
-                best_move = MoveScore(child.move, child.score)
                 alpha = max(alpha, best_score)
 
             if child.score > beta or child.score.is_win():
@@ -168,7 +182,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
             if best_score < child.score:
                 best_score = child.score
-                best_move = MoveScore(child.move, child.score)
 
             if child.score > beta or child.score.is_win():
                 return best_score
@@ -179,7 +192,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
                 if best_score < child.score:
                     best_score = child.score
-                    best_move = MoveScore(child.move, child.score)
                     alpha = max(alpha, best_score)
 
                 if child.score > beta or child.score.is_win():
@@ -197,8 +209,3 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_to(writer, depth + 1)
-
-    @staticmethod
-    @parameter
-    fn greater(a: Node, b: Node) -> Bool:
-        return a.score > b.score
