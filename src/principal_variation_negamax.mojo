@@ -99,9 +99,11 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 best_score = max(best_score, self.nodes[child_idx].score)
             return best_score
 
-        sort[Self.greater](self.nodes[parent.first_child : parent.last_child])
+        var span = self.nodes[Int(parent.first_child) : Int(parent.last_child)]
+        sort(span)
+        # sort(self.nodes[Int(parent.first_child) : Int(parent.last_child)])
 
-        if self.children[0].score.is_win():
+        if self.nodes[parent_idx].score.is_win():
             return Score.win()
 
         for child_idx in range(parent.first_child + 1, parent.last_child):
@@ -109,7 +111,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
             if not child.score.is_decisive():
                 child.score = Score()
 
-        var child_idx = 0
+        var child_idx: Idx = 0
 
          # Full window search
         while child_idx < parent.last_child:
@@ -183,7 +185,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 if child.score > beta or child.score.is_win():
                     return best_score
 
-            idx += 1
+            child_idx += 1
 
         return best_score
 
@@ -198,5 +200,5 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
     @staticmethod
     @parameter
-    fn greater(a: Self, b: Self) -> Bool:
+    fn greater(a: Node, b: Node) -> Bool:
         return a.score > b.score
