@@ -93,25 +93,25 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         var best_score = Score.loss()
 
         if depth == max_depth:
-            for child in self.children:
-                best_score = max(best_score, child.score)
+            for child_idx in range(parent.first_child, parent.last_child):
+                best_score = max(best_score, self.nodes[child_idx].score)
             return best_score
 
-        sort[Self.greater](self.children)
+        sort[Self.greater](self.nodes[parent.first_child : parent.last_child])
 
         if self.children[0].score.is_win():
             return Score.win()
 
-        for ref child in self.children[1:]:
+        for child_idx in range(parent.first_child + 1, parent.last_child):
+            ref child = self.nodes[child_idx]
             if not child.score.is_decisive():
                 child.score = Score()
 
-        var deeper_best_move = MoveScore(Self.G.Move(), 0)
-        var idx = 0
+        var child_idx = 0
 
          # Full window search
-        while idx < len(self.children):
-            ref child = self.children[idx]
+        while child_idx < parent.last_child:
+            ref child = self.nodes[child_idx]
 
             if child.score.is_decisive():
                 if best_score < child.score:
@@ -120,13 +120,13 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 if child.score > beta or child.score.is_win():
                     return best_score
 
-                idx += 1
+                child_idx += 1
                 continue
 
             var g = game.copy()
             _ = g.play_move(child.move)
 
-            child.score = -child._search(g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+            child.score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
             if not child.score.is_set():
                 return Score()
 
@@ -138,14 +138,14 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
             if child.score > beta or child.score.is_win():
                 return best_score
 
-            idx += 1
+            child_idx += 1
 
             if alpha != Score.loss() and child.score >= alpha:
                 break
 
         # Scout search
-        while idx < len(self.children):
-            ref child = self.children[idx]
+        while child_idx < parent.last_child:
+            ref child = self.nodes[child_idx]
 
             if child.score.is_decisive():
                 if best_score < child.score:
@@ -154,13 +154,13 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 if child.score > beta or child.score.is_win():
                     return best_score
 
-                idx += 1
+                child_idx += 1
                 continue
 
             var g = game.copy()
             _ = g.play_move(child.move)
 
-            child.score = -child._search(g, deeper_best_move, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
+            child.score = -self._search(child_idx, g, -alpha, -alpha, depth + 1, max_depth, deadline)
 
             if best_score < child.score:
                 best_score = child.score
@@ -171,7 +171,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
             if best_score > alpha and depth < max_depth - 1:
                 alpha = best_score
-                child.score = -child._search(g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                child.score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
 
                 if best_score < child.score:
                     best_score = child.score
