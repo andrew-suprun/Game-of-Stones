@@ -6,10 +6,25 @@ from score import Score
 from traits import TTree, TGame, MoveScore
 
 
+alias Idx = UInt32
+alias nil: Idx = 0
+
+
+struct Node[G: TGame](Copyable, Writable):
+    var move: Self.G.Move
+    var score: Score
+    var first_child: Idx
+    var last_child: Idx
+
+    fn __init__(out self, move: Self.G.Move, score: Score):
+        self.move = move
+        self.score = score
+        self.children = List[Self]()
+
 struct PrincipalVariationNegamax[G: TGame](TTree):
     comptime Game = Self.G
 
-    var root: PrincipalVariationNode[Self.G]
+    var nodes: List[Node[Self.G]]
     var logger: Logger
 
     @staticmethod
@@ -17,16 +32,26 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         return "Principal Variation Negamax With Memory"
 
     fn __init__(out self):
-        self.root = PrincipalVariationNode[Self.G](Self.G.Move(), Score())
+        self.nodes = List[Node[Self.G]](Node[Self.G](Self.G.Move(), Score()))
+        self.nodes.resize(unsafe_uninit_length=1)
+        ref root = self.nodes[0]
+        root.move = Self.G.Move()
+        root.score = Score()
+        root.first_child = Nil
         self.logger = Logger(prefix="pvs: ")
 
+    fn reset(mut self):
+        self.nodes.shrink(1)
+        self.nodes[0].first_child = Nil
+
+
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var best_move = MoveScore(Self.G.Move(), Score.loss())
+        self.best_move = MoveScore[Self.G.Move](Self.G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
-            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
+            var score = self._search(0, game, Score.loss(), Score.win(), 0, depth, deadline)
             if not score.is_set():
                 return best_move
             self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
@@ -34,25 +59,37 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 return best_move
             depth += 1
 
+        var best_node_idx = self.nodes[0].first_child
+        var best_score = self.nodes[best_node_idx].score
+        for child_idx in range(best_node_idx + 1, self.nodes[0].last_child):
+            if best_score < self.nodes[child_idx].score:
+                best_node_idx = child_idx
+                best_score = self.nodes[child_idx].score
 
-struct PrincipalVariationNode[G: TGame](Copyable, Writable):
-    var move: Self.G.Move
-    var score: Score
-    var children: List[Self]
 
-    fn __init__(out self, move: Self.G.Move, score: Score):
-        self.move = move
-        self.score = score
-        self.children = List[Self]()
+        return MoveScore[Self.G.Move](self.nodes[best_node_idx].move, self.nodes[best_node_idx].score)
 
-    fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    fn _search(mut self, parent_idx: Idx, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 
-        if not self.children:
-            self.children = [Self(move.move, move.score) for move in game.moves()]
+        ref parent = self.nodes[parent_idx]
+        if parent.first_child == Nil:
+            var moves = game.moves()
+            debug_assert(len(moves) > 0)
+            if self.nodes.capacity < len(self.nodes) + len(moves):
+                self.nodes.reserve(self.nodes.capacity * 2 + len(moves))
+                self.nodes.resize(len(self.nodes) + len(moves))
+                var child_idx = len(self.nodes)
+                parent.first_child = child_idx
+                parent.last_child = child_idx + len(moves)
+                for move in moves:
+                    ref child_node = self.nodes[child_idx]
+                    child_node.move = move.move
+                    child_node.score = move.score
+                    child_node.first_child = Nil
+                    child_idx += 1
 
-        best_move = MoveScore(self.children[0].move, self.children[0].score)
         var best_score = Score.loss()
 
         if depth == max_depth:
