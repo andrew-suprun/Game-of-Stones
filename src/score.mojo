@@ -1,7 +1,7 @@
 from utils.numerics import FPUtils, isinf, isnan, inf, nan
 
 
-@register_passable
+@register_passable("trivial")
 struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, Writable):
     var value: Float32
 

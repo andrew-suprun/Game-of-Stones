@@ -21,13 +21,13 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
         ...
 
 
-@register_passable
+@register_passable("trivial")
 trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
 
-@register_passable
+@register_passable("trivial")
 @fieldwise_init
 struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, Writable):
     var move: Self.Move
