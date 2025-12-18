@@ -11,23 +11,12 @@ comptime nil: Idx = 0
 
 
 @register_passable("trivial")
-struct Node[G: TGame](Copyable, Comparable):
+@fieldwise_init
+struct Node[G: TGame](Copyable):
     var move: Self.G.Move
     var score: Score
     var first_child: Idx
     var last_child: Idx
-
-    fn __init__(out self):
-        self.move = Self.G.Move()
-        self.score = Score()
-        self.first_child = 0
-        self.last_child = 0
-
-    fn __lt__(self, rhs: Self) -> Bool:
-        return self.score < rhs.score
-
-    fn __eq__(self, rhs: Self) -> Bool:
-        return self.score == rhs.score
 
     @staticmethod
     @parameter
@@ -59,21 +48,18 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.nodes[0].first_child = nil
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var depth = 1
+        var max_depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
-            self.logger.trace("@1")
-            var score = self._search(0, game, Score.loss(), Score.win(), 0, depth, deadline)
-            self.logger.trace("@2")
+            var score = self._search(0, game, Score.loss(), Score.win(), 0, max_depth, deadline)
             var best_move = self.best_move()
-            self.logger.trace("@3")
             if not score.is_set():
                 return best_move
-            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+            self.logger.debug("=== max depth: ", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
             if best_move.score.is_decisive():
                 return best_move
-            depth += 1
+            max_depth += 1
             return best_move
 
     fn best_move(self) -> MoveScore[Self.G.Move]:
@@ -90,17 +76,15 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         if perf_counter_ns() > deadline:
             return Score()
 
-        self.logger.trace("#1")
-        ref parent = self.nodes[parent_idx]
-        if parent.first_child == nil:
+        if self.nodes[parent_idx].first_child == nil:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
             if self.nodes.capacity < len(self.nodes) + len(moves):
+                var child_idx = len(self.nodes)
                 self.nodes.reserve(self.nodes.capacity * 2 + len(moves))
                 self.nodes.resize(unsafe_uninit_length = len(self.nodes) + len(moves))
-                var child_idx = len(self.nodes)
-                parent.first_child = child_idx
-                parent.last_child = child_idx + len(moves)
+                self.nodes[parent_idx].first_child = child_idx
+                self.nodes[parent_idx].last_child = child_idx + len(moves)
                 for move in moves:
                     ref child_node = self.nodes[child_idx]
                     child_node.move = move.move
@@ -108,7 +92,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                     child_node.first_child = nil
                     child_idx += 1
 
-        self.logger.trace("#2")
+        ref parent = self.nodes[parent_idx]
         var best_score = Score.loss()
 
         if depth == max_depth:
@@ -116,7 +100,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 best_score = max(best_score, self.nodes[child_idx].score)
             return best_score
 
-        self.logger.trace("#3")
         sort[Node[Self.G].greater](self.nodes[Int(parent.first_child) : Int(parent.last_child)])
 
         if self.nodes[parent_idx].score.is_win():
