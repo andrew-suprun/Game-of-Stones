@@ -58,14 +58,16 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.nodes.shrink(1)
         self.nodes[0].first_child = nil
 
-
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
+            self.logger.trace("@1")
             var score = self._search(0, game, Score.loss(), Score.win(), 0, depth, deadline)
+            self.logger.trace("@2")
             var best_move = self.best_move()
+            self.logger.trace("@3")
             if not score.is_set():
                 return best_move
             self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
@@ -88,6 +90,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         if perf_counter_ns() > deadline:
             return Score()
 
+        self.logger.trace("#1")
         ref parent = self.nodes[parent_idx]
         if parent.first_child == nil:
             var moves = game.moves()
@@ -105,6 +108,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                     child_node.first_child = nil
                     child_idx += 1
 
+        self.logger.trace("#2")
         var best_score = Score.loss()
 
         if depth == max_depth:
@@ -112,11 +116,8 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 best_score = max(best_score, self.nodes[child_idx].score)
             return best_score
 
-        var span = Span(self.nodes)
-        sort(span)
-        # sort(self.nodes)
-        # sort[Node.greater](self.nodes)
-        # sort[Self.greater](self.nodes[Int(parent.first_child) : Int(parent.last_child)])
+        self.logger.trace("#3")
+        sort[Node[Self.G].greater](self.nodes[Int(parent.first_child) : Int(parent.last_child)])
 
         if self.nodes[parent_idx].score.is_win():
             return Score.win()
