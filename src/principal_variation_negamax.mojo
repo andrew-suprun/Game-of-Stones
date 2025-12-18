@@ -24,7 +24,7 @@ struct Node[G: TGame](Copyable):
         return a.score > b.score
 
 
-struct PrincipalVariationNegamax[G: TGame](TTree):
+struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
     comptime Game = Self.G
 
     var nodes: List[Node[Self.G]]
@@ -76,6 +76,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         if perf_counter_ns() > deadline:
             return Score()
 
+        print(self)
         if self.nodes[parent_idx].first_child == nil:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
@@ -186,10 +187,11 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         return best_score
 
     fn write_to[W: Writer](self, mut writer: W):
-        self.write_to(writer, depth=0)
+        self.write_to(writer, depth=0, node_idx=0)
 
-    fn write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self.move, " ", self.score, "\n")
-        if self.children:  # TODO silence the compiler warning
-            for child in self.children:
-                child.write_to(writer, depth + 1)
+    fn write_to[W: Writer](self, mut writer: W, depth: Int, node_idx: Idx):
+        ref parent = self.nodes[node_idx]
+        writer.write("|   " * depth, parent.move, " ", parent.score, "\n")
+        if parent.first_child < parent.last_child: # TODO Silence Mojo warning
+            for child_idx in range(parent.first_child, parent.last_child):
+                    self.write_to(writer, depth + 1, child_idx)
