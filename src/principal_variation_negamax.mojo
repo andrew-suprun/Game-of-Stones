@@ -56,7 +56,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
             var best_move = self.best_move()
             if not score.is_set():
                 return best_move
-            self.logger.debug("=== max depth: ", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+            self.logger.debug("=== max depth: ", max_depth, " move:", best_move, " nodes: ", len(self.nodes), " time:", (perf_counter_ns() - start) / 1_000_000_000)
             # print(self)
             if best_move.score.is_decisive():
                 return best_move
@@ -81,8 +81,10 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
             debug_assert(len(moves) > 0)
             
             if self.nodes.capacity < len(self.nodes) + len(moves):
+                var old_capacity = self.nodes.capacity
+                var start = perf_counter_ns()
                 self.nodes.reserve(self.nodes.capacity * 2 + len(moves))
-                print("### reserved", self.nodes.capacity * 2 + len(moves))
+                # print("    reserved: nodes:", len(self.nodes), " moves:", len(moves), " capacity:", old_capacity, "->",  self.nodes.capacity, " time:", (perf_counter_ns() - start) / 1_000_000_000)
 
             var child_idx = len(self.nodes)
             self.nodes.resize(unsafe_uninit_length = len(self.nodes) + len(moves))
