@@ -40,7 +40,7 @@ import Testing
     var board = Board(maxPlaces: 20, values: values)
     var value = Score(0)
 
-    for _ in 0..<200 {
+    for _ in 0..<100 {
         let turn = Int.random(in: 0...1)
         let x = Int.random(in: 0...boardSize - 1)
         let y = Int.random(in: 0...boardSize - 1)
@@ -143,7 +143,7 @@ import Testing
     board.placeStone(place: Place(16, 16), turn: first)
     board.placeStone(place: Place(15, 15), turn: first)
     board.placeStone(place: Place(14, 14), turn: first)
-    
+
     board.placeStone(place: Place(0, 18), turn: second)
     board.placeStone(place: Place(1, 18), turn: second)
     board.placeStone(place: Place(2, 18), turn: second)

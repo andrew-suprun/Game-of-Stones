@@ -65,15 +65,15 @@ pub fn Heap(comptime T: type, comptime size: usize, comptime less: fn (T, T) boo
     };
 }
 
-fn testLess(i: usize, j: usize) bool {
+fn testLess(i: u32, j: u32) bool {
     return i < j;
 }
 
 test "heapAdd" {
-    var heap = Heap(usize, 20, testLess){};
+    var heap = Heap(i32, 20, testLess){};
 
     for (0..100) |i| {
-        const v: usize = i * 17 % 100;
+        const v: i32 = i * 17 % 100;
         heap.add(v);
     }
 
@@ -90,16 +90,16 @@ test "heapAdd" {
 const benchmark = @import("benchmark.zig").benchmark;
 
 fn heapBench() void {
-    var heap = Heap(usize, 20, testLess){};
+    var heap = Heap(u32, 20, testLess){};
     for (0..1_000_000) |_| {
         heap.clear();
         for (0..100) |i| {
-            heap.add(i * 17 % 100);
+            heap.add(@as(u32, @intCast(i)) * 17 % 100);
         }
-        std.mem.doNotOptimizeAway(heap);
     }
+    std.mem.doNotOptimizeAway(heap);
 }
 
 pub fn main() !void {
-    std.debug.print("heap: {d:.5} µsec\n", .{benchmark(heapBench) / 100});
+    std.debug.print("heap: {d:.5} sec\n", .{benchmark(heapBench)});
 }
