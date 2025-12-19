@@ -121,80 +121,85 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
 
          # Full window search
         while child_idx < parent.last_child:
-            ref child = self.nodes[child_idx]
+            ref child1 = self.nodes[child_idx]
 
-            if child.score.is_decisive():
-                if best_score < child.score:
-                    best_score = child.score
-                    alpha = max(alpha, child.score)
-                if child.score > beta or child.score.is_win():
+            if child1.score.is_decisive():
+                if best_score < child1.score:
+                    best_score = child1.score
+                    alpha = max(alpha, child1.score)
+                if child1.score > beta or child1.score.is_win():
                     return best_score
 
                 child_idx += 1
                 continue
 
             var g = game.copy()
-            _ = g.play_move(child.move)
+            _ = g.play_move(child1.move)
 
             print(">>>2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
-            child.score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
-            print("<<<2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child.score, sep="")
+            self.nodes[child_idx].score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
+            ref child2 = self.nodes[child_idx]
+            print("<<<2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child2.score, sep="")
+            print("-> child [", child_idx, "]:", child2.score)
+            print("-> score [1]:", self.nodes[1].score)
             print(self)
-            if not child.score.is_set():
+            if not child2.score.is_set():
                 return Score()
 
-            if best_score < child.score:
-                best_score = child.score
+            if best_score < child2.score:
+                best_score = child2.score
                 alpha = max(alpha, best_score)
 
-            if child.score > beta or child.score.is_win():
+            if child2.score > beta or child2.score.is_win():
                 return best_score
 
             child_idx += 1
 
-            if alpha != Score.loss() and child.score >= alpha:
+            if alpha != Score.loss() and child2.score >= alpha:
                 break
 
         # Scout search
         while child_idx < parent.last_child:
-            ref child = self.nodes[child_idx]
+            ref child1 = self.nodes[child_idx]
 
-            if child.score.is_decisive():
-                if best_score < child.score:
-                    best_score = child.score
+            if child1.score.is_decisive():
+                if best_score < child1.score:
+                    best_score = child1.score
                     alpha = max(alpha, best_score)
-                if child.score > beta or child.score.is_win():
+                if child1.score > beta or child1.score.is_win():
                     return best_score
 
                 child_idx += 1
                 continue
 
             var g = game.copy()
-            _ = g.play_move(child.move)
+            _ = g.play_move(child1.move)
 
             print(">>>3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]", sep="")
-            child.score = -self._search(child_idx, g, -alpha, -alpha, depth + 1, max_depth, deadline)
-            print("<<<3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]  score: ", child.score, sep="")
+            self.nodes[child_idx].score = -self._search(child_idx, g, -alpha, -alpha, depth + 1, max_depth, deadline)
+            ref child2 = self.nodes[child_idx]
+            print("<<<3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]  score: ", child2.score, sep="")
             print(self)
 
-            if best_score < child.score:
-                best_score = child.score
+            if best_score < child2.score:
+                best_score = child2.score
 
-            if child.score > beta or child.score.is_win():
+            if child2.score > beta or child2.score.is_win():
                 return best_score
 
             if best_score > alpha and depth < max_depth - 1:
                 alpha = best_score
                 print(">>>4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
-                child.score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
-                print("<<<4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child.score, sep="")
+                self.nodes[child_idx].score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
+                ref child3 = self.nodes[child_idx]
+                print("<<<4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child3.score, sep="")
                 print(self)
 
-                if best_score < child.score:
-                    best_score = child.score
+                if best_score < child3.score:
+                    best_score = child3.score
                     alpha = max(alpha, best_score)
 
-                if child.score > beta or child.score.is_win():
+                if child3.score > beta or child3.score.is_win():
                     return best_score
 
             child_idx += 1
