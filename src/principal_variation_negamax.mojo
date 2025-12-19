@@ -48,19 +48,23 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
         self.nodes[0].first_child = nil
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var max_depth = 1
+        var max_depth = 0
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
+            print(">>>1 node: [0]  depth: 0/", max_depth, "  [loss:win]", sep="")
             var score = self._search(0, game, Score.loss(), Score.win(), 0, max_depth, deadline)
+            print("<<<1 node: [0]  depth: 0/", max_depth, "  [loss:win]  score: ", -score, sep="")
+            print(self)
             var best_move = self.best_move()
             if not score.is_set():
                 return best_move
             self.logger.debug("=== max depth: ", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
             if best_move.score.is_decisive():
+                print("decisive")
                 return best_move
             max_depth += 1
-            return best_move
+            print("new max depth", max_depth)
 
     fn best_move(self) -> MoveScore[Self.G.Move]:
         var best_node_idx = self.nodes[0].first_child
@@ -76,22 +80,24 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
         if perf_counter_ns() > deadline:
             return Score()
 
-        print(self)
         if self.nodes[parent_idx].first_child == nil:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
+            
             if self.nodes.capacity < len(self.nodes) + len(moves):
-                var child_idx = len(self.nodes)
                 self.nodes.reserve(self.nodes.capacity * 2 + len(moves))
-                self.nodes.resize(unsafe_uninit_length = len(self.nodes) + len(moves))
-                self.nodes[parent_idx].first_child = child_idx
-                self.nodes[parent_idx].last_child = child_idx + len(moves)
-                for move in moves:
-                    ref child_node = self.nodes[child_idx]
-                    child_node.move = move.move
-                    child_node.score = move.score
-                    child_node.first_child = nil
-                    child_idx += 1
+                print("### reserved", self.nodes.capacity * 2 + len(moves))
+
+            var child_idx = len(self.nodes)
+            self.nodes.resize(unsafe_uninit_length = len(self.nodes) + len(moves))
+            self.nodes[parent_idx].first_child = child_idx
+            self.nodes[parent_idx].last_child = child_idx + len(moves)
+            for move in moves:
+                ref child_node = self.nodes[child_idx]
+                child_node.move = move.move
+                child_node.score = move.score
+                child_node.first_child = nil
+                child_idx += 1
 
         ref parent = self.nodes[parent_idx]
         var best_score = Score.loss()
@@ -111,7 +117,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
             if not child.score.is_decisive():
                 child.score = Score()
 
-        var child_idx: Idx = 0
+        var child_idx = parent.first_child
 
          # Full window search
         while child_idx < parent.last_child:
@@ -130,7 +136,10 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
             var g = game.copy()
             _ = g.play_move(child.move)
 
+            print(">>>2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
             child.score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
+            print("<<<2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child.score, sep="")
+            print(self)
             if not child.score.is_set():
                 return Score()
 
@@ -163,7 +172,10 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
             var g = game.copy()
             _ = g.play_move(child.move)
 
+            print(">>>3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]", sep="")
             child.score = -self._search(child_idx, g, -alpha, -alpha, depth + 1, max_depth, deadline)
+            print("<<<3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]  score: ", child.score, sep="")
+            print(self)
 
             if best_score < child.score:
                 best_score = child.score
@@ -173,7 +185,10 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
 
             if best_score > alpha and depth < max_depth - 1:
                 alpha = best_score
+                print(">>>4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
                 child.score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
+                print("<<<4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child.score, sep="")
+                print(self)
 
                 if best_score < child.score:
                     best_score = child.score
@@ -191,7 +206,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
 
     fn write_to[W: Writer](self, mut writer: W, depth: Int, node_idx: Idx):
         ref parent = self.nodes[node_idx]
-        writer.write("|   " * depth, parent.move, " ", parent.score, "\n")
+        writer.write("|   " * depth, "[", node_idx, "] ", parent.move, " ", parent.score, "\n")
         if parent.first_child < parent.last_child: # TODO Silence Mojo warning
             for child_idx in range(parent.first_child, parent.last_child):
                     self.write_to(writer, depth + 1, child_idx)
