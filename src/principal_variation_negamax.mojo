@@ -52,19 +52,15 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
-            print(">>>1 node: [0]  depth: 0/", max_depth, "  [loss:win]", sep="")
             var score = self._search(0, game, Score.loss(), Score.win(), 0, max_depth, deadline)
-            print("<<<1 node: [0]  depth: 0/", max_depth, "  [loss:win]  score: ", -score, sep="")
-            print(self)
             var best_move = self.best_move()
             if not score.is_set():
                 return best_move
             self.logger.debug("=== max depth: ", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+            # print(self)
             if best_move.score.is_decisive():
-                print("decisive")
                 return best_move
             max_depth += 1
-            print("new max depth", max_depth)
 
     fn best_move(self) -> MoveScore[Self.G.Move]:
         var best_node_idx = self.nodes[0].first_child
@@ -105,11 +101,13 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
         if depth == max_depth:
             for child_idx in range(parent.first_child, parent.last_child):
                 best_score = max(best_score, self.nodes[child_idx].score)
+            self.nodes[parent_idx].score = -best_score
             return best_score
 
         sort[Node[Self.G].greater](self.nodes[Int(parent.first_child) : Int(parent.last_child)])
 
         if self.nodes[parent_idx].score.is_win():
+            self.nodes[parent_idx].score = Score.loss()
             return Score.win()
 
         for child_idx in range(parent.first_child + 1, parent.last_child):
@@ -128,6 +126,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
                     best_score = child1.score
                     alpha = max(alpha, child1.score)
                 if child1.score > beta or child1.score.is_win():
+                    self.nodes[parent_idx].score = -best_score
                     return best_score
 
                 child_idx += 1
@@ -136,13 +135,10 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
             var g = game.copy()
             _ = g.play_move(child1.move)
 
-            print(">>>2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
+            # print(">>>2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
             self.nodes[child_idx].score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
             ref child2 = self.nodes[child_idx]
-            print("<<<2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child2.score, sep="")
-            print("-> child [", child_idx, "]:", child2.score)
-            print("-> score [1]:", self.nodes[1].score)
-            print(self)
+            # print("<<<2 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child2.score, sep="")
             if not child2.score.is_set():
                 return Score()
 
@@ -151,6 +147,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
                 alpha = max(alpha, best_score)
 
             if child2.score > beta or child2.score.is_win():
+                self.nodes[parent_idx].score = -best_score
                 return best_score
 
             child_idx += 1
@@ -167,6 +164,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
                     best_score = child1.score
                     alpha = max(alpha, best_score)
                 if child1.score > beta or child1.score.is_win():
+                    self.nodes[parent_idx].score = -best_score
                     return best_score
 
                 child_idx += 1
@@ -175,35 +173,36 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
             var g = game.copy()
             _ = g.play_move(child1.move)
 
-            print(">>>3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]", sep="")
+            # print(">>>3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]", sep="")
             self.nodes[child_idx].score = -self._search(child_idx, g, -alpha, -alpha, depth + 1, max_depth, deadline)
             ref child2 = self.nodes[child_idx]
-            print("<<<3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]  score: ", child2.score, sep="")
-            print(self)
+            # print("<<<3 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -alpha, ":", -alpha, "]  score: ", child2.score, sep="")
 
             if best_score < child2.score:
                 best_score = child2.score
 
             if child2.score > beta or child2.score.is_win():
+                self.nodes[parent_idx].score = -best_score
                 return best_score
 
             if best_score > alpha and depth < max_depth - 1:
                 alpha = best_score
-                print(">>>4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
+                # print(">>>4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]", sep="")
                 self.nodes[child_idx].score = -self._search(child_idx, g, -beta, -alpha, depth + 1, max_depth, deadline)
                 ref child3 = self.nodes[child_idx]
-                print("<<<4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child3.score, sep="")
-                print(self)
+                # print("<<<4 node: [", child_idx, "]  depth: ", depth + 1, "/", max_depth, "  [", -beta, ":", -alpha, "]  score: ", child3.score, sep="")
 
                 if best_score < child3.score:
                     best_score = child3.score
                     alpha = max(alpha, best_score)
 
                 if child3.score > beta or child3.score.is_win():
+                    self.nodes[parent_idx].score = -best_score
                     return best_score
 
             child_idx += 1
 
+        self.nodes[parent_idx].score = -best_score
         return best_score
 
     fn write_to[W: Writer](self, mut writer: W):
