@@ -79,7 +79,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
         if self.nodes[parent_idx].first_child == nil:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
-            
+
             if self.nodes.capacity < len(self.nodes) + len(moves):
                 var old_capacity = self.nodes.capacity
                 var start = perf_counter_ns()
@@ -87,7 +87,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
                 # print("    reserved: nodes:", len(self.nodes), " moves:", len(moves), " capacity:", old_capacity, "->",  self.nodes.capacity, " time:", (perf_counter_ns() - start) / 1_000_000_000)
 
             var child_idx = len(self.nodes)
-            self.nodes.resize(unsafe_uninit_length = len(self.nodes) + len(moves))
+            self.nodes.resize(unsafe_uninit_length=len(self.nodes) + len(moves))
             self.nodes[parent_idx].first_child = child_idx
             self.nodes[parent_idx].last_child = child_idx + len(moves)
             for move in moves:
@@ -119,7 +119,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
 
         var child_idx = parent.first_child
 
-         # Full window search
+        # Full window search
         while child_idx < parent.last_child:
             ref child1 = self.nodes[child_idx]
 
@@ -213,6 +213,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree, Writable):
     fn write_to[W: Writer](self, mut writer: W, depth: Int, node_idx: Idx):
         ref parent = self.nodes[node_idx]
         writer.write("|   " * depth, "[", node_idx, "] ", parent.move, " ", parent.score, "\n")
-        if parent.first_child < parent.last_child: # TODO Silence Mojo warning
+        if parent.first_child < parent.last_child:  # TODO Silence Mojo warning
             for child_idx in range(parent.first_child, parent.last_child):
-                    self.write_to(writer, depth + 1, child_idx)
+                self.write_to(writer, depth + 1, child_idx)

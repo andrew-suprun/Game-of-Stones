@@ -43,7 +43,7 @@ struct Mtdf[G: TGame](TTree):
                 if best_move.score == score:
                     break
                 score = best_move.score
-            
+
             var best_move = self._best_move()
             if best_move.score.is_decisive():
                 self.logger.debug("=== decisive result:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)

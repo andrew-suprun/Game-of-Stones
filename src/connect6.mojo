@@ -60,7 +60,9 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
-struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
+struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](
+    TGame
+):
     comptime Move = Move
 
     var board: Board[Self.size, values, win_stones]
@@ -97,11 +99,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
         var places = List[Place](capacity=Self.max_places)
         self.board.places(self.turn, places)
-        if len(places) <= 1:
-            print(self)
         debug_assert(len(places) > 1)
 
-        var board_score = self.board._score if self.turn == first else -self.board._score
+        var board_score = (
+            self.board._score if self.turn == first else -self.board._score
+        )
         for i in range(len(places) - 1):
             var place1 = places[i]
             var score1 = self.board.score(place1, self.turn)
@@ -123,17 +125,24 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     return
 
                 if debug:
-                    var board_value = self.board.board_value(materialize[values]())
+                    var board_value = self.board.board_value(
+                        materialize[values]()
+                    )
                     if self.turn:
                         board_value = -board_value
-                    debug_assert(board_value.value == board_score.value + score1.value + score2.value)
+                    debug_assert(
+                        board_value.value
+                        == board_score.value + score1.value + score2.value
+                    )
 
                 var board2 = board.copy()
                 board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
                 if move_score != Score.loss():
-                    heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
+                    heap_add[less](
+                        MoveScore(Move(place1, place2), move_score), moves
+                    )
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)

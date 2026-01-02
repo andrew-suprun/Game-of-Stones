@@ -1,5 +1,6 @@
 from benchmark import benchmark, Unit
 
+
 @register_passable("trivial")
 struct Node:
     var move: Int32
@@ -13,7 +14,9 @@ struct Node:
         self.first_child = 0
         self.next_sibling = 0
 
+
 comptime len = 1_000_000_000
+
 
 fn bench_index():
     var nodes = List[Node]()
