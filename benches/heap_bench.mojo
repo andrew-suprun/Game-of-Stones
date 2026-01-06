@@ -8,12 +8,12 @@ fn less(a: Int, b: Int) -> Bool:
 
 
 fn bench():
-    var h = heap.Heap[Int, 20]()
+    var h = heap.Heap[Int, 20, less]()
 
     for _ in range(1_000_000):
         h.clear()
         for i in range(100):
-            h.add(i * 17 % 100, less)
+            h.add(i * 17 % 100)
 
 
 fn main() raises:
