@@ -15,7 +15,7 @@ moves    44.55949056603773 msec
 moves  3.516318047337278 msec
 expand 6.051284263959391 msec
 --- heap ---
-heap_add 0.57290475
+heap_add 514.0471666666667
 
 
 --- pixi run mojo -I src -D LOGGING_LEVEL=debug apps/eval_connect6.mojo ---
