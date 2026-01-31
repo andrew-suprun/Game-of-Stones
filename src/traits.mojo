@@ -3,6 +3,7 @@ from score import Score
 
 trait TTree:
     comptime Game: TGame
+    comptime State = Self.Game.State
 
     fn __init__(out self):
         ...
@@ -11,25 +12,27 @@ trait TTree:
         ...
 
 
-trait TGame(Copyable, Defaultable, Stringable, Writable):
+trait TGame(Defaultable):
+    comptime State: TState
     comptime Move: TMove
 
-    fn moves(self) -> List[MoveScore[Self.Move]]:
+    fn moves(self, state: Self.State) -> List[MoveScore[Self.Move]]:
         ...
 
-    fn play_move(mut self, move: Self.Move) -> Score:
+    fn play_move(self, state: Self.State, move: Self.Move) -> Self.State:
         ...
 
+trait TState(Copyable, Defaultable, Stringable, Writable):
+    fn score(self) -> Score:
+        ...
 
-@register_passable
-trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, Writable):
+trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, Writable, TrivialRegisterType):
     fn __init__(out self, text: String) raises:
         ...
 
 
-@register_passable
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, Writable, TrivialRegisterType):
     var move: Self.Move
     var score: Score
 

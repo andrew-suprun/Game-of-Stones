@@ -1,9 +1,9 @@
 from eval import run
 from connect6 import Connect6
-from mcts import Mcts
-from alpha_beta_negamax import AlphaBetaNegamax
+# from mcts import Mcts
+# from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
-from mtdf import Mtdf
+# from mtdf import Mtdf
 
 comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 # comptime Tree = Mcts[Game, 2]

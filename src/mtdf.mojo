@@ -13,7 +13,6 @@ struct Mtdf[G: TGame](TTree):
     comptime Game = Self.G
 
     var root: MtdfNode[Self.G]
-    var logger: Logger
 
     @staticmethod
     fn name() -> StaticString:
@@ -21,42 +20,42 @@ struct Mtdf[G: TGame](TTree):
 
     fn __init__(out self):
         self.root = MtdfNode[Self.G](Self.G.Move(), Score())
-        self.logger = Logger(prefix="mtdf: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
+        var logger = Logger(prefix="mtdf: ")
         var max_depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         while True:
             var score = Score(0)
             var start: UInt = 0
-            if not self.logger._is_disabled[Level.DEBUG]():
+            if not logger._is_disabled[Level.DEBUG]():
                 start = perf_counter_ns()
 
             while True:
-                self.logger.debug(">>> depth:", max_depth, " alpha:", score)
-                if not self.root._search(game, score, 0, max_depth, deadline, self.logger):
-                    var best_move = self._best_move()
-                    self.logger.debug("=== result:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+                logger.debug(">>> depth:", max_depth, " alpha:", score)
+                if not self.root._search(game, score, 0, max_depth, deadline, logger):
+                    var best_move = self._best_move(logger)
+                    logger.debug("=== result:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
                     return best_move
-                var best_move = self._best_move()
-                self.logger.debug("<<< depth:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+                var best_move = self._best_move(logger)
+                logger.debug("<<< depth:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
                 if best_move.score == score:
                     break
                 score = best_move.score
             
-            var best_move = self._best_move()
+            var best_move = self._best_move(logger)
             if best_move.score.is_decisive():
-                self.logger.debug("=== decisive result:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+                logger.debug("=== decisive result:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
                 return best_move
             else:
-                self.logger.debug("=== depth:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+                logger.debug("=== depth:", max_depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
             max_depth += 1
 
-    fn _best_move(self) -> MoveScore[Self.G.Move]:
+    fn _best_move(self, logger: Logger) -> MoveScore[Self.G.Move]:
         var best_move = self.root.children[0].move
         var best_score = self.root.children[0].score
         for node in self.root.children:
-            self.logger.debug("  child:", node.move, node.score)
+            logger.debug("  child:", node.move, node.score)
             if best_score < node.score:
                 best_move = node.move
                 best_score = node.score

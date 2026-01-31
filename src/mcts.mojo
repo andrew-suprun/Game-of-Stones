@@ -12,13 +12,12 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
     comptime MctsNode = Node[Self.G, Self.c]
 
     var root: Self.MctsNode
-    var logger: Logger
 
     fn __init__(out self):
         self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
-        self.logger = Logger(prefix="mcts: ")
 
     fn search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
+        var logger = Logger(prefix="mcts: ")
         var moves = game.moves()
         debug_assert(len(moves) > 0)
         if len(moves) == 1:
@@ -40,14 +39,14 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
             if best_node.move.move != best_child.move.move:
                 best_node = best_child.copy()
                 var sec = (deadline - perf_counter_ns()) / 1_000_000_000
-                self.logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", sec)
+                logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", sec)
 
             if done:
                 break
 
         ref result = self._best_child()
         var sec = (deadline - perf_counter_ns()) / 1_000_000_000
-        self.logger.debug("result   ", result.move, "sims:", result.n_sims, " time ", sec)
+        logger.debug("result   ", result.move, "sims:", result.n_sims, " time ", sec)
 
         return result.move
 

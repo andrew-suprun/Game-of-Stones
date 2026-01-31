@@ -1,7 +1,7 @@
 from benchmark import benchmark, Unit, keep
 
 from traits import Score
-from board import Board, Place, first, _value_table
+from board import Board, Place, first, value_table
 
 comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
@@ -9,7 +9,7 @@ comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 fn bench_update_row():
     var board = Board[19, values, win_stones]()
-    var vv = _value_table[6, values]()
+    var vv = value_table[6, values]()
     for _ in range(1000):
         board._update_row(0, 20, 6, vv[0])
     keep(board._scores[5 * 20])

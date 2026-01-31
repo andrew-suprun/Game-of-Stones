@@ -11,8 +11,7 @@ comptime Stones = SIMD[DType.int64, 2]
 
 
 @fieldwise_init
-@register_passable("trivial")
-struct Place(Comparable, Copyable, Defaultable, Stringable, Writable):
+struct Place(Comparable, Copyable, Defaultable, Stringable, Writable, TrivialRegisterType):
     var x: Int8
     var y: Int8
 
@@ -22,7 +21,7 @@ struct Place(Comparable, Copyable, Defaultable, Stringable, Writable):
 
     @implicit
     fn __init__(out self, place: String) raises:
-        self.x = ord(place[0]) - ord("a")
+        self.x = ord(place[byte=0]) - ord("a")
         self.y = Int(String(place)[1:]) - 1
 
     fn __eq__(self, other: Self) -> Bool:
@@ -38,11 +37,10 @@ struct Place(Comparable, Copyable, Defaultable, Stringable, Writable):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Stringable, Writable):
+struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
     comptime empty = Int8(0)
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)
-    comptime value_table = _value_table[Self.win_stones, Self.values]()
 
     var _places: InlineArray[Int8, Self.size * Self.size]
     var _scores: InlineArray[Scores, Self.size * Self.size]
@@ -77,8 +75,8 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         self._scores = existing._scores^
         self._score = existing._score
 
-    fn place_stone(mut self, place: Place, turn: Int):
-        var scores = self.value_table[turn]
+    fn place_stone(mut self, value_table: List[List[Scores]], place: Place, turn: Int):
+        ref scores = value_table[turn]
 
         var x = Int(place.x)
         var y = Int(place.y)
@@ -119,7 +117,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         else:
             self[x, y] = Self.white
 
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
+    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: List[Scores]):
         var offset = start
         var stones = Int8(0)
 
@@ -192,7 +190,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         writer.write("\n")
 
         for y in range(Self.size):
-            writer.write(String(y + 1).rjust(2))
+            writer.write(String(y + 1).ascii_rjust(2))
             for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
@@ -221,7 +219,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
                             writer.write("─┤")
                         else:
                             writer.write("─┼")
-            writer.write(String(y + 1).rjust(3), "\n")
+            writer.write(String(y + 1).ascii_rjust(3), "\n")
 
         writer.write("  ")
 
@@ -341,7 +339,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         return Score(max_scores[player])
 
 
-fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+fn value_table[win_stones: Int, scores: List[Float32]]() -> List[List[Scores]]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
@@ -349,11 +347,11 @@ fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineA
     var v2: List[Scores] = [Scores(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
-    var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=0))
+    var result = [List[Scores](length=result_size, fill=0), List[Scores](length=result_size, fill=0)]
 
     for i in range(win_stones - 1):
         result[0][i * win_stones] = Scores(v2[i][1], -v2[i][0])
         result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
         result[1][i] = Scores(-v2[i][0], v2[i][1])
         result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
-    return result
+    return result^

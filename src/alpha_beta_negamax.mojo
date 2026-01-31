@@ -12,7 +12,6 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     comptime Game = Self.G
 
     var root: AlphaBetaNode[Self.G]
-    var logger: Logger
 
     @staticmethod
     fn name() -> StaticString:
@@ -20,18 +19,18 @@ struct AlphaBetaNegamax[G: TGame](TTree):
 
     fn __init__(out self):
         self.root = AlphaBetaNode[Self.G](Self.G.Move(), Score())
-        self.logger = Logger(prefix="abs: ")
 
     fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
+        var logger = Logger(prefix="abs: ")
         var best_move = MoveScore(Self.G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
-            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
+            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, logger)
             if not score.is_set():
                 return best_move
-            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+            logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
             if best_move.score.is_decisive():
                 return best_move
             depth += 1

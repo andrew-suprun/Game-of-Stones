@@ -1,5 +1,5 @@
 from traits import Score
-from board import Board, Place, first, second
+from board import Board, Place, first, second, value_table
 
 comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625, Float32.MAX]
@@ -9,6 +9,7 @@ fn main() raises:
     var moves_str = "j10 j9-j12 i12-k12 h12-h9 i9-k11 h8-i8 h10-k10 j8-k8 g10-i10 l8-m8"
     var moves = moves_str.split(" ")
     var board = Board[19, values, win_stones]()
+    var value_table = value_table[win_stones, values]()
     var value = Score(0)
 
     var turn = first
@@ -23,13 +24,13 @@ fn main() raises:
                 score += board_score
                 value += board_score
                 print(place, board.score(place, first))
-                board.place_stone(place, first)
+                board.place_stone(value_table, place, first)
             else:
                 board_score = board.score(place, second)
                 score -= board_score
                 value -= board_score
                 print(place, board.score(place, second))
-                board.place_stone(place, second)
+                board.place_stone(value_table, place, second)
             debug_assert(value == board.board_value(materialize[values]()))
             print(board)
             # print(board.str_scores())
