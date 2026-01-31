@@ -3,26 +3,26 @@ from score import Score
 
 trait TTree:
     comptime Game: TGame
-    comptime State = Self.Game.State
 
     fn __init__(out self):
         ...
 
-    fn search(mut self, game: Self.Game, max_time_ms: UInt) -> MoveScore[Self.Game.Move]:
+    fn search(mut self, game: Self.Game, state: Self.Game.State, max_time_ms: UInt) -> MoveScore[Self.Game.State.Move]:
         ...
 
 
 trait TGame(Defaultable):
     comptime State: TState
-    comptime Move: TMove
 
-    fn moves(self, state: Self.State) -> List[MoveScore[Self.Move]]:
+    fn moves(self, state: Self.State) -> List[MoveScore[Self.State.Move]]:
         ...
 
-    fn play_move(self, state: Self.State, move: Self.Move) -> Self.State:
+    fn play_move(self, state: Self.State, move: Self.State.Move) -> Self.State:
         ...
 
 trait TState(Copyable, Defaultable, Stringable, Writable):
+    comptime Move: TMove
+
     fn score(self) -> Score:
         ...
 

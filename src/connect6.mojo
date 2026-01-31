@@ -59,7 +59,7 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
-struct State[size: Int, win_stones: Int](TState):
+struct State[size: Int, win_stones: Int, max_places: Int](TState):
     comptime Move = Move
 
     var board: Board[Self.size, Self.win_stones]
@@ -67,7 +67,7 @@ struct State[size: Int, win_stones: Int](TState):
     var plies: Int
 
     fn __init__(out self):
-        self.board = Board[Self.size, values, Self.win_stones]()
+        self.board = Board[Self.size, Self.win_stones]()
         self.turn = 0
         self.plies = 0
 
@@ -148,7 +148,7 @@ struct State[size: Int, win_stones: Int](TState):
         writer.write(self.board)
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
-    comptime State = State[Self.size, win_stones]
+    comptime State = State[Self.size, win_stones, Self.max_places]
     comptime Move = State.Move
 
     var values: List[List[Scores]]
