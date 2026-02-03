@@ -81,7 +81,6 @@ struct State[size: Int, win_stones: Int, max_places: Int, max_plies: Int](TState
         self.turn = existing.turn
         self.plies = existing.plies
 
-
     fn moves(self, mut moves: List[MoveScore[Move]], values: List[List[Scores]]):
         @parameter
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
@@ -146,6 +145,7 @@ struct State[size: Int, win_stones: Int, max_places: Int, max_plies: Int](TState
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
+
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
     comptime State = State[Self.size, win_stones, Self.max_places, Self.max_plies]

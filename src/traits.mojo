@@ -20,19 +20,18 @@ trait TGame(Defaultable):
     fn play_move(self, state: Self.State, move: Self.State.Move) -> Self.State:
         ...
 
+
 trait TState(Copyable, Defaultable, Stringable, Writable):
     comptime Move: TMove
 
-    fn score(self) -> Score:
-        ...
 
-trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, Writable, TrivialRegisterType):
+trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, TrivialRegisterType, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
 
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, Writable, TrivialRegisterType):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, TrivialRegisterType, Writable):
     var move: Self.Move
     var score: Score
 

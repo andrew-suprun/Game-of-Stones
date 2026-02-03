@@ -46,7 +46,18 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, game: Self.G, state: Self.G.State, mut best_move: MoveScore[Self.G.State.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    fn _search(
+        mut self,
+        game: Self.G,
+        state: Self.G.State,
+        mut best_move: MoveScore[Self.G.State.Move],
+        var alpha: Score,
+        beta: Score,
+        depth: Int,
+        max_depth: Int,
+        deadline: UInt,
+        logger: Logger,
+    ) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 

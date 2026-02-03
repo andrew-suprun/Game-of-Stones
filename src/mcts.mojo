@@ -69,7 +69,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
     fn best_move(self) -> Self.G.Move:
         return self._best_child().move.move
 
-    fn _best_child(self) -> ref [self.root.children] Self.MctsNode:
+    fn _best_child(self) -> ref[self.root.children] Self.MctsNode:
         debug_assert(len(self.root.children) > 0)
         var has_draw = False
         var draw_node = Pointer(to=self.root.children[-1])

@@ -11,7 +11,7 @@ comptime Stones = SIMD[DType.int64, 2]
 
 
 @fieldwise_init
-struct Place(Comparable, Copyable, Defaultable, Stringable, Writable, TrivialRegisterType):
+struct Place(Comparable, Copyable, Defaultable, Stringable, TrivialRegisterType, Writable):
     var x: Int8
     var y: Int8
 

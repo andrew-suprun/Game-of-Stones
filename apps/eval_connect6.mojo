@@ -1,5 +1,6 @@
 from eval import run
 from connect6 import Connect6, State
+
 # from mcts import Mcts
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
