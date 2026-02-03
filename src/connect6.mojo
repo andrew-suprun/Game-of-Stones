@@ -9,7 +9,7 @@ from heap import heap_add
 comptime debug = env_get_string["ASSERT_MODE", ""]()
 
 comptime win_stones = 6
-comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
+comptime scores: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 
 struct Move(TMove):
@@ -59,7 +59,7 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
-struct State[size: Int, win_stones: Int, max_places: Int](TState):
+struct State[size: Int, win_stones: Int, max_places: Int, max_plies: Int](TState):
     comptime Move = Move
 
     var board: Board[Self.size, Self.win_stones]
@@ -115,7 +115,7 @@ struct State[size: Int, win_stones: Int, max_places: Int](TState):
                     return
 
                 if debug:
-                    var board_value = self.board.board_value(values)
+                    var board_value = self.board.board_value(materialize[scores]())
                     if self.turn:
                         board_value = -board_value
                     debug_assert(board_value.value == board_score.value + score1.value + score2.value)
@@ -131,11 +131,11 @@ struct State[size: Int, win_stones: Int, max_places: Int](TState):
         var new_state = self.copy()
         new_state.board.place_stone(values, move._p1, new_state.turn)
         if move._p1 != move._p2:
-            new_state.board.place_stone(new_state.values, move._p2, new_state.turn)
+            new_state.board.place_stone(values, move._p2, new_state.turn)
+
         new_state.turn = 1 - new_state.turn
         new_state.plies += 1
-        if new_state.plies > Self.max_plies:
-            return Score.draw()
+
         return new_state^
 
     fn score(self) -> Score:
@@ -148,13 +148,13 @@ struct State[size: Int, win_stones: Int, max_places: Int](TState):
         writer.write(self.board)
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
-    comptime State = State[Self.size, win_stones, Self.max_places]
+    comptime State = State[Self.size, win_stones, Self.max_places, Self.max_plies]
     comptime Move = State.Move
 
     var values: List[List[Scores]]
 
     fn __init__(out self):
-        self.values = value_table[win_stones, values]()
+        self.values = value_table[win_stones, scores]()
 
     fn moves(self, state: Self.State) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=Self.max_moves)
