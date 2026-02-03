@@ -14,5 +14,5 @@ fn run[Tree: TTree](opening: String) raises:
     print(state)
 
     var start = perf_counter_ns()
-    var move = tree.search(game, state, 300_000)
+    var move = tree.search(game, state, 1000)
     print("search result", move, "time.ms", (perf_counter_ns() - start) // 1_000_000)
