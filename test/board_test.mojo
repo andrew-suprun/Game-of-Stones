@@ -9,8 +9,8 @@ comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 
-fn test_place_stone() raises:
-    seed(7)
+fn test_place_stone_1() raises:
+    seed(2)
     var board = Board[values, size, win_stones]()
     var value = Score(0)
     var n = 0
@@ -61,9 +61,11 @@ fn check_results(mut board: B, player: Int, stones: List[String], expected: Scor
         board.place_stone(stone, player)
         print("#", stone, board._score)
         assert_true(board._score == expected)
+    for _ in stones:
+        board.remove_stone()
 
 
-fn main() raises:
+fn test_place_stone_2() raises:
     var board = Board[values, 19, win_stones]()
     place_stones(board, first, ["a1", "a2", "a3", "a4", "a5", "b2", "c3", "d4", "e5", "b1", "c1", "d1", "e1"])
     place_stones(board, second, ["s1", "s2", "s3", "s4", "s5", "r2", "q3", "p4", "o5", "r1", "q1", "p1", "o1"])
@@ -79,3 +81,7 @@ fn main() raises:
     check_results(board, second, ["s6", "n6", "n1"], Score.loss())
     check_results(board, first, ["n19", "n14", "s14"], Score.win())
     check_results(board, second, ["a14", "f14", "f19"], Score.loss())
+
+fn main() raises:
+    test_place_stone_1()
+    test_place_stone_2()
