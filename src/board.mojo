@@ -11,6 +11,19 @@ comptime Stones = SIMD[DType.int64, 2]
 
 
 @fieldwise_init
+struct PlaceScores(ImplicitlyCopyable, TrivialRegisterType):
+    var offset: Int
+    var scores: Scores
+
+
+@fieldwise_init
+struct ScoreMark(ImplicitlyCopyable, TrivialRegisterType):
+    var place: Place
+    var score: Score
+    var history_idx: Int
+
+
+@fieldwise_init
 struct Place(Comparable, Copyable, Defaultable, Stringable, TrivialRegisterType, Writable):
     var x: Int8
     var y: Int8
@@ -37,7 +50,7 @@ struct Place(Comparable, Copyable, Defaultable, Stringable, TrivialRegisterType,
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
+struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, Stringable, Writable):
     comptime empty = Int8(0)
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)
@@ -45,11 +58,17 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
     var _places: InlineArray[Int8, Self.size * Self.size]
     var _scores: InlineArray[Scores, Self.size * Self.size]
     var _score: Score
+    var _value_table: List[List[Scores]]
+    var _history: List[PlaceScores]
+    var _history_indices: List[ScoreMark]
 
     fn __init__(out self):
         self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
         self._scores = InlineArray[Scores, Self.size * Self.size](uninitialized=True)
         self._score = 0
+        self._value_table = _calc_value_table[Self.win_stones, Self.values]()
+        self._history = List[PlaceScores]()
+        self._history_indices = List[ScoreMark]()
 
         for y in range(Self.size):
             var v = 1 + min(Self.win_stones - 1, y, Self.size - 1 - y, Self.size - Self.win_stones)
@@ -61,22 +80,8 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
                 var total = v + h + t1 + t2
                 self.setvalues(Place(x, y), Scores(total, total))
 
-    fn __copyinit__(out self, existing: Self, /):
-        self._places = InlineArray[Int8, Self.size * Self.size](uninitialized=True)
-        memcpy(dest=self._places.unsafe_ptr(), src=existing._places.unsafe_ptr(), count=Self.size * Self.size)
-
-        self._scores = InlineArray[Scores, Self.size * Self.size](uninitialized=True)
-        memcpy(dest=self._scores.unsafe_ptr(), src=existing._scores.unsafe_ptr(), count=Self.size * Self.size)
-
-        self._score = existing._score
-
-    fn __moveinit__(out self, deinit existing: Self):
-        self._places = existing._places^
-        self._scores = existing._scores^
-        self._score = existing._score
-
-    fn place_stone(mut self, value_table: List[List[Scores]], place: Place, turn: Int):
-        ref scores = value_table[turn]
+    fn place_stone(mut self, place: Place, turn: Int):
+        self._history_indices.append(ScoreMark(place, self._score, len(self._history)))
 
         var x = Int(place.x)
         var y = Int(place.y)
@@ -89,12 +94,12 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
         var x_start = max(0, x - Self.win_stones + 1)
         var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
         var n = x_end - x_start
-        self._update_row(y * Self.size + x_start, 1, n, scores)
+        self._update_row(turn, y * Self.size + x_start, 1, n)
 
         var y_start = max(0, y - Self.win_stones + 1)
         var y_end = min(y + Self.win_stones, Self.size) - Self.win_stones + 1
         n = y_end - y_start
-        self._update_row(y_start * Self.size + x, Self.size, n, scores)
+        self._update_row(turn, y_start * Self.size + x, Self.size, n)
 
         var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y)
 
@@ -103,23 +108,29 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
             var mn = min(x, y, Self.win_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
-            self._update_row(y_start * Self.size + x_start, Self.size + 1, n, scores)
+            self._update_row(turn, y_start * Self.size + x_start, Self.size + 1, n)
 
         n = min(Self.win_stones, m, 2 * Self.size - Self.win_stones - y - x, x + y - Self.win_stones + 2)
         if n > 0:
             var mn = min(Self.size - 1 - x, y, Self.win_stones - 1)
             var x_start = x + mn
             var y_start = y - mn
-            self._update_row(y_start * Self.size + x_start, Self.size - 1, n, scores)
+            self._update_row(turn, y_start * Self.size + x_start, Self.size - 1, n)
 
         if turn == first:
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
 
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: List[Scores]):
+    @always_inline
+    fn _update_row(mut self, turn: Int, start: Int, delta: Int, n: Int):
+        ref scores = self._value_table[turn]
+
         var offset = start
         var stones = Int8(0)
+
+        for i in range(start, start + delta * (Self.win_stones - 1 + n), delta):
+            self._history.append(PlaceScores(i, self._scores[i]))
 
         for _ in range(n + Self.win_stones - 1):
             offset += delta
@@ -140,6 +151,15 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
                     self._scores[offset + j * delta] += scores
             stones -= self._places[offset]
             offset += delta
+
+    fn remove_stone(mut self):
+        var idx = self._history_indices.pop()
+        self[Int(idx.place.x), Int(idx.place.y)] = self.empty
+        self._score = idx.score
+        for i in range(len(self._history)-1, idx.history_idx-1, -1):
+            var h_scores = self._history[i]
+            self._scores[h_scores.offset] = h_scores.scores
+        self._history.shrink(idx.history_idx)
 
     fn places(self, turn: Int, mut places: List[Place]):
         @parameter
@@ -241,7 +261,7 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
         str += "│\n"
         str += "───┼" + "──────" * Self.size + "┼───\n"
         for y in range(Self.size):
-            str += String(y + 1).rjust(2) + " │"
+            str += String(y + 1).ascii_rjust(2) + " │"
             for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
@@ -253,8 +273,8 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
                     if value.is_win():
                         str += "  Win "
                     else:
-                        str += String(Int(value.value)).rjust(5, " ") + " "
-            str += "│ " + String(y + 1).rjust(2) + "\n"
+                        str += String(Int(value.value)).ascii_rjust(5, " ") + " "
+            str += "│ " + String(y + 1).ascii_rjust(2) + "\n"
         str += "───┼" + "──────" * Self.size + "┼───"
         if not table_idx:
             str += "\n   │"
@@ -339,7 +359,7 @@ struct Board[size: Int, win_stones: Int](Copyable, Stringable, Writable):
         return Score(max_scores[player])
 
 
-fn value_table[win_stones: Int, scores: List[Float32]]() -> List[List[Scores]]:
+fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> List[List[Scores]]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
