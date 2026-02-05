@@ -56,16 +56,16 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
     comptime white = Int8(Self.win_stones)
 
     # TODO bench InlineArray vs. List
-    var _places: InlineArray[Int8, Self.size * Self.size]
-    var _scores: InlineArray[Scores, Self.size * Self.size]
+    var _places: List[Int8]
+    var _scores: List[Scores]
     var _value_table: List[List[Scores]]
     var _score: Score
     var _history: List[PlaceScores]
     var _history_indices: List[ScoreMark]
 
     fn __init__(out self):
-        self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
-        self._scores = InlineArray[Scores, Self.size * Self.size](uninitialized=True)
+        self._places = List[Int8](length=Self.size * Self.size, fill=0)
+        self._scores = List[Scores](unsafe_uninit_length=Self.size * Self.size)
         self._score = 0
         self._value_table = _calc_value_table[Self.win_stones, Self.values]()
         self._history = List[PlaceScores]()
