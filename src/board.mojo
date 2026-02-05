@@ -55,10 +55,11 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)
 
+    # TODO bench InlineArray vs. List
     var _places: InlineArray[Int8, Self.size * Self.size]
     var _scores: InlineArray[Scores, Self.size * Self.size]
-    var _score: Score
     var _value_table: List[List[Scores]]
+    var _score: Score
     var _history: List[PlaceScores]
     var _history_indices: List[ScoreMark]
 

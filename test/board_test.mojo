@@ -47,6 +47,14 @@ fn test_place_stone_1() raises:
             board.place_stone(Place(xx, yy), turn)
             n += 1
 
+    for _ in range(200):
+        board.remove_stone()
+
+    var init_board = Board[values, size, win_stones]()
+    assert_true(board._score == init_board._score)
+    for i in range(size*size):
+        assert_true(board._scores[i] == init_board._scores[i])
+        assert_true(board._places[i] == init_board._places[i])
 
 comptime B = Board[values, 19, win_stones]
 
