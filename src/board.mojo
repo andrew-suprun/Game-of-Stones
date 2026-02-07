@@ -157,7 +157,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
         var idx = self._history_indices.pop()
         self[Int(idx.place.x), Int(idx.place.y)] = self.empty
         self._score = idx.score
-        for i in range(len(self._history)-1, idx.history_idx-1, -1):
+        for i in range(len(self._history) - 1, idx.history_idx - 1, -1):
             var h_scores = self._history[i]
             self._scores[h_scores.offset] = h_scores.scores
         self._history.shrink(idx.history_idx)

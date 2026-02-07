@@ -52,9 +52,10 @@ fn test_place_stone_1() raises:
 
     var init_board = Board[values, size, win_stones]()
     assert_true(board._score == init_board._score)
-    for i in range(size*size):
+    for i in range(size * size):
         assert_true(board._scores[i] == init_board._scores[i])
         assert_true(board._places[i] == init_board._places[i])
+
 
 comptime B = Board[values, 19, win_stones]
 
@@ -89,6 +90,7 @@ fn test_place_stone_2() raises:
     check_results(board, second, ["s6", "n6", "n1"], Score.loss())
     check_results(board, first, ["n19", "n14", "s14"], Score.win())
     check_results(board, second, ["a14", "f14", "f19"], Score.loss())
+
 
 fn main() raises:
     test_place_stone_1()

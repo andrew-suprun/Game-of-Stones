@@ -154,5 +154,3 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
-
-

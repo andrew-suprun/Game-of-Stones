@@ -47,9 +47,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    fn _search(
-        mut self, mut game: Self.G, mut best_move: MoveScore[Self.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger
-    ) -> Score:
+    fn _search(mut self, mut game: Self.G, mut best_move: MoveScore[Self.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 
@@ -93,7 +91,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             _ = game.play_move(child.move)
             child.score = -child._search(game, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
             game.undo_move()
-            
+
             if not child.score.is_set():
                 return Score()
 
