@@ -7,22 +7,21 @@ trait TTree:
     fn __init__(out self):
         ...
 
-    fn search(mut self, game: Self.Game, state: Self.Game.State, max_time_ms: UInt) -> MoveScore[Self.Game.State.Move]:
+    fn search(mut self, mut game: Self.Game, max_time_ms: UInt) -> MoveScore[Self.Game.Move]:
         ...
 
 
-trait TGame(Defaultable):
-    comptime State: TState
-
-    fn moves(self, state: Self.State) -> List[MoveScore[Self.State.Move]]:
-        ...
-
-    fn play_move(self, state: Self.State, move: Self.State.Move) -> Self.State:
-        ...
-
-
-trait TState(Copyable, Defaultable, Stringable, Writable):
+trait TGame(Defaultable, Writable):
     comptime Move: TMove
+
+    fn moves(self) -> List[MoveScore[Self.Move]]:
+        ...
+
+    fn play_move(mut self, move: Self.Move) -> Score:
+        ...
+
+    fn undo_move(mut self):
+        ...
 
 
 trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, TrivialRegisterType, Writable):

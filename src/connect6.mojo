@@ -59,29 +59,29 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
-struct State[size: Int, win_stones: Int, max_places: Int, max_plies: Int](TState):
+struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
 
-    var board: Board[Self.size, Self.win_stones]
+    var board: Board[scores, Self.size, win_stones]
     var turn: Int
     var plies: Int
+    var game_record: List[Move]
 
     fn __init__(out self):
-        self.board = Board[Self.size, Self.win_stones]()
+        self.board = Board[scores, Self.size, win_stones]()
         self.turn = 0
         self.plies = 0
+        self.game_record = List[Move]()
 
-    fn __copyinit__(out self, existing: Self, /):
-        self.board = existing.board.copy()
-        self.turn = existing.turn
-        self.plies = existing.plies
+    fn moves(self) -> List[MoveScore[Move]]:
+        var moves = List[MoveScore[Move]](capacity=Self.max_moves)
+        self.moves(moves)
+        if self.plies == Self.max_plies:
+            moves[-1].score = Score.draw()
+            return [moves[-1]]
+        return moves^
 
-    fn __moveinit__(out self, deinit existing: Self):
-        self.board = existing.board^
-        self.turn = existing.turn
-        self.plies = existing.plies
-
-    fn moves(self, mut moves: List[MoveScore[Move]], values: List[List[Scores]]):
+    fn moves(self, mut moves: List[MoveScore[Move]]):
         @parameter
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
@@ -102,7 +102,7 @@ struct State[size: Int, win_stones: Int, max_places: Int, max_plies: Int](TState
                 return
 
             var board = self.board.copy()
-            board.place_stone(values, place1, self.turn)
+            board.place_stone(place1, self.turn)
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j]
@@ -120,22 +120,31 @@ struct State[size: Int, win_stones: Int, max_places: Int, max_plies: Int](TState
                     debug_assert(board_value.value == board_score.value + score1.value + score2.value)
 
                 var board2 = board.copy()
-                board2.place_stone(values, place2, self.turn)
+                board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
                 if move_score != Score.loss():
                     heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
-    fn play_move(self, move: Move, values: List[List[Scores]]) -> Self:
-        var new_state = self.copy()
-        new_state.board.place_stone(values, move._p1, new_state.turn)
+    fn play_move(mut self, move: Move) -> Score:
+        self.game_record.append(move)
+        self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
-            new_state.board.place_stone(values, move._p2, new_state.turn)
+            self.board.place_stone(move._p2, self.turn)
 
-        new_state.turn = 1 - new_state.turn
-        new_state.plies += 1
+        self.turn = 1 - self.turn
+        self.plies += 1
 
-        return new_state^
+        return self.board._score
+
+    fn undo_move(mut self):
+        var move = self.game_record.pop()
+        self.board.remove_stone()
+        if move._p1 != move._p2:
+            self.board.remove_stone()
+
+        self.turn = 1 - self.turn
+        self.plies -= 1
 
     fn score(self) -> Score:
         return self.board._score
@@ -147,22 +156,3 @@ struct State[size: Int, win_stones: Int, max_places: Int, max_plies: Int](TState
         writer.write(self.board)
 
 
-struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
-    comptime State = State[Self.size, win_stones, Self.max_places, Self.max_plies]
-    comptime Move = State.Move
-
-    var values: List[List[Scores]]
-
-    fn __init__(out self):
-        self.values = value_table[win_stones, scores]()
-
-    fn moves(self, state: Self.State) -> List[MoveScore[Move]]:
-        var moves = List[MoveScore[Move]](capacity=Self.max_moves)
-        state.moves(moves, self.values)
-        if state.plies == Self.max_plies:
-            moves[-1].score = Score.draw()
-            return [moves[-1]]
-        return moves^
-
-    fn play_move(self, state: Self.State, move: Move) -> self.State:
-        return state.play_move(move, self.values)

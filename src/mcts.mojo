@@ -16,7 +16,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
     fn __init__(out self):
         self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
 
-    fn search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
+    fn search(mut self, mut game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
         var logger = Logger(prefix="mcts: ")
         var moves = game.moves()
         debug_assert(len(moves) > 0)
@@ -50,12 +50,11 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
 
         return result.move
 
-    fn expand(mut self, game: Self.G, out done: Bool):
+    fn expand(mut self, mut game: Self.G, out done: Bool):
         if self.root.move.score.is_decisive():
             return True
 
-        var g = game.copy()
-        self.root._expand(g)
+        self.root._expand(game)
 
         if self.root.move.score.is_decisive():
             return True
@@ -125,6 +124,7 @@ struct Node[G: TGame, c: Score](Copyable, Representable, Stringable, Writable):
             ref selected_child = self.children[Self.select_node(self.children)]
             _ = game.play_move(selected_child.move.move)
             selected_child._expand(game)
+            game.undo_move()
 
         self.n_sims = 1
         var max_score = Score.loss()

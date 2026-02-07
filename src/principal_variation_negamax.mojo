@@ -8,7 +8,7 @@ from traits import TTree, TGame, MoveScore
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
     comptime Game = Self.G
-    comptime Move = Self.Game.State.Move
+    comptime Move = Self.Game.Move
 
     var root: PrincipalVariationNode[Self.G]
 
@@ -19,14 +19,14 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
     fn __init__(out self):
         self.root = PrincipalVariationNode[Self.G](Self.Move(), Score())
 
-    fn search(mut self, game: Self.G, state: Self.G.State, duration_ms: UInt) -> MoveScore[Self.Move]:
+    fn search(mut self, mut game: Self.G, duration_ms: UInt) -> MoveScore[Self.Move]:
         var logger = Logger(prefix="pvs: ")
         var best_move = MoveScore(Self.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
-            var score = self.root._search(game, state, best_move, Score.loss(), Score.win(), 0, depth, deadline, logger)
+            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, logger)
             if not score.is_set():
                 return best_move
             logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
@@ -36,7 +36,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
 
 struct PrincipalVariationNode[G: TGame](Copyable, Writable):
-    comptime Move = Self.G.State.Move
+    comptime Move = Self.G.Move
 
     var move: Self.Move
     var score: Score
@@ -48,13 +48,13 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         self.children = List[Self]()
 
     fn _search(
-        mut self, game: Self.G, state: Self.G.State, mut best_move: MoveScore[Self.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger
+        mut self, mut game: Self.G, mut best_move: MoveScore[Self.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger
     ) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 
         if not self.children:
-            self.children = [Self(move.move, move.score) for move in game.moves(state)]
+            self.children = [Self(move.move, move.score) for move in game.moves()]
 
         best_move = MoveScore(self.children[0].move, self.children[0].score)
         var best_score = Score.loss()
@@ -90,9 +90,10 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 idx += 1
                 continue
 
-            var new_state = game.play_move(state, child.move)
-
-            child.score = -child._search(game, new_state, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+            _ = game.play_move(child.move)
+            child.score = -child._search(game, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+            game.undo_move()
+            
             if not child.score.is_set():
                 return Score()
 
@@ -123,9 +124,9 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 idx += 1
                 continue
 
-            var new_state = game.play_move(state, child.move)
-
-            child.score = -child._search(game, new_state, deeper_best_move, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
+            _ = game.play_move(child.move)
+            child.score = -child._search(game, deeper_best_move, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
+            game.undo_move()
 
             if best_score < child.score:
                 best_score = child.score
@@ -136,7 +137,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
             if best_score > alpha and depth < max_depth - 1:
                 alpha = best_score
-                child.score = -child._search(game, new_state, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                child.score = -child._search(game, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
 
                 if best_score < child.score:
                     best_score = child.score
