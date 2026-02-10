@@ -44,16 +44,16 @@ opening j10 i9-j11
 19 └─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┘ 19
    a b c d e f g h i j k l m n o p q r s
 
-pvs: === max depth:  1  move: i11-k9 20.0  time: 0.00097
-pvs: === max depth:  2  move: k9-l10 18.0  time: 0.00469
-pvs: === max depth:  3  move: i11-k9 20.0  time: 0.0261
-pvs: === max depth:  4  move: i11-k9 10.0  time: 0.09395
-pvs: === max depth:  5  move: i11-k9 36.0  time: 0.373738
-pvs: === max depth:  6  move: h12-i11 9.0  time: 1.751571
-pvs: === max depth:  7  move: i11-k9 14.0  time: 6.229654
-pvs: === max depth:  8  move: h12-i11 9.0  time: 14.550735
-pvs: === max depth:  9  move: i11-k9 1.0  time: 55.046096
-pvs: === max depth:  10  move: h12-i11 38.0  time: 168.925851
-pvs: === max depth:  11  move: h12-i11 18.0  time: 288.705542
-pvs: === max depth:  12  move: h12-i11 38.0  time: 300.000059
-search result h12-i11 38.0 time.ms 302201
+pvs: === max depth:  1  move: i11-k9 20.0  time: 0.000818
+pvs: === max depth:  2  move: k9-l10 18.0  time: 0.003897
+pvs: === max depth:  3  move: i11-k9 20.0  time: 0.021761
+pvs: === max depth:  4  move: i11-k9 10.0  time: 0.078584
+pvs: === max depth:  5  move: i11-k9 36.0  time: 0.310529
+pvs: === max depth:  6  move: h12-i11 9.0  time: 1.477621
+pvs: === max depth:  7  move: i11-k9 14.0  time: 5.230871
+pvs: === max depth:  8  move: h12-i11 9.0  time: 12.17194
+pvs: === max depth:  9  move: i11-k9 1.0  time: 45.958801
+pvs: === max depth:  10  move: h12-i11 38.0  time: 141.348604
+pvs: === max depth:  11  move: h12-i11 18.0  time: 242.524136
+pvs: === max depth:  12  move: h12-i11 38.0  time: 300.000051
+search result h12-i11 38.0 time.ms 302226.065
