@@ -1,7 +1,7 @@
 from score import Score
 
 
-trait TTree:
+trait TTree(ImplicitlyDestructible):
     comptime Game: TGame
 
     fn __init__(out self):

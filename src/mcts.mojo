@@ -38,7 +38,7 @@ struct Mcts[G: TGame, c: Score](Stringable, TTree, Writable):
             ref best_child = self._best_child()
             if best_node.move.move != best_child.move.move:
                 best_node = best_child.copy()
-                var sec = (deadline - perf_counter_ns()) / 1_000_000_000
+                var sec = Float64(deadline - perf_counter_ns()) // 1_000_000_000
                 logger.debug("best move", best_node.move, "sims:", best_node.n_sims, " time ", sec)
 
             if done:
