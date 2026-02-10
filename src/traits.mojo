@@ -1,7 +1,7 @@
 from score import Score
 
 
-trait TTree:
+trait TTree(ImplicitlyDestructible):
     comptime Game: TGame
 
     fn __init__(out self):
@@ -21,15 +21,13 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
         ...
 
 
-@register_passable
-trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, Writable):
+trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, TrivialRegisterPassable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
 
-@register_passable
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, TrivialRegisterPassable, Writable):
     var move: Self.Move
     var score: Score
 

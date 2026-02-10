@@ -12,14 +12,14 @@ comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 
 # comptime Tree1 = Mcts[Game1, 2]
-comptime Tree1 = AlphaBetaNegamax[Game1]
+comptime Tree1 = PrincipalVariationNegamax[Game1]
 comptime Tree2 = PrincipalVariationNegamax[Game2]
 
 comptime seed = 7
 
 
 fn main() raises:
-    run[Tree1, Tree2]("1000", 1000, "2000", 2000, openings())
+    run[Tree1, Tree2]("a", 100, "b", 100, openings())
 
 
 fn openings() -> List[List[String]]:

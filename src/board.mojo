@@ -10,9 +10,7 @@ comptime Scores = SIMD[DType.float32, 2]
 comptime Stones = SIMD[DType.int64, 2]
 
 
-@fieldwise_init
-@register_passable("trivial")
-struct Place(Comparable, Copyable, Defaultable, Stringable, Writable):
+struct Place(Comparable, Copyable, Defaultable, Stringable, TrivialRegisterPassable, Writable):
     var x: Int8
     var y: Int8
 
@@ -20,10 +18,14 @@ struct Place(Comparable, Copyable, Defaultable, Stringable, Writable):
         self.x = -1
         self.y = -1
 
+    fn __init__(out self, x: Int, y: Int):
+        self.x = Int8(x)
+        self.y = Int8(y)
+
     @implicit
     fn __init__(out self, place: String) raises:
-        self.x = ord(place[0]) - ord("a")
-        self.y = Int(String(place)[1:]) - 1
+        self.x = Int8(ord(place[byte=0]) - ord("a"))
+        self.y = Int8(Int(String(place)[1:]) - 1)
 
     fn __eq__(self, other: Self) -> Bool:
         return self.x == other.x and self.y == other.y
@@ -42,7 +44,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
     comptime empty = Int8(0)
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)
-    comptime value_table = _value_table[Self.win_stones, Self.values]()
+    comptime value_table = _calc_value_table[Self.win_stones, Self.values]()
 
     var _places: InlineArray[Int8, Self.size * Self.size]
     var _scores: InlineArray[Scores, Self.size * Self.size]
@@ -60,7 +62,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
                 var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y, Self.size - Self.win_stones)
                 var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
                 var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
-                var total = v + h + t1 + t2
+                var total = Float32(v + h + t1 + t2)
                 self.setvalues(Place(x, y), Scores(total, total))
 
     fn __copyinit__(out self, existing: Self, /):
@@ -78,7 +80,8 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         self._score = existing._score
 
     fn place_stone(mut self, place: Place, turn: Int):
-        var scores = self.value_table[turn]
+        ref value_table = materialize[self.value_table]()
+        ref scores = value_table[turn]
 
         var x = Int(place.x)
         var y = Int(place.y)
@@ -119,7 +122,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         else:
             self[x, y] = Self.white
 
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
+    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: List[Scores]):
         var offset = start
         var stones = Int8(0)
 
@@ -192,7 +195,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         writer.write("\n")
 
         for y in range(Self.size):
-            writer.write(String(y + 1).rjust(2))
+            writer.write(String(y + 1).ascii_rjust(2))
             for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
@@ -221,7 +224,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
                             writer.write("─┤")
                         else:
                             writer.write("─┼")
-            writer.write(String(y + 1).rjust(3), "\n")
+            writer.write(String(y + 1).ascii_rjust(3), "\n")
 
         writer.write("  ")
 
@@ -243,7 +246,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         str += "│\n"
         str += "───┼" + "──────" * Self.size + "┼───\n"
         for y in range(Self.size):
-            str += String(y + 1).rjust(2) + " │"
+            str += String(y + 1).ascii_rjust(2) + " │"
             for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
@@ -255,8 +258,8 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
                     if value.is_win():
                         str += "  Win "
                     else:
-                        str += String(Int(value.value)).rjust(5, " ") + " "
-            str += "│ " + String(y + 1).rjust(2) + "\n"
+                        str += String(Int(value.value)).ascii_rjust(5, " ") + " "
+            str += "│ " + String(y + 1).ascii_rjust(2) + "\n"
         str += "───┼" + "──────" * Self.size + "┼───"
         if not table_idx:
             str += "\n   │"
@@ -322,8 +325,8 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         return value
 
     fn _calc_value(self, stones: Int8, scores: List[Float32]) -> Score:
-        var black = stones % Self.win_stones
-        var white = stones // Self.win_stones
+        var black = Int(stones) % Self.win_stones
+        var white = Int(stones) / Self.win_stones
         if white == 0:
             return Score(scores[black])
         elif black == 0:
@@ -341,7 +344,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         return Score(max_scores[player])
 
 
-fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> List[List[Scores]]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
@@ -349,11 +352,11 @@ fn _value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineA
     var v2: List[Scores] = [Scores(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
-    var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=0))
+    var result = [List[Scores](length=result_size, fill=0), List[Scores](length=result_size, fill=0)]
 
     for i in range(win_stones - 1):
         result[0][i * win_stones] = Scores(v2[i][1], -v2[i][0])
         result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
         result[1][i] = Scores(-v2[i][0], v2[i][1])
         result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
-    return result
+    return result^

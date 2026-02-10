@@ -31,7 +31,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
             var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
                 return best_move
-            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", (perf_counter_ns() - start) / 1_000_000_000)
+            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
             if best_move.score.is_decisive():
                 return best_move
             depth += 1

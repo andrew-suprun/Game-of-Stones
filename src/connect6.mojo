@@ -12,7 +12,6 @@ comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 
-@register_passable("trivial")
 struct Move(TMove):
     var _p1: Place
     var _p2: Place
