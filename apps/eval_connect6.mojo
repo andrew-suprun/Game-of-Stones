@@ -7,9 +7,9 @@ from principal_variation_negamax import PrincipalVariationNegamax
 
 comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
-comptime Tree = Mcts[Game, 2]
+# comptime Tree = Mcts[Game, 2]
 # comptime Tree = AlphaBetaNegamax[Game]
-# comptime Tree = PrincipalVariationNegamax[Game]
+comptime Tree = PrincipalVariationNegamax[Game]
 
 comptime script = "j10 i9-j11"
 # comptime script = "j10 i10-j9 i9-k11 g12-h11 f13-k8 h8-h12 h10-k10 f12-i12 e12-k12 j13-k9 k14-l12 k15-m13 g14-h15 d11-i16 j14-l14 e8-i14"

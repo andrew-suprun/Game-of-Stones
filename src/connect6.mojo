@@ -65,13 +65,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
     var board: Board[scores, Self.size, win_stones]
     var turn: Int
     var plies: Int
-    var game_record: List[Move]
 
     fn __init__(out self):
         self.board = Board[scores, Self.size, win_stones]()
         self.turn = 0
         self.plies = 0
-        self.game_record = List[Move]()
 
     fn moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=Self.max_moves)
@@ -127,7 +125,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
     fn play_move(mut self, move: Move) -> Score:
-        self.game_record.append(move)
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
@@ -138,11 +135,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         return self.board._score
 
     fn undo_move(mut self):
-        var move = self.game_record.pop()
+        debug_assert(self.plies > 1)
         self.board.remove_stone()
-        if move._p1 != move._p2:
-            self.board.remove_stone()
-
+        self.board.remove_stone()
         self.turn = 1 - self.turn
         self.plies -= 1
 
