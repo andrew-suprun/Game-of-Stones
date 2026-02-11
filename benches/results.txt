@@ -1,21 +1,24 @@
 --- basic ---
-InlineArray SIMD Int   10.923642533936652
-InlineArray SIMD Int16 12.905010695187165
-List        SIMD Int   7.021268656716418
-List        SIMD Int16 13.141928961748633
-InlineArray SIMD Float 10.836753488372093
-List        SIMD Float 9.616460317460318
+InlineArray Int   11.162695652173912
+InlineArray Int16 11.203953416149067
+List        Int   6.728620560747664
+List        Int16 7.692779661016949
+InlineArray Float 11.204230769230769
+List        Float 9.783086956521739
 --- board ---
-update_row  0.07141652599103557
-place_stone 0.6382427210164108
-places      2.274607
+update_row  0.06978883289736883
+place_stone 0.3343137
+places      2.2654036222509704
 --- connect6 ---
-moves    44.55949056603773 msec
+moves    44.657061728395064 msec
 --- gomoku ---
-moves  3.516318047337278 msec
-expand 6.051284263959391 msec
+moves  3.565741 msec
+expand 5.960456198347107 msec
 --- heap ---
-heap_add 0.57290475
+heap_add 534.7013333333333
+--- logger ---
+bench1 9047.976
+bench2 3.15155e-07
 
 
 --- pixi run mojo -I src -D LOGGING_LEVEL=debug apps/eval_connect6.mojo ---

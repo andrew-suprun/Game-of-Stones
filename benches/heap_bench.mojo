@@ -18,4 +18,4 @@ fn bench():
 
 fn main() raises:
     print("--- heap ---")
-    print("heap_add", benchmark.run[bench](0, 1, 3, 6).min(Unit.ms))
+    print("heap_add", benchmark.run[func2=bench](0, 1, 3, 6).min(Unit.ms))

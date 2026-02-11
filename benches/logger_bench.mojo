@@ -24,5 +24,6 @@ fn bench2():
 
 
 fn main() raises:
-    print("bench1", benchmark.run[bench1](0, 1, 3, 6).min(Unit.ms))
-    print("bench2", benchmark.run[bench2](0, 1, 3, 6).min(Unit.ms))
+    print("--- logger ---")
+    print("bench1", benchmark.run[func2=bench1](0, 1, 3, 6).min(Unit.ms))
+    print("bench2", benchmark.run[func2=bench2](0, 1, 3, 6).min(Unit.ms))
