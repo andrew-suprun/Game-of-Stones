@@ -54,6 +54,7 @@ struct Board[values: List[Float32], size: Int, win_stones: Int](Copyable, String
     comptime empty = Int8(0)
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)
+    # comptime value_table = _calc_value_table[Self.win_stones, Self.values]()
 
     # TODO bench InlineArray vs. List
     var _places: List[Int8]

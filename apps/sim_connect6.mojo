@@ -19,7 +19,7 @@ comptime seed = 7
 
 
 fn main() raises:
-    run[Tree1, Tree2]("a", 100, "b", 200, openings())
+    run[Tree1, Tree2]("a", 200, "b", 200, openings())
 
 
 fn openings() -> List[List[String]]:
