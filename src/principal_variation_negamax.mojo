@@ -50,7 +50,9 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             return Score()
 
         if not self.children:
-            self.children = [Self(move.move, move.score) for move in game.moves()]
+            var moves = game.moves()
+            debug_assert(len(moves) > 0)
+            self.children = [Self(move.move, move.score) for move in moves]
 
         best_move = MoveScore(self.children[0].move, self.children[0].score)
         var best_score = Score.loss()

@@ -122,8 +122,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
         else:
             self[x, y] = Self.white
 
-    # fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: List[Scores]):
+    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
@@ -344,9 +343,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
 
         return Score(max_scores[player])
 
-# pixi run mojo -I src apps/sim_connect6.mojo
-# fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
-fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> List[List[Scores]]:
+fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
@@ -354,8 +351,7 @@ fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> List[List[Scor
     var v2: List[Scores] = [Scores(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
-    # var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=0))
-    var result = [List[Scores](length=result_size, fill=0), List[Scores](length=result_size, fill=0)]
+    var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=0))
 
     for i in range(win_stones - 1):
         result[0][i * win_stones] = Scores(v2[i][1], -v2[i][0])
