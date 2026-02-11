@@ -8,7 +8,6 @@ from connect6 import Connect6
 from mcts import Mcts
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNode
-from mtdf import Mtdf
 
 comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
@@ -21,6 +20,7 @@ fn main() raises:
     for depth in range(0, max_depth):
         var game = Game()
         var best_move = MoveScore(Game.Move(), Score.loss())
+        print(best_move)
         for move_str in script.split(" "):
             _ = game.play_move(Game.Move(String(move_str)))
         print("depth", depth, script)

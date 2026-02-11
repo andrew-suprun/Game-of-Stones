@@ -24,10 +24,10 @@ fn openings() -> List[List[String]]:
     for j in range(Game.size / 2 - 2, Game.size / 2 + 3):
         for i in range(Game.size / 2 - 2, Game.size / 2 + 3):
             if i != Game.size / 2 or j != Game.size / 2:
-                places.append(String(Place(Int8(i), Int8(j))))
+                places.append(String(Place(i, j)))
     for _ in range(100):
         random.shuffle(places)
-        moves = [String(Place(Int8(Game.size / 2), Int8(Game.size / 2)))]
+        moves = [String(Place(Game.size / 2, Game.size / 2))]
         moves.append(String(places[0]))
         moves.append(String(places[1]))
         moves.append(String(places[2]))

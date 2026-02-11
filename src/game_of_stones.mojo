@@ -138,8 +138,8 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
             elif event.type == self.pygame.MOUSEBUTTONDOWN:
                 if self.game_complete:
                     return
-                var x = Int(event.pos[0] - r) // d
-                var y = Int(event.pos[1] - r) // d
+                var x = (Int(py=event.pos[0]) - r) / d
+                var y = (Int(py=event.pos[1]) - r) / d
                 if x >= 0 and x < board_size and y >= 0 and y < board_size:
                     var place = Place(x, y)
                     if place in self.selected:
@@ -231,7 +231,7 @@ struct GameOfStones[Tree: TTree, stones_per_move: Int]:
         for j in range(8, 11):
             for i in range(8, 11):
                 if i != 9 or j != 9:
-                    places.append(Place(Int8(i), Int8(j)))
+                    places.append(Place(i, j))
         random.seed()
         random.shuffle(places)
 
