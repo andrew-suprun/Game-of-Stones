@@ -74,7 +74,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         var deeper_best_move = MoveScore(Self.G.Move(), 0)
         var idx = 0
 
-         # Full window search
+        # Full window search
         while idx < len(self.children):
             ref child = self.children[idx]
 

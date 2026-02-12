@@ -343,6 +343,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
 
         return Score(max_scores[player])
 
+
 fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 

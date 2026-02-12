@@ -83,12 +83,30 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, 
             var result = t1.search(g1, time1)
             move = String(result.move)
             score = result.score
-            print("  ", name1.ascii_ljust(name_size), String(result.move).ascii_ljust(8), String(result.score).ascii_rjust(7), "  ", Float64(perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
+            print(
+                "  ",
+                name1.ascii_ljust(name_size),
+                String(result.move).ascii_ljust(8),
+                String(result.score).ascii_rjust(7),
+                "  ",
+                Float64(perf_counter_ns() - start) / 1_000_000_000,
+                "s",
+                sep="",
+            )
         else:
             var result = t2.search(g2, time2)
             move = String(result.move)
             score = -result.score
-            print("  ", name2.ascii_ljust(name_size), String(result.move).ascii_ljust(8), String(result.score).ascii_rjust(7), "  ", Float64(perf_counter_ns() - start) / 1_000_000_000, "s", sep="")
+            print(
+                "  ",
+                name2.ascii_ljust(name_size),
+                String(result.move).ascii_ljust(8),
+                String(result.score).ascii_rjust(7),
+                "  ",
+                Float64(perf_counter_ns() - start) / 1_000_000_000,
+                "s",
+                sep="",
+            )
         var score = g1.play_move(T1.Game.Move(move))
         _ = g2.play_move(T2.Game.Move(move))
         # print(g1)
