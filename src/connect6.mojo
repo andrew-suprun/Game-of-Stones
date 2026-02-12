@@ -124,6 +124,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 if move_score != Score.loss():
                     heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
+        if not moves:
+            moves.append(MoveScore(Move(places[0], places[1]), Score.loss()))
+
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
