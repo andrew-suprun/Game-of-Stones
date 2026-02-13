@@ -6,13 +6,13 @@ from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
 
-# comptime Game = Gomoku[size=19, max_places=20, max_plies=100]
+# comptime Game = Gomoku[size=19, max_places=16, max_plies=300]
 # comptime stones_per_move = 1
 
-comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=150]
 comptime stones_per_move = 2
 
-# comptime Tree = Mcts[Game, 8]
+# comptime Tree = Mcts[Game, 4]
 # comptime Tree = AlphaBetaNegamax[Game]
 comptime Tree = PrincipalVariationNegamax[Game]
 

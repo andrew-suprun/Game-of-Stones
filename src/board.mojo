@@ -25,7 +25,7 @@ struct Place(Comparable, Copyable, Defaultable, Stringable, TrivialRegisterPassa
     @implicit
     fn __init__(out self, place: String) raises:
         self.x = Int8(ord(place[byte=0]) - ord("a"))
-        self.y = Int8(Int(String(place)[1:]) - 1)
+        self.y = Int8(Int(place[1:]) - 1)
 
     fn __eq__(self, other: Self) -> Bool:
         return self.x == other.x and self.y == other.y

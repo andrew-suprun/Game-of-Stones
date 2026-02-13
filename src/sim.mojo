@@ -48,7 +48,6 @@ fn run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: U
             second_wins += 1
 
         print("result: ", name1, ": ", first_wins, " - ", name2, ": ", second_wins, sep="")
-
         n += 1
 
 
@@ -62,7 +61,7 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, 
     var t1 = T1()
     var t2 = T2()
     var turn = first
-    var plies = 0
+    var plies = 1
 
     for move in opening:
         _ = g1.play_move(T1.Game.Move(move))
@@ -84,13 +83,13 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, 
             move = String(result.move)
             score = result.score
             print(
-                "  ",
+                String(plies).ascii_rjust(4),
+                ": ",
                 name1.ascii_ljust(name_size),
                 String(result.move).ascii_ljust(8),
                 String(result.score).ascii_rjust(7),
                 "  ",
                 Float64(perf_counter_ns() - start) / 1_000_000_000,
-                "s",
                 sep="",
             )
         else:
@@ -98,13 +97,13 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, 
             move = String(result.move)
             score = -result.score
             print(
-                "  ",
+                String(plies).ascii_rjust(4),
+                ": ",
                 name2.ascii_ljust(name_size),
                 String(result.move).ascii_ljust(8),
                 String(result.score).ascii_rjust(7),
                 "  ",
                 Float64(perf_counter_ns() - start) / 1_000_000_000,
-                "s",
                 sep="",
             )
         var score = g1.play_move(T1.Game.Move(move))
