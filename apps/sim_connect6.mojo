@@ -17,6 +17,7 @@ comptime Tree2 = PrincipalVariationNegamax[Game2]
 comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
+
 fn main() raises:
     run[Tree1, Tree2]("mcts", 5000, "pvs ", 5000, openings())
 

@@ -22,7 +22,7 @@ def test_heap():
     for i in range(20):
         print(i, items[i])
     for i in range(1, 20):
-        var parent = items[(i - 1) // 2]
+        var parent = items[(i - 1) / 2]
         var child = items[i]
         assert_true(parent < child)
 
@@ -45,8 +45,8 @@ def test_scores():
     for item in items:
         print(item)
     for i in range(1, 6):
-        print(items[i // 2], items[i])
-        assert_true(items[i // 2] <= items[i])
+        print(items[i / 2], items[i])
+        assert_true(items[i / 2] <= items[i])
 
 
 def main():

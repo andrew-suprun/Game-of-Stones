@@ -23,8 +23,8 @@ fn heap_add[T: Copyable & ImplicitlyDestructible, //, less: fn(T, T) capturing -
     items.append(item.copy())
     var child_idx = len(items) - 1
     var child = items[child_idx].copy()
-    while child_idx > 0 and less(child, items[(child_idx - 1) // 2]):
-        var parent_idx = (child_idx - 1) // 2
+    while child_idx > 0 and less(child, items[(child_idx - 1) / 2]):
+        var parent_idx = (child_idx - 1) / 2
         items[child_idx] = items[parent_idx].copy()
         child_idx = parent_idx
     items[child_idx] = child.copy()

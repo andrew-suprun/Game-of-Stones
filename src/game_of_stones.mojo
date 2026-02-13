@@ -235,8 +235,8 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
     fn first_white_move() raises -> Self.Tree.Game.Move:
         var x = Self.board_size / 2
         var places = List[Place]()
-        for j in range(x-1, x+2):
-            for i in range(x-1, x+2):
+        for j in range(x - 1, x + 2):
+            for i in range(x - 1, x + 2):
                 if i != x or j != x:
                     places.append(Place(i, j))
         random.seed()
