@@ -25,7 +25,7 @@ comptime r = d // 2
 comptime duration = 1000
 
 
-fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move: Int]() raises -> Bool:
+fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move: Int]() raises:
     var pygame = Python.import_module("pygame")
     pygame.init()
     var window = pygame.display.set_mode(Python.tuple(window_height, window_width))
@@ -35,7 +35,6 @@ fn game_of_stones[name: StaticString, Tree: TTree, Game: TGame, stones_per_move:
     while not done:
         var game = GameOfStones[Tree, stones_per_move](pygame, window)
         done = game.run()
-    return done
 
 
 struct GameOfStones[Tree: TTree, stones_per_move: Int]:

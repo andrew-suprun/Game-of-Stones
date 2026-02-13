@@ -18,6 +18,4 @@ comptime Tree = PrincipalVariationNegamax[Game]
 
 
 fn main() raises:
-    var done = False
-    while not done:
-        done = game_of_stones["Connect6-Negamax", Tree, Game, stones_per_move]()
+    game_of_stones["Connect6-Negamax", Tree, Game, stones_per_move]()
