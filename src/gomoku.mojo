@@ -81,8 +81,5 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
             return Score.draw()
         return self.board._score
 
-    fn __str__(self, out str: String):
-        return String(self.board)
-
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

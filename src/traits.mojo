@@ -11,7 +11,7 @@ trait TTree(ImplicitlyDestructible):
         ...
 
 
-trait TGame(Copyable, Defaultable, Stringable, Writable):
+trait TGame(Copyable, Defaultable, Writable):
     comptime Move: TMove
 
     fn moves(self) -> List[MoveScore[Self.Move]]:
@@ -21,21 +21,15 @@ trait TGame(Copyable, Defaultable, Stringable, Writable):
         ...
 
 
-trait TMove(Defaultable, Equatable, ImplicitlyCopyable, Representable, Stringable, TrivialRegisterPassable, Writable):
+trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     fn __init__(out self, text: String) raises:
         ...
 
 
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, Representable, Stringable, TrivialRegisterPassable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     var move: Self.Move
     var score: Score
-
-    fn __str__(self) -> String:
-        return String.write(self)
-
-    fn __repr__(self) -> String:
-        return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move)

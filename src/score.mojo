@@ -1,7 +1,7 @@
 from utils.numerics import FPUtils, isinf, isnan, inf, nan
 
 
-struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, Stringable, TrivialRegisterPassable, Writable):
+struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, TrivialRegisterPassable, Writable):
     var value: Float32
 
     @staticmethod

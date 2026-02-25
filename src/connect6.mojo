@@ -46,12 +46,6 @@ struct Move(TMove):
     fn __eq__(self: Self, other: Self) -> Bool:
         return self._p1 == other._p1 and self._p2 == other._p2
 
-    fn __str__(self) -> String:
-        return String.write(self)
-
-    fn __repr__(self) -> String:
-        return String.write(self)
-
     fn write_to[W: Writer](self, mut writer: W):
         if self._p1 != self._p2:
             writer.write(self._p1, "-", self._p2)

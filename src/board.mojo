@@ -10,7 +10,7 @@ comptime Scores = SIMD[DType.float32, 2]
 comptime Stones = SIMD[DType.int64, 2]
 
 
-struct Place(Comparable, Copyable, Defaultable, Stringable, TrivialRegisterPassable, Writable):
+struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
     var x: Int8
     var y: Int8
 
@@ -33,14 +33,11 @@ struct Place(Comparable, Copyable, Defaultable, Stringable, TrivialRegisterPassa
     fn __lt__(self, other: Self) -> Bool:
         return self.x < other.x or self.x == other.x and self.y < other.y
 
-    fn __str__(self) -> String:
-        return String.write(self)
-
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
-struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Stringable, Writable):
+struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writable):
     comptime empty = Int8(0)
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)
