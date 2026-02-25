@@ -65,19 +65,19 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, String
                 var total = Float32(v + h + t1 + t2)
                 self.setvalues(Place(x, y), Scores(total, total))
 
-    fn __copyinit__(out self, existing: Self, /):
+    fn __init__(out self, *, copy: Self):
         self._places = InlineArray[Int8, Self.size * Self.size](uninitialized=True)
-        memcpy(dest=self._places.unsafe_ptr(), src=existing._places.unsafe_ptr(), count=Self.size * Self.size)
+        memcpy(dest=self._places.unsafe_ptr(), src=copy._places.unsafe_ptr(), count=Self.size * Self.size)
 
         self._scores = InlineArray[Scores, Self.size * Self.size](uninitialized=True)
-        memcpy(dest=self._scores.unsafe_ptr(), src=existing._scores.unsafe_ptr(), count=Self.size * Self.size)
+        memcpy(dest=self._scores.unsafe_ptr(), src=copy._scores.unsafe_ptr(), count=Self.size * Self.size)
 
-        self._score = existing._score
+        self._score = copy._score
 
-    fn __moveinit__(out self, deinit existing: Self):
-        self._places = existing._places^
-        self._scores = existing._scores^
-        self._score = existing._score
+    fn __init__(out self, *, deinit take: Self):
+        self._places = take._places^
+        self._scores = take._scores^
+        self._score = take._score
 
     fn place_stone(mut self, place: Place, turn: Int):
         ref value_table = materialize[self.value_table]()
