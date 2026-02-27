@@ -3,7 +3,7 @@ from benchmark import benchmark, Unit
 from heap import heap_add
 
 
-fn less(a: Int, b: Int, out r: Bool) capturing:
+fn less(a: Int, b: Int, out r: Bool):
     r = a < b
 
 

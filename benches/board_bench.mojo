@@ -1,7 +1,7 @@
 from benchmark import benchmark, Unit, keep
 
 from traits import Score
-from board import Board, Place, first
+from board import Board, Place, PlaceScore, first
 
 comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
@@ -28,7 +28,7 @@ fn bench_place_stone():
 
 fn bench_places():
     var board = Board[19, values, win_stones]()
-    var places = List[Place](capacity=20)
+    var places = List[PlaceScore](capacity=20)
     for _ in range(1000):
         places.clear()
         _ = board.places(first, places)

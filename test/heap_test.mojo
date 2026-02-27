@@ -7,7 +7,7 @@ from heap import heap_add
 
 def test_heap():
     @parameter
-    fn less(a: Int, b: Int) capturing -> Bool:
+    fn less(a: Int, b: Int) -> Bool:
         return a < b
 
     var values = List[Int]()
@@ -29,7 +29,7 @@ def test_heap():
 
 def test_scores():
     @parameter
-    fn less(a: Score, b: Score) capturing -> Bool:
+    fn less(a: Score, b: Score) -> Bool:
         print(a, b, a < b)
         return a < b
 

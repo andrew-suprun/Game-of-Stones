@@ -3,7 +3,7 @@ from hashlib.hasher import Hasher
 
 from score import Score
 from traits import TGame, TMove, MoveScore
-from board import Board, Place, first
+from board import Board, Place, PlaceScore, first
 from heap import heap_add
 
 comptime debug = env_get_string["ASSERT_MODE", ""]()
@@ -53,6 +53,10 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
+fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
+    return a.score < b.score
+
+
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
 
@@ -84,11 +88,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         return moves^
 
     fn _moves(self, mut moves: List[MoveScore[Move]]):
-        @parameter
-        fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
-            return a.score < b.score
-
-        var places = List[Place](capacity=Self.max_places)
+        var places = List[PlaceScore](capacity=Self.max_places)
         self.board.places(self.turn, places)
         if len(places) <= 1:
             print(self)
@@ -96,8 +96,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
         var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
-            var place1 = places[i]
-            var score1 = self.board.score(place1, self.turn)
+            var place1 = places[i].place
+            var score1 = places[i].score
             if score1.is_win():
                 moves.clear()
                 moves.append(MoveScore(Move(place1, place1), score1))
@@ -107,7 +107,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             board.place_stone(place1, self.turn)
 
             for j in range(i + 1, len(places)):
-                var place2 = places[j]
+                var place2 = places[j].place
                 var score2 = board.score(place2, self.turn)
 
                 if score2.is_win():
@@ -128,9 +128,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 if move_score != Score.loss():
                     heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
-        # TODO: remove this after TTree handles empty returned move lists
         if not moves:
-            moves.append(MoveScore(Move(places[0], places[1]), Score.loss()))
+            moves.append(MoveScore(Move(places[0].place, places[1].place), Score.loss()))
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)

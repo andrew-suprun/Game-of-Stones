@@ -37,6 +37,16 @@ struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writabl
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
+@fieldwise_init
+struct PlaceScore(ImplicitlyCopyable, TrivialRegisterPassable):
+    var place: Place
+    var score: Score
+
+
+fn less(a: PlaceScore, b: PlaceScore) -> Bool:
+   return a.score < b.score
+
+
 struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writable):
     comptime empty = Int8(0)
     comptime black = Int8(1)
@@ -143,7 +153,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
             stones -= self._places[offset]
             offset += delta
 
-    fn places(self, turn: Int, mut places: List[Place]):
+    fn places(self, turn: Int, mut places: List[PlaceScore]):
         @parameter
         fn less_first(a: Place, b: Place, out r: Bool):
             r = self.score(a, first) < self.score(b, first)
@@ -156,12 +166,14 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
             for y in range(Self.size):
                 for x in range(Self.size):
                     if self[x, y] == self.empty:
-                        heap_add[less_first](Place(x, y), places)
+                        var place = Place(x, y)
+                        heap_add[less](PlaceScore(place, self.score(place, first)), places)
         else:
             for y in range(Self.size):
                 for x in range(Self.size):
                     if self[x, y] == self.empty:
-                        heap_add[less_second](Place(x, y), places)
+                        var place = Place(x, y)
+                        heap_add[less](PlaceScore(place, self.score(place, second)), places)
 
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self._places[y * Self.size + x]

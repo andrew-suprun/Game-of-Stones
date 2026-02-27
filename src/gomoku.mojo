@@ -3,7 +3,7 @@ from hashlib.hasher import Hasher
 
 from score import Score
 from traits import TGame, TMove, MoveScore
-from board import Board, Place, first
+from board import Board, Place, PlaceScore, first
 
 comptime debug = env_get_string["ASSERT_MODE", ""]()
 
@@ -62,16 +62,16 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
             return a.score < b.score
 
-        var places = List[Place](capacity=Self.max_places)
+        var places = List[PlaceScore](capacity=Self.max_places)
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
-            var score = self.board.score(place, self.turn)
+            var score = place.score
             if score.is_win():
                 moves.clear()
-                moves.append(MoveScore(Move(place), score))
+                moves.append(MoveScore(Move(place.place), score))
                 return
-            moves.append(MoveScore(Move(place), board_score + score.value / 2))
+            moves.append(MoveScore(Move(place.place), board_score + score.value / 2))
 
     fn play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._place, self.turn)
