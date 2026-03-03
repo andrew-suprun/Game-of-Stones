@@ -38,13 +38,12 @@ struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writabl
 
 
 @fieldwise_init
-struct PlaceScore(ImplicitlyCopyable, TrivialRegisterPassable):
+struct PlaceScore(Comparable, TrivialRegisterPassable):
     var place: Place
     var score: Score
 
-
-fn less(a: PlaceScore, b: PlaceScore) -> Bool:
-   return a.score < b.score
+    fn __lt__(a: Self, b: Self) -> Bool:
+        return a.score < b.score
 
 
 struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writable):
@@ -138,42 +137,31 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
 
         offset = start
 
-        @parameter
-        for i in range(Self.win_stones - 1):
+        comptime for i in range(Self.win_stones - 1):
             stones += self._places[offset + i * delta]
 
         for _ in range(n):
             stones += self._places[offset + delta * (Self.win_stones - 1)]
             var scores = scores[stones]
             if scores[0] != 0 or scores[1] != 0:
-
-                @parameter
-                for j in range(Self.win_stones):
+                comptime for j in range(Self.win_stones):
                     self._scores[offset + j * delta] += scores
             stones -= self._places[offset]
             offset += delta
 
     fn places(self, turn: Int, mut places: List[PlaceScore]):
-        @parameter
-        fn less_first(a: Place, b: Place, out r: Bool):
-            r = self.score(a, first) < self.score(b, first)
-
-        @parameter
-        fn less_second(a: Place, b: Place, out r: Bool):
-            r = self.score(a, second) < self.score(b, second)
-
         if turn == first:
             for y in range(Self.size):
                 for x in range(Self.size):
                     if self[x, y] == self.empty:
                         var place = Place(x, y)
-                        heap_add[less](PlaceScore(place, self.score(place, first)), places)
+                        heap_add(PlaceScore(place, self.score(place, first)), places)
         else:
             for y in range(Self.size):
                 for x in range(Self.size):
                     if self[x, y] == self.empty:
                         var place = Place(x, y)
-                        heap_add[less](PlaceScore(place, self.score(place, second)), places)
+                        heap_add(PlaceScore(place, self.score(place, second)), places)
 
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self._places[y * Self.size + x]

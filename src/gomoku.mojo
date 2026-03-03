@@ -58,10 +58,6 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         return moves^
 
     fn _moves(self, mut moves: List[MoveScore[Move]]):
-        @parameter
-        fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
-            return a.score < b.score
-
         var places = List[PlaceScore](capacity=Self.max_places)
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score

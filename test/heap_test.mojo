@@ -6,10 +6,6 @@ from heap import heap_add
 
 
 def test_heap():
-    @parameter
-    fn less(a: Int, b: Int) -> Bool:
-        return a < b
-
     var values = List[Int]()
     var items = List[Int](capacity=20)
     for i in range(100):
@@ -17,7 +13,7 @@ def test_heap():
 
     shuffle(values)
     for i in range(100):
-        heap_add[less](values[i], items)
+        heap_add(values[i], items)
 
     for i in range(20):
         print(i, items[i])
@@ -28,20 +24,15 @@ def test_heap():
 
 
 def test_scores():
-    @parameter
-    fn less(a: Score, b: Score) -> Bool:
-        print(a, b, a < b)
-        return a < b
-
     var items = List[Score](capacity=6)
-    heap_add[less](Score.loss(), items)
-    heap_add[less](Score.draw(), items)
-    heap_add[less](Score(1), items)
-    heap_add[less](Score(-1), items)
-    heap_add[less](Score(2), items)
-    heap_add[less](Score(-2), items)
-    heap_add[less](Score(0), items)
-    heap_add[less](Score.win(), items)
+    heap_add(Score.loss(), items)
+    heap_add(Score.draw(), items)
+    heap_add(Score(1), items)
+    heap_add(Score(-1), items)
+    heap_add(Score(2), items)
+    heap_add(Score(-2), items)
+    heap_add(Score(0), items)
+    heap_add(Score.win(), items)
     for item in items:
         print(item)
     for i in range(1, 6):

@@ -27,9 +27,12 @@ trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable,
 
 
 @fieldwise_init
-struct MoveScore[Move: TMove](ImplicitlyCopyable, TrivialRegisterPassable, Writable):
+struct MoveScore[Move: TMove](Comparable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     var move: Self.Move
     var score: Score
+
+    fn __lt__(a: Self, b: Self) -> Bool:
+        return a.score < b.score
 
     fn write_to[W: Writer](self, mut writer: W):
         writer.write(self.move)
