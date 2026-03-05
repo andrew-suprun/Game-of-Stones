@@ -1,12 +1,12 @@
-from sys import env_get_string
-from hashlib.hasher import Hasher
+from std.sys.defines import get_defined_string
+from std.hashlib.hasher import Hasher
 
 from score import Score
 from traits import TGame, TMove, MoveScore
 from board import Board, Place, PlaceScore, first
 from heap import heap_add
 
-comptime debug = env_get_string["ASSERT_MODE", ""]()
+comptime debug = get_defined_string["ASSERT_MODE", ""]()
 
 comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]

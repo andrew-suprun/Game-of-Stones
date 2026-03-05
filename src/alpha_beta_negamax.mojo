@@ -1,6 +1,6 @@
-from time import perf_counter_ns
-from sys import env_get_int
-from logger import Logger
+from std.time import perf_counter_ns
+from std.sys import env_get_int
+from std.logger import Logger
 
 from score import Score
 from traits import TTree, TGame, MoveScore
@@ -12,7 +12,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     comptime Game = Self.G
 
     var root: AlphaBetaNode[Self.G]
-    var logger: Logger
+    var logger: Logger[]
 
     @staticmethod
     fn name() -> StaticString:

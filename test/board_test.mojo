@@ -1,5 +1,5 @@
-from testing import assert_true, assert_false
-from random import seed, random_si64
+from std.testing import assert_true, assert_false
+from std.random import seed, random_si64
 
 from score import Score
 from board import Board, Place, first, second

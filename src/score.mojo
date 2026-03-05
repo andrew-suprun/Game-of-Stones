@@ -1,4 +1,4 @@
-from utils.numerics import FPUtils, isinf, isnan, inf, nan
+from std.utils.numerics import FPUtils, isinf, isnan, inf, nan
 
 
 struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, TrivialRegisterPassable, Writable):

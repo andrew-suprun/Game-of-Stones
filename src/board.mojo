@@ -1,5 +1,5 @@
-from hashlib.hasher import Hasher
-from memory import memcpy
+from std.hashlib.hasher import Hasher
+from std.memory import memcpy
 
 from score import Score
 from heap import heap_add

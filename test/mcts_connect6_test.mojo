@@ -1,4 +1,4 @@
-from testing import assert_true
+from std.testing import assert_true
 
 from score import Score
 from mcts import Mcts

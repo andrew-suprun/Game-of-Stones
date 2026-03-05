@@ -1,4 +1,4 @@
-from testing import assert_true, assert_false
+from std.testing import assert_true, assert_false
 
 from score import Score
 

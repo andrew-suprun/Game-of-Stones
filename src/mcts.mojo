@@ -1,7 +1,7 @@
-from memory import Pointer
-from time import perf_counter_ns
-from math import sqrt
-from logger import Logger
+from std.memory import Pointer
+from std.time import perf_counter_ns
+from std.math import sqrt
+from std.logger import Logger
 
 from score import Score
 from traits import TTree, TGame, MoveScore
@@ -12,7 +12,7 @@ struct Mcts[G: TGame, c: Score](TTree):
     comptime MctsNode = Node[Self.G, Self.c]
 
     var root: Self.MctsNode
-    var logger: Logger
+    var logger: Logger[]
 
     fn __init__(out self):
         self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
@@ -70,7 +70,7 @@ struct Mcts[G: TGame, c: Score](TTree):
     fn best_move(self) -> Self.G.Move:
         return self._best_child().move.move
 
-    fn _best_child(self) -> ref [self.root.children] Self.MctsNode:
+    fn _best_child(self) -> ref[self.root.children] Self.MctsNode:
         debug_assert(len(self.root.children) > 0)
         var has_draw = False
         var draw_node = Pointer(to=self.root.children[-1])
