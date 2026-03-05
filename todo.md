@@ -1,1 +1,0 @@
-* alternative scoring in Gomoku
