@@ -1,5 +1,5 @@
-from benchmark import benchmark, Unit, keep
-from logger import Logger, Level
+from std.benchmark import benchmark, Unit, keep
+from std.logger import Logger, Level
 
 
 fn bench1():

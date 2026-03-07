@@ -1,4 +1,4 @@
-from benchmark import benchmark, Unit
+from std.benchmark import benchmark, Unit
 
 from heap import heap_add
 

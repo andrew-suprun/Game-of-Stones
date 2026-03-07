@@ -1,4 +1,4 @@
-from benchmark import benchmark, Unit, keep
+from std.benchmark import benchmark, Unit, keep
 
 from score import Score
 from traits import TMove

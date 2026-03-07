@@ -1,4 +1,4 @@
-from benchmark import benchmark, Unit, keep
+from std.benchmark import benchmark, Unit, keep
 
 from traits import Score
 from board import Board, Place, PlaceScore, first

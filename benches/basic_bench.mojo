@@ -1,5 +1,5 @@
-from benchmark import benchmark, Unit, keep
-from random import random_si64, random_float64
+from std.benchmark import benchmark, Unit, keep
+from std.random import random_si64, random_float64
 
 
 fn benchInlineArraySIMDInt():
