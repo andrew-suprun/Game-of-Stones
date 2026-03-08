@@ -1,6 +1,6 @@
-from time import perf_counter_ns
-from python import Python, PythonObject
-import random
+from std.time import perf_counter_ns
+from std.python import Python, PythonObject
+import std.random
 
 from score import Score
 from board import Place
@@ -248,5 +248,5 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
             return Self.Tree.Game.Move(String(places[0]) + "-" + String(places[1]))
 
 
-def board_to_window[d: Int](x: Int8, y: Int8, out result: PythonObject):
+fn board_to_window[d: Int](x: Int8, y: Int8, out result: PythonObject) raises:
     result = Python.tuple((Int(x) + 1) * d, (Int(y) + 1) * d)

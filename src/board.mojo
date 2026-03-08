@@ -38,12 +38,13 @@ struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writabl
 
 
 @fieldwise_init
-struct PlaceScore(Comparable, TrivialRegisterPassable):
+struct PlaceScore(TrivialRegisterPassable):
     var place: Place
     var score: Score
 
-    fn __lt__(a: Self, b: Self) -> Bool:
-        return a.score < b.score
+
+fn less(a: PlaceScore, b: PlaceScore) -> Bool:
+    return a.score < b.score
 
 
 struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writable):
@@ -155,13 +156,13 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 for x in range(Self.size):
                     if self[x, y] == self.empty:
                         var place = Place(x, y)
-                        heap_add(PlaceScore(place, self.score(place, first)), places)
+                        heap_add[less](PlaceScore(place, self.score(place, first)), places)
         else:
             for y in range(Self.size):
                 for x in range(Self.size):
                     if self[x, y] == self.empty:
                         var place = Place(x, y)
-                        heap_add(PlaceScore(place, self.score(place, second)), places)
+                        heap_add[less](PlaceScore(place, self.score(place, second)), places)
 
     fn __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self._places[y * Self.size + x]

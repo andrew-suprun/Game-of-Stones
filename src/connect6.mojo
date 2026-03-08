@@ -53,6 +53,10 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
+fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
+    return a.score < b.score
+
+
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
 
@@ -122,7 +126,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
                 if move_score != Score.loss():
-                    heap_add(MoveScore(Move(place1, place2), move_score), moves)
+                    heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
 
         if not moves:
             moves.append(MoveScore(Move(places[0].place, places[1].place), Score.loss()))

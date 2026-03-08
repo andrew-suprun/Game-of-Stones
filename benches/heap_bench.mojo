@@ -3,13 +3,17 @@ from std.benchmark import benchmark, Unit
 from heap import heap_add
 
 
+fn less(a: Int, b: Int) -> Bool:
+    return a < b
+
+
 fn bench():
     var heap = List[Int](capacity=20)
 
     for _ in range(1_000_000):
         heap.clear()
         for i in range(100):
-            heap_add(i * 17 % 100, heap)
+            heap_add[less](i * 17 % 100, heap)
 
 
 fn main() raises:
