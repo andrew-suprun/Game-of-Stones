@@ -18,11 +18,11 @@ comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 # comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 
-comptime Tree1 = PrincipalVariationNegamax[Game1]
-comptime Tree2 = PrincipalVariationNegamax[Game2]
+# comptime Tree1 = PrincipalVariationNegamax[Game1]
+# comptime Tree2 = PrincipalVariationNegamax[Game2]
 
-# comptime Tree1 = Mcts[Game1, 4]
-# comptime Tree2 = Mcts[Game2, 4]
+comptime Tree1 = Mcts[Game1, 4]
+comptime Tree2 = Mcts[Game2, 4]
 
 comptime seed = 7
 

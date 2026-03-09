@@ -1,11 +1,8 @@
 from std.time import perf_counter_ns
-from std.sys import env_get_int
 from std.logger import Logger
 
 from score import Score
 from traits import TTree, TGame, MoveScore
-
-comptime trace_level = env_get_int["TRACE_LEVEL", Int.MAX]()
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):

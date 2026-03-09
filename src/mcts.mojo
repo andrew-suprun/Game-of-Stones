@@ -91,9 +91,6 @@ struct Mcts[G: TGame, c: Score](TTree):
             return draw_node[]
         return best_child[]
 
-    fn __str__(self) -> String:
-        return String.write(self)
-
     fn write_to[W: Writer](self, mut writer: W):
         for ref root in self.root.children:
             root.write_to(writer)

@@ -1,5 +1,3 @@
-from std.hashlib.hasher import Hasher
-
 from score import Score
 from traits import TGame, TMove, MoveScore
 from board import Board, Place, PlaceScore, first

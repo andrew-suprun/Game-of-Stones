@@ -1,4 +1,3 @@
-from std.hashlib.hasher import Hasher
 from std.memory import memcpy
 
 from score import Score

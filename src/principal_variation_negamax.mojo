@@ -1,5 +1,4 @@
 from std.time import perf_counter_ns
-from std.sys import env_get_int
 from std.logger import Logger
 
 from score import Score
