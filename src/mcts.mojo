@@ -20,7 +20,7 @@ struct Mcts[G: TGame, c: Score](TTree):
 
     def search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
         var moves = game.moves()
-        debug_assert(len(moves) > 0)
+        assert len(moves) > 0
         if len(moves) == 1:
             return moves[0]
         var all_draws = True
@@ -71,7 +71,7 @@ struct Mcts[G: TGame, c: Score](TTree):
         return self._best_child().move.move
 
     def _best_child(self) -> ref[self.root.children] Self.MctsNode:
-        debug_assert(len(self.root.children) > 0)
+        assert len(self.root.children) > 0
         var has_draw = False
         var draw_node = Pointer(to=self.root.children[-1])
         var best_child = Pointer(to=self.root.children[-1])
@@ -115,7 +115,7 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
     def _expand(mut self, mut game: Self.G):
         if not self.children:
             var moves = game.moves()
-            debug_assert(len(moves) > 0)
+            assert len(moves) > 0
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move))
@@ -162,7 +162,7 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
             if maxV < v:
                 maxV = v
                 selected_child_idx = child_idx
-        debug_assert(selected_child_idx >= 0)
+        assert selected_child_idx >= 0
         return selected_child_idx
 
     def write_to[W: Writer](self, mut writer: W):

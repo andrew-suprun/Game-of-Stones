@@ -30,7 +30,7 @@ def main() raises:
                 value -= board_score
                 print(place, board.score(place, second))
                 board.place_stone(place, second)
-            debug_assert(value == board.board_value(materialize[values]()))
+            assert value == board.board_value(materialize[values]())
             print(board)
             # print(board.str_scores())
             print("score", score)

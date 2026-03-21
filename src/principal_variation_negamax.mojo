@@ -50,7 +50,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
         if not self.children:
             var moves = game.moves()
-            debug_assert(len(moves) > 0)
+            assert len(moves) > 0
             self.children = [Self(move.move, move.score) for move in moves]
 
         best_move = MoveScore(self.children[0].move, self.children[0].score)

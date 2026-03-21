@@ -91,7 +91,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.board.places(self.turn, places)
         if len(places) <= 1:
             print(self)
-        debug_assert(len(places) > 1)
+        assert len(places) > 1
 
         var board_score = self.board._score if self.turn == first else -self.board._score
         for i in range(len(places) - 1):
@@ -118,7 +118,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     var board_value = self.board.board_value(materialize[values]())
                     if self.turn:
                         board_value = -board_value
-                    debug_assert(board_value.value == board_score.value + score1.value + score2.value)
+                    assert board_value.value == board_score.value + score1.value + score2.value
 
                 var board2 = board.copy()
                 board2.place_stone(place2, self.turn)
