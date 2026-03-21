@@ -8,7 +8,7 @@ from gomoku import Gomoku
 comptime G = Gomoku[size=19, max_places=32, max_plies=100]
 
 
-fn bench_moves():
+def bench_moves():
     var game = G()
     try:
         _ = game.play_move(Gomoku.Move("j10"))
@@ -20,7 +20,7 @@ fn bench_moves():
         keep(moves[0].move)
 
 
-fn bench_expand():
+def bench_expand():
     var game = G()
     var tree = Mcts[G, 8]()
     try:
@@ -35,7 +35,7 @@ fn bench_expand():
             break
 
 
-fn main() raises:
+def main() raises:
     print("--- gomoku ---")
     print("moves ", benchmark.run[func2=bench_moves](0, 1, 3, 6).mean(Unit.ms), "msec")
     print("expand", benchmark.run[func2=bench_expand](0, 1, 3, 6).mean(Unit.ms), "msec")

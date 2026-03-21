@@ -1,4 +1,4 @@
-import std.random
+from std.random import seed, shuffle
 from std.time import perf_counter_ns
 
 from traits import TTree
@@ -24,17 +24,17 @@ comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 comptime Tree1 = Mcts[Game1, 4]
 comptime Tree2 = Mcts[Game2, 4]
 
-comptime seed = 7
+comptime seed_value = 7
 
 comptime black = True
 comptime white = False
 
 
-fn main() raises:
+def main() raises:
     run[Tree1, Tree2]("1", 1250, "2", 1250, openings())
 
 
-fn run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
+def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
     print(name1, "-", time1, " vs. ", name2, "-", time2, sep="")
 
     var first_wins = 0
@@ -77,7 +77,7 @@ fn run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: U
         n += 1
 
 
-fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     # print()
     # print(name1, "vs.", name2)
     # print()
@@ -151,8 +151,8 @@ fn sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, 
         return "draw"
 
 
-fn openings() -> List[List[String]]:
-    random.seed(seed)
+def openings() -> List[List[String]]:
+    seed(seed_value)
     var result = List[List[String]]()
     var places = List[String]()
     for j in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
@@ -160,7 +160,7 @@ fn openings() -> List[List[String]]:
             if i != Game1.size / 2 or j != Game1.size / 2:
                 places.append(String(Place(i, j)))
     for _ in range(100):
-        random.shuffle(places)
+        shuffle(places)
         moves = [String(Place(Game1.size / 2, Game1.size / 2))]
         moves.append(String(places[0]))
         moves.append(String(places[1]))

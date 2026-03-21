@@ -2,7 +2,7 @@ from std.benchmark import benchmark, Unit, keep
 from std.logger import Logger, Level
 
 
-fn bench1():
+def bench1():
     var logger = Logger()
     var s = 0
     for _ in range(1_000_000):
@@ -12,7 +12,7 @@ fn bench1():
     keep(s)
 
 
-fn bench2():
+def bench2():
     var logger = Logger()
     var s = 0
     for _ in range(1_000_000):
@@ -23,7 +23,7 @@ fn bench2():
     keep(s)
 
 
-fn main() raises:
+def main() raises:
     print("--- logger ---")
     print("bench1", benchmark.run[func2=bench1](0, 1, 3, 6).min(Unit.ms))
     print("bench2", benchmark.run[func2=bench2](0, 1, 3, 6).min(Unit.ms))

@@ -3,7 +3,7 @@ from std.testing import assert_true, assert_false
 from score import Score
 
 
-fn main() raises:
+def main() raises:
     var w = Score.win()
     var l = Score.loss()
     var d = Score.draw()

@@ -21,5 +21,5 @@ comptime stones_per_move = 2
 comptime Tree = PrincipalVariationNegamax[Game]
 
 
-fn main() raises:
+def main() raises:
     game_of_stones[name, board_size, Tree, Game, stones_per_move]()

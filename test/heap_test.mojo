@@ -5,11 +5,11 @@ from score import Score
 from heap import heap_add
 
 
-fn less[T: Comparable](a: T, b: T) -> Bool:
+def less[T: Comparable](a: T, b: T) -> Bool:
     return a < b
 
 
-fn test_heap() raises:
+def test_heap() raises:
     var values = List[Int]()
     var items = List[Int](capacity=20)
     for i in range(100):
@@ -27,7 +27,7 @@ fn test_heap() raises:
         assert_true(parent < child)
 
 
-fn test_scores() raises:
+def test_scores() raises:
     var items = List[Score](capacity=6)
     heap_add[less[Score]](Score.loss(), items)
     heap_add[less[Score]](Score.draw(), items)
@@ -44,6 +44,6 @@ fn test_scores() raises:
         assert_true(items[i / 2] <= items[i])
 
 
-fn main() raises:
+def main() raises:
     test_heap()
     test_scores()

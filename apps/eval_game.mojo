@@ -18,6 +18,6 @@ comptime script = "j10 i9-j11"
 # comptime script = "j10 i9-i11 h10-i10 g10-k10 j9-j11 h9-j8 g12-h11 f13-l7 f11-h12 h15-j12 d9-e10"
 
 
-fn main() raises:
+def main() raises:
     print("Connect6: max_moves:", Game.max_moves, "max_places:", Game.max_places)
     run[Tree](script)

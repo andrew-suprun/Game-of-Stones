@@ -15,10 +15,10 @@ struct Move(TMove):
     var _p1: Place
     var _p2: Place
 
-    fn __init__(out self):
+    def __init__(out self):
         self = Self(Place(), Place())
 
-    fn __init__(out self, p1: Place, p2: Place):
+    def __init__(out self, p1: Place, p2: Place):
         if p1 < p2:
             self._p1 = p1
             self._p2 = p2
@@ -27,7 +27,7 @@ struct Move(TMove):
             self._p2 = p1
 
     @implicit
-    fn __init__(out self, move: String) raises:
+    def __init__(out self, move: String) raises:
         var tokens = move.split("-")
         var p1 = Place(String(tokens[0]))
         var p2: Place
@@ -42,17 +42,17 @@ struct Move(TMove):
             self._p1 = p2
             self._p2 = p1
 
-    fn __eq__(self: Self, other: Self) -> Bool:
+    def __eq__(self: Self, other: Self) -> Bool:
         return self._p1 == other._p1 and self._p2 == other._p2
 
-    fn write_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         if self._p1 != self._p2:
             writer.write(self._p1, "-", self._p2)
         else:
             writer.write(self._p1)
 
 
-fn less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
+def less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
     return a.score < b.score
 
 
@@ -63,22 +63,22 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
     var turn: Int
     var plies: Int
 
-    fn __init__(out self):
+    def __init__(out self):
         self.board = Board[Self.size, values, win_stones]()
         self.turn = 0
         self.plies = 0
 
-    fn __init__(out self, *, copy: Self):
+    def __init__(out self, *, copy: Self):
         self.board = copy.board.copy()
         self.turn = copy.turn
         self.plies = copy.plies
 
-    fn __init__(out self, *, deinit take: Self):
+    def __init__(out self, *, deinit take: Self):
         self.board = take.board^
         self.turn = take.turn
         self.plies = take.plies
 
-    fn moves(self) -> List[MoveScore[Move]]:
+    def moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=Self.max_moves)
         self._moves(moves)
         if self.plies == Self.max_plies:
@@ -86,7 +86,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             return [moves[-1]]
         return moves^
 
-    fn _moves(self, mut moves: List[MoveScore[Move]]):
+    def _moves(self, mut moves: List[MoveScore[Move]]):
         var places = List[PlaceScore](capacity=Self.max_places)
         self.board.places(self.turn, places)
         if len(places) <= 1:
@@ -130,7 +130,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         if not moves:
             moves.append(MoveScore(Move(places[0].place, places[1].place), Score.loss()))
 
-    fn play_move(mut self, move: Move) -> Score:
+    def play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
@@ -140,8 +140,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             return Score.draw()
         return self.board._score
 
-    fn __str__(self, out str: String):
+    def __str__(self, out str: String):
         return String(self.board)
 
-    fn write_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

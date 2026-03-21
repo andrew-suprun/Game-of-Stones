@@ -13,26 +13,26 @@ struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writabl
     var x: Int8
     var y: Int8
 
-    fn __init__(out self):
+    def __init__(out self):
         self.x = -1
         self.y = -1
 
-    fn __init__(out self, x: Int, y: Int):
+    def __init__(out self, x: Int, y: Int):
         self.x = Int8(x)
         self.y = Int8(y)
 
     @implicit
-    fn __init__(out self, place: String) raises:
+    def __init__(out self, place: String) raises:
         self.x = Int8(ord(place[byte=0]) - ord("a"))
-        self.y = Int8(Int(place[1:]) - 1)
+        self.y = Int8(Int(place[byte=1:]) - 1)
 
-    fn __eq__(self, other: Self) -> Bool:
+    def __eq__(self, other: Self) -> Bool:
         return self.x == other.x and self.y == other.y
 
-    fn __lt__(self, other: Self) -> Bool:
+    def __lt__(self, other: Self) -> Bool:
         return self.x < other.x or self.x == other.x and self.y < other.y
 
-    fn write_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
 
 
@@ -42,7 +42,7 @@ struct PlaceScore(TrivialRegisterPassable):
     var score: Score
 
 
-fn less(a: PlaceScore, b: PlaceScore) -> Bool:
+def less(a: PlaceScore, b: PlaceScore) -> Bool:
     return a.score < b.score
 
 
@@ -56,7 +56,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
     var _scores: InlineArray[Scores, Self.size * Self.size]
     var _score: Score
 
-    fn __init__(out self):
+    def __init__(out self):
         self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
         self._scores = InlineArray[Scores, Self.size * Self.size](uninitialized=True)
         self._score = 0
@@ -71,7 +71,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 var total = Float32(v + h + t1 + t2)
                 self.setvalues(Place(x, y), Scores(total, total))
 
-    fn __init__(out self, *, copy: Self):
+    def __init__(out self, *, copy: Self):
         self._places = InlineArray[Int8, Self.size * Self.size](uninitialized=True)
         memcpy(dest=self._places.unsafe_ptr(), src=copy._places.unsafe_ptr(), count=Self.size * Self.size)
 
@@ -80,12 +80,12 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
 
         self._score = copy._score
 
-    fn __init__(out self, *, deinit take: Self):
+    def __init__(out self, *, deinit take: Self):
         self._places = take._places^
         self._scores = take._scores^
         self._score = take._score
 
-    fn place_stone(mut self, place: Place, turn: Int):
+    def place_stone(mut self, place: Place, turn: Int):
         ref value_table = materialize[self.value_table]()
         ref scores = value_table[turn]
 
@@ -128,7 +128,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
         else:
             self[x, y] = Self.white
 
-    fn _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
+    def _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
@@ -149,7 +149,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
             stones -= self._places[offset]
             offset += delta
 
-    fn places(self, turn: Int, mut places: List[PlaceScore]):
+    def places(self, turn: Int, mut places: List[PlaceScore]):
         if turn == first:
             for y in range(Self.size):
                 for x in range(Self.size):
@@ -163,28 +163,28 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                         var place = Place(x, y)
                         heap_add[less](PlaceScore(place, self.score(place, second)), places)
 
-    fn __getitem__(self, x: Int, y: Int, out result: Int8):
+    def __getitem__(self, x: Int, y: Int, out result: Int8):
         result = self._places[y * Self.size + x]
 
-    fn __setitem__(mut self, x: Int, y: Int, value: Int8):
+    def __setitem__(mut self, x: Int, y: Int, value: Int8):
         self._places[y * Self.size + x] = value
 
-    fn score(self, place: Place, turn: Int) -> Score:
+    def score(self, place: Place, turn: Int) -> Score:
         return Score(self._scores[Int(place.y) * Self.size + Int(place.x)][turn])
 
-    fn setvalues(mut self, place: Place, value: Scores):
+    def setvalues(mut self, place: Place, value: Scores):
         self._scores[Int(place.y) * Self.size + Int(place.x)] = value
 
-    fn __str__(self) -> String:
+    def __str__(self) -> String:
         return String.write(self)
 
-    fn write_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         try:
             self.write(writer)
         except:
             pass
 
-    fn write[W: Writer](self, mut writer: W) raises:
+    def write[W: Writer](self, mut writer: W) raises:
         writer.write("\n  ")
 
         for i in range(Self.size):
@@ -229,14 +229,14 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
             writer.write(String.format(" {}", chr(i + ord("a"))))
         writer.write("\n")
 
-    fn str_scores(self, out str: String):
+    def str_scores(self, out str: String):
         try:
             str = self.str_scores_raises(0)
             str += self.str_scores_raises(1)
         except:
             str = ""
 
-    fn str_scores_raises(self, table_idx: Int, out str: String) raises:
+    def str_scores_raises(self, table_idx: Int, out str: String) raises:
         str = "\n   │"
         for i in range(Self.size):
             str += String.format("    {} ", chr(i + ord("a")))
@@ -264,7 +264,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 str += String.format("    {} ", chr(i + ord("a")))
             str += "│\n"
 
-    fn board_value(self, scores: List[Float32]) -> Score:
+    def board_value(self, scores: List[Float32]) -> Score:
         var value = Score(0)
         for y in range(Self.size):
             var stones = Int8(0)
@@ -321,7 +321,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 stones -= self[Self.size - 1 - x - y, y]
         return value
 
-    fn _calc_value(self, stones: Int8, scores: List[Float32]) -> Score:
+    def _calc_value(self, stones: Int8, scores: List[Float32]) -> Score:
         var black = Int(stones) % Self.win_stones
         var white = Int(stones) / Self.win_stones
         if white == 0:
@@ -330,7 +330,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
             return Score(-scores[white])
         return 0
 
-    fn max_score(self, player: Int) -> Score:
+    def max_score(self, player: Int) -> Score:
         var max_scores = self._scores[0]
 
         for y in range(Self.size):
@@ -341,7 +341,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
         return Score(max_scores[player])
 
 
-fn _calc_value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+def _calc_value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()

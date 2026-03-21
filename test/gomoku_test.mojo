@@ -6,7 +6,7 @@ from mcts import Mcts
 from gomoku import Gomoku
 
 
-fn main() raises:
+def main() raises:
     comptime Game = Gomoku[size=19, max_places=8, max_plies=100]
     var game = Game()
     var tree = Mcts[Game, 6]()

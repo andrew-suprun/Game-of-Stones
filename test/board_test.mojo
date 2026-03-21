@@ -9,7 +9,7 @@ comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 
-fn test_place_stone() raises:
+def test_place_stone() raises:
     seed(7)
     var board = Board[size, values, win_stones]()
     var value = Score(0)
@@ -51,12 +51,12 @@ fn test_place_stone() raises:
 comptime B = Board[19, values, win_stones]
 
 
-fn place_stones(mut board: B, player: Int, stones: List[String]) raises:
+def place_stones(mut board: B, player: Int, stones: List[String]) raises:
     for stone in stones:
         board.place_stone(Place(stone), player)
 
 
-fn check_results(mut board: B, player: Int, stones: List[String], expected: Score) raises:
+def check_results(mut board: B, player: Int, stones: List[String], expected: Score) raises:
     var b = board.copy()
     for stone in stones:
         b.place_stone(stone, player)
@@ -64,7 +64,7 @@ fn check_results(mut board: B, player: Int, stones: List[String], expected: Scor
         assert_true(b._score == expected)
 
 
-fn main() raises:
+def main() raises:
     var board = Board[19, values, win_stones]()
     place_stones(board, first, ["a1", "a2", "a3", "a4", "a5", "b2", "c3", "d4", "e5", "b1", "c1", "d1", "e1"])
     place_stones(board, second, ["s1", "s2", "s3", "s4", "s5", "r2", "q3", "p4", "o5", "r1", "q1", "p1", "o1"])

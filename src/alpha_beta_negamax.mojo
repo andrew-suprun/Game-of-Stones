@@ -12,14 +12,14 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     var logger: Logger[]
 
     @staticmethod
-    fn name() -> StaticString:
+    def name() -> StaticString:
         return "Alpha-Beta Negamax With Memory"
 
-    fn __init__(out self):
+    def __init__(out self):
         self.root = AlphaBetaNode[Self.G](Self.G.Move(), Score())
         self.logger = Logger(prefix="abs: ")
 
-    fn search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
+    def search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
         var best_move = MoveScore(Self.G.Move(), Score.loss())
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
@@ -39,12 +39,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
     var score: Score
     var children: List[Self]
 
-    fn __init__(out self, move: Self.G.Move, score: Score):
+    def __init__(out self, move: Self.G.Move, score: Score):
         self.move = move
         self.score = score
         self.children = List[Self]()
 
-    fn _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    def _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 
@@ -86,10 +86,10 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         return best_score
 
-    fn write_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, depth=0)
 
-    fn write_to[W: Writer](self, mut writer: W, depth: Int):
+    def write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write("|   " * depth, self.move, " ", self.score, "\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
@@ -97,5 +97,5 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
     @staticmethod
     @parameter
-    fn greater(a: Self, b: Self) -> Bool:
+    def greater(a: Self, b: Self) -> Bool:
         return a.score > b.score

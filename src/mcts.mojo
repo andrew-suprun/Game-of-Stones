@@ -14,11 +14,11 @@ struct Mcts[G: TGame, c: Score](TTree):
     var root: Self.MctsNode
     var logger: Logger[]
 
-    fn __init__(out self):
+    def __init__(out self):
         self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
         self.logger = Logger(prefix="mcts: ")
 
-    fn search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
         var moves = game.moves()
         debug_assert(len(moves) > 0)
         if len(moves) == 1:
@@ -51,7 +51,7 @@ struct Mcts[G: TGame, c: Score](TTree):
 
         return result.move
 
-    fn expand(mut self, game: Self.G, out done: Bool):
+    def expand(mut self, game: Self.G, out done: Bool):
         if self.root.move.score.is_decisive():
             return True
 
@@ -67,10 +67,10 @@ struct Mcts[G: TGame, c: Score](TTree):
                 undecided += 1
         return undecided < 2
 
-    fn best_move(self) -> Self.G.Move:
+    def best_move(self) -> Self.G.Move:
         return self._best_child().move.move
 
-    fn _best_child(self) -> ref[self.root.children] Self.MctsNode:
+    def _best_child(self) -> ref[self.root.children] Self.MctsNode:
         debug_assert(len(self.root.children) > 0)
         var has_draw = False
         var draw_node = Pointer(to=self.root.children[-1])
@@ -91,11 +91,11 @@ struct Mcts[G: TGame, c: Score](TTree):
             return draw_node[]
         return best_child[]
 
-    fn write_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         for ref root in self.root.children:
             root.write_to(writer)
 
-    fn debug_roots(self) -> String:
+    def debug_roots(self) -> String:
         var result = "roots:\n"
         for ref node in self.root.children:
             result.write("  ", node.move, " sims ", node.n_sims, "\n")
@@ -107,12 +107,12 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
     var children: List[Self]
     var n_sims: Int32
 
-    fn __init__(out self, move: MoveScore[Self.G.Move]):
+    def __init__(out self, move: MoveScore[Self.G.Move]):
         self.move = move
         self.children = List[Self]()
         self.n_sims = 1
 
-    fn _expand(mut self, mut game: Self.G):
+    def _expand(mut self, mut game: Self.G):
         if not self.children:
             var moves = game.moves()
             debug_assert(len(moves) > 0)
@@ -151,7 +151,7 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
             self.move.score = -max_score
 
     @staticmethod
-    fn select_node(nodes: List[Self]) -> Int:
+    def select_node(nodes: List[Self]) -> Int:
         var selected_child_idx = -1
         var maxV = Score.loss()
         for child_idx in range(len(nodes)):
@@ -165,16 +165,16 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
         debug_assert(selected_child_idx >= 0)
         return selected_child_idx
 
-    fn __str__(self) -> String:
+    def __str__(self) -> String:
         return String.write(self)
 
-    fn __repr__(self) -> String:
+    def __repr__(self) -> String:
         return String.write(self)
 
-    fn write_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, 0)
 
-    fn write_to[W: Writer](self, mut writer: W, depth: Int):
+    def write_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write(depth, ": ", "|   " * depth, self.move, " sims: ", self.n_sims, "\n")
         if self.children:  # unnecessary check to silence LSP warning
             for child in self.children:

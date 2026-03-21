@@ -2,7 +2,7 @@ from std.benchmark import benchmark, Unit, keep
 from std.random import random_si64, random_float64
 
 
-fn benchInlineArraySIMDInt():
+def benchInlineArraySIMDInt():
     var a = InlineArray[SIMD[DType.int32, 2], 1100](uninitialized=True)
     for i in range(1100):
         a[i] = SIMD[DType.int32, 2](intrand(), intrand())
@@ -14,7 +14,7 @@ fn benchInlineArraySIMDInt():
     keep(s)
 
 
-fn benchInlineArraySIMDInt16():
+def benchInlineArraySIMDInt16():
     var a = InlineArray[SIMD[DType.int16, 2], 1100](uninitialized=True)
     for i in range(1100):
         a[i] = SIMD[DType.int16, 2](Int16(intrand()), Int16(intrand()))
@@ -26,7 +26,7 @@ fn benchInlineArraySIMDInt16():
     keep(s)
 
 
-fn benchListSIMDInt():
+def benchListSIMDInt():
     var a = List[SIMD[DType.int32, 2]](capacity=1100)
     for _ in range(1100):
         a.append(SIMD[DType.int32, 2](intrand(), intrand()))
@@ -38,7 +38,7 @@ fn benchListSIMDInt():
     keep(s)
 
 
-fn benchListSIMDInt16():
+def benchListSIMDInt16():
     var a = List[SIMD[DType.int16, 2]](capacity=1100)
     for _ in range(1100):
         a.append(SIMD[DType.int16, 2](Int16(intrand()), Int16(intrand())))
@@ -50,7 +50,7 @@ fn benchListSIMDInt16():
     keep(s)
 
 
-fn benchInlineArraySIMDFloat():
+def benchInlineArraySIMDFloat():
     var a = InlineArray[SIMD[DType.float32, 2], 1100](uninitialized=True)
     for i in range(1100):
         a[i] = SIMD[DType.float32, 2](rand(), rand())
@@ -62,7 +62,7 @@ fn benchInlineArraySIMDFloat():
     keep(s)
 
 
-fn benchListSIMDFloat():
+def benchListSIMDFloat():
     var a = List[SIMD[DType.float32, 2]](capacity=1100)
     for _ in range(1100):
         a.append(SIMD[DType.float32, 2](rand(), rand()))
@@ -74,15 +74,15 @@ fn benchListSIMDFloat():
     keep(s)
 
 
-fn intrand() -> Int32:
+def intrand() -> Int32:
     return Int32(random_si64(-10, 10))
 
 
-fn rand() -> Float32:
+def rand() -> Float32:
     return Float32(random_float64(-10, 10))
 
 
-fn main() raises:
+def main() raises:
     print("--- basic ---")
     print("InlineArray Int  ", benchmark.run[func2=benchInlineArraySIMDInt](0, 1, 3, 6).mean(Unit.ms))
     print("InlineArray Int16", benchmark.run[func2=benchInlineArraySIMDInt16](0, 1, 3, 6).mean(Unit.ms))

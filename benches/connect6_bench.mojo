@@ -7,7 +7,7 @@ from connect6 import Connect6, Move
 comptime C6 = Connect6[size=19, max_moves=20, max_places=12, max_plies=100]
 
 
-fn bench_moves():
+def bench_moves():
     var game = C6()
     try:
         _ = game.play_move("j10")
@@ -19,6 +19,6 @@ fn bench_moves():
         keep(moves[0].score.value)
 
 
-fn main() raises:
+def main() raises:
     print("--- connect6 ---")
     print("moves   ", benchmark.run[func2=bench_moves](0, 1, 3, 6).mean(Unit.ms), "msec")

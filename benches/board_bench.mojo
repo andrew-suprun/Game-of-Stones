@@ -7,7 +7,7 @@ comptime win_stones = 6
 comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 
 
-fn bench_update_row():
+def bench_update_row():
     var board = Board[19, values, win_stones]()
     ref value_table = materialize[board.value_table]()
     ref scores = value_table[0]
@@ -16,7 +16,7 @@ fn bench_update_row():
     keep(board._scores[5 * 20])
 
 
-fn bench_place_stone():
+def bench_place_stone():
     var board = Board[19, values, win_stones]()
     var score = Score(0)
     for _ in range(1000):
@@ -26,7 +26,7 @@ fn bench_place_stone():
     keep(score.value)
 
 
-fn bench_places():
+def bench_places():
     var board = Board[19, values, win_stones]()
     var places = List[PlaceScore](capacity=20)
     for _ in range(1000):
@@ -34,7 +34,7 @@ fn bench_places():
         _ = board.places(first, places)
 
 
-fn main() raises:
+def main() raises:
     print("--- board ---")
     print("update_row ", benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.ms))
     print("place_stone", benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.ms))
