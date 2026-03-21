@@ -22,12 +22,6 @@ struct Move(TMove):
     def __eq__(self: Self, other: Self) -> Bool:
         return self._place == other._place
 
-    def __str__(self) -> String:
-        return String.write(self)
-
-    def __repr__(self) -> String:
-        return String.write(self)
-
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
 

@@ -175,9 +175,6 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
     def setvalues(mut self, place: Place, value: Scores):
         self._scores[Int(place.y) * Self.size + Int(place.x)] = value
 
-    def __str__(self) -> String:
-        return String.write(self)
-
     def write_to[W: Writer](self, mut writer: W):
         try:
             self.write(writer)
@@ -188,7 +185,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
         writer.write("\n  ")
 
         for i in range(Self.size):
-            writer.write(String.format(" {}", chr(i + ord("a"))))
+            writer.write(t" {chr(i + ord('a'))}")
         writer.write("\n")
 
         for y in range(Self.size):
@@ -226,7 +223,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
         writer.write("  ")
 
         for i in range(Self.size):
-            writer.write(String.format(" {}", chr(i + ord("a"))))
+            writer.write(t" {chr(i + ord('a'))}")
         writer.write("\n")
 
     def str_scores(self, out str: String):
@@ -239,7 +236,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
     def str_scores_raises(self, table_idx: Int, out str: String) raises:
         str = "\n   │"
         for i in range(Self.size):
-            str += String.format("    {} ", chr(i + ord("a")))
+            str += String(t"    {chr(i + ord('a'))} ")
         str += "│\n"
         str += "───┼" + "──────" * Self.size + "┼───\n"
         for y in range(Self.size):
@@ -261,7 +258,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
         if not table_idx:
             str += "\n   │"
             for i in range(Self.size):
-                str += String.format("    {} ", chr(i + ord("a")))
+                str += String(t"    {chr(i + ord('a'))} ")
             str += "│\n"
 
     def board_value(self, scores: List[Float32]) -> Score:

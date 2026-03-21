@@ -140,8 +140,5 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             return Score.draw()
         return self.board._score
 
-    def __str__(self, out str: String):
-        return String(self.board)
-
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

@@ -84,9 +84,6 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, TrivialRegist
     def __neg__(self) -> Self:
         return Score(-self.value) if self.value != 0.0 else self
 
-    def __str__(self) -> String:
-        return String.write(self)
-
     def write_to[W: Writer](self, mut writer: W):
         if not self.is_set():
             writer.write("no-score")

@@ -165,12 +165,6 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
         debug_assert(selected_child_idx >= 0)
         return selected_child_idx
 
-    def __str__(self) -> String:
-        return String.write(self)
-
-    def __repr__(self) -> String:
-        return String.write(self)
-
     def write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, 0)
 
