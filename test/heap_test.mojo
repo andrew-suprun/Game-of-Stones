@@ -35,7 +35,7 @@ def test_scores() raises:
     heap_add[less[Score]](Score(-1), items)
     heap_add[less[Score]](Score(2), items)
     heap_add[less[Score]](Score(-2), items)
-    heap_add[less[Score]](Score(0), items)
+    heap_add[less[Score]](0, items)
     heap_add[less[Score]](Score.win(), items)
     for item in items:
         print(item)

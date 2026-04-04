@@ -15,7 +15,7 @@ struct Mcts[G: TGame, c: Score](TTree):
     var logger: Logger[]
 
     def __init__(out self):
-        self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
+        self.root = {{{}, {}}}
         self.logger = Logger(prefix="mcts: ")
 
     def search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
@@ -31,8 +31,8 @@ struct Mcts[G: TGame, c: Score](TTree):
                 all_draws = False
         if all_draws:
             return moves[0]
-        self.root = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
-        var best_node = Self.MctsNode(MoveScore(Self.G.Move(), Score(0)))
+        self.root = {{{}, {}}}
+        var best_node: Self.MctsNode = {{{}, {}}}
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
             var done = self.expand(game)

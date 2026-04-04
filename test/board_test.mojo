@@ -12,7 +12,7 @@ comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
 def test_place_stone() raises:
     seed(7)
     var board = Board[size, values, win_stones]()
-    var value = Score(0)
+    var value = 0
     var n = 0
     for i in range(200):
         var turn = i % 2

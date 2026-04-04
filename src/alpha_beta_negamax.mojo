@@ -7,6 +7,7 @@ from traits import TTree, TGame, MoveScore
 
 struct AlphaBetaNegamax[G: TGame](TTree):
     comptime Game = Self.G
+    comptime MoveScore = MoveScore[Self.G.Move]
 
     var root: AlphaBetaNode[Self.G]
     var logger: Logger[]
@@ -16,11 +17,11 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         return "Alpha-Beta Negamax With Memory"
 
     def __init__(out self):
-        self.root = AlphaBetaNode[Self.G](Self.G.Move(), Score())
+        self.root = AlphaBetaNode[Self.G]({}, {})
         self.logger = Logger(prefix="abs: ")
 
-    def search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var best_move = MoveScore(Self.G.Move(), Score.loss())
+    def search(mut self, game: Self.G, duration_ms: UInt) -> Self.MoveScore:
+        var best_move: Self.MoveScore = {{}, Score.loss()}
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
@@ -51,7 +52,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         if not self.children:
             self.children = [Self(move.move, move.score) for move in game.moves()]
 
-        best_move = MoveScore(self.children[0].move, self.children[0].score)
+        best_move = {self.children[0].move, self.children[0].score}
 
         var best_score = Score.loss()
         if depth == max_depth:
@@ -61,7 +62,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         sort[Self.greater](self.children)
 
-        var deeper_best_move = MoveScore(Self.G.Move(), 0)
+        var deeper_best_move: MoveScore[Self.G.Move] = {{}, 0}
         for ref child in self.children:
             if not child.score.is_decisive():
                 child.score = Score()
@@ -77,7 +78,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
             if child.score > best_score:
                 best_score = child.score
-                best_move = MoveScore(child.move, child.score)
+                best_move = {child.move, child.score}
 
             if best_score > beta or best_score.is_win():
                 return best_score

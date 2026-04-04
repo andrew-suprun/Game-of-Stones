@@ -54,9 +54,9 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
             var score = place.score
             if score.is_win():
                 moves.clear()
-                moves.append(MoveScore(Move(place.place), score))
+                moves.append({{place.place}, score})
                 return
-            moves.append(MoveScore(Move(place.place), board_score + score.value / 2))
+            moves.append({{place.place}, board_score + score.value / 2})
 
     def play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._place, self.turn)

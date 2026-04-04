@@ -16,11 +16,11 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         return "Principal Variation Negamax With Memory"
 
     def __init__(out self):
-        self.root = PrincipalVariationNode[Self.G](Self.G.Move(), Score())
+        self.root = {{}, {}}
         self.logger = Logger(prefix="pvs: ")
 
     def search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var best_move = MoveScore(Self.G.Move(), Score.loss())
+        var best_move: MoveScore[Self.G.Move] = {{}, Score.loss()}
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
@@ -53,7 +53,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             assert len(moves) > 0
             self.children = [Self(move.move, move.score) for move in moves]
 
-        best_move = MoveScore(self.children[0].move, self.children[0].score)
+        best_move = {self.children[0].move, self.children[0].score}
         var best_score = Score.loss()
 
         if depth == max_depth:
@@ -70,7 +70,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             if not child.score.is_decisive():
                 child.score = Score()
 
-        var deeper_best_move = MoveScore(Self.G.Move(), 0)
+        var deeper_best_move: MoveScore[Self.G.Move] = {{}, 0}
         var idx = 0
 
         # Full window search
@@ -96,7 +96,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
             if best_score < child.score:
                 best_score = child.score
-                best_move = MoveScore(child.move, child.score)
+                best_move = {child.move, child.score}
                 alpha = max(alpha, best_score)
 
             if child.score > beta or child.score.is_win():
@@ -128,7 +128,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
             if best_score < child.score:
                 best_score = child.score
-                best_move = MoveScore(child.move, child.score)
+                best_move = {child.move, child.score}
 
             if child.score > beta or child.score.is_win():
                 return best_score
@@ -139,7 +139,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
                 if best_score < child.score:
                     best_score = child.score
-                    best_move = MoveScore(child.move, child.score)
+                    best_move = {child.move, child.score}
                     alpha = max(alpha, best_score)
 
                 if child.score > beta or child.score.is_win():

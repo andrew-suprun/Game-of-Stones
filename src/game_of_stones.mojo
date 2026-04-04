@@ -125,10 +125,10 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
                         var move: Self.Move
                         var place1 = self.selected[0]
                         if self.stones_per_move == 1:
-                            move = Self.Move(String(place1))
+                            move = {String(place1)}
                         else:
                             var place2 = self.selected[1]
-                            move = Self.Move(String(place1) + "-" + String(place2))
+                            move = {String(place1) + "-" + String(place2)}
                         self.play_move(move, 0, 0)
                         self.selected.clear()
                         self.draw()
@@ -229,9 +229,9 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
         var x = Self.board_size / 2
         var place = Place(x, x)
         if Self.stones_per_move == 1:
-            return Self.Move(String(place))
+            return {String(place)}
         else:
-            return Self.Move(String(place) + "-" + String(place))
+            return {String(t"{place}-{place}")}
 
     @staticmethod
     def first_white_move() raises -> Self.Move:
@@ -245,9 +245,9 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
         shuffle(places)
 
         if Self.stones_per_move == 1:
-            return Self.Move(String(places[0]))
+            return {String(places[0])}
         else:
-            return Self.Move(String(places[0]) + "-" + String(places[1]))
+            return {String(t"{places[0]}-{places[1]}")}
 
 
 def board_to_window[d: Int](x: Int8, y: Int8, out result: PythonObject) raises:

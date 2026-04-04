@@ -99,7 +99,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             var score1 = places[i].score
             if score1.is_win():
                 moves.clear()
-                moves.append(MoveScore(Move(place1, place1), score1))
+                moves.append({{place1, place1}, score1})
                 return
 
             var board = self.board.copy()
@@ -111,7 +111,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
                 if score2.is_win():
                     moves.clear()
-                    moves.append(MoveScore(Move(place1, place2), score2))
+                    moves.append({{place1, place2}, score2})
                     return
 
                 if debug:
@@ -125,10 +125,10 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
                 if move_score != Score.loss():
-                    heap_add[less](MoveScore(Move(place1, place2), move_score), moves)
+                    heap_add[less]({{place1, place2}, move_score}, moves)
 
         if not moves:
-            moves.append(MoveScore(Move(places[0].place, places[1].place), Score.loss()))
+            moves.append({{places[0].place, places[1].place}, Score.loss()})
 
     def play_move(mut self, move: Move) -> Score:
         self.board.place_stone(move._p1, self.turn)
