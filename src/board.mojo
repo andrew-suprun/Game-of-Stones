@@ -6,7 +6,6 @@ from heap import heap_add
 comptime first = 0
 comptime second = 1
 comptime Scores = SIMD[DType.float32, 2]
-comptime Stones = SIMD[DType.int64, 2]
 
 
 struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
