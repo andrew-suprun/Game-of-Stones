@@ -1,6 +1,7 @@
 from std.time import perf_counter_ns
 from std.python import Python, PythonObject
 from std.random import seed, shuffle
+from std.reflection import get_base_type_name
 
 from score import Score
 from board import Place
@@ -21,7 +22,9 @@ comptime color_line = "gray20"
 comptime duration = 1000
 
 
-def game_of_stones[name: StaticString, board_size: Int, Tree: TTree, Game: TGame, stones_per_move: Int]() raises:
+def game_of_stones[board_size: Int, Tree: TTree, Game: TGame]() raises:
+    comptime name = get_base_type_name[Game]()
+    comptime stones_per_move = 2 if get_base_type_name[Game]() == "Connect6" else 1
     var pygame = Python.import_module("pygame")
     pygame.init()
     var window = pygame.display.set_mode(Python.tuple(window_height, window_width))

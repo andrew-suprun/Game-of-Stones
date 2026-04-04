@@ -1,5 +1,6 @@
 from std.random import seed, shuffle
 from std.time import perf_counter_ns
+from std.reflection import get_base_type_name
 
 from traits import TTree
 from board import Place, first
@@ -78,9 +79,9 @@ def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: 
 
 
 def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
-    # print()
-    # print(name1, "vs.", name2)
-    # print()
+    print()
+    print(name1, "vs.", name2)
+    print()
 
     var g1 = T1.Game()
     var g2 = T2.Game()
@@ -94,11 +95,11 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
         _ = g2.play_move({move})
         plies += 1
 
-    # print("opening:", end="")
-    # for move in opening:
-    #     print("", move, end="")
-    # # print(g1)
-    # print()
+    print("opening:", end="")
+    for move in opening:
+        print("", move, end="")
+    print(g1)
+    print()
 
     while True:
         start = perf_counter_ns()
@@ -162,10 +163,11 @@ def openings() -> List[List[String]]:
     for _ in range(100):
         shuffle(places)
         moves = [String(Place(Game1.size / 2, Game1.size / 2))]
-        moves.append(String(places[0]))
-        moves.append(String(places[1]))
-        moves.append(String(places[2]))
-        moves.append(String(places[3]))
-        moves.append(String(places[4]))
+        if get_base_type_name[Game1]() == "Connect6":
+            for i in range(0, 3):
+                moves.append(String(t"{places[i]}-{places[i+3]}"))
+        else:
+            for i in range(0, 5):
+                moves.append(places[i])
         result.append(moves^)
     return result^
