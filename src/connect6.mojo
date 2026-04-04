@@ -68,16 +68,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.turn = 0
         self.plies = 0
 
-    def __init__(out self, *, copy: Self):
-        self.board = copy.board.copy()
-        self.turn = copy.turn
-        self.plies = copy.plies
-
-    def __init__(out self, *, deinit take: Self):
-        self.board = take.board^
-        self.turn = take.turn
-        self.plies = take.plies
-
     def moves(self) -> List[MoveScore[Move]]:
         var moves = List[MoveScore[Move]](capacity=Self.max_moves)
         self._moves(moves)
