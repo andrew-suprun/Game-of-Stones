@@ -7,8 +7,8 @@ from score import Score
 from board import Place
 from traits import TTree, TGame
 
-comptime window_height = 1000
-comptime window_width = 1000
+comptime window_height = 800
+comptime window_width = 800
 
 comptime black = 0
 comptime white = 1
@@ -204,8 +204,7 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
                 self.pygame.draw.circle(self.window, color, board_to_window[Self.d](place.x, place.y), Self.r - 2)
             turn = 1 - turn
 
-        var last_move = self.moves[-1]
-        var places = String(last_move).split("-")
+        var places = String(self.moves[len(self.moves)-1]).split("-")
         for place_str in places:
             var place = Place(String(place_str))
             self.pygame.draw.circle(

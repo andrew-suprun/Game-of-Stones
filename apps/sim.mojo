@@ -20,10 +20,10 @@ comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 
 comptime Tree1 = PrincipalVariationNegamax[Game1]
-comptime Tree2 = PrincipalVariationNegamax[Game2]
+# comptime Tree2 = PrincipalVariationNegamax[Game2]
 
 # comptime Tree1 = Mcts[Game1, 4]
-# comptime Tree2 = Mcts[Game2, 4]
+comptime Tree2 = Mcts[Game2, 4]
 
 comptime seed_value = 7
 
@@ -32,7 +32,7 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("1", 1250, "2", 1250, openings())
+    run[Tree1, Tree2]("pvs", 250, "mcts", 250, openings())
 
 
 def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
@@ -79,7 +79,7 @@ def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: 
 
 
 def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
-    print()
+    # print()
     print(name1, "vs.", name2)
     print()
 
@@ -95,15 +95,15 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
         _ = g2.play_move({move})
         plies += 1
 
-    print("opening:", end="")
-    for move in opening:
-        print("", move, end="")
-    print(g1)
-    print()
+    # print("opening:", end="")
+    # for move in opening:
+    #     print("", move, end="")
+    # print(g1)
+    # print()
 
     while True:
         start = perf_counter_ns()
-        var name_size = max(len(name1), len(name2)) + 1
+        var name_size = max(name1.byte_length(), name2.byte_length()) + 1
         var move: String
         if turn == first:
             var result = t1.search(g1, time1)

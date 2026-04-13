@@ -72,8 +72,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         var moves = List[MoveScore[Move]](capacity=Self.max_moves)
         self._moves(moves)
         if self.plies == Self.max_plies:
-            moves[-1].score = Score.draw()
-            return [moves[-1]]
+            var last_move = moves[len(moves)-1]
+            last_move.score = Score.draw()
+            return [last_move]
         return moves^
 
     def _moves(self, mut moves: List[MoveScore[Move]]):

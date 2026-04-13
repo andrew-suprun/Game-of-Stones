@@ -1,21 +1,21 @@
 --- basic ---
-InlineArray Int   10.976969512195122
-InlineArray Int16 11.020367781155015
-List        Int   6.64747476635514
-List        Int16 7.153250996015935
-InlineArray Float 10.960650455927052
-List        Float 9.64145308310992
+InlineArray Int   6.579305054151624
+InlineArray Int16 6.511131147540984
+List        Int   6.68046336996337
+List        Int16 7.130656126482213
+InlineArray Float 9.434616797900262
+List        Float 9.599827493261456
 --- board ---
-update_row  0.06826099740339087
-place_stone 0.3285672
-places      1.4945593008739075
+update_row  0.023827157134703954
+place_stone 0.14773297080709788
+places      1.2901803336883209
 --- connect6 ---
-moves    43.72335714285715 msec
+moves    27.85379 msec
 --- gomoku ---
-moves  2.197354622871046 msec
-expand 4.388962962962963 msec
+moves  1.9257993596584844 msec
+expand 3.004483 msec
 --- heap ---
-heap_add 512.2145714285714
+heap_add 373.13322222222223
 --- logger ---
-bench1 9118.882
-bench2 3.1034e-07
+bench1 9486.053
+bench2 3.1044300000000005e-07

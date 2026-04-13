@@ -73,8 +73,9 @@ struct Mcts[G: TGame, c: Score](TTree):
     def _best_child(self) -> ref[self.root.children] Self.MctsNode:
         assert len(self.root.children) > 0
         var has_draw = False
-        var draw_node = Pointer(to=self.root.children[-1])
-        var best_child = Pointer(to=self.root.children[-1])
+        var last_idx = len(self.root.children)-1
+        var draw_node = Pointer(to=self.root.children[last_idx])
+        var best_child = Pointer(to=self.root.children[last_idx])
         for ref child in self.root.children:
             if child.move.score.is_loss():
                 continue

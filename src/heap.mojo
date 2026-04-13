@@ -1,4 +1,4 @@
-def heap_add[T: Copyable & ImplicitlyDestructible, //, less: def(T, T) -> Bool](item: T, mut items: List[T]):
+def heap_add[T: Copyable & ImplicitlyDestructible, //, less: def(T, T) thin -> Bool](item: T, mut items: List[T]):
     if len(items) == items.capacity:
         if not less(items[0], item):
             return
