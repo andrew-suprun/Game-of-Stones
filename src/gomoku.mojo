@@ -1,4 +1,4 @@
-from score import Score
+from fp_score import Score
 from traits import TGame, TMove, MoveScore
 from board import Board, Place, PlaceScore, first
 
@@ -28,6 +28,7 @@ struct Move(TMove):
 
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
+    comptime Score = Score
 
     var board: Board[Self.size, values, win_stones]
     var turn: Int
@@ -38,8 +39,8 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.turn = 0
         self.plies = 0
 
-    def moves(self) -> List[MoveScore[Move]]:
-        var moves = List[MoveScore[Move]](capacity=Self.max_places)
+    def moves(self) -> List[MoveScore[Move, Score]]:
+        var moves = List[MoveScore[Move, Score]](capacity=Self.max_places)
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
@@ -47,7 +48,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
             return [last_move]
         return moves^
 
-    def _moves(self, mut moves: List[MoveScore[Move]]):
+    def _moves(self, mut moves: List[MoveScore[Move, Score]]):
         var places = List[PlaceScore](capacity=Self.max_places)
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score

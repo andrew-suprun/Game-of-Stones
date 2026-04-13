@@ -1,7 +1,7 @@
 from std.testing import assert_true, assert_false
 from std.random import seed, random_si64
 
-from score import Score
+from fp_score import Score
 from board import Board, Place, first, second
 
 comptime size = 19

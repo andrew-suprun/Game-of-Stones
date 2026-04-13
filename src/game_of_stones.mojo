@@ -3,7 +3,7 @@ from std.python import Python, PythonObject
 from std.random import seed, shuffle
 from std.reflection import get_base_type_name
 
-from score import Score
+from fp_score import Score
 from board import Place
 from traits import TTree, TGame
 
@@ -39,6 +39,7 @@ def game_of_stones[board_size: Int, Tree: TTree, Game: TGame]() raises:
 struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
     comptime Game = Self.Tree.Game
     comptime Move = Self.Game.Move
+    comptime Score = Self.Game.Score
     comptime d = window_height / (Self.board_size + 1)
     comptime r = Self.d / 2
 
@@ -77,7 +78,7 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
             self.engine_move()
         return self.app_complete
 
-    def play_move(mut self, move: Self.Move, score: Score, time_ms: UInt) raises:
+    def play_move(mut self, move: Self.Move, score: Self.Score, time_ms: UInt) raises:
         self.moves.append(move)
         self.selected.clear()
         var board_score = self.game.play_move(move)

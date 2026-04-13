@@ -1,6 +1,6 @@
 from std.memory import memcpy
 
-from score import Score
+from fp_score import Score
 from heap import heap_add
 
 comptime first = 0

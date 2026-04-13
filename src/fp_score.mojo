@@ -1,7 +1,9 @@
 from std.utils.numerics import FPUtils, isinf, isnan, inf, nan
 
+from traits import TScore
 
-struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, TrivialRegisterPassable, Writable):
+
+struct Score(TScore):
     var value: Float32
 
     @staticmethod

@@ -1,6 +1,6 @@
 from std.testing import assert_true, assert_false
 
-from score import Score
+from fp_score import Score
 
 
 def main() raises:

@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 
 from traits import TTree
-from score import Score
+from fp_score import Score
 from board import first
 
 comptime black = True

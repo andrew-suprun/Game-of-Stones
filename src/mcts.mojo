@@ -3,11 +3,11 @@ from std.time import perf_counter_ns
 from std.math import sqrt
 from std.logger import Logger
 
-from score import Score
+from fp_score import Score
 from traits import TTree, TGame, MoveScore
 
 
-struct Mcts[G: TGame, c: Score](TTree):
+struct Mcts[G: TGame, c: G.Score](TTree):
     comptime Game = Self.G
     comptime MctsNode = Node[Self.G, Self.c]
 
@@ -18,7 +18,7 @@ struct Mcts[G: TGame, c: Score](TTree):
         self.root = {{{}, {}}}
         self.logger = Logger(prefix="mcts: ")
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move]:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> MoveScore[Self.G.Move, Self.G.Score]:
         var moves = game.moves()
         assert len(moves) > 0
         if len(moves) == 1:
@@ -103,12 +103,12 @@ struct Mcts[G: TGame, c: Score](TTree):
         return result
 
 
-struct Node[G: TGame, c: Score](Copyable, Writable):
-    var move: MoveScore[Self.G.Move]
+struct Node[G: TGame, c: G.Score](Copyable, Writable):
+    var move: MoveScore[Self.G.Move, Self.G.Score]
     var children: List[Self]
     var n_sims: Int32
 
-    def __init__(out self, move: MoveScore[Self.G.Move]):
+    def __init__(out self, move: MoveScore[Self.G.Move, Self.G.Score]):
         self.move = move
         self.children = List[Self]()
         self.n_sims = 1
@@ -126,7 +126,7 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
             selected_child._expand(game)
 
         self.n_sims = 1
-        var max_score = Score.loss()
+        var max_score = Self.G.Score.loss()
         var all_draws = True
         var all_losses = True
         var has_draw = False
@@ -136,7 +136,7 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
                 continue
             all_losses = False
             if child.move.score.is_win():
-                self.move.score = Score.loss()
+                self.move.score = Self.G.Score.loss()
                 return
             elif child.move.score.is_draw():
                 has_draw = True
@@ -145,21 +145,21 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
             all_draws = False
             max_score = max(max_score, child.move.score)
         if all_losses:
-            self.move.score = Score.win()
+            self.move.score = Self.G.Score.win()
         elif has_draw and all_draws:
-            self.move.score = Score.draw()
+            self.move.score = Self.G.Score.draw()
         else:
             self.move.score = -max_score
 
     @staticmethod
     def select_node(nodes: List[Self]) -> Int:
         var selected_child_idx = -1
-        var maxV = Score.loss()
+        var maxV = Self.G.Score.loss()
         for child_idx in range(len(nodes)):
             ref child = nodes[child_idx]
             if child.move.score.is_decisive():
                 continue
-            var v = child.move.score - Self.c * Score(sqrt(Float64(child.n_sims)))
+            var v = child.move.score - Self.c * Self.G.Score(sqrt(Float64(child.n_sims)))
             if maxV < v:
                 maxV = v
                 selected_child_idx = child_idx

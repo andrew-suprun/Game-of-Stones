@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score
+from fp_score import Score
 from traits import TTree, TGame, MoveScore
 
 
@@ -19,13 +19,13 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.root = {{}, {}}
         self.logger = Logger(prefix="pvs: ")
 
-    def search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var best_move: MoveScore[Self.G.Move] = {{}, Score.loss()}
+    def search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move, Self.G.Score]:
+        var best_move: MoveScore[Self.G.Move, Self.G.Score] = {{}, Self.G.Score.loss()}
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
-            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
+            var score = self.root._search(game, best_move, Self.G.Score.loss(), Self.G.Score.win(), 0, depth, deadline, self.logger)
             if not score.is_set():
                 return best_move
             self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
@@ -36,17 +36,27 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
 struct PrincipalVariationNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
-    var score: Score
+    var score: Self.G.Score
     var children: List[Self]
 
-    def __init__(out self, move: Self.G.Move, score: Score):
+    def __init__(out self, move: Self.G.Move, score: Self.G.Score):
         self.move = move
         self.score = score
         self.children = List[Self]()
 
-    def _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    def _search(
+            mut self, 
+            game: Self.G, 
+            mut best_move: MoveScore[Self.G.Move, Self.G.Score], 
+            var alpha: Self.G.Score, 
+            beta: Self.G.Score, 
+            depth: Int, 
+            max_depth: Int, 
+            deadline: UInt, 
+            logger: Logger
+        ) -> Self.G.Score:
         if perf_counter_ns() > deadline:
-            return Score()
+            return Self.G.Score()
 
         if not self.children:
             var moves = game.moves()
@@ -54,7 +64,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             self.children = [Self(move.move, move.score) for move in moves]
 
         best_move = {self.children[0].move, self.children[0].score}
-        var best_score = Score.loss()
+        var best_score = Self.G.Score.loss()
 
         if depth == max_depth:
             for child in self.children:
@@ -64,13 +74,13 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         sort[Self.greater](self.children)
 
         if self.children[0].score.is_win():
-            return Score.win()
+            return Self.G.Score.win()
 
         for ref child in self.children[1:]:
             if not child.score.is_decisive():
-                child.score = Score()
+                child.score = Self.G.Score()
 
-        var deeper_best_move: MoveScore[Self.G.Move] = {{}, 0}
+        var deeper_best_move: MoveScore[Self.G.Move, Self.G.Score] = {{}, 0}
         var idx = 0
 
         # Full window search
@@ -92,7 +102,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
             child.score = -child._search(g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
             if not child.score.is_set():
-                return Score()
+                return Self.G.Score()
 
             if best_score < child.score:
                 best_score = child.score
@@ -104,7 +114,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
             idx += 1
 
-            if alpha != Score.loss() and child.score >= alpha:
+            if alpha != Self.G.Score.loss() and child.score >= alpha:
                 break
 
         # Scout search

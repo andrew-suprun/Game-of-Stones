@@ -10,20 +10,18 @@ from mcts import Mcts
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
-# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+# comptime Game = Gomoku[size=19, max_places=16, max_plies=100]
 
-comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
-# comptime Tree1 = AlphaBetaNegamax[Game1]
-# comptime Tree2 = AlphaBetaNegamax[Game2]
+# comptime Tree1 = AlphaBetaNegamax[Game]
+# comptime Tree2 = AlphaBetaNegamax[Game]
 
-comptime Tree1 = PrincipalVariationNegamax[Game1]
-# comptime Tree2 = PrincipalVariationNegamax[Game2]
+comptime Tree1 = PrincipalVariationNegamax[Game]
+# comptime Tree2 = PrincipalVariationNegamax[Game]
 
-# comptime Tree1 = Mcts[Game1, 4]
-comptime Tree2 = Mcts[Game2, 4]
+# comptime Tree1 = Mcts[Game, 4]
+comptime Tree2 = Mcts[Game, 4]
 
 comptime seed_value = 7
 
@@ -108,7 +106,6 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
         if turn == first:
             var result = t1.search(g1, time1)
             move = String(result.move)
-            score = result.score
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
@@ -122,7 +119,6 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
         else:
             var result = t2.search(g2, time2)
             move = String(result.move)
-            score = -result.score
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
@@ -133,7 +129,7 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
                 Float64(perf_counter_ns() - start) / 1_000_000_000,
                 sep="",
             )
-        var score = g1.play_move({move})
+        score = g1.play_move({move})
         _ = g2.play_move({move})
         # print(g1)
         plies += 1
@@ -156,14 +152,14 @@ def openings() -> List[List[String]]:
     seed(seed_value)
     var result = List[List[String]]()
     var places = List[String]()
-    for j in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
-        for i in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
-            if i != Game1.size / 2 or j != Game1.size / 2:
+    for j in range(Game.size / 2 - 2, Game.size / 2 + 3):
+        for i in range(Game.size / 2 - 2, Game.size / 2 + 3):
+            if i != Game.size / 2 or j != Game.size / 2:
                 places.append(String(Place(i, j)))
     for _ in range(100):
         shuffle(places)
-        moves = [String(Place(Game1.size / 2, Game1.size / 2))]
-        if get_base_type_name[Game1]() == "Connect6":
+        moves = [String(Place(Game.size / 2, Game.size / 2))]
+        if get_base_type_name[Game]() == "Connect6":
             for i in range(0, 3):
                 moves.append(String(t"{places[i]}-{places[i+3]}"))
         else:
