@@ -24,7 +24,7 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, Movable, TrivialRegist
         self.value = value
 
     @implicit
-    def __init__[dtype: DType](out self, value: SIMD[dtype, 1]):
+    def __init__[dtype: DType](out self, value: Scalar[dtype]):
         self.value = Float32(value)
 
     def is_win(self) -> Bool:
