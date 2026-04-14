@@ -5,8 +5,7 @@ from traits import TGame, TMove, MoveScore
 from board import Board, Place, PlaceScore, first
 from heap import heap_add
 
-comptime debug = get_defined_string["ASSERT_MODE", ""]()
-
+comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 6
 comptime values: List[Int16] = [0, 1, 5, 25, 125, 625]
 
@@ -106,14 +105,15 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     moves.append({{place1, place2}, score2})
                     return
 
-                if debug:
-                    var board_value = self.board.board_value(materialize[values]())
+                var board2 = board.copy()
+                board2.place_stone(place2, self.turn)
+
+                comptime if assert_mode == "all":
+                    var board_value = board2.board_value(materialize[values]())
                     if self.turn:
                         board_value = -board_value
                     assert board_value.value == board_score.value + score1.value + score2.value
 
-                var board2 = board.copy()
-                board2.place_stone(place2, self.turn)
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
                 if move_score != Score.loss():
