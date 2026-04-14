@@ -5,7 +5,7 @@ from heap import heap_add
 
 comptime first = 0
 comptime second = 1
-comptime Scores = SIMD[DType.int16, 2]
+comptime Scores = InlineArray[Score, 2]
 
 
 struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
@@ -68,7 +68,7 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
                 var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
                 var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
                 var total = Int16(v + h + t1 + t2)
-                self.setvalues(Place(x, y), Scores(total, total))
+                self.setvalues(Place(x, y), [total, total])
 
     def place_stone(mut self, place: Place, turn: Int):
         ref value_table = materialize[self.value_table]()
@@ -93,7 +93,6 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
         self._update_row(y_start * Self.size + x, Self.size, n, scores)
 
         var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y)
-
         n = min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y)
         if n > 0:
             var mn = min(x, y, Self.win_stones - 1)
@@ -128,13 +127,22 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
         for _ in range(n):
             stones += self._places[offset + delta * (Self.win_stones - 1)]
             var scores = scores[stones]
-            if scores[0] != 0 or scores[1] != 0:
-                comptime for j in range(Self.win_stones):
-                    self._scores[offset + j * delta] += scores
-                    if scores[0] == Int16.MAX:
-                        self._scores[offset + j * delta][0] = Int16.MAX
-                    elif scores[1] == Int16.MAX:
-                        self._scores[offset + j * delta][1] = Int16.MAX
+            if scores[0] != 0:
+                if scores[0].is_win():
+                    comptime for j in range(Self.win_stones):
+                        self._scores[offset + j * delta][0] = Score.win()
+                else:
+                    comptime for j in range(Self.win_stones):
+                        if not self._scores[offset + j * delta][0].is_win():
+                            self._scores[offset + j * delta][0] += scores[0]
+            if scores[1] != 0:
+                if scores[1].is_win():
+                    comptime for j in range(Self.win_stones):
+                        self._scores[offset + j * delta][1] = Score.win()
+                else:
+                    comptime for j in range(Self.win_stones):
+                        if not self._scores[offset + j * delta][1].is_win():
+                            self._scores[offset + j * delta][1] += scores[1]
             stones -= self._places[offset]
             offset += delta
 
@@ -159,7 +167,7 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
         self._places[y * Self.size + x] = value
 
     def score(self, place: Place, turn: Int) -> Score:
-        return Score(self._scores[Int(place.y) * Self.size + Int(place.x)][turn])
+        return self._scores[Int(place.y) * Self.size + Int(place.x)][turn]
 
     def setvalues(mut self, place: Place, value: Scores):
         self._scores[Int(place.y) * Self.size + Int(place.x)] = value
@@ -317,14 +325,20 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
         return 0
 
     def max_score(self, player: Int) -> Score:
-        var max_scores = self._scores[0]
-
-        for y in range(Self.size):
-            for x in range(Self.size):
-                if self[x, y] == self.empty:
-                    max_scores = max(max_scores, self._scores[y * Self.size + x])
-
-        return Score(max_scores[player])
+        if player == first:
+            var result = self._scores[0][first]
+            for y in range(Self.size):
+                for x in range(Self.size):
+                    if self[x, y] == self.empty:
+                        result = max(result, self._scores[y * Self.size + x][first])
+            return result
+        else:
+            var result = self._scores[0][second]
+            for y in range(Self.size):
+                for x in range(Self.size):
+                    if self[x, y] == self.empty:
+                        result = max(result, self._scores[y * Self.size + x][second])
+            return result
 
 
 def _calc_value_table[win_stones: Int, scores: List[Int16]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
@@ -332,23 +346,24 @@ def _calc_value_table[win_stones: Int, scores: List[Int16]]() -> InlineArray[Inl
 
     var s = materialize[scores]()
     s.append(10000)
-    var v2: List[Scores] = [Scores(1, -1)]
+    var v2: List[Scores] = [[1, -1]]
     for i in range(win_stones - 1):
-        v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
-    var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=0))
+        v2.append([s[i + 2] - s[i + 1], -s[i + 1]])
+    var result = InlineArray[InlineArray[Scores, result_size], 2](fill=InlineArray[Scores, result_size](fill=[0,0]))
 
     for i in range(win_stones - 1):
-        result[0][i * win_stones] = Scores(v2[i][1], -v2[i][0])
-        result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
-        result[1][i] = Scores(-v2[i][0], v2[i][1])
-        result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
+        result[0][i * win_stones] = [v2[i][1], -v2[i][0]]
+        result[0][i] = [v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1]]
+        result[1][i] = [-v2[i][0], v2[i][1]]
+        result[1][i * win_stones] = [v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0]]
 
     for side in range(2):
         for color in range(2):
-            for y in range(6):
-                for x in range(6):
-                    if result[side][y*6+x][color] == 8875:
-                        result[side][y*6+x][color] = Int16.MAX
+            for y in range(win_stones):
+                for x in range(win_stones):
+                    # print(side, y*win_stones+x, color)
+                    if result[side][y*win_stones+x][color] == 8875:
+                        result[side][y*win_stones+x][color] = Int16.MAX
 
     return result^
 

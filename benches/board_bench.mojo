@@ -4,7 +4,7 @@ from int_score import Score
 from board import Board, Place, PlaceScore, first
 
 comptime win_stones = 6
-comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
+comptime values: List[Int16] = [0, 1, 5, 25, 125, 625]
 
 
 def bench_update_row():

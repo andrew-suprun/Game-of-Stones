@@ -48,23 +48,23 @@ struct Score(TScore):
         return self.value != NoScore
 
     def __add__(self, other: Self) -> Score:
-        debug_assert(self.value > Loss and self.value < Win and other.value > Draw)
+        debug_assert(self.value > Draw and self.value < Win and other.value > Draw)
         return Win if other.is_win() else Score(self.value + other.value)
 
     def __sub__(self, other: Self) -> Score:
-        debug_assert(self.value > Loss and self.value < Win and other.value > Draw)
+        debug_assert(self.value > Draw and self.value < Win and other.value > Draw)
         return Loss if other.is_win() else Score(self.value - other.value)
 
     def __iadd__(mut self, other: Self):
-        debug_assert(self.value > Loss and self.value < Win and other.value > Draw)
+        debug_assert(self.value > Draw and self.value < Win and other.value > Draw)
         self.value = Win if other.is_win() else self.value + other.value
 
     def __isub__(mut self, other: Self):
-        debug_assert(self.value > Loss and self.value < Win and other.value > Draw)
+        debug_assert(self.value > Draw and self.value < Win and other.value > Draw)
         self.value = Loss if other.is_win() else self.value - other.value
 
     def __mul__(self, other: Self) -> Score:
-        debug_assert(self.value > Loss and self.value < Win and other.value > Draw)
+        debug_assert(self.value > Draw and self.value < Win and other.value > Draw)
         return Win if other.is_win() else Score(self.value * other.value)
 
     def __eq__(self, other: Self) -> Bool:
