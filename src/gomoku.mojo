@@ -1,4 +1,4 @@
-from fp_score import Score
+from int_score import Score
 from traits import TGame, TMove, MoveScore
 from board import Board, Place, PlaceScore, first
 

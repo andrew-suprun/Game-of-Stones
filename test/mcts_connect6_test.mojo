@@ -1,6 +1,6 @@
 from std.testing import assert_true
 
-from fp_score import Score
+from int_score import Score
 from mcts import Mcts
 from connect6 import Connect6
 

@@ -1,12 +1,12 @@
 from std.testing import assert_true, assert_false
 from std.random import seed, random_si64
 
-from fp_score import Score
+from int_score import Score
 from board import Board, Place, first, second
 
 comptime size = 19
 comptime win_stones = 6
-comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
+comptime values: List[Int16] = [0, 1, 5, 25, 125, 625]
 
 
 def test_place_stone() raises:

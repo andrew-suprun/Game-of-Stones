@@ -45,23 +45,23 @@ struct Score(TScore):
         return not isnan(self.value)
 
     def __add__(self, other: Self) -> Score:
-        debug_assert(self.is_set() and not self.is_decisive() and other.is_set())
+        debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
         return Score(self.value + other.value)
 
     def __sub__(self, other: Self) -> Score:
-        debug_assert(self.is_set() and not self.is_decisive() and other.is_set())
+        debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
         return Score(self.value - other.value)
 
     def __iadd__(mut self, other: Self):
-        debug_assert(self.is_set() and not self.is_decisive() and other.is_set())
+        debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
         self.value += other.value
 
     def __isub__(mut self, other: Self):
-        debug_assert(self.is_set() and not self.is_decisive() and other.is_set())
+        debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
         self.value -= other.value
 
     def __mul__(self, other: Self) -> Score:
-        debug_assert(self.is_set() and not self.is_decisive() and other.is_set())
+        debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
         return Score(self.value * other.value)
 
     def __eq__(self, other: Self) -> Bool:

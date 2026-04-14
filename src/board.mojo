@@ -1,11 +1,11 @@
 from std.memory import memcpy
 
-from fp_score import Score
+from int_score import Score
 from heap import heap_add
 
 comptime first = 0
 comptime second = 1
-comptime Scores = SIMD[DType.float32, 2]
+comptime Scores = SIMD[DType.int16, 2]
 
 
 struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
@@ -45,7 +45,7 @@ def less(a: PlaceScore, b: PlaceScore) -> Bool:
     return a.score < b.score
 
 
-struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writable):
+struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable):
     comptime empty = Int8(0)
     comptime black = Int8(1)
     comptime white = Int8(Self.win_stones)
@@ -67,7 +67,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y, Self.size - Self.win_stones)
                 var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
                 var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
-                var total = Float32(v + h + t1 + t2)
+                var total = Int16(v + h + t1 + t2)
                 self.setvalues(Place(x, y), Scores(total, total))
 
     def place_stone(mut self, place: Place, turn: Int):
@@ -131,6 +131,10 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
             if scores[0] != 0 or scores[1] != 0:
                 comptime for j in range(Self.win_stones):
                     self._scores[offset + j * delta] += scores
+                    if scores[0] == Int16.MAX:
+                        self._scores[offset + j * delta][0] = Int16.MAX
+                    elif scores[1] == Int16.MAX:
+                        self._scores[offset + j * delta][1] = Int16.MAX
             stones -= self._places[offset]
             offset += delta
 
@@ -246,7 +250,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 str += String(t"    {chr(i + ord('a'))} ")
             str += "│\n"
 
-    def board_value(self, scores: List[Float32]) -> Score:
+    def board_value(self, scores: List[Int16]) -> Score:
         var value = Score(0)
         for y in range(Self.size):
             var stones = Int8(0)
@@ -303,7 +307,7 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 stones -= self[Self.size - 1 - x - y, y]
         return value
 
-    def _calc_value(self, stones: Int8, scores: List[Float32]) -> Score:
+    def _calc_value(self, stones: Int8, scores: List[Int16]) -> Score:
         var black = Int(stones) % Self.win_stones
         var white = Int(stones) / Self.win_stones
         if white == 0:
@@ -323,11 +327,11 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
         return Score(max_scores[player])
 
 
-def _calc_value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+def _calc_value_table[win_stones: Int, scores: List[Int16]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
-    s.append(Float32.MAX)
+    s.append(10000)
     var v2: List[Scores] = [Scores(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
@@ -338,4 +342,24 @@ def _calc_value_table[win_stones: Int, scores: List[Float32]]() -> InlineArray[I
         result[0][i] = Scores(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
         result[1][i] = Scores(-v2[i][0], v2[i][1])
         result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
+
+    for side in range(2):
+        for color in range(2):
+            for y in range(6):
+                for x in range(6):
+                    if result[side][y*6+x][color] == 8875:
+                        result[side][y*6+x][color] = Int16.MAX
+
     return result^
+
+
+def main():
+    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625]]()
+    for side in range(2):
+        for color in range(2):
+            for y in range(6):
+                for x in range(6):
+                    print(table[side][y*6+x][color], "", end="")
+                print()
+            print()
+    print()

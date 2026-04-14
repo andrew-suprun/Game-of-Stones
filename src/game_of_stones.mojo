@@ -3,7 +3,7 @@ from std.python import Python, PythonObject
 from std.random import seed, shuffle
 from std.reflection import get_base_type_name
 
-from fp_score import Score
+from int_score import Score
 from board import Place
 from traits import TTree, TGame
 

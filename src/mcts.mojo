@@ -3,7 +3,7 @@ from std.time import perf_counter_ns
 from std.math import sqrt
 from std.logger import Logger
 
-from fp_score import Score
+from int_score import Score
 from traits import TTree, TGame, MoveScore
 
 
