@@ -68,7 +68,8 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
                 var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
                 var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
                 var total = Float32(v + h + t1 + t2)
-                self.setvalues(Place(x, y), Scores(total, total))
+                self._scores[y * Self.size + y] = [total, total]
+
 
     def place_stone(mut self, place: Place, turn: Int):
         ref value_table = materialize[self.value_table]()
@@ -156,9 +157,6 @@ struct Board[size: Int, values: List[Float32], win_stones: Int](Copyable, Writab
 
     def score(self, place: Place, turn: Int) -> Score:
         return Score(self._scores[Int(place.y) * Self.size + Int(place.x)][turn])
-
-    def setvalues(mut self, place: Place, value: Scores):
-        self._scores[Int(place.y) * Self.size + Int(place.x)] = value
 
     def write_to[W: Writer](self, mut writer: W):
         try:
