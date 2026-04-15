@@ -135,6 +135,7 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
                     comptime for j in range(Self.win_stones):
                         if not self._scores[offset + j * delta][0].is_win():
                             self._scores[offset + j * delta][0] += scores[0]
+                            debug_assert(self._scores[offset + j * delta][0] >= 0)
             if scores[1] != 0:
                 if scores[1].is_win():
                     comptime for j in range(Self.win_stones):
@@ -143,6 +144,7 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
                     comptime for j in range(Self.win_stones):
                         if not self._scores[offset + j * delta][1].is_win():
                             self._scores[offset + j * delta][1] += scores[1]
+                            debug_assert(self._scores[offset + j * delta][1] >= 0)
             stones -= self._places[offset]
             offset += delta
 
