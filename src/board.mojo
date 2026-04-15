@@ -68,7 +68,7 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
                 var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
                 var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
                 var total = Int16(v + h + t1 + t2)
-                self.setvalues(Place(x, y), [total, total])
+                self._scores[y * Self.size + y] = [total, total]
 
     def place_stone(mut self, place: Place, turn: Int):
         ref value_table = materialize[self.value_table]()
@@ -170,9 +170,6 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
 
     def score(self, place: Place, turn: Int) -> Score:
         return self._scores[Int(place.y) * Self.size + Int(place.x)][turn]
-
-    def setvalues(mut self, place: Place, value: Scores):
-        self._scores[Int(place.y) * Self.size + Int(place.x)] = value
 
     def write_to[W: Writer](self, mut writer: W):
         try:
@@ -329,17 +326,21 @@ struct Board[size: Int, values: List[Int16], win_stones: Int](Copyable, Writable
     def max_score(self, player: Int) -> Score:
         if player == first:
             var result = self._scores[0][first]
-            for y in range(Self.size):
-                for x in range(Self.size):
-                    if self[x, y] == self.empty:
-                        result = max(result, self._scores[y * Self.size + x][first])
+            for i in range(Self.size * Self.size):
+                if self._places[i] == self.empty:
+                    var score = self._scores[i][first]
+                    if result < score:
+                        result = score
+                    # result = max(result, self._scores[y * Self.size + x][first])
             return result
         else:
             var result = self._scores[0][second]
-            for y in range(Self.size):
-                for x in range(Self.size):
-                    if self[x, y] == self.empty:
-                        result = max(result, self._scores[y * Self.size + x][second])
+            for i in range(Self.size * Self.size):
+                if self._places[i] == self.empty:
+                    var score = self._scores[i][second]
+                    if result < score:
+                        result = score
+                    # result = max(result, self._scores[y * Self.size + x][first])
             return result
 
 
