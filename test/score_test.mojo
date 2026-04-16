@@ -1,6 +1,6 @@
 from std.testing import assert_true, assert_false
 
-from score import Score
+from traits import Score
 
 
 def main() raises:

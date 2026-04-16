@@ -2,27 +2,36 @@ from traits import TGame, TMove, MoveScore, Score
 from board import Board, Place, PlaceScore, first
 
 comptime win_stones = 5
-comptime values: List[Score] = [0, 1, 5, 25, 125]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 1250]
 
 
 struct Move(TMove):
     var _place: Place
+    var _terminal: Bool
 
     def __init__(out self):
-        self = Self(Place())
+        self = Self(Place(), False)
 
-    def __init__(out self, place: Place):
+    def __init__(out self, place: Place, terminal: Bool = False):
         self._place = place
+        self._terminal = terminal
 
     @implicit
     def __init__(out self, move: String) raises:
         self._place = Place(String(move))
+        self._terminal = False
 
     def __eq__(self: Self, other: Self) -> Bool:
-        return self._place == other._place
+        return self._place == other._place and self._terminal == other._terminal
+
+    def is_terminal(self) -> Bool:
+        return self._terminal
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self._place)
+        if self._terminal:
+            writer.write(" [terminal]")
+
 
 
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
@@ -42,7 +51,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
-            last_move.score = Score.draw()
+            last_move.move._terminal = True
             return [last_move]
         return moves^
 
@@ -52,19 +61,18 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
             var score = place.score
-            if score.is_win():
+            if score > 1000:
                 moves.clear()
-                moves.append({{place.place}, score})
+                moves.append({{place.place, True}, score})
                 return
-            moves.append({{place.place}, board_score + score.value / 2})
+            moves.append({{place.place}, board_score + score / 2})
 
-    def play_move(mut self, move: Move) -> Score:
+    def play_move(mut self, move: Move):
+        debug_assert(not move.is_terminal())
+
         self.board.place_stone(move._place, self.turn)
         self.turn = 1 - self.turn
         self.plies += 1
-        if self.plies > Self.max_plies:
-            return Score.draw()
-        return self.board._score
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

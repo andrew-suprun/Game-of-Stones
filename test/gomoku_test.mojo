@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 
-from score import Score
+from traits import Score
 from mcts import Mcts
 from gomoku import Gomoku
 

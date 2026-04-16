@@ -1,7 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from score import Score
-from traits import TMove
+from traits import TMove, Score
 from mcts import Mcts
 from gomoku import Gomoku
 

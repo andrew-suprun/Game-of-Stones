@@ -1,8 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score
-from traits import TTree, TGame, MoveScore
+from traits import TTree, TGame, MoveScore, Score
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):
@@ -21,12 +20,12 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         self.logger = Logger(prefix="abs: ")
 
     def search(mut self, game: Self.G, duration_ms: UInt) -> Self.MoveScore:
-        var best_move: Self.MoveScore = {{}, Score.loss()}
+        var best_move: Self.MoveScore = {{}, Score.MIN}
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
         while True:
-            var score = self.root._search(game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger)
+            var score = self.root._search(game, best_move, Score.MIN, Score.MAX, 0, depth, deadline, self.logger)
             if not score.is_set():
                 return best_move
             self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", Float64(perf_counter_ns() - start) / 1_000_000_000)

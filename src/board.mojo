@@ -310,7 +310,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
         var max_score = self._scores[0][player]
 
         for i in range(Self.size * Self.size):
-            if self._places[i] == self.empty:
+            if self._places[i] == Self.empty:
                 max_score = max(max_score, self._scores[i][player])
 
         return max_score

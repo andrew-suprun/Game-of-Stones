@@ -1,7 +1,7 @@
 from std.random import shuffle
 from std.testing import assert_true, assert_false
 
-from score import Score
+from traits import Score
 from heap import heap_add
 
 

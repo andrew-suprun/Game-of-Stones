@@ -1,8 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score
-from traits import TTree, TGame, MoveScore
+from traits import TTree, TGame, MoveScore, Score
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):

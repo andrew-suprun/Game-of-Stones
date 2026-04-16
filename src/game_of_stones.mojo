@@ -3,9 +3,8 @@ from std.python import Python, PythonObject
 from std.random import seed, shuffle
 from std.reflection import get_base_type_name
 
-from score import Score
 from board import Place
-from traits import TTree, TGame
+from traits import TTree, TGame, Score
 
 comptime window_height = 800
 comptime window_width = 800
@@ -80,7 +79,6 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
     def play_move(mut self, move: Self.Move, score: Score, time_ms: UInt) raises:
         self.moves.append(move)
         self.selected.clear()
-        var board_score = self.game.play_move(move)
         self.tree = Self.Tree()
         print("move", move, end="")
         if score != 0:
@@ -91,8 +89,10 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
 
         print()
         # print(self.game)
-        if board_score.is_decisive():
+        if move.is_terminal():
             self.game_complete = True
+        else:
+            self.game.play_move(move)
 
         self.turn = 1 - self.turn
         self.search_complete = False

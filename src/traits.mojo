@@ -17,7 +17,7 @@ trait TGame(Copyable, Defaultable, Writable):
     def moves(self) -> List[MoveScore[Self.Move]]:
         ...
 
-    def play_move(mut self, move: Self.Move) -> Score:
+    def play_move(mut self, move: Self.Move):
         ...
 
 
@@ -25,7 +25,7 @@ trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable,
     def __init__(out self, text: String) raises:
         ...
 
-    def is_terminal() -> Bool:
+    def is_terminal(self) -> Bool:
         ...
 
 
@@ -35,12 +35,4 @@ struct MoveScore[Move: TMove](ImplicitlyCopyable, TrivialRegisterPassable, Writa
     var score: Score
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(self.move)
-        if self.score.is_win():
-            writer.write(" win")
-        elif self.score.is_loss():
-            writer.write(" loss")
-        elif self.score.is_draw():
-            writer.write(" draw")
-        else:
-            writer.write(" ", self.score)
+        writer.write(self.move, " ", self.score)

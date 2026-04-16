@@ -6,23 +6,26 @@ from heap import heap_add
 
 comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625, 6250]
+comptime WIN: Score = 5000
 
 
 struct Move(TMove):
     var _p1: Place
     var _p2: Place
+    var _terminal: Bool
 
     def __init__(out self):
-        self = Self(Place(), Place())
+        self = Self(Place(), Place(), False)
 
-    def __init__(out self, p1: Place, p2: Place):
+    def __init__(out self, p1: Place, p2: Place, terminal: Bool = False):
         if p1 < p2:
             self._p1 = p1
             self._p2 = p2
         else:
             self._p1 = p2
             self._p2 = p1
+        self._terminal = terminal
 
     @implicit
     def __init__(out self, move: String) raises:
@@ -39,6 +42,7 @@ struct Move(TMove):
         else:
             self._p1 = p2
             self._p2 = p1
+        self._terminal = False
 
     def __eq__(self: Self, other: Self) -> Bool:
         return self._p1 == other._p1 and self._p2 == other._p2
@@ -71,7 +75,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
-            last_move.score = Score.draw()
+            last_move.move._terminal = True
+            last_move.score = 0
             return [last_move]
         return moves^
 
@@ -86,7 +91,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         for i in range(len(places) - 1):
             var place1 = places[i].place
             var score1 = places[i].score
-            if score1.is_win():
+            if score1 >= WIN:
                 moves.clear()
                 moves.append({{place1, place1}, score1})
                 return
@@ -98,7 +103,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 var place2 = places[j].place
                 var score2 = board.score(place2, self.turn)
 
-                if score2.is_win():
+                if score2 >= WIN:
                     moves.clear()
                     moves.append({{place1, place2}, score2})
                     return
@@ -110,25 +115,22 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     var board_value = board2.board_value(materialize[values]())
                     if self.turn:
                         board_value = -board_value
-                    assert board_value.value == board_score.value + score1.value + score2.value
+                    assert board_value == board_score + score1 + score2
 
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
-                if move_score != Score.loss():
+                if max_opp_score < WIN:
                     heap_add[less]({{place1, place2}, move_score}, moves)
 
         if not moves:
-            moves.append({{places[0].place, places[1].place}, Score.loss()})
+            moves.append({{places[0].place, places[1].place, True}, -WIN})
 
-    def play_move(mut self, move: Move) -> Score:
+    def play_move(mut self, move: Move):
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
         self.turn = 1 - self.turn
         self.plies += 1
-        if self.plies > Self.max_plies:
-            return Score.draw()
-        return self.board._score
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

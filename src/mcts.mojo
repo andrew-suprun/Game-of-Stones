@@ -3,8 +3,7 @@ from std.time import perf_counter_ns
 from std.math import sqrt
 from std.logger import Logger
 
-from score import Score
-from traits import TTree, TGame, MoveScore
+from traits import TTree, TGame, MoveScore, Score
 
 
 struct Mcts[G: TGame, c: Score](TTree):
@@ -25,9 +24,9 @@ struct Mcts[G: TGame, c: Score](TTree):
             return moves[0]
         var all_draws = True
         for move in moves:
-            if move.score.is_win():
+            if move.move.is_terminal() and move.score > 0:
                 return move
-            if not move.score.is_draw():
+            if move.move.is_terminal() and move.score != 0:
                 all_draws = False
         if all_draws:
             return moves[0]
@@ -52,18 +51,18 @@ struct Mcts[G: TGame, c: Score](TTree):
         return result.move
 
     def expand(mut self, game: Self.G, out done: Bool):
-        if self.root.move.score.is_decisive():
+        if self.root.move.move.is_terminal():
             return True
 
         var g = game.copy()
         self.root._expand(g)
 
-        if self.root.move.score.is_decisive():
+        if self.root.move.move.is_terminal():
             return True
 
         var undecided = 0
         for ref child in self.root.children:
-            if not child.move.score.is_decisive():
+            if not child.move.move.is_terminal():
                 undecided += 1
         return undecided < 2
 
@@ -77,14 +76,15 @@ struct Mcts[G: TGame, c: Score](TTree):
         var draw_node = Pointer(to=self.root.children[last_idx])
         var best_child = Pointer(to=self.root.children[last_idx])
         for ref child in self.root.children:
-            if child.move.score.is_loss():
-                continue
-            elif child.move.score.is_win():
-                return child
-            elif child.move.score.is_draw():
-                has_draw = True
-                draw_node = Pointer(to=child)
-                continue
+            if child.move.move.is_terminal():
+                if child.move.score < 0:
+                    continue
+                elif child.move.score > 0:
+                    return child
+                elif child.move.score == 0:
+                    has_draw = True
+                    draw_node = Pointer(to=child)
+                    continue
 
             if best_child[].n_sims < child.n_sims or best_child[].n_sims == child.n_sims and best_child[].move.score < child.move.score:
                 best_child = Pointer(to=child)
@@ -126,38 +126,19 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
             selected_child._expand(game)
 
         self.n_sims = 1
-        var max_score = Score.loss()
-        var all_draws = True
-        var all_losses = True
-        var has_draw = False
+        var max_score = Score.MIN
         for ref child in self.children:
             self.n_sims += child.n_sims
-            if child.move.score.is_loss():
-                continue
-            all_losses = False
-            if child.move.score.is_win():
-                self.move.score = Score.loss()
-                return
-            elif child.move.score.is_draw():
-                has_draw = True
-                max_score = max(max_score, 0)
-                continue
-            all_draws = False
             max_score = max(max_score, child.move.score)
-        if all_losses:
-            self.move.score = Score.win()
-        elif has_draw and all_draws:
-            self.move.score = Score.draw()
-        else:
-            self.move.score = -max_score
+        self.move.score = -max_score
 
     @staticmethod
     def select_node(nodes: List[Self]) -> Int:
         var selected_child_idx = -1
-        var maxV = Score.loss()
+        var maxV = Score.MIN
         for child_idx in range(len(nodes)):
             ref child = nodes[child_idx]
-            if child.move.score.is_decisive():
+            if child.move.move.is_terminal():
                 continue
             var v = child.move.score - Self.c * Score(sqrt(Float64(child.n_sims)))
             if maxV < v:
