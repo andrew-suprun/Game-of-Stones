@@ -23,7 +23,7 @@ def bench_place_stone():
         var b = board.copy()
         b.place_stone(Place(9, 9), 0)
         score += board._score
-    keep(score.value)
+    keep(score)
 
 
 def bench_places():

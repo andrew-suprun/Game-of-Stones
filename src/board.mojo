@@ -68,7 +68,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                 var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
                 var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
                 var total = Score(v + h + t1 + t2)
-                self._scores[y * Self.size + y] = [total, total]
+                self._scores[y * Self.size + x] = [total, total]
 
 
     def place_stone(mut self, place: Place, turn: Int):
@@ -219,27 +219,26 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
     def str_scores_raises(self, table_idx: Int, out str: String) raises:
         str = "\n   │"
         for i in range(Self.size):
-            str += String(t"    {chr(i + ord('a'))} ")
+            str += String(t"   {chr(i + ord('a'))} ")
         str += "│\n"
-        str += "───┼" + "──────" * Self.size + "┼───\n"
+        str += "───┼" + "─────" * Self.size + "┼───\n"
         for y in range(Self.size):
             str += String(y + 1).ascii_rjust(2) + " │"
             for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
-                    str += "    X "
+                    str += "   X "
                 elif stone == Self.white:
-                    str += "    O "
+                    str += "   O "
                 else:
                     var value = self.score(Place(x, y), table_idx)
-                    str += String(Int(value)).ascii_rjust(5, " ") + " "
+                    str += String(Int(value)).ascii_rjust(4, " ") + " "
             str += "│ " + String(y + 1).ascii_rjust(2) + "\n"
-        str += "───┼" + "──────" * Self.size + "┼───"
-        if not table_idx:
-            str += "\n   │"
-            for i in range(Self.size):
-                str += String(t"    {chr(i + ord('a'))} ")
-            str += "│\n"
+        str += "───┼" + "─────" * Self.size + "┼───"
+        str += "\n   │"
+        for i in range(Self.size):
+            str += String(t"   {chr(i + ord('a'))} ")
+        str += "│\n"
 
     def board_value(self, scores: List[Score]) -> Score:
         var value = Score(0)
@@ -333,3 +332,18 @@ def _calc_value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[Inl
         result[1][i] = Scores(-v2[i][0], v2[i][1])
         result[1][i * win_stones] = Scores(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
     return result^
+
+
+def main():
+    var board = Board[19, [0, 1, 5, 25, 125, 625, 6250], 6]()
+    print(board)
+    print(board.str_scores())
+    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625, 6250]]()
+    for side in range(2):
+        for color in range(2):
+            for y in range(6):
+                for x in range(6):
+                    print(table[side][y*6+x][color], "", end="")
+                print()
+            print()
+    print()
