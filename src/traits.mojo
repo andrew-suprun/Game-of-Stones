@@ -1,4 +1,4 @@
-comptime Score = Int16
+comptime Score = Int64
 
 
 trait TTree(ImplicitlyDestructible):

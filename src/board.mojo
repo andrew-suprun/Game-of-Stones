@@ -307,14 +307,18 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
         return 0
 
     def max_score(self, player: Int) -> Score:
-        var max_scores = self._scores[0]
+        var max_score = self._scores[0][player]
 
-        for y in range(Self.size):
-            for x in range(Self.size):
-                if self[x, y] == self.empty:
-                    max_scores = max(max_scores, self._scores[y * Self.size + x])
+        if player == first:
+            for i in range(Self.size * Self.size):
+                if self._places[i] == self.empty:
+                    max_score = max(max_score, self._scores[i][first])
+        else:
+            for i in range(Self.size * Self.size):
+                if self._places[i] == self.empty:
+                    max_score = max(max_score, self._scores[i][second])
 
-        return Score(max_scores[player])
+        return max_score
 
 
 def _calc_value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:

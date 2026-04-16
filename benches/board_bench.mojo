@@ -7,6 +7,21 @@ comptime win_stones = 6
 comptime values: List[Score] = [0, 1, 5, 25, 125, 625, 6250]
 
 
+def bench_max_score():
+    var board = Board[19, values, win_stones]()
+    for _ in range(10000):
+        keep(board.max_score(0))
+
+
+def bench_copy():
+    var board = Board[19, values, win_stones]()
+    for _ in range(1000):
+        var b = board.copy()
+        keep(b)
+        board = b.copy()
+        keep(board)
+
+
 def bench_update_row():
     var board = Board[19, values, win_stones]()
     ref value_table = materialize[board.value_table]()
@@ -36,6 +51,8 @@ def bench_places():
 
 def main() raises:
     print("--- board ---")
+    print("max_score  ", benchmark.run[func2=bench_max_score](0, 1, 3, 6).mean(Unit.ms))
+    print("copy       ", benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.ms))
     print("update_row ", benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.ms))
     print("place_stone", benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.ms))
     print("places     ", benchmark.run[func2=bench_places](0, 1, 3, 6).mean(Unit.ms))
