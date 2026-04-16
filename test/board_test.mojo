@@ -64,7 +64,7 @@ def check_results(mut board: B, player: Int, stones: List[String], expected: Sco
         assert_true(b._score == expected)
 
 
-def main() raises:
+def test_place_stones() raises:
     var board = Board[19, values, win_stones]()
     place_stones(board, first, ["a1", "a2", "a3", "a4", "a5", "b2", "c3", "d4", "e5", "b1", "c1", "d1", "e1"])
     place_stones(board, second, ["s1", "s2", "s3", "s4", "s5", "r2", "q3", "p4", "o5", "r1", "q1", "p1", "o1"])
@@ -80,3 +80,7 @@ def main() raises:
     check_results(board, second, ["s6", "n6", "n1"], Score.loss())
     check_results(board, first, ["n19", "n14", "s14"], Score.win())
     check_results(board, second, ["a14", "f14", "f19"], Score.loss())
+
+def main() raises:
+    test_place_stone()
+    test_place_stones()
