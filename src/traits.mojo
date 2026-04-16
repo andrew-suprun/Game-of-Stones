@@ -28,7 +28,7 @@ trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable,
     def is_decisive(self) -> Bool:
         ...
         
-    def set_decisive(self):
+    def set_decisive(mut self):
         ...
 
 @fieldwise_init

@@ -9,7 +9,7 @@ from gomoku import Gomoku
 def main() raises:
     comptime Game = Gomoku[size=19, max_places=8, max_plies=100]
     var game = Game()
-    var tree = Mcts[Game, 16]()
+    var tree = Mcts[Game, 1]()
     _ = game.play_move("j10")
     _ = game.play_move("i9")
     _ = game.play_move("i10")

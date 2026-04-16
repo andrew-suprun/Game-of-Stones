@@ -27,7 +27,7 @@ struct Move(TMove):
     def is_decisive(self) -> Bool:
         return self._decisive
 
-    def set_decisive(self):
+    def set_decisive(mut self):
         self._decisive = True
 
     def write_to[W: Writer](self, mut writer: W):
@@ -54,7 +54,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
-            last_move.move._terminal = True
+            last_move.move._decisive = True
             return [last_move]
         return moves^
 
@@ -71,8 +71,6 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
             moves.append({{place.place}, board_score + score / 2})
 
     def play_move(mut self, move: Move):
-        debug_assert(not move.is_terminal())
-
         self.board.place_stone(move._place, self.turn)
         self.turn = 1 - self.turn
         self.plies += 1
