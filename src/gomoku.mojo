@@ -7,31 +7,34 @@ comptime values: List[Score] = [0, 1, 5, 25, 125, 1250]
 
 struct Move(TMove):
     var _place: Place
-    var _terminal: Bool
+    var _decisive: Bool
 
     def __init__(out self):
         self = Self(Place(), False)
 
     def __init__(out self, place: Place, terminal: Bool = False):
         self._place = place
-        self._terminal = terminal
+        self._decisive = terminal
 
     @implicit
     def __init__(out self, move: String) raises:
         self._place = Place(String(move))
-        self._terminal = False
+        self._decisive = False
 
     def __eq__(self: Self, other: Self) -> Bool:
-        return self._place == other._place and self._terminal == other._terminal
+        return self._place == other._place and self._decisive == other._decisive
 
-    def is_terminal(self) -> Bool:
-        return self._terminal
+    def is_decisive(self) -> Bool:
+        return self._decisive
+
+    def set_decisive(self):
+        self._decisive = True
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(self._place)
-        if self._terminal:
-            writer.write(" [terminal]")
-
+        if self._decisive:
+            writer.write("[", self._place, "]")
+        else:
+            writer.write(self._place)
 
 
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):

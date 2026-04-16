@@ -6,7 +6,7 @@ from std.logger import Logger
 from traits import TTree, TGame, MoveScore, Score
 
 
-struct Mcts[G: TGame, c: Score](TTree):
+struct Mcts[G: TGame, c: Float64](TTree):
     comptime Game = Self.G
     comptime MctsNode = Node[Self.G, Self.c]
 
@@ -26,7 +26,7 @@ struct Mcts[G: TGame, c: Score](TTree):
         for move in moves:
             if move.move.is_terminal() and move.score > 0:
                 return move
-            if move.move.is_terminal() and move.score != 0:
+            if not move.move.is_terminal() or move.score != 0:
                 all_draws = False
         if all_draws:
             return moves[0]
@@ -103,7 +103,7 @@ struct Mcts[G: TGame, c: Score](TTree):
         return result
 
 
-struct Node[G: TGame, c: Score](Copyable, Writable):
+struct Node[G: TGame, c: Float64](Copyable, Writable):
     var move: MoveScore[Self.G.Move]
     var children: List[Self]
     var n_sims: Int32
@@ -134,17 +134,18 @@ struct Node[G: TGame, c: Score](Copyable, Writable):
 
     @staticmethod
     def select_node(nodes: List[Self]) -> Int:
+        debug_assert(len(nodes) > 0)
         var selected_child_idx = -1
-        var maxV = Score.MIN
+        var maxV = Float64.MIN
         for child_idx in range(len(nodes)):
             ref child = nodes[child_idx]
-            if child.move.move.is_terminal():
+            if child.move.move.is_decisive():
                 continue
-            var v = child.move.score - Self.c * Score(sqrt(Float64(child.n_sims)))
+            var v = Float64(child.move.score) - Self.c * sqrt(Float64(child.n_sims))
             if maxV < v:
                 maxV = v
                 selected_child_idx = child_idx
-        assert selected_child_idx >= 0
+        debug_assert(selected_child_idx >= 0)
         return selected_child_idx
 
     def write_to[W: Writer](self, mut writer: W):

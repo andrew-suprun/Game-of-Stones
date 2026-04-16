@@ -25,9 +25,11 @@ trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable,
     def __init__(out self, text: String) raises:
         ...
 
-    def is_terminal(self) -> Bool:
+    def is_decisive(self) -> Bool:
         ...
-
+        
+    def set_decisive(self):
+        ...
 
 @fieldwise_init
 struct MoveScore[Move: TMove](ImplicitlyCopyable, TrivialRegisterPassable, Writable):

@@ -53,7 +53,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         best_move = {self.children[0].move, self.children[0].score}
 
-        var best_score = Score.loss()
+        var best_score = Score.MIN
         if depth == max_depth:
             for child in self.children:
                 best_score = max(best_score, child.score)
@@ -61,6 +61,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         sort[Self.greater](self.children)
 
+        # TODO
         var deeper_best_move: MoveScore[Self.G.Move] = {{}, 0}
         for ref child in self.children:
             if not child.score.is_decisive():
