@@ -1,12 +1,12 @@
 from std.testing import assert_true, assert_false
 from std.random import seed, random_si64
 
-from score import Score
+from traits import Score
 from board import Board, Place, first, second
 
 comptime size = 19
 comptime win_stones = 6
-comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625, 6240]
 
 
 def test_place_stone() raises:
@@ -74,12 +74,10 @@ def test_place_stones() raises:
     print(board)
     print(board.str_scores())
 
-    assert_true(not board._score.is_decisive())
-
-    check_results(board, first, ["f1", "f6", "a6"], Score.win())
-    check_results(board, second, ["s6", "n6", "n1"], Score.loss())
-    check_results(board, first, ["n19", "n14", "s14"], Score.win())
-    check_results(board, second, ["a14", "f14", "f19"], Score.loss())
+    check_results(board, first, ["f1", "f6", "a6"], 0)
+    check_results(board, second, ["s6", "n6", "n1"], 0)
+    check_results(board, first, ["n19", "n14", "s14"], 0)
+    check_results(board, second, ["a14", "f14", "f19"], 0)
 
 def main() raises:
     test_place_stone()

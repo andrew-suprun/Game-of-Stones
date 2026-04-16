@@ -1,13 +1,12 @@
 from std.sys.defines import get_defined_string
 
-from score import Score
-from traits import TGame, TMove, MoveScore
+from traits import TGame, TMove, MoveScore, Score
 from board import Board, Place, PlaceScore, first
 from heap import heap_add
 
 comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 6
-comptime values: List[Float32] = [0, 1, 5, 25, 125, 625]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625]
 
 
 struct Move(TMove):

@@ -1,4 +1,4 @@
-from score import Score
+comptime Score = Int16
 
 
 trait TTree(ImplicitlyDestructible):
@@ -23,6 +23,9 @@ trait TGame(Copyable, Defaultable, Writable):
 
 trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     def __init__(out self, text: String) raises:
+        ...
+
+    def is_terminal() -> Bool:
         ...
 
 
