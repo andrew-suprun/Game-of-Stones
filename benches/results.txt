@@ -5,17 +5,38 @@ List        Int   6.68046336996337
 List        Int16 7.130656126482213
 InlineArray Float 9.434616797900262
 List        Float 9.599827493261456
---- board ---
-update_row  0.023827157134703954
-place_stone 0.14773297080709788
-places      1.2901803336883209
+
+--- board --- Int16
+max_score   3.223998
+copy        0.062153876629976054
+update_row  0.06484962149137792
+place_stone 0.2884984
+places      1.0367541594951233
+
+--- board --- Int32
+max_score   2.1895938069216756
+copy        0.08805240389342248
+update_row  0.04480193188607847
+place_stone 0.2323130777684401
+places      1.0323411188004614
+
+--- board --- Float32
+max_score   2.0786551126516466
+copy        0.08762715947248041
+update_row  0.04470335617553838
+place_stone 0.2315780462592066
+places      1.1626353322528362
+
 --- connect6 ---
 moves    27.85379 msec
+
 --- gomoku ---
 moves  1.9257993596584844 msec
 expand 3.004483 msec
+
 --- heap ---
 heap_add 373.13322222222223
+
 --- logger ---
 bench1 9486.053
 bench2 3.1044300000000005e-07
