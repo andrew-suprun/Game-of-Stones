@@ -18,4 +18,4 @@ def main() raises:
     print(result)
     print(tree.debug_roots())
     print("best move", tree.best_move())
-    assert_true(String(result.move) == "k10")
+    assert_true(String(result) == "k10")

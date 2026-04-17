@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from traits import TTree, TGame, MoveScore, Score
+from traits import TTree, TGame, Score
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
@@ -18,8 +18,8 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.root = {{}, {}}
         self.logger = Logger(prefix="pvs: ")
 
-    def search(mut self, game: Self.G, duration_ms: UInt) -> MoveScore[Self.G.Move]:
-        var best_move: MoveScore[Self.G.Move] = {{}, Score.loss()}
+    def search(mut self, game: Self.G, duration_ms: UInt) -> Self.G.Move:
+        var best_move: Self.G.Move = {}
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
@@ -43,7 +43,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    def _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    def _search(mut self, game: Self.G, mut best_move: Self.G.Move, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 
@@ -69,7 +69,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             if not child.score.is_decisive():
                 child.score = Score()
 
-        var deeper_best_move: MoveScore[Self.G.Move] = {{}, 0}
+        var deeper_best_move: Self.G.Move = {}
         var idx = 0
 
         # Full window search

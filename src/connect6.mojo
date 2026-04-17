@@ -1,6 +1,6 @@
 from std.sys.defines import get_defined_string
 
-from traits import TGame, TMove, MoveScore, Score
+from traits import TGame, TMove, Score
 from board import Board, Place, PlaceScore, first
 from heap import heap_add
 
@@ -54,8 +54,8 @@ struct Move(TMove):
             writer.write(self._p1)
 
 
-def less(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
-    return a.score < b.score
+def less(a: Move, b: Move) -> Bool:
+    return a.score() < b.score()
 
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
@@ -70,8 +70,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.turn = 0
         self.plies = 0
 
-    def moves(self) -> List[MoveScore[Move]]:
-        var moves = List[MoveScore[Move]](capacity=Self.max_moves)
+    def moves(self) -> List[Move]:
+        var moves = List[Move](capacity=Self.max_moves)
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
@@ -80,7 +80,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             return [last_move]
         return moves^
 
-    def _moves(self, mut moves: List[MoveScore[Move]]):
+    def _moves(self, mut moves: List[Move]):
         var places = List[PlaceScore](capacity=Self.max_places)
         self.board.places(self.turn, places)
         if len(places) <= 1:

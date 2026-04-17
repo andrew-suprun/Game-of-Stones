@@ -1,12 +1,11 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from traits import TTree, TGame, MoveScore, Score
+from traits import TTree, TGame, Score
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):
     comptime Game = Self.G
-    comptime MoveScore = MoveScore[Self.G.Move]
 
     var root: AlphaBetaNode[Self.G]
     var logger: Logger[]
@@ -19,8 +18,8 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         self.root = AlphaBetaNode[Self.G]({}, {})
         self.logger = Logger(prefix="abs: ")
 
-    def search(mut self, game: Self.G, duration_ms: UInt) -> Self.MoveScore:
-        var best_move: Self.MoveScore = {{}, Score.MIN}
+    def search(mut self, game: Self.G, duration_ms: UInt) -> Self.Move:
+        var best_move: Self.Move = {}
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
@@ -44,7 +43,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    def _search(mut self, game: Self.G, mut best_move: MoveScore[Self.G.Move], var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    def _search(mut self, game: Self.G, mut best_move: Self.G.Move, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 
@@ -62,7 +61,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         sort[Self.greater](self.children)
 
         # TODO
-        var deeper_best_move: MoveScore[Self.G.Move] = {{}, 0}
+        var deeper_best_move: Self.G.Move = {}
         for ref child in self.children:
             if not child.score.is_decisive():
                 child.score = Score()

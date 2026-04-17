@@ -1,0 +1,1 @@
+* var _scores: InlineArray[SIMD[Score.dtype, Self.size * Self.size], 2]
