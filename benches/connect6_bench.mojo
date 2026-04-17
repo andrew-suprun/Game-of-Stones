@@ -10,8 +10,8 @@ comptime C6 = Connect6[size=19, max_moves=20, max_places=12, max_plies=100]
 def bench_moves():
     var game = C6()
     try:
-        _ = game.play_move("j10")
-        _ = game.play_move("i9-i10")
+        game.play_move("j10")
+        game.play_move("i9-i10")
     except:
         pass
     for _ in range(1000):

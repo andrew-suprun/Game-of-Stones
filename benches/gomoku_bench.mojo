@@ -10,8 +10,8 @@ comptime G = Gomoku[size=19, max_places=32, max_plies=100]
 def bench_moves():
     var game = G()
     try:
-        _ = game.play_move({"j10"})
-        _ = game.play_move({"i9"})
+        game.play_move({"j10"})
+        game.play_move({"i9"})
     except:
         pass
     for _ in range(1000):
@@ -23,8 +23,8 @@ def bench_expand():
     var game = G()
     var tree = Mcts[G, 8]()
     try:
-        _ = game.play_move({"j10"})
-        _ = game.play_move({"i9"})
+        game.play_move({"j10"})
+        game.play_move({"i9"})
     except:
         pass
     for _ in range(1000):

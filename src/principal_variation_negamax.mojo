@@ -87,7 +87,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 continue
 
             var g = game.copy()
-            _ = g.play_move(child.move)
+            g.play_move(child.move)
 
             child.score = -child._search(g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
             if not child.score.is_set():
@@ -121,7 +121,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 continue
 
             var g = game.copy()
-            _ = g.play_move(child.move)
+            g.play_move(child.move)
 
             child.score = -child._search(g, deeper_best_move, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
 

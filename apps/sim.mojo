@@ -5,25 +5,25 @@ from std.reflection import get_base_type_name
 from traits import TTree
 from board import Place, first
 from gomoku import Gomoku
-from connect6 import Connect6
+# from connect6 import Connect6
 from mcts import Mcts
-from alpha_beta_negamax import AlphaBetaNegamax
-from principal_variation_negamax import PrincipalVariationNegamax
+# from alpha_beta_negamax import AlphaBetaNegamax
+# from principal_variation_negamax import PrincipalVariationNegamax
 
-# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 
-comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+# comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+# comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 # comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 
-comptime Tree1 = PrincipalVariationNegamax[Game1]
+# comptime Tree1 = PrincipalVariationNegamax[Game1]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
 
-# comptime Tree1 = Mcts[Game1, 4]
-comptime Tree2 = Mcts[Game2, 4]
+comptime Tree1 = Mcts[Game1, .5]
+comptime Tree2 = Mcts[Game2, 1]
 
 comptime seed_value = 7
 
@@ -32,7 +32,7 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("pvs", 250, "mcts", 250, openings())
+    run[Tree1, Tree2]("c=0.5", 250, "c=1.0", 250, openings())
 
 
 def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
@@ -91,8 +91,8 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
     var plies = 1
 
     for move in opening:
-        _ = g1.play_move({move})
-        _ = g2.play_move({move})
+        g1.play_move({move})
+        g2.play_move({move})
         plies += 1
 
     # print("opening:", end="")
@@ -108,7 +108,6 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
         if turn == first:
             var result = t1.search(g1, time1)
             move = String(result.move)
-            score = result.score
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
@@ -119,10 +118,11 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
                 Float64(perf_counter_ns() - start) / 1_000_000_000,
                 sep="",
             )
+            if result.move.is_decisive():
+                return name1 if result.score > 0 else "draw"
         else:
             var result = t2.search(g2, time2)
             move = String(result.move)
-            score = -result.score
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
@@ -133,23 +133,15 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
                 Float64(perf_counter_ns() - start) / 1_000_000_000,
                 sep="",
             )
-        var score = g1.play_move({move})
-        _ = g2.play_move({move})
+            if result.move.is_decisive():
+                return name2 if result.score > 0 else "draw"
+        g1.play_move({move})
+        g2.play_move({move})
         # print(g1)
         plies += 1
         t1 = T1()
         t2 = T2()
         turn = 1 - turn
-
-        if score.is_decisive():
-            break
-
-    if score.is_win():
-        return name1
-    elif score.is_loss():
-        return name2
-    else:
-        return "draw"
 
 
 def openings() -> List[List[String]]:

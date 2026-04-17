@@ -10,9 +10,9 @@ def main() raises:
     comptime Game = Gomoku[size=19, max_places=8, max_plies=100]
     var game = Game()
     var tree = Mcts[Game, 1]()
-    _ = game.play_move("j10")
-    _ = game.play_move("i9")
-    _ = game.play_move("i10")
+    game.play_move("j10")
+    game.play_move("i9")
+    game.play_move("i10")
     print(game)
     var result = tree.search(game, 1000)
     print(result)

@@ -1,9 +1,13 @@
+from std.sys.defines import get_defined_string
+
 from std.memory import Pointer
 from std.time import perf_counter_ns
 from std.math import sqrt, log
 from std.logger import Logger
 
 from traits import TTree, TGame, MoveScore, Score
+
+comptime assert_mode = get_defined_string["ASSERT", "none"]()
 
 
 struct Mcts[G: TGame, c: Float64](TTree):
@@ -116,13 +120,17 @@ struct Node[G: TGame, c: Float64](Copyable, Writable):
     def _expand(mut self, mut game: Self.G):
         if not self.children:
             var moves = game.moves()
-            assert len(moves) > 0
+            comptime if assert_mode == "all":
+                assert len(moves) > 0
+                for move in moves:
+                    assert (move.score < 1000) ^ move.move.is_decisive()
+
             self.children.reserve(len(moves))
             for move in moves:
                 self.children.append(Self(move))
         else:
             ref selected_child = self.children[self.select_node()]
-            _ = game.play_move(selected_child.move.move)
+            game.play_move(selected_child.move.move)
             selected_child._expand(game)
 
         self.n_sims = 1
@@ -138,7 +146,7 @@ struct Node[G: TGame, c: Float64](Copyable, Writable):
             self.move.move.set_decisive()
 
     def select_node(self) -> Int:
-        debug_assert(len(self.children) > 0)
+        assert len(self.children) > 0
         var selected_child_idx = -1
         var maxV = Float64.MIN
         var log_n = log(Float64(self.n_sims))
@@ -150,7 +158,7 @@ struct Node[G: TGame, c: Float64](Copyable, Writable):
             if maxV < v:
                 maxV = v
                 selected_child_idx = child_idx
-        debug_assert(selected_child_idx >= 0)
+        assert selected_child_idx >= 0
         return selected_child_idx
 
     def write_to[W: Writer](self, mut writer: W):

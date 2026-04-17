@@ -63,8 +63,8 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
     var plies = 1
 
     for move in opening:
-        _ = g1.play_move({move})
-        _ = g2.play_move({move})
+        g1.play_move({move})
+        g2.play_move({move})
         plies += 1
 
     # print("opening:", end="")
@@ -105,16 +105,13 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
                 Float64(perf_counter_ns() - start) / 1_000_000_000,
                 sep="",
             )
-        var score = g1.play_move({move})
-        _ = g2.play_move({move})
+        g1.play_move({move})
+        g2.play_move({move})
         # print(g1)
         plies += 1
         t1 = T1()
         t2 = T2()
         turn = 1 - turn
-
-        if score.is_decisive():
-            break
 
     if score.is_win():
         return name1

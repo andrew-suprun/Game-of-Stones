@@ -63,12 +63,12 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
-            var score = place.score
-            if score > 1000:
+            if place.score > 1000:
                 moves.clear()
-                moves.append({{place.place, True}, score})
+                moves.append({{place.place, terminal=True}, place.score})
                 return
-            moves.append({{place.place}, board_score + score / 2})
+            moves.append({{place.place}, board_score + place.score / 2})
+            assert board_score + place.score / 2 < 1000
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._place, self.turn)
