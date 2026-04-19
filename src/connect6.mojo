@@ -7,24 +7,31 @@ from heap import heap_add
 comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 6
 comptime values: List[Score] = [0, 1, 5, 25, 125, 625, 6250]
-comptime WIN: Score = 5000
 
 
 struct Move(TMove):
     var _p1: Place
     var _p2: Place
+    var _score: Score
+    var _decisive: Bool
     var _terminal: Bool
 
     def __init__(out self):
-        self = Self(Place(), Place(), False)
+        self._p1 = Place()
+        self._p2 = Place()
+        self._score = Score.MIN
+        self._decisive = False
+        self._terminal = False
 
-    def __init__(out self, p1: Place, p2: Place, terminal: Bool = False):
+    def __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool = False):
         if p1 < p2:
             self._p1 = p1
             self._p2 = p2
         else:
             self._p1 = p2
             self._p2 = p1
+        self._score = score
+        self._decisive = terminal
         self._terminal = terminal
 
     @implicit
@@ -42,16 +49,41 @@ struct Move(TMove):
         else:
             self._p1 = p2
             self._p2 = p1
+        self._score = Score.MIN
+        self._decisive = False
         self._terminal = False
 
     def __eq__(self: Self, other: Self) -> Bool:
         return self._p1 == other._p1 and self._p2 == other._p2
+
+    def score(self) -> Score:
+        return self._score
+
+    def set_score(mut self, score: Score):
+        self._score = score
+
+    def is_terminal(self) -> Bool:
+        return self._terminal
+
+    def is_decisive(self) -> Bool:
+        return self._decisive
+
+    def set_decisive(mut self):
+        self._decisive = True
 
     def write_to[W: Writer](self, mut writer: W):
         if self._p1 != self._p2:
             writer.write(self._p1, "-", self._p2)
         else:
             writer.write(self._p1)
+
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.write_to(writer)
+        writer.write(" ", self._score)
+        if self._terminal:
+            writer.write(" T")
+        elif self._decisive:
+            writer.write(" D")
 
 
 def less(a: Move, b: Move) -> Bool:
@@ -60,6 +92,7 @@ def less(a: Move, b: Move) -> Bool:
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
+    comptime Win = 5000
 
     var board: Board[Self.size, values, win_stones]
     var turn: Int
@@ -75,8 +108,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
-            last_move.move._terminal = True
-            last_move.score = 0
+            last_move._decisive = True
+            last_move._terminal = True
+            last_move._score = 0
             return [last_move]
         return moves^
 
@@ -91,9 +125,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         for i in range(len(places) - 1):
             var place1 = places[i].place
             var score1 = places[i].score
-            if score1 >= WIN:
+            if score1 >= Self.Win:
                 moves.clear()
-                moves.append({{place1, place1}, score1})
+                moves.append({place1, place1, score1, terminal=True})
                 return
 
             var board = self.board.copy()
@@ -103,9 +137,9 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                 var place2 = places[j].place
                 var score2 = board.score(place2, self.turn)
 
-                if score2 >= WIN:
+                if score2 >= Self.Win:
                     moves.clear()
-                    moves.append({{place1, place2}, score2})
+                    moves.append({place1, place2, score2, terminal=True})
                     return
 
                 var board2 = board.copy()
@@ -119,11 +153,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
                 var max_opp_score = board2.max_score(1 - self.turn)
                 var move_score = board_score + score1 + score2 - max_opp_score
-                if max_opp_score < WIN:
-                    heap_add[less]({{place1, place2}, move_score}, moves)
+                if max_opp_score < Self.Win:
+                    heap_add[less]({place1, place2, move_score}, moves)
 
         if not moves:
-            moves.append({{places[0].place, places[1].place, True}, -WIN})
+            moves.append({places[0].place, places[1].place, -Self.Win, terminal=True})
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._p1, self.turn)

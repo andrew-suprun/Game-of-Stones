@@ -174,7 +174,7 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
 
         var start = perf_counter_ns()
         var move = self.tree.search(self.game, duration)
-        self.play_move(move.move, move.score, (perf_counter_ns() - start) / 1_000_000)
+        self.play_move(move, move.score(), (perf_counter_ns() - start) / 1_000_000)
         self.draw()
 
     def draw(self) raises:

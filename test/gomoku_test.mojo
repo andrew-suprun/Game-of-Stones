@@ -9,12 +9,12 @@ from gomoku import Gomoku
 def main() raises:
     comptime Game = Gomoku[size=19, max_places=8, max_plies=100]
     var game = Game()
-    var tree = Mcts[Game, 1]()
+    var tree = Mcts[Game, 2]()
     game.play_move("j10")
     game.play_move("i9")
     game.play_move("i10")
     print(game)
-    var result = tree.search(game, 1000)
+    var result = tree.search(game, 100)
     print(result)
     print(tree.debug_roots())
     print("best move", tree.best_move())

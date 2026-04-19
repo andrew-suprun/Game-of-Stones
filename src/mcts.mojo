@@ -101,14 +101,12 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
     var n_sims: Int32
 
     def __init__(out self):
-        self.move = {}
-        self.children = {}
-        self.n_sims = 0
+        self = {{}}
 
     def __init__(out self, move: Self.G.Move):
         self.move = move
         self.children = {}
-        self.n_sims = 0
+        self.n_sims = 1
 
     def _expand(mut self, mut game: Self.G):
         if not self.children:
@@ -122,52 +120,41 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
             game.play_move(selected_child.move)
             selected_child._expand(game)
 
-        # comptime if assert_mode == "all":
-        #     assert len(self.children) > 0
-        #     for child in self.children:
-        #         if (child.score > -1000 and child.score < 1000) ^ not child.is_decisive():
-        #             print("move", child.move, len(child.children))
-        #             for grand_child in child.children:
-        #                 print("    ", grand_child.move)
+        comptime if assert_mode == "all":
+            assert len(self.children) > 0
+            for child in self.children:
+                assert (child.move.score() > -Self.G.Win and child.move.score() < Self.G.Win) ^ child.move.is_decisive()
 
-        #         assert (child.score > -1000 and child.score < 1000) ^ child.is_decisive()
-
-        self.n_sims = 1 # TODO self.n_sims += 1
+        self.n_sims += 1
         var max_score = Score.MIN
         var all_decisive = True
         for ref child in self.children:
-            self.n_sims += child.n_sims # TODO remove
             max_score = max(max_score, child.move.score())
             if child.move.is_decisive():
                 if child.move.score() > 0:
-                    assert child.move.score() > 1000
+                    assert child.move.score() >= Self.G.Win
                     self.move.set_decisive()
             else:
                 all_decisive = False
         self.move.set_score(-max_score)
         if all_decisive:
-            comptime if assert_mode == "all":
-                print("move", self.move)
-                for child in self.children:
-                    print("    ", child.move)
-                assert self.move.score() <= -1000 or self.move.score() >= 1000
             self.move.set_decisive()
-        assert (self.move.score() > -1000 and self.move.score() < 1000) ^ self.move.is_decisive()
+        assert (self.move.score() > -Self.G.Win and self.move.score() < Self.G.Win) ^ self.move.is_decisive()
 
 
 
     def select_node(self) -> Int:
         assert len(self.children) > 0
         var selected_child_idx = -1
-        var maxV = Float64.MIN
+        var max_v = Float64.MIN
         var log_n = log(Float64(self.n_sims))
         for child_idx in range(len(self.children)):
             ref child = self.children[child_idx]
             if child.move.is_decisive():
                 continue
             var v = Float64(child.move.score()) + Self.c * sqrt(log_n/Float64(child.n_sims))
-            if maxV < v:
-                maxV = v
+            if max_v < v:
+                max_v = v
                 selected_child_idx = child_idx
         assert selected_child_idx >= 0
         return selected_child_idx

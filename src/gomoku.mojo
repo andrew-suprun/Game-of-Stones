@@ -50,14 +50,20 @@ struct Move(TMove):
         self._decisive = True
 
     def write_to[W: Writer](self, mut writer: W):
-        if self._decisive:
-            writer.write("[", self._place, "]")
-        else:
-            writer.write(self._place)
+        writer.write(self._place)
+
+    def write_repr_to[W: Writer](self, mut writer: W):
+        writer.write(self._place, " ", self._score)
+        if self._terminal:
+            writer.write(" T")
+        elif self._decisive:
+            writer.write(" D")
+
 
 
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
+    comptime Win = 1000
 
     var board: Board[Self.size, values, win_stones]
     var turn: Int
@@ -74,6 +80,8 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
             last_move._decisive = True
+            last_move._terminal = True
+            last_move._score = 0
             return [last_move]
         return moves^
 
@@ -82,13 +90,13 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
-            if place.score > 1000:
+            if place.score >= Self.Win:
                 moves.clear()
-                moves.append({place.place, terminal=True, place.score})
-                print(">", moves[0])
+                moves.append({place.place, place.score, terminal=True})
                 return
-            moves.append({place.place, board_score + place.score / 2})
-            assert board_score + place.score / 2 < 1000
+            var score = board_score + place.score / 2
+            assert score < Self.Win
+            moves.append({place.place, score})
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._place, self.turn)

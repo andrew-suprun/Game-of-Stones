@@ -13,6 +13,7 @@ trait TTree(ImplicitlyDestructible):
 
 trait TGame(Copyable, Defaultable, Writable):
     comptime Move: TMove
+    comptime Win: Score
 
     def moves(self) -> List[Self.Move]:
         ...
