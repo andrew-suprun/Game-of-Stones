@@ -21,6 +21,7 @@ def test_gomoku() raises:
     print(tree.debug_roots())
     assert_true(String(result[0]) == "k10")
 
+
 def test_connect6() raises:
     comptime Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
     var game = Game()
@@ -32,6 +33,7 @@ def test_connect6() raises:
     print("pv:", len(result), result)
     print(tree.debug_roots())
     assert_true(String(result[0]) == "i11-k9")
+
 
 def main() raises:
     test_gomoku()

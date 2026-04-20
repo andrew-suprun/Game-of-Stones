@@ -28,13 +28,12 @@ trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable,
 
     def score(self) -> Score:
         ...
-        
+
     def set_score(mut self, score: Score):
         ...
 
     def is_decisive(self) -> Bool:
         ...
-        
+
     def set_decisive(mut self):
         ...
-

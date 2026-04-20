@@ -47,5 +47,6 @@ def test_place_stone() raises:
             board.place_stone(Place(xx, yy), turn)
             n += 1
 
+
 def main() raises:
     test_place_stone()

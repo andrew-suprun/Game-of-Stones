@@ -65,11 +65,26 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
             for x in range(Self.size):
                 var h = 1 + min(Self.win_stones - 1, x, Self.size - 1 - x, Self.size - Self.win_stones)
                 var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y, Self.size - Self.win_stones)
-                var t1 = max(0, min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y))
-                var t2 = max(0, min(Self.win_stones, m, 2 * Self.size - 1 - Self.win_stones + 1 - y - x, x + y - Self.win_stones + 1 + 1))
+                var t1 = max(
+                    0,
+                    min(
+                        Self.win_stones,
+                        m,
+                        Self.size - Self.win_stones + 1 - y + x,
+                        Self.size - Self.win_stones + 1 - x + y,
+                    ),
+                )
+                var t2 = max(
+                    0,
+                    min(
+                        Self.win_stones,
+                        m,
+                        2 * Self.size - 1 - Self.win_stones + 1 - y - x,
+                        x + y - Self.win_stones + 1 + 1,
+                    ),
+                )
                 var total = Score(v + h + t1 + t2)
                 self._scores[y * Self.size + x] = [total, total]
-
 
     def place_stone(mut self, place: Place, turn: Int):
         ref value_table = materialize[self.value_table]()
@@ -114,7 +129,9 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
         else:
             self[x, y] = Self.white
 
-    def _update_row(mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]):
+    def _update_row(
+        mut self, start: Int, delta: Int, n: Int, scores: InlineArray[Scores, Self.win_stones * Self.win_stones + 1]
+    ):
         var offset = start
         var stones = Int8(0)
 
@@ -316,7 +333,9 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
         return max_score
 
 
-def _calc_value_table[win_stones: Int, scores: List[Score]]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
+def _calc_value_table[
+    win_stones: Int, scores: List[Score]
+]() -> InlineArray[InlineArray[Scores, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
@@ -342,7 +361,7 @@ def main():
         for color in range(2):
             for y in range(6):
                 for x in range(6):
-                    print(table[side][y*6+x][color], "", end="")
+                    print(table[side][y * 6 + x][color], "", end="")
                 print()
             print()
     print()

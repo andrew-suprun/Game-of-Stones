@@ -10,7 +10,11 @@ def heap_add[T: Copyable & ImplicitlyDestructible, //, less: def(T, T) thin -> B
             if left_child_idx < len(items) and less(items[left_child_idx], item):
                 first = left_child_idx
             var right_child_idx = idx * 2 + 2
-            if right_child_idx < len(items) and less(items[right_child_idx], item) and less(items[right_child_idx], items[left_child_idx]):
+            if (
+                right_child_idx < len(items)
+                and less(items[right_child_idx], item)
+                and less(items[right_child_idx], items[left_child_idx])
+            ):
                 first = right_child_idx
             if idx == first:
                 break

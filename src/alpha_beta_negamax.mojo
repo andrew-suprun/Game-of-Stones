@@ -23,7 +23,9 @@ struct AlphaBetaNegamax[G: TGame](TTree):
             var score = self.root._search(game, best_move, Score.MIN, Score.MAX, 0, depth, deadline, self.logger)
             if not score.is_set():
                 return best_move
-            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", Float64(perf_counter_ns() - start) / 1_000_000_000)
+
+            var time = Float64(perf_counter_ns() - start) / 1_000_000_000
+            self.logger.debug("=== max depth: ", depth, " move:", best_move, " time:", time)
             if best_move.score.is_decisive():
                 return best_move
             depth += 1
@@ -32,7 +34,6 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var pv = List[Self.G.Move]()
         self.root._pv(pv)
         return pv^
-
 
 
 struct AlphaBetaNode[G: TGame](Copyable, Writable):
@@ -45,7 +46,17 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.score = score
         self.children = List[Self]()
 
-    def _search(mut self, game: Self.G, mut best_move: Self.G.Move, var alpha: Score, beta: Score, depth: Int, max_depth: Int, deadline: UInt, logger: Logger) -> Score:
+    def _search(
+        mut self,
+        game: Self.G,
+        mut best_move: Self.G.Move,
+        var alpha: Score,
+        beta: Score,
+        depth: Int,
+        max_depth: Int,
+        deadline: UInt,
+        logger: Logger,
+    ) -> Score:
         if perf_counter_ns() > deadline:
             return Score()
 

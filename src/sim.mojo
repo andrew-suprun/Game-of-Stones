@@ -7,7 +7,9 @@ comptime black = True
 comptime white = False
 
 
-def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
+def run[
+    T1: TTree, T2: TTree
+](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
     print(name1, "-", time1, " vs. ", name2, "-", time2, sep="")
 
     var first_wins = 0
@@ -50,7 +52,9 @@ def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: 
         n += 1
 
 
-def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+def sim_opening[
+    T1: TTree, T2: TTree
+](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     # print()
     # print(name1, "vs.", name2)
     # print()

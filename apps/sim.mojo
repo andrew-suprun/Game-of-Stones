@@ -7,6 +7,7 @@ from board import Place, first
 from gomoku import Gomoku
 from connect6 import Connect6
 from mcts import Mcts
+
 # from alpha_beta_negamax import AlphaBetaNegamax
 # from principal_variation_negamax import PrincipalVariationNegamax
 
@@ -35,7 +36,9 @@ def main() raises:
     run[Tree1, Tree2]("c:24", 250, "c:26", 250, openings())
 
 
-def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
+def run[
+    T1: TTree, T2: TTree
+](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
     print(name1, "-", time1, " vs. ", name2, "-", time2, sep="")
 
     var first_wins = 0
@@ -78,7 +81,9 @@ def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: 
         n += 1
 
 
-def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+def sim_opening[
+    T1: TTree, T2: TTree
+](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     # print()
     print(name1, "vs.", name2)
     print()

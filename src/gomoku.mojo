@@ -20,7 +20,6 @@ struct Move(TMove):
         self._score = score
         self._decisive = terminal
 
-
     @implicit
     def __init__(out self, move: String) raises:
         self._place = Place(String(move))
@@ -52,7 +51,6 @@ struct Move(TMove):
         writer.write(" ", self._score)
 
 
-
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
     comptime Win = 1000
@@ -70,7 +68,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         var moves = List[Move](capacity=Self.max_places)
         self._moves(moves)
         if self.plies == Self.max_plies:
-            var last_move = moves[len(moves)-1]
+            var last_move = moves[len(moves) - 1]
             last_move._decisive = True
             last_move._score = 0
             return [last_move]
@@ -83,7 +81,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         for place in places:
             if place.score >= Self.Win:
                 moves.clear()
-                moves.append({place.place, place.score, terminal=True})
+                moves.append({place.place, place.score, terminal = True})
                 return
             var score = board_score + place.score / 2
             assert score < Self.Win

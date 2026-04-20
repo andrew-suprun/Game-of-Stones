@@ -12,6 +12,7 @@ def bench_max_score():
     for _ in range(1000):
         keep(board.max_score(0))
 
+
 def bench_max_simd():
     var data: SIMD[Score.dtype, 361] = 1
     for _ in range(1000):
