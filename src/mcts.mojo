@@ -21,26 +21,26 @@ struct Mcts[G: TGame, c: Float64](TTree):
         self.root = {{}}
         self.logger = Logger(prefix="mcts: ")
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> Self.G.Move:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var moves = game.moves()
         assert len(moves) > 0
         if len(moves) == 1:
-            return moves[0]
+            return self._pv()
         var all_draws = True
         for move in moves:
             if move.is_decisive() and move.score() > 0:
-                return move
+                return self._pv()
             if not move.is_decisive() or move.score() != 0:
                 all_draws = False
         if all_draws:
-            return moves[0]
+            return self._pv()
         self.root = {{}}
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
             if self.expand(game):
                 break
 
-        return self._best_child()
+        return self._pv()
 
     def expand(mut self, game: Self.G, out done: Bool):
         if self.root.move.is_decisive():
@@ -58,10 +58,12 @@ struct Mcts[G: TGame, c: Float64](TTree):
                 undecided += 1
         return undecided < 2
 
-    def best_move(self) -> Self.G.Move:
-        return self._best_child()
+    def _pv(self) -> List[Self.G.Move]:
+        var pv = List[Self.G.Move]()
+        self.root._pv(pv)
+        return pv^
 
-    def _best_child(self) -> Self.G.Move:
+    def _best_move(self) -> Self.G.Move:
         assert len(self.root.children) > 0
         var has_draw = False
         var last_idx = len(self.root.children)-1
@@ -158,6 +160,14 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
                 selected_child_idx = child_idx
         assert selected_child_idx >= 0
         return selected_child_idx
+
+    def _pv(self, mut pv: List[Self.G.Move]):
+        if not self.children:
+            return
+        
+        ref selected_node = self.children[self.select_node()]
+        pv.append(selected_node.move)
+        selected_node._pv(pv)
 
     def write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, 0)

@@ -14,14 +14,12 @@ struct Move(TMove):
     var _p2: Place
     var _score: Score
     var _decisive: Bool
-    var _terminal: Bool
 
     def __init__(out self):
         self._p1 = Place()
         self._p2 = Place()
         self._score = Score.MIN
         self._decisive = False
-        self._terminal = False
 
     def __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool = False):
         if p1 < p2:
@@ -32,7 +30,6 @@ struct Move(TMove):
             self._p2 = p1
         self._score = score
         self._decisive = terminal
-        self._terminal = terminal
 
     @implicit
     def __init__(out self, move: String) raises:
@@ -51,7 +48,6 @@ struct Move(TMove):
             self._p2 = p1
         self._score = Score.MIN
         self._decisive = False
-        self._terminal = False
 
     def __eq__(self: Self, other: Self) -> Bool:
         return self._p1 == other._p1 and self._p2 == other._p2
@@ -61,9 +57,6 @@ struct Move(TMove):
 
     def set_score(mut self, score: Score):
         self._score = score
-
-    def is_terminal(self) -> Bool:
-        return self._terminal
 
     def is_decisive(self) -> Bool:
         return self._decisive
@@ -78,12 +71,10 @@ struct Move(TMove):
             writer.write(self._p1)
 
     def write_repr_to[W: Writer](self, mut writer: W):
+        if self._decisive:
+            writer.write("#")
         self.write_to(writer)
         writer.write(" ", self._score)
-        if self._terminal:
-            writer.write(" T")
-        elif self._decisive:
-            writer.write(" D")
 
 
 def less(a: Move, b: Move) -> Bool:

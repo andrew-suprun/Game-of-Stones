@@ -9,19 +9,16 @@ struct Move(TMove):
     var _place: Place
     var _score: Score
     var _decisive: Bool
-    var _terminal: Bool
 
     def __init__(out self):
         self._place = Place()
         self._score = Score.MIN
         self._decisive = False
-        self._terminal = False
 
     def __init__(out self, place: Place, score: Score, terminal: Bool = False):
         self._place = place
         self._score = score
         self._decisive = terminal
-        self._terminal = terminal
 
 
     @implicit
@@ -29,7 +26,6 @@ struct Move(TMove):
         self._place = Place(String(move))
         self._score = Score.MIN
         self._decisive = False
-        self._terminal = False
 
     def __eq__(self: Self, other: Self) -> Bool:
         return self._place == other._place and self._decisive == other._decisive
@@ -39,9 +35,6 @@ struct Move(TMove):
 
     def set_score(mut self, score: Score):
         self._score = score
-
-    def is_terminal(self) -> Bool:
-        return self._terminal
 
     def is_decisive(self) -> Bool:
         return self._decisive
@@ -53,11 +46,10 @@ struct Move(TMove):
         writer.write(self._place)
 
     def write_repr_to[W: Writer](self, mut writer: W):
-        writer.write(self._place, " ", self._score)
-        if self._terminal:
-            writer.write(" T")
-        elif self._decisive:
-            writer.write(" D")
+        if self._decisive:
+            writer.write("#")
+        self.write_to(writer)
+        writer.write(" ", self._score)
 
 
 
@@ -80,7 +72,6 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
             last_move._decisive = True
-            last_move._terminal = True
             last_move._score = 0
             return [last_move]
         return moves^

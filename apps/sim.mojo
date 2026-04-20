@@ -119,7 +119,7 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
                 time,
                 sep="",
             )
-            if result.is_terminal():
+            if result.is_final():
                 return name1 if result.score() > 0 else "draw"
         else:
             var result = t2.search(g2, time2)
@@ -135,7 +135,7 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
                 time,
                 sep="",
             )
-            if result.is_terminal():
+            if result.is_final():
                 return name2 if result.score() > 0 else "draw"
         g1.play_move({move})
         g2.play_move({move})

@@ -7,7 +7,7 @@ trait TTree(ImplicitlyDestructible):
     def __init__(out self):
         ...
 
-    def search(mut self, game: Self.Game, max_time_ms: UInt) -> Self.Game.Move:
+    def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[Self.Game.Move]):
         ...
 
 
@@ -32,9 +32,6 @@ trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable,
     def set_score(mut self, score: Score):
         ...
 
-    def is_terminal(self) -> Bool:
-        ...
-        
     def is_decisive(self) -> Bool:
         ...
         
