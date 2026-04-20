@@ -99,9 +99,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves)-1]
-            last_move._decisive = True
-            last_move._terminal = True
             last_move._score = 0
+            last_move._decisive = True
             return [last_move]
         return moves^
 

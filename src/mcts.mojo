@@ -63,29 +63,6 @@ struct Mcts[G: TGame, c: Float64](TTree):
         self.root._pv(pv)
         return pv^
 
-    def _best_move(self) -> Self.G.Move:
-        assert len(self.root.children) > 0
-        var has_draw = False
-        var last_idx = len(self.root.children)-1
-        var draw_node = Pointer(to=self.root.children[last_idx])
-        var best_child = Pointer(to=self.root.children[last_idx])
-        for ref child in self.root.children:
-            if child.move.is_decisive():
-                if child.move.score() < 0:
-                    continue
-                elif child.move.score() > 0:
-                    return child.move
-                elif child.move.score() == 0:
-                    has_draw = True
-                    draw_node = Pointer(to=child)
-                    continue
-
-            if best_child[].n_sims < child.n_sims or best_child[].n_sims == child.n_sims and best_child[].move.score() < child.move.score():
-                best_child = Pointer(to=child)
-        if has_draw and best_child[].move.score() < 0:
-            return draw_node[].move
-        return best_child[].move
-
     def write_to[W: Writer](self, mut writer: W):
         for ref root in self.root.children:
             root.write_to(writer)
@@ -165,9 +142,36 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         if not self.children:
             return
         
-        ref selected_node = self.children[self.select_node()]
-        pv.append(selected_node.move)
-        selected_node._pv(pv)
+        ref best_child = self._best_node()
+        pv.append(best_child.move)
+        best_child._pv(pv)
+
+    def _best_node(self) -> ref [self.children] Self:
+        assert len(self.children) > 0
+        var has_draw = False
+        var draw_node_idx = len(self.children)-1
+        var best_child_idx = 0
+        for idx in range(len(self.children)):
+            ref child = self.children[idx]
+            if child.move.is_decisive():
+                if child.move.score() < 0:
+                    continue
+                elif child.move.score() > 0:
+                    return child
+                elif child.move.score() == 0:
+                    has_draw = True
+                    draw_node_idx = idx
+                    continue
+
+            ref best_child = self.children[best_child_idx] 
+            if best_child.n_sims < child.n_sims or best_child.n_sims == child.n_sims and best_child.move.score() < child.move.score():
+                best_child_idx = idx
+
+        ref best_child = self.children[best_child_idx] 
+        if has_draw and best_child.move.score() < 0:
+            return self.children[draw_node_idx]
+
+        return self.children[best_child_idx]
 
     def write_to[W: Writer](self, mut writer: W):
         self.write_to(writer, 0)
