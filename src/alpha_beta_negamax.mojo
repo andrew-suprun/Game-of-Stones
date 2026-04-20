@@ -10,15 +10,11 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     var root: AlphaBetaNode[Self.G]
     var logger: Logger[]
 
-    @staticmethod
-    def name() -> StaticString:
-        return "Alpha-Beta Negamax With Memory"
-
     def __init__(out self):
         self.root = AlphaBetaNode[Self.G]({}, {})
         self.logger = Logger(prefix="abs: ")
 
-    def search(mut self, game: Self.G, duration_ms: UInt) -> Self.Move:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var best_move: Self.Move = {}
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
@@ -31,6 +27,12 @@ struct AlphaBetaNegamax[G: TGame](TTree):
             if best_move.score.is_decisive():
                 return best_move
             depth += 1
+
+    def _pv(self) -> List[Self.G.Move]:
+        var pv = List[Self.G.Move]()
+        self.root._pv(pv)
+        return pv^
+
 
 
 struct AlphaBetaNode[G: TGame](Copyable, Writable):

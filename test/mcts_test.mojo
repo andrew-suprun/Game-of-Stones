@@ -3,6 +3,7 @@ from std.time import perf_counter_ns
 
 from traits import Score
 from mcts import Mcts
+from alpha_beta_negamax import AlphaBetaNegamax
 from gomoku import Gomoku
 from connect6 import Connect6
 
