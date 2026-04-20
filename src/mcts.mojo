@@ -102,7 +102,9 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         comptime if assert_mode == "all":
             assert len(self.children) > 0
             for child in self.children:
-                assert (child.move.score() > -Self.G.Win and child.move.score() < Self.G.Win) ^ child.move.is_decisive()
+                assert (
+                    child.move.score() > -Self.G.Win and child.move.score() < Self.G.Win
+                ) ^ child.move.is_decisive()
 
         self.n_sims += 1
         var max_score = Score.MIN

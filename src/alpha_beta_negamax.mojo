@@ -83,7 +83,9 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
             var g = game.copy()
             if not child.score.is_decisive():
                 g.play_move(child.move)
-                child.score = -child._search(g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                child.score = -child._search(
+                    g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger
+                )
 
             if not child.score.is_set():
                 return Score()

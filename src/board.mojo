@@ -110,7 +110,8 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
 
         var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y)
 
-        n = min(Self.win_stones, m, Self.size - Self.win_stones + 1 - y + x, Self.size - Self.win_stones + 1 - x + y)
+        var upper_bound = Self.size - Self.win_stones + 1
+        n = min(Self.win_stones, m, upper_bound - y + x, upper_bound - x + y)
         if n > 0:
             var mn = min(x, y, Self.win_stones - 1)
             var x_start = x - mn
