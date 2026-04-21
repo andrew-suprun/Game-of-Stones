@@ -147,7 +147,6 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         best_child._pv(pv)
 
     def _best_node(self) -> ref[self.children] Self:
-        assert len(self.children) > 0
         var has_draw = False
         var draw_node_idx = len(self.children) - 1
         var best_child_idx = 0
@@ -171,8 +170,7 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
             ):
                 best_child_idx = idx
 
-        ref best_child = self.children[best_child_idx]
-        if has_draw and best_child.move.score() < 0:
+        if has_draw and self.children[best_child_idx].move.score() < 0:
             return self.children[draw_node_idx]
 
         return self.children[best_child_idx]
