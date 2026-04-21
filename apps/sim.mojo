@@ -7,8 +7,8 @@ from board import Place, first
 from gomoku import Gomoku
 from connect6 import Connect6
 from mcts import Mcts
-
-# from alpha_beta_negamax import AlphaBetaNegamax
+# 
+from alpha_beta_negamax import AlphaBetaNegamax
 # from principal_variation_negamax import PrincipalVariationNegamax
 
 # comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
@@ -17,13 +17,13 @@ from mcts import Mcts
 comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
-# comptime Tree1 = AlphaBetaNegamax[Game1]
+comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 
 # comptime Tree1 = PrincipalVariationNegamax[Game1]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
 
-comptime Tree1 = Mcts[Game1, 24]
+# comptime Tree1 = Mcts[Game1, 26]
 comptime Tree2 = Mcts[Game2, 26]
 
 comptime seed_value = 3
@@ -33,7 +33,7 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("c:24", 250, "c:26", 250, openings())
+    run[Tree1, Tree2]("abs", 250, "mcts", 250, openings())
 
 
 def run[
@@ -112,36 +112,40 @@ def sim_opening[
         var move: String
         if turn == first:
             var result = t1.search(g1, time1)
-            var time = Float64(Int(Float64(perf_counter_ns() - start) / 1_000_000)) / 1000
-            move = String(result)
+            assert len(result) > 0, t"{get_base_type_name[T1]()}.search() returned no results"
+            move = String(result[0])
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
                 name1.ascii_ljust(name_size),
-                String(result).ascii_ljust(8),
-                String(result.score()).ascii_rjust(5),
+                String(result[0]).ascii_ljust(8),
+                String(result[0].score()).ascii_rjust(5),
                 "  ",
-                time,
+                Float64(Int(Float64(perf_counter_ns() - start) / 1_000_000)) / 1000,
+                "  ",
+                result,
                 sep="",
             )
-            if result.is_final():
-                return name1 if result.score() > 0 else "draw"
+            if len(result) == 1 and result[0].is_decisive():
+                return name1 if result[0].score() > 0 else name2 if result[0].score() < 0 else "draw"
         else:
             var result = t2.search(g2, time2)
-            var time = Float64(Int(Float64(perf_counter_ns() - start) / 1_000_000)) / 1000
-            move = String(result)
+            assert len(result) > 0, t"{get_base_type_name[T2]()}.search() returned no results"
+            move = String(result[0])
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
                 name2.ascii_ljust(name_size),
-                String(result).ascii_ljust(8),
-                String(result.score()).ascii_rjust(5),
+                String(result[0]).ascii_ljust(8),
+                String(result[0].score()).ascii_rjust(5),
                 "  ",
-                time,
+                Float64(Int(Float64(perf_counter_ns() - start) / 1_000_000)) / 1000,
+                "  ",
+                result,
                 sep="",
             )
-            if result.is_final():
-                return name2 if result.score() > 0 else "draw"
+            if len(result) == 1 and result[0].is_decisive():
+                return name2 if result[0].score() > 0 else name1 if result[0].score() < 0 else "draw"
         g1.play_move({move})
         g2.play_move({move})
         # print(g1)

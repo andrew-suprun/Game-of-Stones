@@ -25,19 +25,28 @@ struct Mcts[G: TGame, c: Float64](TTree):
         var moves = game.moves()
         assert len(moves) > 0
         if len(moves) == 1:
-            return self._pv()
+            return [moves[0]]
         var all_draws = True
         for move in moves:
             if move.is_decisive() and move.score() > 0:
                 return self._pv()
             if not move.is_decisive() or move.score() != 0:
                 all_draws = False
+
         if all_draws:
             return self._pv()
+
         self.root = {{}}
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
             if self.expand(game):
+                break
+            assert len(self.root.children) > 0
+            var n_children = 0
+            for ref child in self.root.children:
+                if not child.move.is_decisive():
+                    n_children += 1
+            if n_children == 1:
                 break
 
         return self._pv()

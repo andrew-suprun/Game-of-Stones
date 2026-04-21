@@ -19,7 +19,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var deadline = perf_counter_ns() + UInt(1_000_000) * max_time_ms
         var start = perf_counter_ns()
         while True:
-            var _, done = self.root._search(game, Score.MIN, Score.MAX, 0, depth, deadline, self.logger)
+            var _, done = self.root._search(game, -Self.G.Win, Self.G.Win, 0, depth, deadline, self.logger)
             if done:
                 return self._pv()
 
@@ -52,12 +52,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         logger: Logger,
     ) -> Tuple[Score, Bool]:
         if perf_counter_ns() > deadline:
-            return (Score.MIN, True)
+            return (-Self.G.Win, True)
 
         if not self.children:
             self.children = [Self(move) for move in game.moves()]
 
-        var best_score = Score.MIN
+        var best_score = -Self.G.Win
         if depth == max_depth:
             for child in self.children:
                 best_score = max(best_score, child.move.score())
@@ -67,7 +67,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         for ref child in self.children[1:]:
             if not child.move.is_decisive():
-                child.move.set_score(Score.MIN)
+                child.move.set_score(-Self.G.Win)
 
         for ref child in self.children:
             var g = game.copy()
