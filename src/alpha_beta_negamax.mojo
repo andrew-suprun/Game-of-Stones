@@ -24,7 +24,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
                 return self._pv()
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
-            self.logger.debug("=== max depth: ", depth, " move:", "TODO: best_move", " time:", time)
+            self.logger.debug("=== max depth: ", depth, " move:", repr(self._pv()[0]), " time:", time)
             depth += 1
 
     def _pv(self) -> List[Self.G.Move]:
@@ -71,19 +71,18 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         for ref child in self.children:
             var g = game.copy()
-            var done = False
             if not child.move.is_decisive():
                 g.play_move(child.move)
                 score, done = child._search(
                     g, -beta, -alpha, depth + 1, max_depth, deadline, logger
                 )
-                child.move.set_score(-score)
+                if done:
+                    return (best_score, True)
+                else:
+                    child.move.set_score(-score)
 
             if child.move.score() > best_score:
                 best_score = child.move.score()
-
-            if done:
-                return (best_score, True)
 
             if best_score > beta or best_score > Self.G.Win:
                 return (best_score, False)
