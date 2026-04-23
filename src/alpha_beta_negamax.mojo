@@ -1,30 +1,43 @@
 from std.time import perf_counter_ns
-from std.logger import Logger
+from std.sys.defines import get_defined_string
 
 from traits import TTree, TGame, Score
+from logging import debug
+
+comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):
     comptime Game = Self.G
 
     var root: AlphaBetaNode[Self.G]
-    var logger: Logger[]
 
     def __init__(out self):
         self.root = AlphaBetaNode[Self.G]({})
-        self.logger = Logger(prefix="abs: ")
 
     def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var depth = 1
         var deadline = perf_counter_ns() + UInt(1_000_000) * max_time_ms
         var start = perf_counter_ns()
         while True:
-            var _, done = self.root._search(game, -Self.G.Win, Self.G.Win, 0, depth, deadline, self.logger)
-            if done:
+            if self.root._search(game, -Self.G.Win, Self.G.Win, 0, depth, deadline):
                 return self._pv()
 
-            var time = Float64(perf_counter_ns() - start) / 1_000_000_000
-            self.logger.debug("=== max depth: ", depth, " move:", repr(self._pv()[0]), " time:", time)
+            comptime if logging_level == "DEBUG" or logging_level == "TRACE":
+                var time = Float64(perf_counter_ns() - start) / 1_000_000_000
+                print("=== max depth: ", depth, " move:", repr(self._pv()[0]), " time:", time)
+
+            var pv = self._pv()
+            if pv[0].is_decisive():
+                return pv^
+
+            var n_undecided = 0
+            for child in self.root.children:
+                if not child.move.is_decisive():
+                    n_undecided += 1
+
+            if n_undecided == 1:
+                return pv^
             depth += 1
 
     def _pv(self) -> List[Self.G.Move]:
@@ -49,19 +62,37 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         depth: Int,
         max_depth: Int,
         deadline: UInt,
-        logger: Logger,
-    ) -> Tuple[Score, Bool]:
+        out done: Bool,
+    ):
+        # comptime if logging_level == "TRACE":
+        #     print("   "*depth, t">> {depth} [{alpha} : {beta}] self: {self.move}")
+
         if perf_counter_ns() > deadline:
-            return (-Self.G.Win, True)
+            done = True            
+            # comptime if logging_level == "TRACE":
+            #     print("   "*depth, t"<< {depth} [{alpha} : {beta}]: time out: self: {repr(self.move)}")
+            return
+
+        done = False
 
         if not self.children:
-            self.children = [Self(move) for move in game.moves()]
+            var moves = game.moves()
+            assert len(moves) > 0
+            self.children = [Self(move) for move in moves]
 
-        var best_score = -Self.G.Win
+        var child_best_score = -Self.G.Win
+        var all_decisive = True
         if depth == max_depth:
-            for child in self.children:
-                best_score = max(best_score, child.move.score())
-            return (best_score, False)
+            for ref child in self.children:
+                child_best_score = max(child_best_score, child.move.score())
+                if not child.move.is_decisive():
+                    all_decisive = False
+            self.move.set_score(-child_best_score)
+            if all_decisive:
+                self.move.set_decisive()
+            # comptime if logging_level == "TRACE":
+            #     print("   "*depth, t"<< {depth} [{alpha} : {beta}]: max depth: self: {repr(self.move)}")
+            return
 
         sort[Self.greater](self.children)
 
@@ -69,27 +100,54 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
             if not child.move.is_decisive():
                 child.move.set_score(-Self.G.Win)
 
+        comptime if logging_level == "TRACE":
+            print("   "*depth, t"== {depth} [{alpha} : {beta}] self: {self.move}")
+
         for ref child in self.children:
-            var g = game.copy()
             if not child.move.is_decisive():
+                var g = game.copy()
                 g.play_move(child.move)
-                score, done = child._search(
-                    g, -beta, -alpha, depth + 1, max_depth, deadline, logger
-                )
+                comptime if logging_level == "TRACE":
+                    print("   "*depth, t">> {depth} [{alpha} : {beta}] self: {self.move} child: {child.move}")
+                done = child._search(g, -beta, -alpha, depth + 1, max_depth, deadline)
+                child_best_score = max(child_best_score, child.move.score())
+                comptime if logging_level == "TRACE":
+                    print("   "*depth, t"<< {depth} [{alpha} : {beta}] self: {self.move} child: {repr(child.move)}")
                 if done:
-                    return (best_score, True)
-                else:
-                    child.move.set_score(-score)
+                    break
 
-            if child.move.score() > best_score:
-                best_score = child.move.score()
+            if alpha < child_best_score:
+                alpha = child_best_score
+                comptime if logging_level == "TRACE":
+                    print("   "*depth, t"== {depth} new alpha: {alpha} self: {self.move}")
 
-            if best_score > beta or best_score > Self.G.Win:
-                return (best_score, False)
+            if alpha >= beta or alpha >= Self.G.Win:
+                comptime if logging_level == "TRACE":
+                    print("   "*depth, t"== {depth} [{alpha} : {beta}] beta cut: self: {self.move}")
+                break
 
-            alpha = max(alpha, child.move.score())
+        self.move.set_score(-child_best_score)
+        for ref child in self.children:
+            comptime if logging_level == "DEBUG" or logging_level == "TRACE":
+                assert child.move.is_decisive() ^ (child.move.score() <= -Self.G.Win or child.move.score() >= Self.G.Win)
+            if child.move.is_decisive():
+                if child.move.score() > 0:
+                    self.move.set_decisive()
+                    break
+            else:
+                all_decisive = False
 
-        return (best_score, False)
+        if all_decisive:
+            self.move.set_decisive()
+
+        comptime if logging_level == "TRACE":
+            print("   "*depth, t"++ {depth}: self: {repr(self.move)}")
+            for child in self.children:
+                print("   "*depth, t"++ {depth}: child: {repr(child.move)}")
+
+        comptime if logging_level == "DEBUG" or logging_level == "TRACE":
+            assert self.move.is_decisive() ^ (self.move.score() <= -Self.G.Win or self.move.score() >= Self.G.Win)
+
 
     def _pv(self, mut pv: List[Self.G.Move]):
         if not self.children:
@@ -118,7 +176,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.write_to(writer, depth=0)
 
     def write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self.move, " ", self.move.score(), "\n")
+        writer.write("|   " * depth, repr(self.move), "\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_to(writer, depth + 1)

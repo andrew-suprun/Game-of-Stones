@@ -36,7 +36,7 @@ struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writabl
 
 
 @fieldwise_init
-struct PlaceScore(TrivialRegisterPassable):
+struct PlaceScore(TrivialRegisterPassable, Writable):
     var place: Place
     var score: Score
 

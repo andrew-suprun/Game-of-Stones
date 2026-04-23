@@ -4,15 +4,15 @@ from std.logger import Logger
 from traits import TTree, TGame, Score
 
 
-struct PrincipalVariationNegamax[G: TGame](TTree):
+struct AlphaBetaNegamax[G: TGame](TTree):
     comptime Game = Self.G
 
-    var root: PrincipalVariationNode[Self.G]
+    var root: AlphaBetaNode[Self.G]
     var logger: Logger[]
 
     def __init__(out self):
-        self.root = {{}}
-        self.logger = Logger(prefix="pvs: ")
+        self.root = AlphaBetaNode[Self.G]({})
+        self.logger = Logger(prefix="abs3: ")
 
     def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var depth = 1
@@ -24,7 +24,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 return self._pv()
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
-            self.logger.debug("=== max depth: ", depth, " move:", repr(self._pv()[0]), " time:", time)
+            self.logger.trace("=== max depth: ", depth, " move:", repr(self._pv()[0]), " time:", time)
             depth += 1
 
     def _pv(self) -> List[Self.G.Move]:
@@ -33,7 +33,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         return pv^
 
 
-struct PrincipalVariationNode[G: TGame](Copyable, Writable):
+struct AlphaBetaNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
     var children: List[Self]
 
@@ -71,88 +71,23 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             if not child.move.is_decisive():
                 child.move.set_score(-Self.G.Win)
 
-        var idx = 0
-
-        # Full window search
-        while idx < len(self.children):
-            ref child = self.children[idx]
-
-            if child.move.is_decisive():
-                if best_score < child.move.score():
-                    best_score = child.move.score()
-                    alpha = max(alpha, child.move.score())
-                if child.move.score() >= beta:
-                    return (best_score, False)
-
-                idx += 1
-                continue
-
+        for ref child in self.children:
             var g = game.copy()
-            g.play_move(child.move)
-
-            var score, done = child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
-            if done:
-                return (best_score, True)
-            else:
-                child.move.set_score(-score)
-
-            if best_score < child.move.score():
-                best_score = child.move.score()
-                alpha = max(alpha, best_score)
-
-            if best_score >= beta:
-                return (best_score, False)
-
-            idx += 1
-
-            if child.move.score() >= alpha:
-                break
-
-        # Scout search
-        while idx < len(self.children):
-            ref child = self.children[idx]
-
-            if child.move.is_decisive():
-                if best_score < child.move.score():
-                    best_score = child.move.score()
-                    alpha = max(alpha, best_score)
-                if child.move.score() >= beta:
-                    return (best_score, False)
-
-                idx += 1
-                continue
-
-            var g = game.copy()
-            g.play_move(child.move)
-
-            var score, done = child._search(g, -alpha, -alpha, depth + 1, max_depth, deadline, logger)
-            if done:
-                return (best_score, True)
-            else:
-                child.move.set_score(-score)
-
-            if best_score < child.move.score():
-                best_score = child.move.score()
-
-            if child.move.score() >= beta:
-                return (best_score, False)
-
-            if best_score > alpha and depth < max_depth - 1:
-                alpha = best_score
+            if not child.move.is_decisive():
+                g.play_move(child.move)
                 var score, done = child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
                 if done:
                     return (best_score, True)
                 else:
                     child.move.set_score(-score)
 
-                if best_score < child.move.score():
-                    best_score = child.move.score()
-                    alpha = max(alpha, best_score)
+            if child.move.score() > best_score:
+                best_score = child.move.score()
 
-                if child.move.score() >= beta:
-                    return (best_score, False)
+            if best_score >= beta or best_score == Self.G.Win:
+                return (best_score, False)
 
-            idx += 1
+            alpha = max(alpha, child.move.score())
 
         return (best_score, False)
 

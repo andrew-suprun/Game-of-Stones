@@ -18,7 +18,7 @@ struct Move(TMove):
     def __init__(out self):
         self._p1 = Place()
         self._p2 = Place()
-        self._score = Score.MIN
+        self._score = -Connect6.Win
         self._decisive = False
 
     def __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool = False):
@@ -71,9 +71,9 @@ struct Move(TMove):
             writer.write(self._p1)
 
     def write_repr_to[W: Writer](self, mut writer: W):
+        self.write_to(writer)
         if self._decisive:
             writer.write("#")
-        self.write_to(writer)
         writer.write(" ", self._score)
 
 
