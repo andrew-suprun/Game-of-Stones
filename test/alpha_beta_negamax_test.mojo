@@ -1,6 +1,8 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
+from std.logger import Logger
 
+from traits import Score
 from alpha_beta_negamax import AlphaBetaNode
 from connect6 import Connect6
 
@@ -10,25 +12,20 @@ def test_build_tree() raises:
     var game = Game()
 
     game.play_move("j10")       #1
-    game.play_move("j9-i10")    #2
-    game.play_move("j8-i8")     #3
-    game.play_move("j12-h12")   #4
-    game.play_move("h8-k8")     #5
-    game.play_move("f8-l8")     #6
-    game.play_move("f8-l8")     #6
-    game.play_move("i9-k11")    #7
-    game.play_move("g7-l12")    #8
-    game.play_move("k7-l6")     #9
-    game.play_move("h10-m5")    #10
-    game.play_move("k6-k9")    #11
+    game.play_move("i9-j11")     #2
+    print(game)
 
-    var root = AlphaBetaNode[Game]({})
-    var deadline = perf_counter_ns() + UInt(20_000_000)
+    var root = AlphaBetaNode[Game]({}, 0)
+    var deadline = perf_counter_ns() + UInt(60_000_000_000)
+    var logger = Logger[]()
 
-    for max_depth in range(1, 7):
+    var start = perf_counter_ns()
+    for max_depth in range(1, 20):
+        print(t"==== start max depth {max_depth}")
         done = root._search(game, -Game.Win, Game.Win, 0, max_depth, deadline)
-        print(t"==== max depth {max_depth}; done: {done}")
-        print(root)
+        var time = Float64(perf_counter_ns() - start) / 1_000_000_000
+        print(t"==== end max depth {max_depth}; done: {done} time {time}")
+        # print(root)
 
 def main() raises:
     test_build_tree()

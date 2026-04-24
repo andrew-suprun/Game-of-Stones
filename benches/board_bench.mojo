@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, keep
+from std.benchmark import benchmark, Unit, keep, black_box
 
 from traits import Score
 from board import Board, Place, PlaceScore, first
@@ -13,15 +13,30 @@ def bench_max_score():
         keep(board.max_score(0))
 
 
-def bench_max_simd():
-    var data: SIMD[Score.dtype, 361] = 1
+def bench_max_simd_int16():
+    var simd: SIMD[DType.int16, 361] = 1
+    var data = black_box(simd)
+    for _ in range(1000):
+        keep(data.reduce_max())
+
+
+def bench_max_simd_int32():
+    var simd: SIMD[DType.int32, 361] = 1
+    var data = black_box(simd)
+    for _ in range(1000):
+        keep(data.reduce_max())
+
+
+def bench_max_simd_float32():
+    var simd: SIMD[DType.float32, 361] = 1
+    var data = black_box(simd)
     for _ in range(1000):
         keep(data.reduce_max())
 
 
 def bench_copy():
     var board = Board[19, values, win_stones]()
-    for _ in range(1000):
+    for _ in range(500):
         var b = board.copy()
         keep(b)
         board = b.copy()
@@ -40,8 +55,8 @@ def bench_update_row():
 def bench_place_stone():
     var board = Board[19, values, win_stones]()
     var score = Score(0)
+    var b = board.copy()
     for _ in range(1000):
-        var b = board.copy()
         b.place_stone(Place(9, 9), 0)
         score += board._score
     keep(score)
@@ -58,7 +73,9 @@ def bench_places():
 def main() raises:
     print("--- board ---")
     print("max_score  ", benchmark.run[func2=bench_max_score](0, 1, 3, 6).mean(Unit.ms))
-    print("max_simd   ", benchmark.run[func2=bench_max_simd](0, 1, 3, 6).mean(Unit.ms))
+    print("max_int16  ", benchmark.run[func2=bench_max_simd_int16](0, 1, 3, 6).mean(Unit.ms))
+    print("max_int32  ", benchmark.run[func2=bench_max_simd_int32](0, 1, 3, 6).mean(Unit.ms))
+    print("max_float3 ", benchmark.run[func2=bench_max_simd_float32](0, 1, 3, 6).mean(Unit.ms))
     print("copy       ", benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.ms))
     print("update_row ", benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.ms))
     print("place_stone", benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.ms))
