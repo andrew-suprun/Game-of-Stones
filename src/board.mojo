@@ -1,6 +1,6 @@
 from std.memory import memcpy
 
-from traits import Score
+from score import Score, Win
 from heap import heap_add
 
 comptime first = 0
@@ -340,6 +340,7 @@ def _calc_value_table[
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
+    s.append(Win)
     var v2: List[Scores] = [Scores(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
@@ -354,10 +355,10 @@ def _calc_value_table[
 
 
 def main():
-    var board = Board[19, [0, 1, 5, 25, 125, 625, 6250], 6]()
+    var board = Board[19, [0, 1, 5, 25, 125, 625], 6]()
     print(board)
     print(board.str_scores())
-    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625, 6250]]()
+    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625]]()
     for side in range(2):
         for color in range(2):
             for y in range(6):

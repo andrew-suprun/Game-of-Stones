@@ -21,7 +21,7 @@ trait TGame(Copyable, Defaultable, Writable):
         ...
 
 
-trait TMove(Comparable, Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
+trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     def __init__(out self, text: String) raises:
         ...
 
@@ -30,19 +30,3 @@ trait TMove(Comparable, Defaultable, Equatable, ImplicitlyCopyable, TrivialRegis
 
     def set_score(mut self, score: Score):
         ...
-
-    def is_decisive(self) -> Bool:
-        ...
-
-    def is_win(self) -> Bool:
-        ...
-
-    def is_loss(self) -> Bool:
-        ...
-
-    def is_draw(self) -> Bool:
-        ...
-
-    def set_draw(mut self):
-        ...
-

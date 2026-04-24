@@ -5,8 +5,10 @@ from std.time import perf_counter_ns
 from std.math import sqrt, log
 from std.logger import Logger
 
-from traits import TTree, TGame, Score
+from score import Score, Draw, is_win, is_loss, is_draw, is_decisive
+from traits import TTree, TGame
 
+comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
 comptime assert_mode = get_defined_string["ASSERT", "none"]()
 
 
@@ -24,13 +26,14 @@ struct Mcts[G: TGame, c: Float64](TTree):
     def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var moves = game.moves()
         assert len(moves) > 0
+
         if len(moves) == 1:
             return [moves[0]]
         var all_draws = True
         for move in moves:
-            if move.is_decisive() and move.score() > 0:
+            if is_win(move.score()):
                 return self._pv()
-            if not move.is_decisive() or move.score() != 0:
+            if not is_decisive(move.score()):
                 all_draws = False
 
         if all_draws:
@@ -44,7 +47,7 @@ struct Mcts[G: TGame, c: Float64](TTree):
             assert len(self.root.children) > 0
             var n_children = 0
             for ref child in self.root.children:
-                if not child.move.is_decisive():
+                if not is_decisive(child.move.score()):
                     n_children += 1
             if n_children == 1:
                 break
@@ -52,18 +55,18 @@ struct Mcts[G: TGame, c: Float64](TTree):
         return self._pv()
 
     def expand(mut self, game: Self.G, out done: Bool):
-        if self.root.move.is_decisive():
+        if is_decisive(self.root.move.score()):
             return True
 
         var g = game.copy()
         self.root._expand(g)
 
-        if self.root.move.is_decisive():
+        if is_decisive(self.root.move.score()):
             return True
 
         var undecided = 0
         for ref child in self.root.children:
-            if not child.move.is_decisive():
+            if not is_decisive(child.move.score()):
                 undecided += 1
         return undecided < 2
 
@@ -116,15 +119,16 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         var all_draws = True
         var has_draw = False
         for ref child in self.children:
-            max_score = max(max_score, child.move.score())
-            if child.move.is_draw():
+            var score = child.move.score()
+            max_score = max(max_score, score)
+            if is_draw(score):
                 has_draw = True
-            elif not child.move.is_loss():
+            elif not is_loss(score):
                 all_draws = False
 
         self.move.set_score(-max_score)
         if all_draws and has_draw:
-            self.move.set_draw()
+            self.move.set_score(Draw)
 
     def select_node(self) -> Int:
         assert len(self.children) > 0
@@ -133,7 +137,7 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         var log_n = log(Float64(self.n_sims))
         for child_idx in range(len(self.children)):
             ref child = self.children[child_idx]
-            if child.move.is_decisive():
+            if is_decisive(child.move.score()):
                 continue
             var v = Float64(child.move.score()) + Self.c * sqrt(log_n / Float64(child.n_sims))
             if max_v < v:
@@ -156,15 +160,14 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]
-            if child.move.is_decisive():
-                if child.move.score() < 0:
-                    continue
-                elif child.move.score() > 0:
-                    return child
-                elif child.move.score() == 0:
-                    has_draw = True
-                    draw_node_idx = idx
-                    continue
+            if is_loss(child.move.score()):
+                continue
+            elif is_win(child.move.score()):
+                return child
+            elif is_draw(child.move.score()):
+                has_draw = True
+                draw_node_idx = idx
+                continue
 
             ref best_child = self.children[best_child_idx]
             if (

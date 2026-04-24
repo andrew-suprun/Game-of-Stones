@@ -1,6 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from traits import TMove, Score
+from traits import TMove
 from board import Board, first
 from connect6 import Connect6, Move
 

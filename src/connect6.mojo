@@ -1,6 +1,7 @@
 from std.sys.defines import get_defined_string
 
-from traits import TGame, TMove, Score
+from score import Score
+from traits import TGame, TMove
 from board import Board, Place, PlaceScore, first
 from heap import heap_add
 
@@ -46,33 +47,11 @@ struct Move(TMove):
         self._score = Score.MIN
         self._decisive = False
 
-    def __eq__(self: Self, other: Self) -> Bool:
-        return self._score == other._score
-
-    def __lt__(self: Self, other: Self) -> Bool:
-        return self._score < other._score
-
     def score(self) -> Score:
         return self._score
 
     def set_score(mut self, score: Score):
         self._score = score
-
-    def is_win(self) -> Bool:
-        return isinf(self._score) and self._score > 0
-
-    def is_loss(self) -> Bool:
-        return isinf(self._score) and self._score < 0
-
-    def is_draw(self) -> Bool:
-        return self._score == 0 and FPUtils.get_sign(self._score)
-
-    def set_draw(mut self):
-        self._score = -0.0
-
-    def is_decisive(self) -> Bool:
-        return isinf(self._score) or self.is_draw()
-
 
     def write_to[W: Writer](self, mut writer: W):
         if self._p1 != self._p2:

@@ -1,7 +1,8 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from traits import TTree, TGame, Score
+from score import Score
+from traits import TTree, TGame
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):

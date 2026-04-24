@@ -3,8 +3,9 @@ from std.python import Python, PythonObject
 from std.random import seed, shuffle
 from std.reflection import get_base_type_name
 
+from score import Score
 from board import Place
-from traits import TTree, TGame, Score
+from traits import TTree, TGame
 
 comptime window_height = 800
 comptime window_width = 800
