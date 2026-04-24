@@ -11,10 +11,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
     var root: PrincipalVariationNode[Self.G]
     var logger: Logger[]
 
-    @staticmethod
-    def name() -> StaticString:
-        return "Principal Variation Negamax With Memory"
-
     def __init__(out self):
         self.root = {{}, {}}
         self.logger = Logger(prefix="pvs: ")

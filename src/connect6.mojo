@@ -13,13 +13,11 @@ struct Move(TMove):
     var _p1: Place
     var _p2: Place
     var _score: Score
-    var _decisive: Bool
 
     def __init__(out self):
         self._p1 = Place()
         self._p2 = Place()
-        self._score = -Connect6.Win
-        self._decisive = False
+        self._score = Score.MIN
 
     def __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool = False):
         if p1 < p2:
@@ -29,7 +27,6 @@ struct Move(TMove):
             self._p1 = p2
             self._p2 = p1
         self._score = score
-        self._decisive = terminal
 
     @implicit
     def __init__(out self, move: String) raises:
@@ -50,7 +47,10 @@ struct Move(TMove):
         self._decisive = False
 
     def __eq__(self: Self, other: Self) -> Bool:
-        return self._p1 == other._p1 and self._p2 == other._p2
+        return self._score == other._score
+
+    def __lt__(self: Self, other: Self) -> Bool:
+        return self._score < other._score
 
     def score(self) -> Score:
         return self._score
@@ -58,11 +58,21 @@ struct Move(TMove):
     def set_score(mut self, score: Score):
         self._score = score
 
-    def is_decisive(self) -> Bool:
-        return self._decisive
+    def is_win(self) -> Bool:
+        return isinf(self._score) and self._score > 0
 
-    def set_decisive(mut self):
-        self._decisive = True
+    def is_loss(self) -> Bool:
+        return isinf(self._score) and self._score < 0
+
+    def is_draw(self) -> Bool:
+        return self._score == 0 and FPUtils.get_sign(self._score)
+
+    def set_draw(mut self):
+        self._score = -0.0
+
+    def is_decisive(self) -> Bool:
+        return isinf(self._score) or self.is_draw()
+
 
     def write_to[W: Writer](self, mut writer: W):
         if self._p1 != self._p2:
@@ -83,7 +93,6 @@ def less(a: Move, b: Move) -> Bool:
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
     comptime Move = Move
-    comptime Win = 5000
 
     var board: Board[Self.size, values, win_stones]
     var turn: Int

@@ -13,7 +13,6 @@ trait TTree(ImplicitlyDestructible):
 
 trait TGame(Copyable, Defaultable, Writable):
     comptime Move: TMove
-    comptime Win: Score
 
     def moves(self) -> List[Self.Move]:
         ...
@@ -22,7 +21,7 @@ trait TGame(Copyable, Defaultable, Writable):
         ...
 
 
-trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
+trait TMove(Comparable, Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     def __init__(out self, text: String) raises:
         ...
 
@@ -35,5 +34,15 @@ trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable,
     def is_decisive(self) -> Bool:
         ...
 
-    def set_decisive(mut self):
+    def is_win(self) -> Bool:
         ...
+
+    def is_loss(self) -> Bool:
+        ...
+
+    def is_draw(self) -> Bool:
+        ...
+
+    def set_draw(mut self):
+        ...
+
