@@ -1,6 +1,6 @@
 from score import Score
 
-trait TTree(ImplicitlyDestructible):
+trait TTree(ImplicitlyDestructible, Writable):
     comptime Game: TGame
 
     def __init__(out self):

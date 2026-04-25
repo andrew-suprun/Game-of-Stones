@@ -29,7 +29,7 @@ comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree1 = Mcts[Game1, 26]
 comptime Tree2 = Mcts[Game2, 16]
 
-comptime seed_value = 6
+comptime seed_value = 7
 
 comptime black = True
 comptime white = False
@@ -129,7 +129,7 @@ def sim_opening[
                 end = ""
             )
             for move in pv[1:]:
-                print(t" | {move}", end = "")
+                print(t" {move}", end = "")
             print()
             if len(pv) == 1 and is_decisive(pv[0].score()):
                 return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
@@ -149,7 +149,7 @@ def sim_opening[
                 end = ""
             )
             for move in pv[1:]:
-                print(t" | {move}", end = "")
+                print(t" {move}", end = "")
             print()
             if len(pv) == 1 and is_decisive(pv[0].score()):
                 return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"

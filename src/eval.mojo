@@ -13,5 +13,6 @@ def run[Tree: TTree](opening: String) raises:
     print(game)
 
     var start = perf_counter_ns()
-    var move = tree.search(game, 300_000)
-    print("search result", move, "time.ms", Float64(perf_counter_ns() - start) / 1_000_000)
+    var pv = tree.search(game, 250)
+    print("search result", repr(pv), "time.ms", Float64(perf_counter_ns() - start) / 1_000_000)
+    # print(repr(tree))

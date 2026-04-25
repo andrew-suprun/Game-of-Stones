@@ -2,7 +2,7 @@ from std.sys.defines import get_defined_string
 
 from std.memory import Pointer
 from std.time import perf_counter_ns
-from std.math import sqrt, log
+from std.math import sqrt
 from std.logger import Logger
 
 from score import Score, Draw, is_win, is_loss, is_draw, is_decisive
@@ -128,9 +128,6 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
 
         if all_draws and has_draw:
             self.move.set_score(Draw)
-            for child in self.children:
-                print(t" {repr(child.move)},", end = "")
-            print()
         else:
             self.move.set_score(-max_score if max_score != 0 else max_score)
 
@@ -140,12 +137,11 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         assert len(self.children) > 0
         var selected_child_idx = -1
         var max_v = Float64.MIN
-        var log_n = log(Float64(self.n_sims))
         for child_idx in range(len(self.children)):
             ref child = self.children[child_idx]
             if is_decisive(child.move.score()):
                 continue
-            var v = Float64(child.move.score()) + Self.c * sqrt(log_n / Float64(child.n_sims))
+            var v = Float64(child.move.score()) + Self.c * sqrt(Float64(self.n_sims)) / Float64(child.n_sims)
             if max_v < v:
                 max_v = v
                 selected_child_idx = child_idx

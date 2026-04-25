@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score, NoScore, is_set, is_win, is_loss, is_draw, is_decisive
+from score import Score, NoScore, is_set, is_win, is_loss, is_draw, is_decisive, neg
 from traits import TTree, TGame
 
 
@@ -45,6 +45,9 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         self.root._pv(pv)
         return pv^
 
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.root.write_repr_to(writer)
+
 
 struct AlphaBetaNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
@@ -86,7 +89,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
             var g = game.copy()
             if not is_decisive(child.move.score()):
                 g.play_move(child.move)
-                var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                var score = neg(child._search(g, neg(beta), neg(alpha), depth + 1, max_depth, deadline, logger))
 
                 if is_set(score):
                     child.move.set_score(score)
@@ -136,14 +139,14 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         return self.children[best_child_idx]
 
-    def write_to[W: Writer](self, mut writer: W):
-        self.write_to(writer, depth=0)
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.write_repr_to(writer, depth=0)
 
-    def write_to[W: Writer](self, mut writer: W, depth: Int):
+    def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write("|   " * depth, repr(self.move), "\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
-                child.write_to(writer, depth + 1)
+                child.write_repr_to(writer, depth + 1)
 
     @staticmethod
     @parameter
