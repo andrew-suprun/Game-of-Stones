@@ -1,12 +1,12 @@
 from std.testing import assert_true
 from std.random import seed, random_si64
 
-from traits import Score
+from score import Score, Win, is_win
 from board import Board, Place, first, second
 
 comptime size = 19
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625, 6240]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625, Win]
 
 
 def test_place_stone() raises:
@@ -26,7 +26,7 @@ def test_place_stone() raises:
                         var b = board.copy()
                         b.place_stone(Place(x, y), first)
                         var expected = b.board_value(materialize[values]()) - value
-                        if actual != expected and actual < 5000:
+                        if actual != expected and not is_win(actual):
                             print(Place(x, y), "actual:", actual, "expected:", expected, "n", n)
                             print(board)
                             print(board.str_scores())
@@ -35,7 +35,7 @@ def test_place_stone() raises:
                         b = board.copy()
                         b.place_stone(Place(x, y), second)
                         expected = value - b.board_value(materialize[values]())
-                        if actual != expected and actual < 5000:
+                        if actual != expected and not is_win(actual):
                             print(Place(x, y), "actual:", actual, "expected:", expected, "n", n)
                             print(board)
                             print(board.str_scores())

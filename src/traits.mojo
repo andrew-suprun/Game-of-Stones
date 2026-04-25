@@ -1,5 +1,4 @@
-comptime Score = Float32
-
+from score import Score
 
 trait TTree(ImplicitlyDestructible):
     comptime Game: TGame

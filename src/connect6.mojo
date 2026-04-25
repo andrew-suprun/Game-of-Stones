@@ -7,7 +7,7 @@ from heap import heap_add
 
 comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625, 6250]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625, Win]
 
 
 struct Move(TMove):

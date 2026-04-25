@@ -7,7 +7,7 @@ from board import Board, Place, PlaceScore, first
 
 comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 5
-comptime values: List[Score] = [0, 1, 5, 25, 125]
+comptime values: List[Score] = [0, 1, 5, 25, 125, Win]
 
 
 struct Move(TMove):

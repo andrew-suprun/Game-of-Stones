@@ -1,10 +1,10 @@
 from std.benchmark import benchmark, Unit, keep, black_box
 
-from traits import Score
+from score import Score, Win
 from board import Board, Place, PlaceScore, first
 
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625, 6250]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625, Win]
 
 
 def bench_max_score():

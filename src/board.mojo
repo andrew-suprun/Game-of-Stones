@@ -46,9 +46,9 @@ def less(a: PlaceScore, b: PlaceScore) -> Bool:
 
 
 struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable):
-    comptime empty = Int8(0)
-    comptime black = Int8(1)
-    comptime white = Int8(Self.win_stones)
+    comptime empty = 0
+    comptime black = 1
+    comptime white = Self.win_stones
     comptime value_table = _calc_value_table[Self.win_stones, Self.values]()
 
     var _places: InlineArray[Int8, Self.size * Self.size]
@@ -167,11 +167,11 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                         var place = Place(x, y)
                         heap_add[less](PlaceScore(place, self.score(place, second)), places)
 
-    def __getitem__(self, x: Int, y: Int, out result: Int8):
-        result = self._places[y * Self.size + x]
+    def __getitem__(self, x: Int, y: Int) -> Int:
+        return Int(self._places[y * Self.size + x])
 
-    def __setitem__(mut self, x: Int, y: Int, value: Int8):
-        self._places[y * Self.size + x] = value
+    def __setitem__(mut self, x: Int, y: Int, value: Int):
+        self._places[y * Self.size + x] = Int8(value)
 
     def score(self, place: Place, turn: Int) -> Score:
         return Score(self._scores[Int(place.y) * Self.size + Int(place.x)][turn])
@@ -261,7 +261,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
     def board_value(self, scores: List[Score]) -> Score:
         var value = Score(0)
         for y in range(Self.size):
-            var stones = Int8(0)
+            var stones = 0
             for x in range(Self.win_stones - 1):
                 stones += self[x, y]
             for x in range(Self.size - Self.win_stones + 1):
@@ -270,7 +270,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                 stones -= self[x, y]
 
         for x in range(Self.size):
-            var stones = Int8(0)
+            var stones = 0
             for y in range(Self.win_stones - 1):
                 stones += self[x, y]
             for y in range(Self.size - Self.win_stones + 1):
@@ -279,7 +279,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                 stones -= self[x, y]
 
         for y in range(Self.size - Self.win_stones + 1):
-            var stones = Int8(0)
+            var stones = 0
             for x in range(Self.win_stones - 1):
                 stones += self[x, y + x]
             for x in range(Self.size - Self.win_stones + 1 - y):
@@ -288,7 +288,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                 stones -= self[x, x + y]
 
         for x in range(1, Self.size - Self.win_stones + 1):
-            var stones = Int8(0)
+            var stones = 0
             for y in range(Self.win_stones - 1):
                 stones += self[x + y, y]
             for y in range(Self.size - Self.win_stones + 1 - x):
@@ -297,7 +297,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                 stones -= self[x + y, y]
 
         for y in range(Self.size - Self.win_stones + 1):
-            var stones = Int8(0)
+            var stones = 0
             for x in range(Self.win_stones - 1):
                 stones += self[Self.size - 1 - x, x + y]
             for x in range(Self.size - Self.win_stones + 1 - y):
@@ -306,7 +306,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                 stones -= self[Self.size - 1 - x, x + y]
 
         for x in range(1, Self.size - Self.win_stones + 1):
-            var stones = Int8(0)
+            var stones = 0
             for y in range(Self.win_stones - 1):
                 stones += self[Self.size - 1 - x - y, y]
             for y in range(Self.size - Self.win_stones + 1 - x):
@@ -315,7 +315,7 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
                 stones -= self[Self.size - 1 - x - y, y]
         return value
 
-    def _calc_value(self, stones: Int8, scores: List[Score]) -> Score:
+    def _calc_value(self, stones: Int, scores: List[Score]) -> Score:
         var black = Int(stones) % Self.win_stones
         var white = Int(stones) / Self.win_stones
         if white == 0:
@@ -340,7 +340,6 @@ def _calc_value_table[
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[scores]()
-    s.append(Win)
     var v2: List[Scores] = [Scores(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Scores(s[i + 2] - s[i + 1], -s[i + 1]))
@@ -355,10 +354,10 @@ def _calc_value_table[
 
 
 def main():
-    var board = Board[19, [0, 1, 5, 25, 125, 625], 6]()
+    var board = Board[19, [0, 1, 5, 25, 125, 625, Win], 6]()
     print(board)
     print(board.str_scores())
-    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625]]()
+    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625, Win]]()
     for side in range(2):
         for color in range(2):
             for y in range(6):
