@@ -123,12 +123,19 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
             max_score = max(max_score, score)
             if is_draw(score):
                 has_draw = True
-            elif not is_loss(score):
+            elif not is_decisive(score):
                 all_draws = False
 
-        self.move.set_score(-max_score)
         if all_draws and has_draw:
             self.move.set_score(Draw)
+            print(t"Draw: self = {repr(self.move)}", end = "")
+            for child in self.children:
+                print(t" {repr(child.move)},", end = "")
+            print()
+        else:
+            self.move.set_score(-max_score if max_score != 0 else max_score)
+
+
 
     def select_node(self) -> Int:
         assert len(self.children) > 0
@@ -183,10 +190,15 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         return self.children[best_child_idx]
 
     def write_to[W: Writer](self, mut writer: W):
-        self.write_to(writer, 0)
+        writer.write(self.move)
 
-    def write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write(depth, ": ", "|   " * depth, self.move, " sims: ", self.n_sims, "\n")
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.write_repr_to(writer, 0)
+
+    def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
+        writer.write(depth, ": ", "|   " * depth, repr(self.move), " sims: ", self.n_sims, "\n")
+        if depth >= 2:
+            return
         if self.children:  # unnecessary check to silence LSP warning
             for child in self.children:
-                child.write_to(writer, depth + 1)
+                child.write_repr_to(writer, depth + 1)

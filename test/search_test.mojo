@@ -20,7 +20,7 @@ def test_search[Tree: TTree, moves: List[String], expected: String]() raises:
     comptime for move in moves:
         game.play_move(Tree.Game.Move(move))
     print(game)
-    var result = tree.search(game, 250)
+    var result = tree.search(game, 1000)
     print(t"result: {result[0]}  expected: {expected}  pv: {len(result)} {result}",)
     assert_true(String(result[0]) == expected)
 
