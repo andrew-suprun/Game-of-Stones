@@ -1,7 +1,7 @@
 from std.utils.numerics import FPUtils, isinf
 from std.sys.defines import get_defined_string
 
-from score import Score, NoScore, Draw, is_decisive, score_str
+from score import Score, NoScore, Win, Draw, is_decisive, score_str
 from traits import TGame, TMove
 from board import Board, Place, PlaceScore, first
 

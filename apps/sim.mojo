@@ -2,6 +2,7 @@ from std.random import seed, shuffle
 from std.time import perf_counter_ns
 from std.reflection import get_base_type_name
 
+from score import is_decisive, score_str
 from traits import TTree
 from board import Place, first
 from gomoku import Gomoku
@@ -9,9 +10,7 @@ from connect6 import Connect6
 from mcts import Mcts
 # 
 from alpha_beta_negamax import AlphaBetaNegamax
-from alpha_beta_negamax2 import AlphaBetaNegamax as AlphaBetaNegamax2
-from alpha_beta_negamax3 import AlphaBetaNegamax as AlphaBetaNegamax3
-from principal_variation_negamax import PrincipalVariationNegamax
+# from principal_variation_negamax import PrincipalVariationNegamax
 
 # comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
 # comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
@@ -22,13 +21,13 @@ comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 # comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree1 = AlphaBetaNegamax2[Game1]
 comptime Tree1 = AlphaBetaNegamax[Game1]
-comptime Tree2 = AlphaBetaNegamax2[Game2]
+# comptime Tree2 = AlphaBetaNegamax[Game2]
 
 # comptime Tree1 = PrincipalVariationNegamax[Game1]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
 
 # comptime Tree1 = Mcts[Game1, 26]
-# comptime Tree2 = Mcts[Game2, 26]
+comptime Tree2 = Mcts[Game2, 16]
 
 comptime seed_value = 6
 
@@ -37,7 +36,7 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("abs1", 250, "abs2", 250, openings())
+    run[Tree1, Tree2]("abs", 250, "mcts", 250, openings())
 
 
 def run[
@@ -115,45 +114,45 @@ def sim_opening[
         var name_size = max(name1.byte_length(), name2.byte_length()) + 1
         var move: String
         if turn == first:
-            var result = t1.search(g1, time1)
-            assert len(result) > 0, t"{get_base_type_name[T1]()}.search() returned no results"
-            move = String(result[0])
+            var pv = t1.search(g1, time1)
+            assert len(pv) > 0, t"{get_base_type_name[T1]()}.search() returned no results"
+            move = String(pv[0])
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
                 name1.ascii_ljust(name_size),
-                String(String(result[0]) + ("#" if result[0].is_decisive() else "")).ascii_ljust(8),
-                String(result[0].score()).ascii_rjust(5),
+                String(String(pv[0]) + ("#" if is_decisive(pv[0].score()) else "")).ascii_ljust(8),
+                score_str(pv[0].score()).ascii_rjust(8),
                 "  ",
                 String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
                 sep = "",
                 end = ""
             )
-            for move in result[1:]:
+            for move in pv[1:]:
                 print(t"{move} ", end = "")
             print()
-            if len(result) == 1 and result[0].is_decisive():
-                return name1 if result[0].score() > 0 else name2 if result[0].score() < 0 else "draw"
+            if len(pv) == 1 and is_decisive(pv[0].score()):
+                return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
         else:
-            var result = t2.search(g2, time2)
-            assert len(result) > 0, t"{get_base_type_name[T2]()}.search() returned no results"
-            move = String(result[0])
+            var pv = t2.search(g2, time2)
+            assert len(pv) > 0, t"{get_base_type_name[T2]()}.search() returned no results"
+            move = String(pv[0])
             print(
                 String(plies).ascii_rjust(4),
                 ": ",
                 name2.ascii_ljust(name_size),
-                String(String(result[0]) + ("#" if result[0].is_decisive() else "")).ascii_ljust(8),
-                String(result[0].score()).ascii_rjust(5),
+                String(String(pv[0]) + ("#" if is_decisive(pv[0].score()) else "")).ascii_ljust(8),
+                score_str(pv[0].score()).ascii_rjust(8),
                 "  ",
                 String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
                 sep = "",
                 end = ""
             )
-            for move in result[1:]:
+            for move in pv[1:]:
                 print(t"{move} ", end = "")
             print()
-            if len(result) == 1 and result[0].is_decisive():
-                return name2 if result[0].score() > 0 else name1 if result[0].score() < 0 else "draw"
+            if len(pv) == 1 and is_decisive(pv[0].score()):
+                return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"
         g1.play_move({move})
         g2.play_move({move})
         # print(g1)

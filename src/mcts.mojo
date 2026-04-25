@@ -128,7 +128,6 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
 
         if all_draws and has_draw:
             self.move.set_score(Draw)
-            print(t"Draw: self = {repr(self.move)}", end = "")
             for child in self.children:
                 print(t" {repr(child.move)},", end = "")
             print()
