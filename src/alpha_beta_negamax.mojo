@@ -86,10 +86,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
             var g = game.copy()
             if not is_decisive(child.move.score()):
                 g.play_move(child.move)
-                child.move.set_score(-child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger))
+                var score = -child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
 
-            if not is_set(child.move.score()):
-                return NoScore
+                if is_set(score):
+                    child.move.set_score(score)
+                else:
+                    return NoScore
 
             if child.move.score() > best_score:
                 best_score = child.move.score()
@@ -115,17 +117,18 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]
-            if is_loss(child.move.score()):
+            var score = child.move.score()
+            if is_loss(score) or not is_set(score):
                 continue
-            elif is_win(child.move.score()):
+            elif is_win(score):
                 return child
-            elif is_draw(child.move.score()):
+            elif is_draw(score):
                 has_draw = True
                 draw_node_idx = idx
                 continue
 
             ref best_child = self.children[best_child_idx]
-            if (best_child.move.score() < child.move.score()):
+            if (best_child.move.score() < score):
                 best_child_idx = idx
 
         if has_draw and self.children[best_child_idx].move.score() < 0:

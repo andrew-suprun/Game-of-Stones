@@ -129,7 +129,7 @@ def sim_opening[
                 end = ""
             )
             for move in pv[1:]:
-                print(t"{move} ", end = "")
+                print(t" | {move}", end = "")
             print()
             if len(pv) == 1 and is_decisive(pv[0].score()):
                 return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
@@ -149,7 +149,7 @@ def sim_opening[
                 end = ""
             )
             for move in pv[1:]:
-                print(t"{move} ", end = "")
+                print(t" | {move}", end = "")
             print()
             if len(pv) == 1 and is_decisive(pv[0].score()):
                 return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"
