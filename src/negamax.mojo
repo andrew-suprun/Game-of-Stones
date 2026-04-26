@@ -1,4 +1,4 @@
-from score import Score, Draw, Loss, is_draw
+from score import Score, Draw, Loss, is_draw, is_decisive
 from traits import TGame
 
 
@@ -11,6 +11,8 @@ def search[Game: TGame](game: Game, depth: Int) -> Score:
         return best_score
 
     for move in moves:
+        if is_decisive(move.score()):
+            return move.score()
         var g = game.copy()
         g.play_move(move)
         var child_score = search(g, depth - 1)

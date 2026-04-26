@@ -1,7 +1,12 @@
+from std.sys.defines import get_defined_string
 from std.memory import memcpy
 
 from score import Score, Win
 from heap import heap_add
+
+comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
+comptime TRACE = logging_level == "TRACE"
+comptime DEBUG = logging_level == "DEBUG" or TRACE
 
 comptime first = 0
 comptime second = 1
@@ -97,6 +102,9 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
             self._score += self.score(place, first)
         else:
             self._score -= self.score(place, second)
+
+        if TRACE:
+            print(t"board.place_stone: place={place}, _score={self._score}")
 
         var x_start = max(0, x - Self.win_stones + 1)
         var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
