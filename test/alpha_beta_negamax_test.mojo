@@ -8,11 +8,12 @@ from connect6 import Connect6
 
 comptime Game = Connect6[size=19, max_moves=8, max_places=12, max_plies=100]
 
+
 def test_build_tree() raises:
     var game = Game()
 
-    game.play_move("j10")       #1
-    game.play_move("i9-j11")    #2
+    game.play_move("j10")  # 1
+    game.play_move("i9-j11")  # 2
     print(game)
 
     var root = AlphaBetaNode[Game]({})
@@ -28,6 +29,7 @@ def test_build_tree() raises:
         print(t"depth {max_depth}: score: {pv[0].score()} | time {time} | pv {pv}")
         if not is_set(score):
             break
+
 
 def main() raises:
     test_build_tree()

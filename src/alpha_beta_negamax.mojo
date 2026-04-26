@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score, NoScore, Draw, is_set, is_win, is_loss, is_draw, is_decisive, neg
+from score import Score, NoScore, Draw, is_set, is_win, is_loss, is_draw, is_decisive
 from traits import TTree, TGame
 
 
@@ -26,7 +26,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
                 return pv^
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
-            self.logger.debug("=== max depth: ", depth, " time:", time, " pv:", pv)
+            self.logger.debug(t"=== max depth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
             if is_decisive(pv[0].score()):
                 return pv^
 
@@ -134,7 +134,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
                 continue
 
             ref best_child = self.children[best_child_idx]
-            if (best_child.move.score() < score):
+            if best_child.move.score() < score:
                 best_child_idx = idx
 
         if has_draw and self.children[best_child_idx].move.score() < 0:

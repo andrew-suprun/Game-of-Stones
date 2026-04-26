@@ -131,8 +131,6 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         else:
             self.move.set_score(-max_score if max_score != 0 else max_score)
 
-
-
     def select_node(self) -> Int:
         assert len(self.children) > 0
         var selected_child_idx = -1

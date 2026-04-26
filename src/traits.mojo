@@ -1,5 +1,6 @@
 from score import Score
 
+
 trait TTree(ImplicitlyDestructible, Writable):
     comptime Game: TGame
 

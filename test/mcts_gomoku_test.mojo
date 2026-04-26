@@ -8,6 +8,7 @@ from gomoku import Gomoku
 
 comptime Game = Gomoku[19, 8, 100]
 
+
 def main() raises:
     var game = Game()
     var root = Node[Game, 16]()

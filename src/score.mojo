@@ -6,20 +6,26 @@ comptime Loss = Score.MIN
 comptime Draw = Score(-0.0)
 comptime NoScore = nan[Score.dtype]()
 
+
 def is_win(score: Score) -> Bool:
     return isinf(score) and score > 0
+
 
 def is_loss(score: Score) -> Bool:
     return isinf(score) and score < 0
 
+
 def is_draw(score: Score) -> Bool:
     return score == 0 and FPUtils.get_sign(score)
+
 
 def is_decisive(score: Score) -> Bool:
     return isinf(score) or is_draw(score)
 
+
 def is_set(score: Score) -> Bool:
     return not isnan(score)
+
 
 def score_str(score: Score) -> String:
     if not is_set(score):

@@ -8,8 +8,10 @@ from board import Place, first
 from gomoku import Gomoku
 from connect6 import Connect6
 from mcts import Mcts
-# 
+
+#
 from alpha_beta_negamax import AlphaBetaNegamax
+
 # from principal_variation_negamax import PrincipalVariationNegamax
 
 # comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
@@ -18,23 +20,23 @@ from alpha_beta_negamax import AlphaBetaNegamax
 comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
-# comptime Tree1 = AlphaBetaNegamax[Game1]
+comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 
 # comptime Tree1 = PrincipalVariationNegamax[Game1]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
 
-comptime Tree1 = Mcts[Game1, 12]
+# comptime Tree1 = Mcts[Game1, 6]
 comptime Tree2 = Mcts[Game2, 14]
 
-comptime seed_value = 8
+comptime seed_value = 3
 
 comptime black = True
 comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("c-mcts-12", 250, "c-mcts-14", 250, openings())
+    run[Tree1, Tree2]("abs", 250, "mcts", 250, openings())
 
 
 def run[
@@ -123,11 +125,11 @@ def sim_opening[
                 score_str(pv[0].score()).ascii_rjust(8),
                 "  ",
                 String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
-                sep = "",
-                end = ""
+                sep="",
+                end="",
             )
             for move in pv[1:]:
-                print(t" {move}", end = "")
+                print(t" {move}", end="")
             print()
             if len(pv) == 1 and is_decisive(pv[0].score()):
                 return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
@@ -143,11 +145,11 @@ def sim_opening[
                 score_str(pv[0].score()).ascii_rjust(8),
                 "  ",
                 String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
-                sep = "",
-                end = ""
+                sep="",
+                end="",
             )
             for move in pv[1:]:
-                print(t" {move}", end = "")
+                print(t" {move}", end="")
             print()
             if len(pv) == 1 and is_decisive(pv[0].score()):
                 return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"

@@ -2,7 +2,7 @@
 * PVS: skip zero window when alpha == beta
 
 C6:
-result: abs: 14 - mcts: 25
+result: abs: 4 - mcts: 14
 
 result: mcts-10: 19 - mcts-20: 14
 result: mcts-8:  25 - mcts-4:  10
@@ -18,6 +18,9 @@ result: mcts-20: 11 - mcts-30: 13
 result: mcts-30: 15 - mcts-45: 9
 
 Gomoku:
+
+result: abs: 1 - mcts: 18
+
 result: g-mcts-4:   6 - g-mcts-8:  8
 result: g-mcts-6:   7 - g-mcts-8:  7
 result: g-mcts-6:  10 - g-mcts-8:  1
