@@ -103,9 +103,6 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
         else:
             self._score -= self.score(place, second)
 
-        if TRACE:
-            print(t"board.place_stone: place={place}, _score={self._score}")
-
         var x_start = max(0, x - Self.win_stones + 1)
         var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
         var n = x_end - x_start

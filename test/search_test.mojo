@@ -29,8 +29,8 @@ def test_search[Tree: TTree, moves: List[String], expected: String]() raises:
 
 
 def main() raises:
-    comptime GomokeGame = Gomoku[size=19, max_places=8, max_plies=100]
-    comptime Connect6Game = Connect6[size=19, max_moves=8, max_places=6, max_plies=100]
+    comptime GomokeGame = Gomoku[size=19, max_places=16, max_plies=100]
+    comptime Connect6Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
     # test_search[Mcts[GomokeGame, 16], ["j10", "i9", "i10"], "k10"]()
     # test_search[Mcts[Connect6Game, 16], ["j10", "i9-i10"], "i11-k9"]()
     test_search[AlphaBetaNegamax[GomokeGame], ["j10", "i9", "i10"], "k10"]()
