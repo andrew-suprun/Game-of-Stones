@@ -1,7 +1,7 @@
 from std.random import shuffle
 from std.testing import assert_true, assert_false
 
-from traits import Score
+from score import Score, Win, Loss, Draw
 from heap import heap_add
 
 
@@ -29,14 +29,14 @@ def test_heap() raises:
 
 def test_scores() raises:
     var items = List[Score](capacity=6)
-    heap_add[less[Score]](Score.loss(), items)
-    heap_add[less[Score]](Score.draw(), items)
-    heap_add[less[Score]](Score(1), items)
-    heap_add[less[Score]](Score(-1), items)
-    heap_add[less[Score]](Score(2), items)
-    heap_add[less[Score]](Score(-2), items)
+    heap_add[less[Score]](Loss, items)
+    heap_add[less[Score]](Draw, items)
+    heap_add[less[Score]](1, items)
+    heap_add[less[Score]](-1, items)
+    heap_add[less[Score]](2, items)
+    heap_add[less[Score]](-2, items)
     heap_add[less[Score]](0, items)
-    heap_add[less[Score]](Score.win(), items)
+    heap_add[less[Score]](Win, items)
     for item in items:
         print(item)
     for i in range(1, 6):

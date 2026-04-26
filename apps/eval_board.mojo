@@ -1,4 +1,4 @@
-from traits import Score, Win
+from score import Score, Win
 from board import Board, Place, first, second
 
 comptime win_stones = 6

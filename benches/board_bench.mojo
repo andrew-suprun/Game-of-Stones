@@ -75,7 +75,7 @@ def main() raises:
     print("max_score  ", benchmark.run[func2=bench_max_score](0, 1, 3, 6).mean(Unit.ms))
     print("max_int16  ", benchmark.run[func2=bench_max_simd_int16](0, 1, 3, 6).mean(Unit.ms))
     print("max_int32  ", benchmark.run[func2=bench_max_simd_int32](0, 1, 3, 6).mean(Unit.ms))
-    print("max_float3 ", benchmark.run[func2=bench_max_simd_float32](0, 1, 3, 6).mean(Unit.ms))
+    print("max_float32", benchmark.run[func2=bench_max_simd_float32](0, 1, 3, 6).mean(Unit.ms))
     print("copy       ", benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.ms))
     print("update_row ", benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.ms))
     print("place_stone", benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.ms))

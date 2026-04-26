@@ -178,6 +178,9 @@ struct Board[size: Int, values: List[Score], win_stones: Int](Copyable, Writable
     def __setitem__(mut self, x: Int, y: Int, value: Int):
         self._places[y * Self.size + x] = Int8(value)
 
+    def score(mut self) -> Score:
+        return self._score
+
     def score(self, place: Place, turn: Int) -> Score:
         return Score(self._scores[Int(place.y) * Self.size + Int(place.x)][turn])
 

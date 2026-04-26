@@ -11,7 +11,7 @@ comptime board_size = 19
 
 # comptime Game = Gomoku[size=board_size, max_places=16, max_plies=board_size*board_size-board_size]
 comptime Game = Connect6[
-    size=board_size, max_moves=16, max_places=12, max_plies=(board_size * board_size - board_size) / 2
+    size=board_size, max_moves=24, max_places=16, max_plies=(board_size * board_size - board_size) / 2
 ]
 
 # comptime Tree = Mcts[Game, 6] # for Gomoku

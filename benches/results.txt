@@ -1,42 +1,28 @@
 --- basic ---
-InlineArray Int   6.579305054151624
-InlineArray Int16 6.511131147540984
-List        Int   6.68046336996337
-List        Int16 7.130656126482213
-InlineArray Float 9.434616797900262
-List        Float 9.599827493261456
-
---- board --- Int16
-max_score   3.223998
-copy        0.062153876629976054
-update_row  0.06484962149137792
-place_stone 0.2884984
-places      1.0367541594951233
-
---- board --- Int32
-max_score   2.1895938069216756
-copy        0.08805240389342248
-update_row  0.04480193188607847
-place_stone 0.2323130777684401
-places      1.0323411188004614
-
---- board --- Float32
-max_score   2.0786551126516466
-copy        0.08762715947248041
-update_row  0.04470335617553838
-place_stone 0.2315780462592066
-places      1.1626353322528362
-
+InlineArray Int   6.495908925318761
+InlineArray Int16 6.484046931407942
+List        Int   6.590521978021978
+List        Int16 7.117422924901186
+InlineArray Float 9.438302631578948
+List        Float 9.597144772117963
+--- board ---
+max_score   0.21153221566680297
+max_int16   0.0003297785
+max_int32   0.00034434
+max_float32 0.00034454263605682747
+copy        0.04735022843531571
+update_row  0.024262342803120472
+place_stone 0.10766189891977618
+places      1.2485390218522372
 --- connect6 ---
-moves    27.85379 msec
-
+moves    28.086170000000003 msec
 --- gomoku ---
-moves  1.9257993596584844 msec
-expand 3.004483 msec
-
+moves  1.8876257861635222 msec
+expand 2.9509920000000003 msec
 --- heap ---
-heap_add 373.13322222222223
-
+heap_add 372.9648888888889
 --- logger ---
-bench1 9486.053
-bench2 3.1044300000000005e-07
+bench1 9333.359
+bench2 3.10382e-07
+--- perf_counter ---
+perf_counter 0.3113455

@@ -81,5 +81,8 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.turn = 1 - self.turn
         self.plies += 1
 
+    def score(mut self) -> Score:
+        return self.board.score()
+
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

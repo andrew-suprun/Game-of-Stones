@@ -4,3 +4,4 @@ pixi run mojo -I src -D ASSERT=none benches/connect6_bench.mojo
 pixi run mojo -I src -D ASSERT=none benches/gomoku_bench.mojo
 pixi run mojo -I src -D ASSERT=none benches/heap_bench.mojo
 pixi run mojo -I src -D ASSERT=none benches/logger_bench.mojo
+pixi run mojo -I src -D ASSERT=none benches/perf_counter.mojo

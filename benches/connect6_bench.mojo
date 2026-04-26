@@ -16,7 +16,7 @@ def bench_moves():
         pass
     for _ in range(1000):
         var moves = game.moves()
-        keep(moves[0].score.value)
+        keep(moves[0].score())
 
 
 def main() raises:

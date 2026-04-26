@@ -20,6 +20,9 @@ trait TGame(Copyable, Defaultable, Writable):
     def play_move(mut self, move: Self.Move):
         ...
 
+    def score(mut self) -> Score:
+        ...
+
 
 trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     def __init__(out self, text: String) raises:
