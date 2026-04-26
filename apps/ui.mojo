@@ -14,8 +14,8 @@ comptime Game = Connect6[
     size=board_size, max_moves=16, max_places=12, max_plies=(board_size * board_size - board_size) / 2
 ]
 
-# comptime Tree = Mcts[Game, 16] # for Gomoku
-comptime Tree = Mcts[Game, 26]  # for Connect6
+# comptime Tree = Mcts[Game, 6] # for Gomoku
+comptime Tree = Mcts[Game, 14]  # for Connect6
 # comptime Tree = AlphaBetaNegamax[Game]
 # comptime Tree = PrincipalVariationNegamax[Game]
 

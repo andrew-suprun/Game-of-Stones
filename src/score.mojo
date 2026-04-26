@@ -21,9 +21,6 @@ def is_decisive(score: Score) -> Bool:
 def is_set(score: Score) -> Bool:
     return not isnan(score)
 
-def neg(score: Score) -> Score:
-    return Draw if is_draw(score) else 0 if score == 0 else -score
-
 def score_str(score: Score) -> String:
     if not is_set(score):
         return "no-score"

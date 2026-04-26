@@ -19,30 +19,28 @@ comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 # comptime Tree1 = AlphaBetaNegamax[Game1]
-# comptime Tree1 = AlphaBetaNegamax2[Game1]
-comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 
 # comptime Tree1 = PrincipalVariationNegamax[Game1]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
 
-# comptime Tree1 = Mcts[Game1, 26]
-comptime Tree2 = Mcts[Game2, 16]
+comptime Tree1 = Mcts[Game1, 12]
+comptime Tree2 = Mcts[Game2, 14]
 
-comptime seed_value = 7
+comptime seed_value = 8
 
 comptime black = True
 comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("abs", 250, "mcts", 250, openings())
+    run[Tree1, Tree2]("c-mcts-12", 250, "c-mcts-14", 250, openings())
 
 
 def run[
     T1: TTree, T2: TTree
 ](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
-    print(name1, "-", time1, " vs. ", name2, "-", time2, sep="")
+    print(t"{name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0

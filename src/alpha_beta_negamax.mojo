@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score, NoScore, is_set, is_win, is_loss, is_draw, is_decisive, neg
+from score import Score, NoScore, Draw, is_set, is_win, is_loss, is_draw, is_decisive, neg
 from traits import TTree, TGame
 
 
@@ -89,12 +89,15 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
             var g = game.copy()
             if not is_decisive(child.move.score()):
                 g.play_move(child.move)
-                var score = neg(child._search(g, neg(beta), neg(alpha), depth + 1, max_depth, deadline, logger))
-
-                if is_set(score):
-                    child.move.set_score(score)
-                else:
+                var score = child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                if not is_set(score):
                     return NoScore
+                elif is_draw(score):
+                    child.move.set_score(Draw)
+                elif score == 0:
+                    child.move.set_score(0)
+                else:
+                    child.move.set_score(-score)
 
             if child.move.score() > best_score:
                 best_score = child.move.score()
