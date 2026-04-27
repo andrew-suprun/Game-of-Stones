@@ -77,6 +77,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         if depth == max_depth:
             self._update_score()
+            self.max_depth = max_depth
             return
 
         sort[Self.greater](self.children)
@@ -94,6 +95,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
                 break
             
         self._update_score()
+        self.max_depth = max_depth
 
     def _update_score(mut self):
         var all_draws = True
@@ -147,7 +149,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.write_repr_to(writer, depth=0)
 
     def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, repr(self.move), "\n")
+        writer.write("|   " * depth, repr(self.move)," [", self.max_depth, "]\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_repr_to(writer, depth + 1)
