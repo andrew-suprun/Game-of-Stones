@@ -6,7 +6,7 @@ from board import Board, Place, first, second
 
 comptime size = 19
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625, Win]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625]
 
 
 def test_place_stone() raises:

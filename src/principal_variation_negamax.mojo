@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from traits import TTree, TGame, Score
+from traits import TTree, TGame, Score, max_score
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
@@ -72,7 +72,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
         if depth == max_depth:
             for child in self.children:
-                best_score = max(best_score, child.score)
+                best_score = max_score(best_score, child.score)
             return best_score
 
         sort[Self.greater](self.children)
@@ -94,7 +94,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             if child.score.is_decisive():
                 if best_score < child.score:
                     best_score = child.score
-                    alpha = max(alpha, child.score)
+                    alpha = max_score(alpha, child.score)
                 if child.score > beta or child.score.is_win():
                     return best_score
 
@@ -111,7 +111,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             if best_score < child.score:
                 best_score = child.score
                 best_move = {child.move, child.score}
-                alpha = max(alpha, best_score)
+                alpha = max_score(alpha, best_score)
 
             if child.score > beta or child.score.is_win():
                 return best_score
@@ -128,7 +128,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             if child.score.is_decisive():
                 if best_score < child.score:
                     best_score = child.score
-                    alpha = max(alpha, best_score)
+                    alpha = max_score(alpha, best_score)
                 if child.score > beta or child.score.is_win():
                     return best_score
 
@@ -158,7 +158,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 if best_score < child.score:
                     best_score = child.score
                     best_move = {child.move, child.score}
-                    alpha = max(alpha, best_score)
+                    alpha = max_score(alpha, best_score)
 
                 if child.score > beta or child.score.is_win():
                     return best_score

@@ -12,7 +12,7 @@ comptime TRACE = logging_level == "TRACE"
 comptime DEBUG = logging_level == "DEBUG" or TRACE
 
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625, Win]
+comptime values: List[Score] = [0, 1, 5, 25, 125, 625]
 
 
 struct Move(TMove):
@@ -96,8 +96,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         return moves^
 
     def _moves(self, mut moves: List[Move]):
-        if TRACE:
-            print("connect6._moves()")
         var places = List[PlaceScore](capacity=Self.max_places)
         self.board.places(self.turn, places)
         if len(places) <= 1:
@@ -135,10 +133,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     if TRACE:
                         if board_value != board_score + score1 + score2:
                             print(board2)
-                            print(
-                                t"board_value={board_value}, board_score={board_score}, score1={score1},"
-                                t" score2={score2}"
-                            )
+                            print(t"board_value={board_value}, board_score={board_score}, place1={place1}, score1={score1}, place2={place2}, score2={score2}")
                     assert board_value == board_score + score1 + score2
 
                 var max_opp_score = board2.max_score(1 - self.turn)
@@ -150,8 +145,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             moves.append({places[0].place, places[1].place, Loss})
 
     def play_move(mut self, move: Move):
-        if TRACE:
-            print(t"connect6.play_move: move={move}")
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)

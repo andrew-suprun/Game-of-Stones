@@ -5,7 +5,7 @@ from std.time import perf_counter_ns
 from std.math import sqrt
 from std.logger import Logger
 
-from score import Score, Loss, Draw, is_win, is_loss, is_draw, is_decisive
+from score import Score, Loss, Draw, max_score, is_win, is_loss, is_draw, is_decisive
 from traits import TTree, TGame
 
 comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
@@ -116,18 +116,10 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
 
         self.n_sims += 1
         var best_score = Loss
-        var all_draws = True
-        var has_draw = False
         for ref child in self.children:
-            var score = child.move.score()
-            best_score = max(best_score, score)
-            if is_draw(score):
-                has_draw = True
-            elif not is_decisive(score):
-                all_draws = False
+            best_score = max_score(best_score, score)
 
-        # '+ 0.0' is to avoid acidental 'Draw's
-        self.move.set_score(Draw if all_draws and has_draw else -best_score + 0.0)
+        self.move.set_score(-best_score)
 
     def select_node(self) -> Int:
         assert len(self.children) > 0
