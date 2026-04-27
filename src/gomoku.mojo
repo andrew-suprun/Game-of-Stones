@@ -1,7 +1,7 @@
 from std.utils.numerics import FPUtils, isinf
 from std.sys.defines import get_defined_string
 
-from score import Score, NoScore, Win, Draw, is_decisive, score_str
+from score import Score, Win, Draw, is_decisive, score_str
 from traits import TGame, TMove
 from board import Board, Place, PlaceScore, first
 
@@ -16,7 +16,7 @@ struct Move(TMove):
 
     def __init__(out self):
         self._place = Place()
-        self._score = NoScore
+        self._score = 0
 
     def __init__(out self, place: Place, score: Score):
         self._place = place
@@ -25,7 +25,7 @@ struct Move(TMove):
     @implicit
     def __init__(out self, move: String) raises:
         self._place = Place(String(move))
-        self._score = NoScore
+        self._score = 0
 
     def score(self) -> Score:
         return self._score

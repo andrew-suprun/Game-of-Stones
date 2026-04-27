@@ -4,7 +4,6 @@ comptime Score = Float32
 comptime Win = Score.MAX
 comptime Loss = Score.MIN
 comptime Draw = Score(-0.0)
-comptime NoScore = nan[Score.dtype]()
 
 
 def is_win(score: Score) -> Bool:
@@ -23,14 +22,8 @@ def is_decisive(score: Score) -> Bool:
     return isinf(score) or is_draw(score)
 
 
-def is_set(score: Score) -> Bool:
-    return not isnan(score)
-
-
 def score_str(score: Score) -> String:
-    if not is_set(score):
-        return "no-score"
-    elif is_win(score):
+    if is_win(score):
         return "win"
     elif is_loss(score):
         return "loss"

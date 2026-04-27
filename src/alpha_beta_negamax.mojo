@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score, NoScore, Draw, is_set, is_win, is_loss, is_draw, is_decisive
+from score import Score, Draw, is_win, is_loss, is_draw, is_decisive
 from traits import TTree, TGame
 
 
@@ -12,7 +12,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     var logger: Logger[]
 
     def __init__(out self):
-        self.root = AlphaBetaNode[Self.G]({})
+        self.root = AlphaBetaNode[Self.G]({}, 0)
         self.logger = Logger(prefix="abs: ")
 
     def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
@@ -20,9 +20,9 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var start = perf_counter_ns()
         var deadline = start + UInt(1_000_000) * max_time_ms
         while True:
-            var score = self.root._search(game, Score.MIN, Score.MAX, 0, depth, deadline, self.logger)
+            self.root._search(game, Score.MIN, Score.MAX, 0, depth, deadline, self.logger)
             var pv = self._pv()
-            if not is_set(score):
+            if perf_counter_ns() > deadline:
                 return pv^
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
@@ -51,10 +51,12 @@ struct AlphaBetaNegamax[G: TGame](TTree):
 
 struct AlphaBetaNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
+    var max_depth: Int
     var children: List[Self]
 
-    def __init__(out self, move: Self.G.Move):
+    def __init__(out self, move: Self.G.Move, max_depth: Int):
         self.move = move
+        self.max_depth = max_depth
         self.children = List[Self]()
 
     def _search(
@@ -66,48 +68,47 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         max_depth: Int,
         deadline: UInt,
         logger: Logger,
-    ) -> Score:
+    ):
         if perf_counter_ns() > deadline:
-            return NoScore
+            return
 
         if not self.children:
-            self.children = [Self(move) for move in game.moves()]
+            self.children = [Self(move, max_depth) for move in game.moves()]
 
-        var best_score = Score.MIN
         if depth == max_depth:
-            for child in self.children:
-                best_score = max(best_score, child.move.score())
-            return best_score
+            self._update_score()
+            return
 
         sort[Self.greater](self.children)
-
-        for ref child in self.children[1:]:
-            if not is_decisive(child.move.score()):
-                child.move.set_score(NoScore)
 
         for ref child in self.children:
             var g = game.copy()
             if not is_decisive(child.move.score()):
                 g.play_move(child.move)
-                var score = child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
-                if not is_set(score):
-                    return NoScore
-                elif is_draw(score):
-                    child.move.set_score(Draw)
-                elif score == 0:
-                    child.move.set_score(0)
-                else:
-                    child.move.set_score(-score)
+                child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                if perf_counter_ns() > deadline:
+                    return
 
-            if child.move.score() > best_score:
-                best_score = child.move.score()
+            alpha = max(alpha, child.move.score())
+            if alpha >= beta or is_win(alpha):
+                break
+            
+        self._update_score()
 
-            if best_score > beta or is_win(best_score):
-                return best_score
+    def _update_score(mut self):
+        var all_draws = True
+        var has_draw = False
+        var best_score = Score.MIN
+        for ref child in self.children:
+            var score = child.move.score()
+            best_score = max(best_score, score)
+            if is_draw(score):
+                has_draw = True
+            elif not is_decisive(score):
+                all_draws = False
 
-            alpha = max(alpha, best_score)
-
-        return best_score
+        # '+ 0.0' is to avoid acidental 'Draw's
+        self.move.set_score(Draw if all_draws and has_draw else -best_score + 0.0)
 
     def _pv(self, mut pv: List[Self.G.Move]):
         if not self.children:
@@ -124,7 +125,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         for idx in range(len(self.children)):
             ref child = self.children[idx]
             var score = child.move.score()
-            if is_loss(score) or not is_set(score):
+            if is_loss(score):
                 continue
             elif is_win(score):
                 return child
@@ -154,4 +155,9 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
     @staticmethod
     @parameter
     def greater(a: Self, b: Self) -> Bool:
-        return a.move.score() > b.move.score()
+        if a.max_depth > b.max_depth:
+            return True
+        elif a.max_depth < b.max_depth:
+            return False
+        else:
+            return a.move.score() > b.move.score()

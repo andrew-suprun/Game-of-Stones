@@ -23,7 +23,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
             var score = self.root._search(
                 game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger
             )
-            if not score.is_set():
+            if perf_counter_ns() > deadline:
                 return best_move
             self.logger.debug(
                 "=== max depth: ",

@@ -1,6 +1,6 @@
 from std.sys.defines import get_defined_string
 
-from score import Score, NoScore, Win, Draw, Loss, set_score, is_win, is_decisive
+from score import Score, Win, Draw, Loss, set_score, is_win, is_decisive
 from traits import TGame, TMove
 from board import Board, Place, PlaceScore, first
 from heap import heap_add
@@ -23,7 +23,7 @@ struct Move(TMove):
     def __init__(out self):
         self._p1 = Place()
         self._p2 = Place()
-        self._score = NoScore
+        self._score = 0
 
     def __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool = False):
         if p1 < p2:
@@ -49,7 +49,7 @@ struct Move(TMove):
         else:
             self._p1 = p2
             self._p2 = p1
-        self._score = NoScore
+        self._score = 0
 
     def score(self) -> Score:
         return self._score
@@ -135,7 +135,10 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     if TRACE:
                         if board_value != board_score + score1 + score2:
                             print(board2)
-                            print(t"board_value={board_value}, board_score={board_score}, score1={score1}, score2={score2}")
+                            print(
+                                t"board_value={board_value}, board_score={board_score}, score1={score1},"
+                                t" score2={score2}"
+                            )
                     assert board_value == board_score + score1 + score2
 
                 var max_opp_score = board2.max_score(1 - self.turn)
