@@ -5,7 +5,7 @@ from std.time import perf_counter_ns
 from std.math import sqrt
 from std.logger import Logger
 
-from score import Score, Draw, is_win, is_loss, is_draw, is_decisive
+from score import Score, Loss, Draw, is_win, is_loss, is_draw, is_decisive
 from traits import TTree, TGame
 
 comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
@@ -115,7 +115,7 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
             assert len(self.children) > 0
 
         self.n_sims += 1
-        var best_score = Score.MIN
+        var best_score = Loss
         var all_draws = True
         var has_draw = False
         for ref child in self.children:

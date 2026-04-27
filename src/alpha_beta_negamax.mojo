@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score, Draw, is_win, is_loss, is_draw, is_decisive
+from score import Score, Win, Loss, Draw, is_win, is_loss, is_draw, is_decisive
 from traits import TTree, TGame
 
 
@@ -20,7 +20,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var start = perf_counter_ns()
         var deadline = start + UInt(1_000_000) * max_time_ms
         while True:
-            self.root._search(game, Score.MIN, Score.MAX, 0, depth, deadline, self.logger)
+            self.root._search(game, Loss, Win, 0, depth, deadline, self.logger)
             var pv = self._pv()
             if perf_counter_ns() > deadline:
                 return pv^
@@ -100,7 +100,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
     def _update_score(mut self):
         var all_draws = True
         var has_draw = False
-        var best_score = Score.MIN
+        var best_score = Loss
         for ref child in self.children:
             var score = child.move.score()
             best_score = max(best_score, score)

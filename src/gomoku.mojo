@@ -69,9 +69,9 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.board.places(self.turn, places)
         var board_score = self.board._score if self.turn == first else -self.board._score
         for place in places:
-            if place.score == Score.MAX:
+            if place.score == Win:
                 moves.clear()
-                moves.append({place.place, Score.MAX})
+                moves.append({place.place, Win})
                 return
             var score = board_score + place.score / 2
             moves.append({place.place, score})
