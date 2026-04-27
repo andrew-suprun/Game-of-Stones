@@ -5,7 +5,7 @@ from std.time import perf_counter_ns
 from std.math import sqrt
 from std.logger import Logger
 
-from score import Score, Loss, Draw, is_win, is_loss, is_draw, is_decisive
+from score import Score, Loss, Draw
 from traits import TTree, TGame
 
 comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
@@ -31,9 +31,9 @@ struct Mcts[G: TGame, c: Float64](TTree):
             return [moves[0]]
         var all_draws = True
         for move in moves:
-            if is_win(move.score()):
+            if move.score().is_win():
                 return self._pv()
-            if not is_decisive(move.score()):
+            if not move.score().is_decisive():
                 all_draws = False
 
         if all_draws:
@@ -47,7 +47,7 @@ struct Mcts[G: TGame, c: Float64](TTree):
             assert len(self.root.children) > 0
             var n_children = 0
             for ref child in self.root.children:
-                if not is_decisive(child.move.score()):
+                if not child.move.score().is_decisive():
                     n_children += 1
             if n_children == 1:
                 break
@@ -55,18 +55,18 @@ struct Mcts[G: TGame, c: Float64](TTree):
         return self._pv()
 
     def expand(mut self, game: Self.G, out done: Bool):
-        if is_decisive(self.root.move.score()):
+        if self.root.move.score().is_decisive():
             return True
 
         var g = game.copy()
         self.root._expand(g)
 
-        if is_decisive(self.root.move.score()):
+        if self.root.move.score().is_decisive():
             return True
 
         var undecided = 0
         for ref child in self.root.children:
-            if not is_decisive(child.move.score()):
+            if not child.move.score().is_decisive():
                 undecided += 1
         return undecided < 2
 
@@ -121,9 +121,9 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         for ref child in self.children:
             var score = child.move.score()
             best_score = max(best_score, score)
-            if is_draw(score):
+            if score.is_draw():
                 has_draw = True
-            elif not is_decisive(score):
+            elif not score.is_decisive():
                 all_draws = False
 
         # '+ 0.0' is to avoid acidental 'Draw's
@@ -135,7 +135,7 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         var max_v = Float64.MIN
         for child_idx in range(len(self.children)):
             ref child = self.children[child_idx]
-            if is_decisive(child.move.score()):
+            if child.move.score().is_decisive():
                 continue
             var v = Float64(child.move.score()) + Self.c * sqrt(Float64(self.n_sims)) / Float64(child.n_sims)
             if max_v < v:
@@ -158,11 +158,12 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]
-            if is_loss(child.move.score()):
+            var score = child.move.score()
+            if score.is_loss():
                 continue
-            elif is_win(child.move.score()):
+            elif score.is_win():
                 return child
-            elif is_draw(child.move.score()):
+            elif score.is_draw():
                 has_draw = True
                 draw_node_idx = idx
                 continue

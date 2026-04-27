@@ -21,7 +21,7 @@ def test_build_tree() raises:
     var logger = Logger[]()
 
     var start = perf_counter_ns()
-    for max_depth in range(1, 7):
+    for max_depth in range(1, 20):
         root._search(game, Loss, Win, 0, max_depth, deadline, logger)
         var time = Float64(perf_counter_ns() - start) / 1_000_000_000
         var pv = List[Game.Move]()

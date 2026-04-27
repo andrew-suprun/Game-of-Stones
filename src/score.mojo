@@ -1,11 +1,15 @@
+from std.sys.defines import get_defined_string
 from std.utils.numerics import FPUtils, isinf, isnan, inf, nan
+
+comptime AssertMode = get_defined_string["ASSERT", "none"]()
+comptime Assert = AssertMode == "all"
 
 comptime Value = Float32
 comptime Win = Score(Value.MAX)
 comptime Loss = Score(Value.MIN)
 comptime Draw = Score(-0.0)
 
-struct Score(Comparable, Defaultable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
+struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     var value: Value
 
     def __init__(out self):
@@ -19,6 +23,9 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, TrivialRegisterPassabl
     def __init__[dtype: DType](out self, value: Scalar[dtype]):
         self.value = Value(value)
 
+    def __float__(self) -> Float64:
+        return Float64(self.value)
+
     def is_win(self) -> Bool:
         return isinf(self.value) and self.value > 0
 
@@ -31,13 +38,18 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, TrivialRegisterPassabl
     def is_decisive(self) -> Bool:
         return isinf(self.value) or self.is_draw()
 
+    def is_set(self) -> Bool:
+        return not isnan(self.value)
+
     def __add__(self, other: Self) -> Score:
-        debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
+        if Assert:
+            assert self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw()
         return Score(self.value + other.value)
 
-    def __sub__(self, other: Self) -> Score:
-        debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
-        return Score(self.value - other.value)
+    # def __sub__(self, other: Self) -> Score:
+    #     if Assert:
+    #         assert self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw()
+    #     return Score(self.value - other.value)
 
     # def __iadd__(mut self, other: Self):
     #     debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
@@ -62,8 +74,12 @@ struct Score(Comparable, Defaultable, ImplicitlyCopyable, TrivialRegisterPassabl
     
     @staticmethod
     def max(a: Score, b: Score) -> Score:
+        if a.is_loss():
+            return b
+        if b.is_loss():
+            return a
         if a.is_draw() and b.is_draw():
-            return Self.draw()
+            return Draw
         return (a if a > b else b) + 0.0 # '+ 0.0' to avoid accidental draws
 
     def write_to[W: Writer](self, mut writer: W):

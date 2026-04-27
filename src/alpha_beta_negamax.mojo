@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 from std.logger import Logger
 
-from score import Score, Win, Loss, Draw, is_win, is_loss, is_draw, is_decisive
+from score import Score, Win, Loss, Draw
 from traits import TTree, TGame
 
 
@@ -27,12 +27,12 @@ struct AlphaBetaNegamax[G: TGame](TTree):
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
             self.logger.debug(t"=== max depth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
-            if is_decisive(pv[0].score()):
+            if pv[0].score().is_decisive():
                 return pv^
 
             var n_non_loosing_moves = 0
             for child in self.root.children:
-                if not is_decisive(child.move.score()):
+                if not child.move.score().is_decisive():
                     n_non_loosing_moves += 1
 
             if n_non_loosing_moves == 1:
@@ -84,33 +84,25 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         for ref child in self.children:
             var g = game.copy()
-            if not is_decisive(child.move.score()):
+            if not child.move.score().is_decisive():
                 g.play_move(child.move)
                 child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
                 if perf_counter_ns() > deadline:
                     return
 
             alpha = max(alpha, child.move.score())
-            if alpha >= beta or is_win(alpha):
+            if alpha >= beta or alpha.is_win():
                 break
             
         self._update_score()
         self.max_depth = max_depth
 
     def _update_score(mut self):
-        var all_draws = True
-        var has_draw = False
         var best_score = Loss
         for ref child in self.children:
-            var score = child.move.score()
-            best_score = max(best_score, score)
-            if is_draw(score):
-                has_draw = True
-            elif not is_decisive(score):
-                all_draws = False
+            best_score = Score.max(best_score, child.move.score())
 
-        # '+ 0.0' is to avoid acidental 'Draw's
-        self.move.set_score(Draw if all_draws and has_draw else -best_score + 0.0)
+        self.move.set_score(-best_score)
 
     def _pv(self, mut pv: List[Self.G.Move]):
         if not self.children:
@@ -127,11 +119,11 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         for idx in range(len(self.children)):
             ref child = self.children[idx]
             var score = child.move.score()
-            if is_loss(score):
+            if score.is_loss():
                 continue
-            elif is_win(score):
+            elif score.is_win():
                 return child
-            elif is_draw(score):
+            elif score.is_draw():
                 has_draw = True
                 draw_node_idx = idx
                 continue

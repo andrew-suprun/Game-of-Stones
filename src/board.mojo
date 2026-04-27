@@ -348,6 +348,7 @@ def _calc_value_table[
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[values]()
+    s.append(Value.MAX)
     var v2: List[Values] = [Values(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Values(s[i + 2] - s[i + 1], -s[i + 1]))
@@ -362,10 +363,10 @@ def _calc_value_table[
 
 
 def main():
-    var board = Board[19, [0, 1, 5, 25, 125, 625, Float32.MAX], 6]()
+    var board = Board[19, [0, 1, 5, 25, 125, 625], 6]()
     print(board)
     print(board.str_values())
-    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625, Float32.MAX]]()
+    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625]]()
     for side in range(2):
         for color in range(2):
             for y in range(6):

@@ -12,7 +12,7 @@ comptime Trace = LoggingLevel == "TRACE"
 comptime Debug = LoggingLevel == "DEBUG" or TRACE
 
 comptime win_stones = 6
-comptime values: List[Value] = [0, 1, 5, 25, 125, 625, Value.MAX]
+comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
 
 
 struct Move(TMove):

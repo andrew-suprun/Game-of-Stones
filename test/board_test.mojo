@@ -1,18 +1,18 @@
 from std.testing import assert_true
 from std.random import seed, random_si64
 
-from score import Score, Win, is_win
-from board import Board, Place, first, second
+from score import Score, Win
+from board import Board, Value, Place, first, second
 
 comptime size = 19
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625, Win]
+comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
 
 
 def test_place_stone() raises:
     seed(7)
     var board = Board[size, values, win_stones]()
-    var value = Score(0)
+    var value = Value(0)
     var n = 0
     for i in range(200):
         var turn = i % 2
@@ -22,28 +22,28 @@ def test_place_stone() raises:
             for y in range(size):
                 for x in range(size):
                     if board[x, y] == board.empty:
-                        var actual = board.score(Place(x, y), first)
+                        var actual = board.value(Place(x, y), first)
                         var b = board.copy()
                         b.place_stone(Place(x, y), first)
-                        var expected = b.board_value(materialize[values]()) - value
-                        if actual != expected and not is_win(actual):
+                        var expected = b.debug_board_value(materialize[values]()) - value
+                        if actual != expected and actual != Value.MAX:
                             print(Place(x, y), "actual:", actual, "expected:", expected, "n", n)
                             print(board)
-                            print(board.str_scores())
+                            print(board.str_values())
                             assert_true(False)
-                        actual = board.score(Place(x, y), second)
+                        actual = board.value(Place(x, y), second)
                         b = board.copy()
                         b.place_stone(Place(x, y), second)
-                        expected = value - b.board_value(materialize[values]())
-                        if actual != expected and not is_win(actual):
+                        expected = value - b.debug_board_value(materialize[values]())
+                        if actual != expected and actual != Value.MAX:
                             print(Place(x, y), "actual:", actual, "expected:", expected, "n", n)
                             print(board)
-                            print(board.str_scores())
+                            print(board.str_values())
                             assert_true(False)
             if turn == first:
-                value += board.score(Place(xx, yy), turn)
+                value += board.value(Place(xx, yy), turn)
             else:
-                value -= board.score(Place(xx, yy), turn)
+                value -= board.value(Place(xx, yy), turn)
             board.place_stone(Place(xx, yy), turn)
             n += 1
 
