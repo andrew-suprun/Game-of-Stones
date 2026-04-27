@@ -1,10 +1,9 @@
 from std.benchmark import benchmark, Unit, keep, black_box
 
-from score import Score, Win
-from board import Board, Place, PlaceScore, first
+from board import Board, Value, Place, PlaceValue, first
 
 comptime win_stones = 6
-comptime values: List[Score] = [0, 1, 5, 25, 125, 625, Win]
+comptime values: List[Value] = [0, 1, 5, 25, 125, 625, Value.MAX]
 
 
 def bench_max_score():
@@ -54,7 +53,7 @@ def bench_update_row():
 
 def bench_place_stone():
     var board = Board[19, values, win_stones]()
-    var score = Score(0)
+    var score = Value(0)
     var b = board.copy()
     for _ in range(1000):
         b.place_stone(Place(9, 9), 0)
@@ -64,7 +63,7 @@ def bench_place_stone():
 
 def bench_places():
     var board = Board[19, values, win_stones]()
-    var places = List[PlaceScore](capacity=20)
+    var places = List[PlaceValue](capacity=20)
     for _ in range(1000):
         places.clear()
         _ = board.places(first, places)

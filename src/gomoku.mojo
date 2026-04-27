@@ -1,13 +1,13 @@
 from std.utils.numerics import FPUtils, isinf
 from std.sys.defines import get_defined_string
 
-from score import Score, Win, Draw, is_decisive, score_str
+from score import Score, Win, Draw
 from traits import TGame, TMove
-from board import Board, Place, PlaceScore, first
+from board import Board, Value, Place, PlaceValue, first
 
 comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 5
-comptime values: List[Score] = [0, 1, 5, 25, 125, Win]
+comptime values: List[Value] = [0, 1, 5, 25, 125, Value.MAX]
 
 
 struct Move(TMove):
@@ -38,9 +38,9 @@ struct Move(TMove):
 
     def write_repr_to[W: Writer](self, mut writer: W):
         self.write_to(writer)
-        if is_decisive(self._score):
+        if self._score.is_decisive():
             writer.write("#")
-        writer.write(" ", score_str(self._score))
+        writer.write(" ", self._score)
 
 
 struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
@@ -65,16 +65,16 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         return moves^
 
     def _moves(self, mut moves: List[Move]):
-        var places = List[PlaceScore](capacity=Self.max_places)
+        var places = List[PlaceValue](capacity=Self.max_places)
         self.board.places(self.turn, places)
-        var board_score = self.board._score if self.turn == first else -self.board._score
+        var board_value = self.board._value if self.turn == first else -self.board._value
         for place in places:
-            if place.score == Win:
+            if place.value == Value.MAX:
                 moves.clear()
                 moves.append({place.place, Win})
                 return
-            var score = board_score + place.score / 2
-            moves.append({place.place, score})
+            var value = board_value + place.value / 2
+            moves.append({place.place, Score(value)})
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._place, self.turn)
@@ -82,7 +82,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.plies += 1
 
     def score(mut self) -> Score:
-        return self.board.score()
+        return Score(self.board.value())
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
