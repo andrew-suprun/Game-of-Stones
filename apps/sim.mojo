@@ -2,7 +2,7 @@ from std.random import seed, shuffle
 from std.time import perf_counter_ns
 from std.reflection import get_base_type_name
 
-from score import is_decisive, score_str
+from score import Score
 from traits import TTree
 from board import Place, first
 from gomoku import Gomoku
@@ -121,8 +121,8 @@ def sim_opening[
                 String(plies).ascii_rjust(4),
                 ": ",
                 name1.ascii_ljust(name_size),
-                String(String(pv[0]) + ("#" if is_decisive(pv[0].score()) else "")).ascii_ljust(8),
-                score_str(pv[0].score()).ascii_rjust(8),
+                String(pv[0]).ascii_ljust(8),
+                String(pv[0].score()).ascii_rjust(8),
                 "  ",
                 String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
                 sep="",
@@ -131,7 +131,7 @@ def sim_opening[
             for move in pv[1:]:
                 print(t" {move}", end="")
             print()
-            if len(pv) == 1 and is_decisive(pv[0].score()):
+            if len(pv) == 1 and pv[0].score().is_decisive():
                 return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
         else:
             var pv = t2.search(g2, time2)
@@ -141,8 +141,8 @@ def sim_opening[
                 String(plies).ascii_rjust(4),
                 ": ",
                 name2.ascii_ljust(name_size),
-                String(String(pv[0]) + ("#" if is_decisive(pv[0].score()) else "")).ascii_ljust(8),
-                score_str(pv[0].score()).ascii_rjust(8),
+                String(pv[0]).ascii_ljust(8),
+                String(pv[0].score()).ascii_rjust(8),
                 "  ",
                 String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
                 sep="",
@@ -151,7 +151,7 @@ def sim_opening[
             for move in pv[1:]:
                 print(t" {move}", end="")
             print()
-            if len(pv) == 1 and is_decisive(pv[0].score()):
+            if len(pv) == 1 and pv[0].score().is_decisive():
                 return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"
         g1.play_move({move})
         g2.play_move({move})

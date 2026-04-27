@@ -42,7 +42,7 @@ struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegi
         return not isnan(self.value)
 
     def __add__(self, other: Self) -> Score:
-        if Assert:
+        if Assert and other != 0.0:
             assert self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw()
         return Score(self.value + other.value)
 

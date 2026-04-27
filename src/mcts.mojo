@@ -116,18 +116,10 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
 
         self.n_sims += 1
         var best_score = Loss
-        var all_draws = True
-        var has_draw = False
         for ref child in self.children:
-            var score = child.move.score()
-            best_score = max(best_score, score)
-            if score.is_draw():
-                has_draw = True
-            elif not score.is_decisive():
-                all_draws = False
+            best_score = Score.max(best_score, child.move.score())
 
-        # '+ 0.0' is to avoid acidental 'Draw's
-        self.move.set_score(Draw if all_draws and has_draw else -best_score + 0.0)
+        self.move.set_score(-best_score)
 
     def select_node(self) -> Int:
         assert len(self.children) > 0
