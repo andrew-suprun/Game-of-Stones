@@ -1,4 +1,4 @@
-from score import Score, Draw, Loss, is_draw, is_decisive
+from score import Score, Win, Draw, Loss
 from traits import TGame
 
 
@@ -11,11 +11,15 @@ def search[Game: TGame](game: Game, depth: Int) -> Score:
         return best_score
 
     for move in moves:
-        if is_decisive(move.score()):
-            return move.score()
-        var g = game.copy()
-        g.play_move(move)
-        var child_score = search(g, depth - 1)
-        var score = Draw if is_draw(child_score) else 0 if child_score == 0 else -child_score
-        best_score = max(best_score, score)
+        if move.score().is_win():
+            return Win
+        elif move.score().is_loss():
+            continue
+        elif move.score().is_draw():
+            best_score = max(best_score, 0)
+        else:
+            var g = game.copy()
+            g.play_move(move)
+            var child_score = search(g, depth - 1)
+            best_score = max(best_score, -child_score)
     return best_score

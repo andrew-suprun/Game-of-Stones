@@ -22,13 +22,12 @@ game: Gomoku
 19 └─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┘ 19
    a b c d e f g h i j k l m n o p q r s
 
-depth 1: score -10.0, time 5.1e-05s
-depth 2: score -7.0, time 0.000722s
-depth 3: score -13.0, time 0.011859s
-depth 4: score -12.0, time 0.181243s
-depth 5: score -38.5, time 2.989974s
-depth 6: score -13.5, time 44.135053s
-
+depth 1: score -10.0, time 4e-05s
+depth 2: score -7.0, time 0.000515s
+depth 3: score -13.0, time 0.008678s
+depth 4: score -12.0, time 0.13608s
+depth 5: score -38.5, time 2.266642s
+depth 6: score -13.5, time 33.023644s
 game: Connect6
 
    a b c d e f g h i j k l m n o p q r s
@@ -53,8 +52,8 @@ game: Connect6
 19 └─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┘ 19
    a b c d e f g h i j k l m n o p q r s
 
-depth 1: score 21.0, time 0.003723s
-depth 2: score 13.0, time 0.056817s
-depth 3: score 43.0, time 0.914207s
-depth 4: score 14.0, time 14.074772s
-depth 5: score 18.0, time 218.335115s
+depth 1: score 21.0, time 0.000496s
+depth 2: score 13.0, time 0.007897s
+depth 3: score 43.0, time 0.126707s
+depth 4: score 14.0, time 1.917595s
+depth 5: score 18.0, time 29.727382s
