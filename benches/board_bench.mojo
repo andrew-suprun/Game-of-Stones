@@ -9,7 +9,7 @@ comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
 def bench_max_score():
     var board = Board[19, values, win_stones]()
     for _ in range(1000):
-        keep(board.max_score(0))
+        keep(board.max_value(0))
 
 
 def bench_max_simd_int16():
@@ -48,7 +48,7 @@ def bench_update_row():
     ref scores = value_table[0]
     for _ in range(1000):
         board._update_row(0, 20, 6, scores)
-    keep(board._scores[5 * 20])
+    keep(board._values[5 * 20])
 
 
 def bench_place_stone():
@@ -57,7 +57,7 @@ def bench_place_stone():
     var b = board.copy()
     for _ in range(1000):
         b.place_stone(Place(9, 9), 0)
-        score += board._score
+        score += board._value
     keep(score)
 
 

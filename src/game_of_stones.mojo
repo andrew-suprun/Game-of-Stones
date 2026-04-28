@@ -88,12 +88,11 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
 
         if time_ms > 0:
             print(t"  ms {time_ms}", end="")
-        
+
         if len(pv) > 1:
             print("  pv", end="")
             for move in pv[1:]:
                 print(t" {move}", end="")
-
 
         print()
         # print(self.game)

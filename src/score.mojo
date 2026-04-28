@@ -9,6 +9,7 @@ comptime Win = Score(Value.MAX)
 comptime Loss = Score(Value.MIN)
 comptime Draw = Score(-0.0)
 
+
 struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     var value: Value
 
@@ -43,25 +44,14 @@ struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegi
 
     def __add__(self, other: Self) -> Score:
         if Assert and other != 0.0:
-            assert self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw()
+            assert (
+                self.is_set()
+                and not self.is_decisive()
+                and other.is_set()
+                and not other.is_loss()
+                and not other.is_draw()
+            )
         return Score(self.value + other.value)
-
-    # def __sub__(self, other: Self) -> Score:
-    #     if Assert:
-    #         assert self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw()
-    #     return Score(self.value - other.value)
-
-    # def __iadd__(mut self, other: Self):
-    #     debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
-    #     self.value += other.value
-
-    # def __isub__(mut self, other: Self):
-    #     debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
-    #     self.value -= other.value
-
-    # def __mul__(self, other: Self) -> Score:
-    #     debug_assert(self.is_set() and not self.is_decisive() and other.is_set() and not other.is_loss() and not other.is_draw())
-    #     return Score(self.value * other.value)
 
     def __eq__(self, other: Self) -> Bool:
         return self.value == other.value
@@ -71,7 +61,7 @@ struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegi
 
     def __neg__(self) -> Self:
         return Score(-self.value) if self.value != 0.0 else self
-    
+
     @staticmethod
     def max(a: Score, b: Score) -> Score:
         if a.is_loss():
@@ -80,7 +70,7 @@ struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegi
             return a
         if a.is_draw() and b.is_draw():
             return Draw
-        return (a if a > b else b) + 0.0 # '+ 0.0' to avoid accidental draws
+        return (a if a > b else b) + 0.0  # '+ 0.0' to avoid accidental draws
 
     def write_to[W: Writer](self, mut writer: W):
         if isnan(self.value):

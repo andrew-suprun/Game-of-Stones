@@ -3,6 +3,7 @@ from std.random import random_float64
 
 from score_float import Score
 
+
 def bench_score():
     var scores = InlineArray[Score, 1000](fill=Score())
     for ref score in scores:

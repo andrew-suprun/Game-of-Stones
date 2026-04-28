@@ -136,8 +136,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                         if debug_board_value != board_value + score1 + score2:
                             print(board2)
                             print(
-                                t"debug_board_value={debug_board_value}, board_value={board_value}, score1={score1},"
-                                t" score2={score2}"
+                                t"debug_board_value={debug_board_value}, board_value={board_value},"
+                                t" score1={score1}, score2={score2}"
                             )
                     assert debug_board_value == board_value + score1 + score2
 

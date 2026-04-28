@@ -69,9 +69,6 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         deadline: UInt,
         logger: Logger,
     ):
-        if perf_counter_ns() > deadline:
-            return
-
         if not self.children:
             self.children = [Self(move, max_depth) for move in game.moves()]
 
@@ -93,7 +90,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
             alpha = max(alpha, child.move.score())
             if alpha >= beta or alpha.is_win():
                 break
-            
+
         self._update_score()
         self.max_depth = max_depth
 
@@ -141,7 +138,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.write_repr_to(writer, depth=0)
 
     def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, repr(self.move)," [", self.max_depth, "]\n")
+        writer.write("|   " * depth, repr(self.move), " [", self.max_depth, "]\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_repr_to(writer, depth + 1)
