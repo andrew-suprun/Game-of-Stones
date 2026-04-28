@@ -1,15 +1,11 @@
-from std.sys.defines import get_defined_string
-
 from std.memory import Pointer
 from std.time import perf_counter_ns
 from std.math import sqrt
 from std.logger import Logger
 
+from config import Assert
 from score import Score, Loss, Draw
 from traits import TTree, TGame
-
-comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
-comptime assert_mode = get_defined_string["ASSERT", "none"]()
 
 
 struct Mcts[G: TGame, c: Float64](TTree):
@@ -111,7 +107,7 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
             game.play_move(selected_child.move)
             selected_child._expand(game)
 
-        comptime if assert_mode == "all":
+        comptime if Assert:
             assert len(self.children) > 0
 
         self.n_sims += 1

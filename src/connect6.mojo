@@ -1,15 +1,8 @@
-from std.sys.defines import get_defined_string
-
+from config import Assert, Trace
 from score import Score, Win, Draw, Loss
 from traits import TGame, TMove
 from board import Board, Value, Place, PlaceValue, first
 from heap import heap_add
-
-comptime AssertMode = get_defined_string["ASSERT", "none"]()
-comptime Assert = AssertMode == "all"
-comptime LoggingLevel = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
-comptime Trace = LoggingLevel == "TRACE"
-comptime Debug = LoggingLevel == "DEBUG" or TRACE
 
 comptime win_stones = 6
 comptime values: List[Value] = [0, 1, 5, 25, 125, 625]

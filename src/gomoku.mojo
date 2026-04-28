@@ -1,11 +1,9 @@
 from std.utils.numerics import FPUtils, isinf
-from std.sys.defines import get_defined_string
 
 from score import Score, Win, Draw
 from traits import TGame, TMove
 from board import Board, Value, Place, PlaceValue, first
 
-comptime assert_mode = get_defined_string["ASSERT", "none"]()
 comptime win_stones = 5
 comptime values: List[Value] = [0, 1, 5, 25, 125]
 

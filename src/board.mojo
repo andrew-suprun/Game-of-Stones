@@ -1,11 +1,6 @@
-from std.sys.defines import get_defined_string
 from std.memory import memcpy
 
 from heap import heap_add
-
-comptime logging_level = get_defined_string["LOGGING_LEVEL", "NOTSET"]()
-comptime TRACE = logging_level == "TRACE"
-comptime DEBUG = logging_level == "DEBUG" or TRACE
 
 comptime first = 0
 comptime second = 1
