@@ -96,8 +96,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         return moves^
 
     def _moves(self, mut moves: List[Move]):
-        if Trace:
-            print("connect6._moves()")
         var places = List[PlaceValue](capacity=Self.max_places)
         self.board.places(self.turn, places)
         if len(places) <= 1:
@@ -132,7 +130,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     var debug_board_value = board2.debug_board_value(materialize[values]())
                     if self.turn:
                         debug_board_value = -debug_board_value
-                    if Trace:
+                    comptime if Trace:
                         if debug_board_value != board_value + score1 + score2:
                             print(board2)
                             print(
@@ -150,8 +148,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             moves.append({places[0].place, places[1].place, Loss})
 
     def play_move(mut self, move: Move):
-        if Trace:
-            print(t"connect6.play_move: move={move}")
         self.board.place_stone(move._p1, self.turn)
         if move._p1 != move._p2:
             self.board.place_stone(move._p2, self.turn)
