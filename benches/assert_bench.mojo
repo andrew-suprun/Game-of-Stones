@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, black_box
+from std.benchmark import benchmark, Unit, black_box, keep
 from std.logger import Logger, Level
 
 from config import Assert
@@ -10,7 +10,7 @@ def fib(n: Int) -> Int:
     return fib(n-1) + fib(n-2)
 
 def bench_fib():
-        _ = fib(black_box(40)) > 100_000_000
+        keep(fib(black_box(40)) > 100_000_000)
 
 
 def bench_assert_fib():
