@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
-from std.logger import Logger
 
+from config import Debug
 from score import Score, Win, Loss, Draw
 from traits import TTree, TGame
 
@@ -9,24 +9,23 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     comptime Game = Self.G
 
     var root: AlphaBetaNode[Self.G]
-    var logger: Logger[]
 
     def __init__(out self):
-        self.root = AlphaBetaNode[Self.G]({}, 0)
-        self.logger = Logger(prefix="abs: ")
+        self.root = {{}, {}}
 
     def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var depth = 1
         var start = perf_counter_ns()
         var deadline = start + UInt(1_000_000) * max_time_ms
         while True:
-            self.root._search(game, Loss, Win, 0, depth, deadline, self.logger)
+            self.root._search(game, Loss, Win, 0, depth, deadline)
             var pv = self._pv()
             if perf_counter_ns() > deadline:
                 return pv^
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
-            self.logger.debug(t"=== max depth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
+            comptime if Debug:
+                print(t"=== max depth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
             if pv[0].score().is_decisive():
                 return pv^
 
@@ -67,7 +66,6 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         depth: Int,
         max_depth: Int,
         deadline: UInt,
-        logger: Logger,
     ):
         if not self.children:
             self.children = [Self(move, max_depth) for move in game.moves()]
@@ -83,7 +81,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
             var g = game.copy()
             if not child.move.score().is_decisive():
                 g.play_move(child.move)
-                child._search(g, -beta, -alpha, depth + 1, max_depth, deadline, logger)
+                child._search(g, -beta, -alpha, depth + 1, max_depth, deadline)
                 if perf_counter_ns() > deadline:
                     return
 
