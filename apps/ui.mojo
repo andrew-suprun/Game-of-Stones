@@ -9,13 +9,11 @@ from mcts import Mcts
 
 comptime board_size = 19
 
-# comptime Game = Gomoku[size=board_size, max_places=16, max_plies=board_size*board_size-board_size]
-comptime Game = Connect6[
-    size=board_size, max_moves=24, max_places=16, max_plies=(board_size * board_size - board_size) / 2
-]
+# comptime Game = Gomoku[board_size, 16, board_size*board_size-board_size]
+comptime Game = Connect6[board_size, 24, 16, (board_size * board_size - board_size) / 2]
 
-# comptime Tree = Mcts[Game, 6] # for Gomoku
-comptime Tree = Mcts[Game, 14]  # for Connect6
+# comptime Tree = Mcts[Game, 4] # for Gomoku
+comptime Tree = Mcts[Game, 5]  # for Connect6
 # comptime Tree = AlphaBetaNegamax[Game]
 # comptime Tree = PrincipalVariationNegamax[Game]
 

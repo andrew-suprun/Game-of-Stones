@@ -14,11 +14,11 @@ from alpha_beta_negamax import AlphaBetaNegamax
 
 # from principal_variation_negamax import PrincipalVariationNegamax
 
-# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 
-comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+# comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+# comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree2 = AlphaBetaNegamax[Game2]
@@ -27,7 +27,8 @@ comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
 
 # comptime Tree1 = Mcts[Game1, 6]
-comptime Tree2 = Mcts[Game2, 14]
+comptime Tree2 = Mcts[Game2, 3]
+# comptime Tree2 = Mcts[Game2, 14]
 
 comptime seed_value = 3
 
@@ -42,7 +43,7 @@ def main() raises:
 def run[
     T1: TTree, T2: TTree
 ](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
-    print(t"{name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
+    print(t"Game: {get_base_type_name[T1.Game]()}: {name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
