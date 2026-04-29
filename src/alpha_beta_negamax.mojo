@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
 
-from config import Debug
+from config import Debug, Trace
 from score import Score, Win, Loss, Draw
 from traits import TTree, TGame
 
@@ -18,14 +18,17 @@ struct AlphaBetaNegamax[G: TGame](TTree):
         var start = perf_counter_ns()
         var deadline = start + UInt(1_000_000) * max_time_ms
         while True:
-            self.root._search(game, Loss, Win, 0, depth, deadline)
+            self.root.search(game, Loss, Win, 0, depth, deadline)
             var pv = self._pv()
             if perf_counter_ns() > deadline:
                 return pv^
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
             comptime if Debug:
-                print(t"=== max depth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
+                print(
+                    t"=== max depth: {depth}, score: {pv[0].score()}, time:"
+                    t" {time},  pv: {pv}"
+                )
             if pv[0].score().is_decisive():
                 return pv^
 
@@ -58,7 +61,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.max_depth = max_depth
         self.children = List[Self]()
 
-    def _search(
+    def search(
         mut self,
         game: Self.G,
         var alpha: Score,
@@ -67,37 +70,40 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         max_depth: Int,
         deadline: UInt,
     ):
+        if perf_counter_ns() > deadline:
+            return
+
         if not self.children:
             self.children = [Self(move, max_depth) for move in game.moves()]
 
+        self.max_depth = max_depth
+        self.move.set_score(Win)
+
         if depth == max_depth:
-            self._update_score()
-            self.max_depth = max_depth
+            for child in self.children:
+                self.move.set_score(Score.min(self.move.score(), -child.move.score()))
             return
 
         sort[Self.greater](self.children)
 
         for ref child in self.children:
-            var g = game.copy()
+            comptime if Trace:
+                print(t"[{depth}] {"    "*depth}  >> {child.move} [{alpha} : {beta}]")
+
             if not child.move.score().is_decisive():
+                var g = game.copy()
                 g.play_move(child.move)
-                child._search(g, -beta, -alpha, depth + 1, max_depth, deadline)
-                if perf_counter_ns() > deadline:
-                    return
+
+                child.search(g, -beta, -alpha, depth + 1, max_depth, deadline)
+
+            comptime if Trace:
+                print(t"[{depth}] {"    "*depth}  << {repr(child.move)}")
+
+            self.move.set_score(Score.min(self.move.score(), -child.move.score()))
 
             alpha = max(alpha, child.move.score())
-            if alpha >= beta or alpha.is_win():
+            if alpha > beta or alpha.is_win():
                 break
-
-        self._update_score()
-        self.max_depth = max_depth
-
-    def _update_score(mut self):
-        var best_score = Loss
-        for ref child in self.children:
-            best_score = Score.max(best_score, child.move.score())
-
-        self.move.set_score(-best_score)
 
     def _pv(self, mut pv: List[Self.G.Move]):
         if not self.children:
@@ -136,7 +142,9 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.write_repr_to(writer, depth=0)
 
     def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, repr(self.move), " [", self.max_depth, "]\n")
+        writer.write(
+            "|   " * depth, repr(self.move), " [", self.max_depth, "]\n"
+        )
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_repr_to(writer, depth + 1)

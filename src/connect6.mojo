@@ -58,8 +58,6 @@ struct Move(TMove):
 
     def write_repr_to[W: Writer](self, mut writer: W):
         self.write_to(writer)
-        if self._score.is_decisive():
-            writer.write("#")
         writer.write(" ", self._score)
 
 

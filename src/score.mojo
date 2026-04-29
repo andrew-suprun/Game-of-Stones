@@ -73,6 +73,16 @@ struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegi
             return Draw
         return (a if a > b else b) + 0.0  # '+ 0.0' to avoid accidental draws
 
+    @staticmethod
+    def min(a: Score, b: Score) -> Score:
+        if a.is_win():
+            return b
+        if b.is_win():
+            return a
+        if a.is_draw() and b.is_draw():
+            return Draw
+        return (a if a < b else b) + 0.0  # '+ 0.0' to avoid accidental draws
+
     def write_to[W: Writer](self, mut writer: W):
         if isnan(self.value):
             writer.write("NO-SCORE")

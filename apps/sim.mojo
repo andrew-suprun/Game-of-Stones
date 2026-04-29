@@ -9,26 +9,18 @@ from gomoku import Gomoku
 from connect6 import Connect6
 from mcts import Mcts
 
-#
 from alpha_beta_negamax import AlphaBetaNegamax
+from principal_variation_negamax import PrincipalVariationNegamax
 
-# from principal_variation_negamax import PrincipalVariationNegamax
+# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
+# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 
-comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
-# comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-# comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-
-comptime Tree1 = AlphaBetaNegamax[Game1]
-# comptime Tree2 = AlphaBetaNegamax[Game2]
-
-# comptime Tree1 = PrincipalVariationNegamax[Game1]
-# comptime Tree2 = PrincipalVariationNegamax[Game2]
-
-# comptime Tree1 = Mcts[Game1, 6]
-comptime Tree2 = Mcts[Game2, 3]
-# comptime Tree2 = Mcts[Game2, 14]
+comptime Tree1 = PrincipalVariationNegamax[Game1]
+comptime Tree2 = AlphaBetaNegamax[Game2]
+# comptime Tree2 = Mcts[Game2, 4]
 
 comptime seed_value = 3
 
@@ -37,7 +29,7 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("abs", 250, "mcts", 250, openings())
+    run[Tree1, Tree2]("pvs", 250, "abs", 250, openings())
 
 
 def run[

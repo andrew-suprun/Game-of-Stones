@@ -1,182 +1,177 @@
 from std.time import perf_counter_ns
-from std.logger import Logger
 
-from traits import TTree, TGame, Score
+from config import Debug, Trace
+from score import Score, Win, Loss
+from traits import TTree, TGame
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
     comptime Game = Self.G
 
     var root: PrincipalVariationNode[Self.G]
-    var logger: Logger[]
 
     def __init__(out self):
         self.root = {{}, {}}
-        self.logger = Logger(prefix="pvs: ")
 
-    def search(mut self, game: Self.G, duration_ms: UInt) -> Self.G.Move:
-        var best_move: Self.G.Move = {}
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var depth = 1
-        var deadline = perf_counter_ns() + UInt(1_000_000) * duration_ms
         var start = perf_counter_ns()
+        var deadline = start + UInt(1_000_000) * max_time_ms
         while True:
-            var score = self.root._search(
-                game, best_move, Score.loss(), Score.win(), 0, depth, deadline, self.logger
-            )
+            self.root.search(game, Loss, Win, 0, depth, deadline)
+            var pv = self._pv()
             if perf_counter_ns() > deadline:
-                return best_move
-            self.logger.debug(
-                "=== max depth: ",
-                depth,
-                " move:",
-                best_move,
-                " time:",
-                Float64(perf_counter_ns() - start) / 1_000_000_000,
-            )
-            if best_move.score.is_decisive():
-                return best_move
+                return pv^
+
+            var time = Float64(perf_counter_ns() - start) / 1_000_000_000
+            comptime if Debug:
+                print(t"=== max depth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
+            if pv[0].score().is_decisive():
+                return pv^
+
+            var n_non_loosing_moves = 0
+            for child in self.root.children:
+                if not child.move.score().is_decisive():
+                    n_non_loosing_moves += 1
+
+            if n_non_loosing_moves == 1:
+                return pv^
+
             depth += 1
+
+    def _pv(self) -> List[Self.G.Move]:
+        var pv = List[Self.G.Move]()
+        self.root._pv(pv)
+        return pv^
+
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.root.write_repr_to(writer)
 
 
 struct PrincipalVariationNode[G: TGame](Copyable, Writable):
     var move: Self.G.Move
-    var score: Score
+    var max_depth: Int
     var children: List[Self]
 
-    def __init__(out self, move: Self.G.Move, score: Score):
+    def __init__(out self, move: Self.G.Move, max_depth: Int):
         self.move = move
-        self.score = score
+        self.max_depth = max_depth
         self.children = List[Self]()
 
-    def _search(
+    def search(
         mut self,
         game: Self.G,
-        mut best_move: Self.G.Move,
         var alpha: Score,
         beta: Score,
         depth: Int,
         max_depth: Int,
         deadline: UInt,
-        logger: Logger,
-    ) -> Score:
+    ):
         if perf_counter_ns() > deadline:
-            return Score()
+            return
 
         if not self.children:
-            var moves = game.moves()
-            assert len(moves) > 0
-            self.children = [Self(move.move, move.score) for move in moves]
+            self.children = [Self(move, max_depth) for move in game.moves()]
 
-        best_move = {self.children[0].move, self.children[0].score}
-        var best_score = Score.loss()
+        self.max_depth = max_depth
+        self.move.set_score(Win)
 
         if depth == max_depth:
             for child in self.children:
-                best_score = max(best_score, child.score)
-            return best_score
+                self.move.set_score(Score.min(self.move.score(), -child.move.score()))
+            return
 
         sort[Self.greater](self.children)
 
-        if self.children[0].score.is_win():
-            return Score.win()
-
-        for ref child in self.children[1:]:
-            if not child.score.is_decisive():
-                child.score = Score()
-
-        var deeper_best_move: Self.G.Move = {}
         var idx = 0
-
-        # Full window search
+        var zero_window = False
         while idx < len(self.children):
             ref child = self.children[idx]
 
-            if child.score.is_decisive():
-                if best_score < child.score:
-                    best_score = child.score
-                    alpha = max(alpha, child.score)
-                if child.score > beta or child.score.is_win():
-                    return best_score
+            var new_beta = alpha if zero_window else beta
 
-                idx += 1
-                continue
+            comptime if Trace:
+                if depth < 1:
+                    print(t"[{depth}] {"    "*depth}  >> {child.move} [{alpha} : {new_beta}]")
+            
+            if not child.move.score().is_decisive():
+                var g = game.copy()
+                g.play_move(child.move)
 
-            var g = game.copy()
-            g.play_move(child.move)
+                child.search(g, -new_beta, -alpha, depth + 1, max_depth, deadline)
 
-            child.score = -child._search(g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger)
-            if not child.score.is_set():
-                return Score()
+            comptime if Trace:
+                if depth < 1:
+                    print(t"[{depth}] {"    "*depth}  << {repr(child.move)}")
 
-            if best_score < child.score:
-                best_score = child.score
-                best_move = {child.move, child.score}
-                alpha = max(alpha, best_score)
+            self.move.set_score(Score.min(self.move.score(), -child.move.score()))
 
-            if child.score > beta or child.score.is_win():
-                return best_score
+            # if child.move.score() == Win:
+            #     return
 
+            comptime if Trace:
+                if depth < 1:
+                    print(t"[{depth}] {"    "*depth}  -- child={child.move.score()} beta={beta} zero_window={zero_window}")
+            if child.move.score() > new_beta or child.move.score() == Win:
+                if zero_window:
+                    zero_window = False
+                    alpha = max(alpha, child.move.score())
+                    continue
+                else:
+                    break
+
+            alpha = max(alpha, child.move.score())
             idx += 1
+            zero_window = True
 
-            if alpha != Score.loss() and child.score >= alpha:
-                break
+    def _pv(self, mut pv: List[Self.G.Move]):
+        if not self.children:
+            return
 
-        # Scout search
-        while idx < len(self.children):
+        ref best_child = self._best_node()
+        pv.append(best_child.move)
+        best_child._pv(pv)
+
+    def _best_node(self) -> ref[self.children] Self:
+        var has_draw = False
+        var draw_node_idx = len(self.children) - 1
+        var best_child_idx = 0
+        for idx in range(len(self.children)):
             ref child = self.children[idx]
-
-            if child.score.is_decisive():
-                if best_score < child.score:
-                    best_score = child.score
-                    alpha = max(alpha, best_score)
-                if child.score > beta or child.score.is_win():
-                    return best_score
-
-                idx += 1
+            var score = child.move.score()
+            if score.is_loss():
+                continue
+            elif score.is_win():
+                return child
+            elif score.is_draw():
+                has_draw = True
+                draw_node_idx = idx
                 continue
 
-            var g = game.copy()
-            g.play_move(child.move)
+            ref best_child = self.children[best_child_idx]
+            if best_child.move.score() < score:
+                best_child_idx = idx
 
-            child.score = -child._search(
-                g, deeper_best_move, -alpha, -alpha, depth + 1, max_depth, deadline, logger
-            )
+        if has_draw and self.children[best_child_idx].move.score() < 0:
+            return self.children[draw_node_idx]
 
-            if best_score < child.score:
-                best_score = child.score
-                best_move = {child.move, child.score}
+        return self.children[best_child_idx]
 
-            if child.score > beta or child.score.is_win():
-                return best_score
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.write_repr_to(writer, depth=0)
 
-            if best_score > alpha and depth < max_depth - 1:
-                alpha = best_score
-                child.score = -child._search(
-                    g, deeper_best_move, -beta, -alpha, depth + 1, max_depth, deadline, logger
-                )
-
-                if best_score < child.score:
-                    best_score = child.score
-                    best_move = {child.move, child.score}
-                    alpha = max(alpha, best_score)
-
-                if child.score > beta or child.score.is_win():
-                    return best_score
-
-            idx += 1
-
-        return best_score
-
-    def write_to[W: Writer](self, mut writer: W):
-        self.write_to(writer, depth=0)
-
-    def write_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self.move, " ", self.score, "\n")
+    def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
+        writer.write("|   " * depth, repr(self.move), "\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
-                child.write_to(writer, depth + 1)
+                child.write_repr_to(writer, depth + 1)
 
     @staticmethod
     @parameter
     def greater(a: Self, b: Self) -> Bool:
-        return a.score > b.score
+        if a.max_depth > b.max_depth:
+            return True
+        elif a.max_depth < b.max_depth:
+            return False
+        else:
+            return a.move.score() > b.move.score()
