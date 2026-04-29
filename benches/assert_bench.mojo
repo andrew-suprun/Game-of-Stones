@@ -7,10 +7,11 @@ from config import Assert
 def fib(n: Int) -> Int:
     if n < 2:
         return n
-    return fib(n-1) + fib(n-2)
+    return fib(n - 1) + fib(n - 2)
+
 
 def bench_fib():
-        keep(fib(black_box(40)) > 100_000_000)
+    keep(fib(black_box(40)) > 100_000_000)
 
 
 def bench_assert_fib():

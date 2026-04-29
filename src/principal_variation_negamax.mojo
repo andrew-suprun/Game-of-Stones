@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
 
-from config import Debug, Trace
+from config import Assert, Debug, Trace
 from score import Score, Win, Loss
 from traits import TTree, TGame
 
@@ -25,7 +25,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
             comptime if Debug:
-                print(t"=== max depth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
+                print(t"    pvs: dpth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
             if pv[0].score().is_decisive():
                 return pv^
 
@@ -91,9 +91,9 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
             var new_beta = alpha if zero_window else beta
 
             comptime if Trace:
-                if depth < 1:
-                    print(t"[{depth}] {"    "*depth}  >> {child.move} [{alpha} : {new_beta}]")
-            
+                var window = "zero" if zero_window else "full"
+                print(t"[{depth}] {"    "*depth}  >> child={child.move} [{alpha} : {new_beta}] {window} window")
+
             if not child.move.score().is_decisive():
                 var g = game.copy()
                 g.play_move(child.move)
@@ -101,28 +101,35 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 child.search(g, -new_beta, -alpha, depth + 1, max_depth, deadline)
 
             comptime if Trace:
-                if depth < 1:
-                    print(t"[{depth}] {"    "*depth}  << {repr(child.move)}")
+                print(t"[{depth}] {"    "*depth}  << child={repr(child.move)}")
 
             self.move.set_score(Score.min(self.move.score(), -child.move.score()))
 
-            # if child.move.score() == Win:
-            #     return
-
             comptime if Trace:
-                if depth < 1:
-                    print(t"[{depth}] {"    "*depth}  -- child={child.move.score()} beta={beta} zero_window={zero_window}")
-            if child.move.score() > new_beta or child.move.score() == Win:
+                print(t"[{depth}] {"    "*depth}  -- self={repr(self.move)}")
+
+            if child.move.score() >= new_beta:
                 if zero_window:
                     zero_window = False
-                    alpha = max(alpha, child.move.score())
+                    alpha = child.move.score()
+                    comptime if Trace:
+                        print(t"[{depth}] {"    "*depth}  -- retest with full window")
                     continue
                 else:
-                    break
+                    comptime if Trace:
+                        print(t"[{depth}] {"    "*depth}  -- beta cut")
+                    return
 
-            alpha = max(alpha, child.move.score())
             idx += 1
-            zero_window = True
+            if child.move.score() > alpha:
+                alpha = child.move.score()
+                zero_window = True
+                comptime if Trace:
+                    print(t"[{depth}] {"    "*depth}  -- new alpha={alpha} use zero window next")
+            else:
+                comptime if Trace:
+                    var window = "zero" if zero_window else "full"
+                    print(t"[{depth}] {"    "*depth}  --  keep using {window} window next")
 
     def _pv(self, mut pv: List[Self.G.Move]):
         if not self.children:
@@ -133,27 +140,12 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         best_child._pv(pv)
 
     def _best_node(self) -> ref[self.children] Self:
-        var has_draw = False
-        var draw_node_idx = len(self.children) - 1
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]
-            var score = child.move.score()
-            if score.is_loss():
-                continue
-            elif score.is_win():
-                return child
-            elif score.is_draw():
-                has_draw = True
-                draw_node_idx = idx
-                continue
-
             ref best_child = self.children[best_child_idx]
-            if best_child.move.score() < score:
+            if Self.greater(child, best_child):
                 best_child_idx = idx
-
-        if has_draw and self.children[best_child_idx].move.score() < 0:
-            return self.children[draw_node_idx]
 
         return self.children[best_child_idx]
 

@@ -25,10 +25,8 @@ struct AlphaBetaNegamax[G: TGame](TTree):
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
             comptime if Debug:
-                print(
-                    t"=== max depth: {depth}, score: {pv[0].score()}, time:"
-                    t" {time},  pv: {pv}"
-                )
+                print(t"    abs: dpth: {depth}, score: {pv[0].score()}, time: {time},  pv: {pv}")
+
             if pv[0].score().is_decisive():
                 return pv^
 
@@ -114,27 +112,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         best_child._pv(pv)
 
     def _best_node(self) -> ref[self.children] Self:
-        var has_draw = False
-        var draw_node_idx = len(self.children) - 1
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]
-            var score = child.move.score()
-            if score.is_loss():
-                continue
-            elif score.is_win():
-                return child
-            elif score.is_draw():
-                has_draw = True
-                draw_node_idx = idx
-                continue
-
             ref best_child = self.children[best_child_idx]
-            if best_child.move.score() < score:
+            if Self.greater(child, best_child):
                 best_child_idx = idx
-
-        if has_draw and self.children[best_child_idx].move.score() < 0:
-            return self.children[draw_node_idx]
 
         return self.children[best_child_idx]
 
@@ -142,9 +125,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.write_repr_to(writer, depth=0)
 
     def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write(
-            "|   " * depth, repr(self.move), " [", self.max_depth, "]\n"
-        )
+        writer.write("|   " * depth, repr(self.move), " [", self.max_depth, "]\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_repr_to(writer, depth + 1)
