@@ -1,6 +1,5 @@
 from std.memory import Pointer
 from std.time import perf_counter_ns
-from std.math import sqrt
 from std.logger import Logger
 
 from config import Assert
@@ -25,14 +24,14 @@ struct Mcts[G: TGame, c: Float64](TTree):
 
         if len(moves) == 1:
             return [moves[0]]
-        var all_draws = True
+        var all_decisive = True
         for move in moves:
             if move.score().is_win():
                 return self._pv()
             if not move.score().is_decisive():
-                all_draws = False
+                all_decisive = False
 
-        if all_draws:
+        if all_decisive:
             return self._pv()
 
         self.root = {{}}
@@ -125,7 +124,7 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
             ref child = self.children[child_idx]
             if child.move.score().is_decisive():
                 continue
-            var v = Float64(child.move.score()) + Self.c * sqrt(Float64(self.n_sims)) / Float64(child.n_sims)
+            var v = Float64(child.move.score()) + Self.c * Float64(self.n_sims) / Float64(child.n_sims)
             if max_v < v:
                 max_v = v
                 selected_child_idx = child_idx
@@ -141,31 +140,12 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
         best_child._pv(pv)
 
     def _best_node(self) -> ref[self.children] Self:
-        var has_draw = False
-        var draw_node_idx = len(self.children) - 1
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]
-            var score = child.move.score()
-            if score.is_loss():
-                continue
-            elif score.is_win():
-                return child
-            elif score.is_draw():
-                has_draw = True
-                draw_node_idx = idx
-                continue
-
             ref best_child = self.children[best_child_idx]
-            if (
-                best_child.n_sims < child.n_sims
-                or best_child.n_sims == child.n_sims
-                and best_child.move.score() < child.move.score()
-            ):
+            if child.move.score() > best_child.move.score():
                 best_child_idx = idx
-
-        if has_draw and self.children[best_child_idx].move.score() < 0:
-            return self.children[draw_node_idx]
 
         return self.children[best_child_idx]
 

@@ -12,31 +12,29 @@ from mcts import Mcts
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
-comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
+# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 
-# comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-# comptime Game2 = Connect6[size=19, max_moves=24, max_places=12, max_plies=100]
-
-# comptime Tree1 = AlphaBetaNegamax[Game2]
-# comptime Tree2 = AlphaBetaNegamax[Game2]
-# comptime Tree1 = PrincipalVariationNegamax[Game1]
-# comptime Tree2 = PrincipalVariationNegamax[Game2]
-# comptime Tree1 = Mcts[Game1, 4]
-# comptime Tree2 = Mcts[Game2, 4]
+comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 comptime Tree1 = AlphaBetaNegamax[Game1]
-comptime Tree2 = PrincipalVariationNegamax[Game2]
-# comptime Tree2 = Mcts[Game2, 4]
+# comptime Tree1 = PrincipalVariationNegamax[Game1]
+# comptime Tree1 = Mcts[Game1, 0.7]
 
-comptime seed_value = 3
+# comptime Tree2 = AlphaBetaNegamax[Game2]
+# comptime Tree2 = PrincipalVariationNegamax[Game2]
+comptime Tree2 = Mcts[Game2, 0.7]
+
+
+comptime seed_value = 4
 
 comptime black = True
 comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("abs", 200, "pvs", 200, openings())
+    run[Tree1, Tree2]("abs", 200, "mcts2-0.7", 200, openings())
 
 
 def run[
@@ -80,14 +78,13 @@ def run[
         if first < second:
             second_wins += 1
 
-        print("result: ", name1, ": ", first_wins, " - ", name2, ": ", second_wins, sep="")
+        print(t"result {n}: {name1}: {first_wins} - {name2}: {second_wins} ({n - first_wins - second_wins})")
         n += 1
 
 
 def sim_opening[
     T1: TTree, T2: TTree
 ](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
-    # print()
     print(name1, "vs.", name2)
     print()
 
@@ -102,12 +99,6 @@ def sim_opening[
         g1.play_move({move})
         g2.play_move({move})
         plies += 1
-
-    # print("opening:", end="")
-    # for move in opening:
-    #     print("", move, end="")
-    # print(g1)
-    # print()
 
     while True:
         start = perf_counter_ns()
@@ -155,7 +146,6 @@ def sim_opening[
                 return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"
         g1.play_move({move})
         g2.play_move({move})
-        # print(g1)
         plies += 1
         t1 = T1()
         t2 = T2()

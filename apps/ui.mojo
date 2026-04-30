@@ -11,10 +11,10 @@ comptime board_size = 19
 # comptime Game = Gomoku[board_size, 16, board_size*board_size-board_size]
 comptime Game = Connect6[board_size, 24, 16, (board_size * board_size - board_size) / 2]
 
-# comptime Tree = Mcts[Game, 4] # for Gomoku
-# comptime Tree = Mcts[Game, 5]  # for Connect6
+# comptime Tree = Mcts[Game, ???] # Gomoku
+comptime Tree = Mcts[Game, 0.7] # Connect6
 # comptime Tree = AlphaBetaNegamax[Game]
-comptime Tree = PrincipalVariationNegamax[Game]
+# comptime Tree = PrincipalVariationNegamax[Game]
 
 
 def main() raises:
