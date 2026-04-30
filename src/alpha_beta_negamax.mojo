@@ -93,7 +93,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
                 var start = perf_counter_ns()
                 comptime if Trace:
                     if depth < 2:
-                        print(t"[{depth}] {"    "*depth}  >> child={child.move} [{alpha} : {new_beta}]")
+                        print(t"[{depth}] {"    "*depth}  >> child={child.move} [{alpha} : {beta}]")
 
                 child.search(g, -beta, -alpha, depth + 1, max_depth, deadline)
 
