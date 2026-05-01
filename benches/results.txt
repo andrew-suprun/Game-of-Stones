@@ -1,28 +1,43 @@
---- basic ---
-InlineArray Int   6.495908925318761
-InlineArray Int16 6.484046931407942
-List        Int   6.590521978021978
-List        Int16 7.117422924901186
-InlineArray Float 9.438302631578948
-List        Float 9.597144772117963
 --- board ---
-max_score   0.21153221566680297
-max_int16   0.0003297785
-max_int32   0.00034434
-max_float32 0.00034454263605682747
-copy        0.04735022843531571
-update_row  0.024262342803120472
-place_stone 0.10766189891977618
-places      1.2485390218522372
+max_score   0.2106666082383874
+max_int16   0.00033175289999999997
+max_int32   0.0003392083
+max_float32 0.0003384784
+copy        0.04651878981713136
+update_row  0.024231052234380896
+place_stone 0.10779538723862515
+places      1.248759958434361
 --- connect6 ---
-moves    28.086170000000003 msec
+moves    28.11404 msec
 --- gomoku ---
-moves  1.8876257861635222 msec
-expand 2.9509920000000003 msec
+moves  1.8975692469720906 msec
+expand 3.448402 msec
 --- heap ---
-heap_add 372.9648888888889
---- logger ---
-bench1 9333.359
-bench2 3.10382e-07
---- perf_counter ---
-perf_counter 0.3113455
+heap_add 371.869
+
+Game: Gomoku
+depth 1: score: -19.0 | time 9.2e-05 | pv [m9, i8]
+depth 2: score: -5.5 | time 0.00026 | pv [l12, j9, n14]
+depth 3: score: -49.0 | time 0.001151 | pv [l12, j9, l9, h9]
+depth 4: score: -38.0 | time 0.003818 | pv [m9, i8, i7, i12, i11]
+depth 5: score: -30.5 | time 0.023807 | pv [l9, i11, i12, h9, l10, g9]
+depth 6: score: -3.5 | time 0.056332 | pv [l10, j9, l9, l7, l12, l11, n14]
+depth 7: score: -44.5 | time 0.142152 | pv [l9, l10, j8, j9, k8, i8, m8, i11]
+depth 8: score: -30.5 | time 0.324022 | pv [l9, l10, j8, i8, i11, j11, j6, i6, i7]
+depth 9: score: -47.5 | time 0.640591 | pv [l9, l10, i7, i12, i11, j11, k12, h9, g9, f7]
+depth 10: score: -29.0 | time 1.183498 | pv [l9, l10, i7, j11, k12, h9, g9, n12, m11, g8, f7]
+depth 11: score: -43.5 | time 2.240027 | pv [l9, l10, i7, i12, i11, h11, j9, j13, k14, j8, m11, f9]
+depth 12: score: -27.5 | time 4.976254 | pv [l9, l10, i7, i12, i8, k7, l6, j8, i6, g11, h10, i13, i11]
+depth 13: score: -58.0 | time 23.638936 | pv [j9, i8, i7, j11, k12, j7, k14, k13, i12, k6, h9, k7, k8, l5]
+
+Game: Connect6
+depth 1: score: 54.0 | time 0.000537 | pv [l10-m9, i7-i8]
+depth 2: score: 51.0 | time 0.002011 | pv [l9-l10, i13-l11, i12-m9]
+depth 3: score: 87.0 | time 0.012792 | pv [l10-m9, i8-i11, i6-i12, g9-j12]
+depth 4: score: 65.0 | time 0.039645 | pv [l9-l10, i8-l11, i13-j12, h14-n8, j9-j11]
+depth 5: score: 79.0 | time 0.161929 | pv [i8-j9, j8-k7, l6-l10, g11-l7, f12-j12, j7-m7]
+depth 6: score: 126.0 | time 0.532069 | pv [l10-m9, i8-i11, i7-i12, g9-j12, l7-l9, l6-l11, j7-k7]
+depth 7: score: 85.0 | time 1.531912 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, h10-o7, g9-l6, l7-m7]
+depth 8: score: 262.0 | time 3.589782 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, j8-o7, m7-m10, m5-m11, l6-l9]
+depth 9: score: 246.0 | time 13.300583 | pv [l10-m9, i8-i11, i6-i12, j12-k7, l9-l11, l6-l12, j7-k8, h5-n11, j8-n8, o7-o8]
+depth 10: score: 736.0 | time 24.210699 | pv [l10-m9, i8-i11, i7-i12, j12-l9, k7-n10, j6-p12, m10-n8, o7-o10, m8-o8, k8-p8, m6-m7]
