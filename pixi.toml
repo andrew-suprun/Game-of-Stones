@@ -15,4 +15,4 @@ format = "pixi run mojo format src test benches apps -l 116"
 
 [dependencies]
 pygame = ">=2.6.1,<3"
-mojo = ">=0.26.3.0.dev2026042005,<0.27"
+mojo = ">=1.0.0b2.dev2026050205,<2"

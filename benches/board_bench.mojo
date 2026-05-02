@@ -12,27 +12,6 @@ def bench_max_score():
         keep(board.max_value(0))
 
 
-def bench_max_simd_int16():
-    var simd: SIMD[DType.int16, 361] = 1
-    var data = black_box(simd)
-    for _ in range(1000):
-        keep(data.reduce_max())
-
-
-def bench_max_simd_int32():
-    var simd: SIMD[DType.int32, 361] = 1
-    var data = black_box(simd)
-    for _ in range(1000):
-        keep(data.reduce_max())
-
-
-def bench_max_simd_float32():
-    var simd: SIMD[DType.float32, 361] = 1
-    var data = black_box(simd)
-    for _ in range(1000):
-        keep(data.reduce_max())
-
-
 def bench_copy():
     var board = Board[19, values, win_stones]()
     for _ in range(500):
@@ -72,9 +51,6 @@ def bench_places():
 def main() raises:
     print("--- board ---")
     print("max_score  ", benchmark.run[func2=bench_max_score](0, 1, 3, 6).mean(Unit.ms))
-    print("max_int16  ", benchmark.run[func2=bench_max_simd_int16](0, 1, 3, 6).mean(Unit.ms))
-    print("max_int32  ", benchmark.run[func2=bench_max_simd_int32](0, 1, 3, 6).mean(Unit.ms))
-    print("max_float32", benchmark.run[func2=bench_max_simd_float32](0, 1, 3, 6).mean(Unit.ms))
     print("copy       ", benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.ms))
     print("update_row ", benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.ms))
     print("place_stone", benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.ms))

@@ -1,6 +1,6 @@
 from std.random import seed, shuffle
 from std.time import perf_counter_ns
-from std.reflection import get_base_type_name
+from std.reflection import reflect
 
 from score import Score
 from traits import TTree
@@ -12,35 +12,35 @@ from mcts import Mcts
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
-# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game2 = Gomoku[size=19, max_places=20, max_plies=100]
 
-comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+# comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+# comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
-comptime Tree1 = AlphaBetaNegamax[Game1]
+# comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree1 = PrincipalVariationNegamax[Game1]
-# comptime Tree1 = Mcts[Game1, 0.7]
+comptime Tree1 = Mcts[Game1, 0.7]
 
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
 comptime Tree2 = Mcts[Game2, 0.7]
 
 
-comptime seed_value = 4
+comptime seed_value = 6
 
 comptime black = True
 comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("abs", 200, "mcts2-0.7", 200, openings())
+    run[Tree1, Tree2]("p16", 500, "p20", 500, openings())
 
 
 def run[
     T1: TTree, T2: TTree
 ](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
-    print(t"Game: {get_base_type_name[T1.Game]()}: {name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
+    print(t"Game: {reflect[T1.Game]().base_name()}: {name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
@@ -106,7 +106,7 @@ def sim_opening[
         var move: String
         if turn == first:
             var pv = t1.search(g1, time1)
-            assert len(pv) > 0, t"{get_base_type_name[T1]()}.search() returned no results"
+            assert len(pv) > 0, t"{reflect[T1]().base_name()}.search() returned no results"
             move = String(pv[0])
             print(
                 String(plies).ascii_rjust(4),
@@ -126,7 +126,7 @@ def sim_opening[
                 return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
         else:
             var pv = t2.search(g2, time2)
-            assert len(pv) > 0, t"{get_base_type_name[T2]()}.search() returned no results"
+            assert len(pv) > 0, t"{reflect[T2]().base_name()}.search() returned no results"
             move = String(pv[0])
             print(
                 String(plies).ascii_rjust(4),
@@ -163,7 +163,7 @@ def openings() -> List[List[String]]:
     for _ in range(100):
         shuffle(places)
         moves = [String(Place(Game1.size / 2, Game1.size / 2))]
-        if get_base_type_name[Game1]() == "Connect6":
+        if reflect[Game1]().base_name() == "Connect6":
             for i in range(0, 3):
                 moves.append(String(t"{places[i]}-{places[i+3]}"))
         else:

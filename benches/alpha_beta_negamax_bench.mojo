@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 from std.logger import Logger
-from std.reflection import get_base_type_name
+from std.reflection import reflect
 
 
 from traits import TGame
@@ -25,7 +25,7 @@ def bench_build_tree[Game: TGame](max_depth: Int) raises:
     game.play_move(Game.Move("k9"))
     # print(game)
 
-    print(t"\nGame: {get_base_type_name[Game]()}")
+    print(t"\nGame: {reflect[Game]().base_name()}")
 
     var root = AlphaBetaNode[Game]({}, 0)
 
