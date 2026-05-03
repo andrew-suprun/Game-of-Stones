@@ -1,9 +1,6 @@
-from std.memory import Pointer
 from std.time import perf_counter_ns
-from std.logger import Logger
 
-from config import Assert
-from score import Score, Loss, Draw
+from score import Score, Loss
 from traits import TTree, TGame
 
 
@@ -12,11 +9,9 @@ struct Mcts[G: TGame, c: Float64](TTree):
     comptime MctsNode = Node[Self.G, Self.c]
 
     var root: Self.MctsNode
-    var logger: Logger[]
 
     def __init__(out self):
         self.root = {{}}
-        self.logger = Logger(prefix="mcts: ")
 
     def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         var moves = game.moves()
@@ -106,8 +101,7 @@ struct Node[G: TGame, c: Float64](Copyable, Movable, Writable):
             game.play_move(selected_child.move)
             selected_child._expand(game)
 
-        comptime if Assert:
-            assert len(self.children) > 0
+        assert len(self.children) > 0
 
         self.n_sims += 1
         var best_score = Loss

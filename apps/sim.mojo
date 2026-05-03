@@ -8,12 +8,13 @@ from board import Place, first
 from gomoku import Gomoku
 from connect6 import Connect6
 from mcts import Mcts
+from mcts2 import Mcts as Mcts2
 
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
 comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-comptime Game2 = Gomoku[size=19, max_places=20, max_plies=100]
+comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 
 # comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 # comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
@@ -24,7 +25,7 @@ comptime Tree1 = Mcts[Game1, 0.7]
 
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
-comptime Tree2 = Mcts[Game2, 0.7]
+comptime Tree2 = Mcts2[Game2, 0.7]
 
 
 comptime seed_value = 6
@@ -34,7 +35,7 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("p16", 500, "p20", 500, openings())
+    run[Tree1, Tree2]("mcts", 500, "mcts2", 500, openings())
 
 
 def run[
