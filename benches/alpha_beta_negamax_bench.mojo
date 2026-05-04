@@ -1,8 +1,5 @@
-from std.testing import assert_true
 from std.time import perf_counter_ns
-from std.logger import Logger
 from std.reflection import reflect
-
 
 from traits import TGame
 from score import Score, Win, Loss
@@ -28,10 +25,8 @@ def bench_build_tree[Game: TGame](max_depth: Int) raises:
     print(t"\nGame: {reflect[Game]().base_name()}")
 
     var root = AlphaBetaNode[Game]({}, 0)
-
-    var deadline = perf_counter_ns() + UInt(60_000_000_000)
-
     var start = perf_counter_ns()
+    var deadline = start + UInt(60_000_000_000)
     for max_depth in range(1, max_depth + 1):
         root.search(game, Loss, Win, 0, max_depth, deadline)
         var time = Float64(perf_counter_ns() - start) / 1_000_000_000
