@@ -21,17 +21,14 @@ def bench_moves():
 
 def bench_expand():
     var game = G()
-    var tree = Mcts[G, 8]()
+    var tree = Mcts[G, 0.7]()
     try:
         game.play_move({"j10"})
         game.play_move({"i9"})
     except:
         pass
     for _ in range(1000):
-        var done = tree.expand(game)
-        if done:
-            print("done")
-            break
+        tree.expand(game)
 
 
 def main() raises:

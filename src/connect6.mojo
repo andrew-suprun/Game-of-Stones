@@ -121,14 +121,15 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                     var debug_board_value = board2.debug_board_value(materialize[values]())
                     if self.turn:
                         debug_board_value = -debug_board_value
-                    comptime if Trace:
+                    comptime if Assert:
                         if debug_board_value != board_value + score1 + score2:
                             print(board2)
+                            print(place1, place2)
                             print(
                                 t"debug_board_value={debug_board_value}, board_value={board_value},"
                                 t" score1={score1}, score2={score2}"
                             )
-                    assert debug_board_value == board_value + score1 + score2
+                            assert False
 
                 var max_opp_value = board2.max_value(1 - self.turn)
                 if max_opp_value != Value.MAX:
