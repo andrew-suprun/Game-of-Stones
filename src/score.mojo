@@ -10,11 +10,11 @@ comptime Loss = Score(Value.MIN)
 comptime Draw = Score(-0.0)
 
 
-struct Score(Comparable, Defaultable, Floatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
+struct Score(Comparable, Defaultable, Floatable, TrivialRegisterPassable, Writable):
     var value: Value
 
     def __init__(out self):
-        self = nan[DType.float32]()
+        self = nan[Value.dtype]()
 
     @implicit
     def __init__(out self, value: IntLiteral):
