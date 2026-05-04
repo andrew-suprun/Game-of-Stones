@@ -6,6 +6,7 @@ from traits import TTree, TGame, TMove
 
 comptime Idx = UInt32
 
+
 struct MctsNode[M: TMove](TrivialRegisterPassable, Writable):
     var move: Self.M
     var n_sims: UInt32
@@ -70,7 +71,6 @@ struct Mcts[G: TGame, c: Float64](TTree):
             parent_indices.append(idx)
             ref child = self.tree[idx]
             g.play_move(child.move)
-
 
         var moves = g.moves()
         ref leaf = self.tree[idx]

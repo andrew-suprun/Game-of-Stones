@@ -85,7 +85,6 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         sort[Self.greater](self.children)
 
         for ref child in self.children:
-
             if not child.move.score().is_decisive():
                 var g = game.copy()
                 g.play_move(child.move)
@@ -99,8 +98,10 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
                 comptime if Trace:
                     if depth < 2:
-                        print(t"[{depth}] {"    "*depth}  << child={repr(child.move)} time: {(perf_counter_ns() - start) / 10_000}")
-
+                        print(
+                            t"[{depth}] {\"    \"*depth}  << child={repr(child.move)} time:"
+                            t" {(perf_counter_ns() - start) / 10_000}"
+                        )
 
             self.move.set_score(Score.min(self.move.score(), -child.move.score()))
 
