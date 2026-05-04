@@ -99,7 +99,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 comptime if Trace:
                     if depth < 2:
                         print(
-                            t"[{depth}] {\"    \"*depth}  >> child={child.move} [{alpha} : {new_beta}]"
+                            t"[{depth}] {"    "*depth}  >> child={child.move} [{alpha} : {new_beta}]"
                             t" {window} window"
                         )
 
@@ -108,7 +108,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 comptime if Trace:
                     if depth < 2:
                         print(
-                            t"[{depth}] {\"    \"*depth}  << child={repr(child.move)} time:"
+                            t"[{depth}] {"    "*depth}  << child={repr(child.move)} time:"
                             t" {(perf_counter_ns() - start) / 10_000} {window} window"
                         )
 

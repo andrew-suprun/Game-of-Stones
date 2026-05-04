@@ -99,7 +99,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
                 comptime if Trace:
                     if depth < 2:
                         print(
-                            t"[{depth}] {\"    \"*depth}  << child={repr(child.move)} time:"
+                            t"[{depth}] {"    "*depth}  << child={repr(child.move)} time:"
                             t" {(perf_counter_ns() - start) / 10_000}"
                         )
 
