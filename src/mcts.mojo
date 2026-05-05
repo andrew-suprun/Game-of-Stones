@@ -76,7 +76,6 @@ struct Mcts[G: TGame, c: Float64](TTree):
         ref leaf = self.tree[idx]
         leaf.first_child = Idx(len(self.tree))
         leaf.n_children = UInt32(len(moves))
-        self.tree.reserve(len(moves))
         for move in moves:
             self.tree.append(Self.Node(move))
 
@@ -131,7 +130,7 @@ struct Mcts[G: TGame, c: Float64](TTree):
     def write_to[W: Writer](self, mut writer: W, depth: Int, idx: Idx):
         ref node = self.tree[idx]
         writer.write(depth, ": ", "|   " * depth, repr(node), "\n")
-        if depth >= 2:
+        if depth >= 1:
             return
 
         for child_idx in range(node.first_child, node.first_child + node.n_children):

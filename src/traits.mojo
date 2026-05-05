@@ -24,7 +24,7 @@ trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
         ...
 
 
-trait TMove(Defaultable, Equatable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
+trait TMove(Defaultable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     def __init__(out self, text: String) raises:
         ...
 

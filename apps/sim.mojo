@@ -12,29 +12,29 @@ from mcts import Mcts
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
-comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
+# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
 
-# comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-# comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 
 # comptime Tree1 = AlphaBetaNegamax[Game1]
-# comptime Tree1 = PrincipalVariationNegamax[Game1]
-comptime Tree1 = Mcts[Game1, 0.7]
+comptime Tree1 = PrincipalVariationNegamax[Game1]
+# comptime Tree1 = Mcts[Game1, 0.8]
 
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
-comptime Tree2 = Mcts[Game2, 0.7]
+comptime Tree2 = Mcts[Game2, 0.25]
 
 
-comptime seed_value = 6
+comptime seed_value = 8
 
 comptime black = True
 comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("pvs", 5000, "mcts", 5000, openings())
+    run[Tree1, Tree2]("pvs", 1000, "mcts-0.25", 1000, openings())
 
 
 def run[
@@ -78,7 +78,7 @@ def run[
         if first < second:
             second_wins += 1
 
-        print(t"result {n}: {name1}: {first_wins} - {name2}: {second_wins} ({n - first_wins - second_wins})")
+        print(t"result {n}: {name1} : {name2} - {first_wins} : {second_wins} ({first_wins - second_wins})")
         n += 1
 
 
@@ -113,9 +113,9 @@ def sim_opening[
                 ": ",
                 name1.ascii_ljust(name_size),
                 String(pv[0]).ascii_ljust(8),
-                String(pv[0].score()).ascii_rjust(8),
-                "  ",
-                String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
+                String(pv[0].score()).ascii_rjust(7),
+                String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
+                " ",
                 sep="",
                 end="",
             )
@@ -133,9 +133,9 @@ def sim_opening[
                 ": ",
                 name2.ascii_ljust(name_size),
                 String(pv[0]).ascii_ljust(8),
-                String(pv[0].score()).ascii_rjust(8),
-                "  ",
-                String(Float64((perf_counter_ns() - start) / 1_000_000) / 1000).ascii_ljust(7),
+                String(pv[0].score()).ascii_rjust(7),
+                String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
+                " ",
                 sep="",
                 end="",
             )
