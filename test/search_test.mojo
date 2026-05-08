@@ -1,6 +1,5 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
-from std.reflection import reflect
 
 from score import Score
 from traits import TGame, TTree
@@ -14,7 +13,7 @@ from connect6 import Connect6
 
 
 def test_search[Tree: TTree, moves: List[String], expected: String]() raises:
-    print(t"testing: tree {reflect[Tree]().base_name()} game {reflect[Tree.Game]().base_name()}")
+    print(t"testing: tree {reflect[Tree].base_name()} game {reflect[Tree.Game].base_name()}")
     var tree = Tree()
     var game = Tree.Game()
     comptime for move in moves:

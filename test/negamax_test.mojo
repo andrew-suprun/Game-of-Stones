@@ -1,6 +1,5 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
-from std.reflection import reflect
 
 from traits import TGame
 from gomoku import Gomoku
@@ -9,7 +8,7 @@ from negamax import search
 
 
 def test_search[Game: TGame](moves: List[String], max_depth: Int) raises:
-    print(t"game: {reflect[Game]().base_name()}")
+    print(t"game: {reflect[Game].base_name()}")
     for depth in range(1, max_depth):
         var game = Game()
         for move in moves:

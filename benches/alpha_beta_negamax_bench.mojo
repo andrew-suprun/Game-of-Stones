@@ -1,5 +1,4 @@
 from std.time import perf_counter_ns
-from std.reflection import reflect
 
 from traits import TGame
 from score import Score, Win, Loss
@@ -22,7 +21,7 @@ def bench_build_tree[Game: TGame](max_depth: Int) raises:
     game.play_move(Game.Move("k9"))
     # print(game)
 
-    print(t"\nGame: {reflect[Game]().base_name()}")
+    print(t"\nGame: {reflect[Game].base_name()}")
 
     var root = AlphaBetaNode[Game]({}, 0)
     var start = perf_counter_ns()

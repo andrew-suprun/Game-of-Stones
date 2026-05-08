@@ -154,18 +154,11 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             offset += delta
 
     def places(self, turn: Int, mut places: List[PlaceValue]):
-        if turn == first:
             for y in range(Self.size):
                 for x in range(Self.size):
                     if self[x, y] == self.empty:
                         var place = Place(x, y)
-                        heap_add[less](PlaceValue(place, self.value(place, first)), places)
-        else:
-            for y in range(Self.size):
-                for x in range(Self.size):
-                    if self[x, y] == self.empty:
-                        var place = Place(x, y)
-                        heap_add[less](PlaceValue(place, self.value(place, second)), places)
+                        heap_add[less](PlaceValue(place, self.value(place, turn)), places)
 
     def __getitem__(self, x: Int, y: Int) -> Int:
         return Int(self._places[y * Self.size + x])

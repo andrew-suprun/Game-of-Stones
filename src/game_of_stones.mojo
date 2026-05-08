@@ -1,7 +1,6 @@
 from std.time import perf_counter_ns
 from std.python import Python, PythonObject
 from std.random import seed, shuffle
-from std.reflection import reflect
 
 from score import Score
 from board import Place
@@ -23,7 +22,7 @@ comptime duration = 1000
 
 
 def game_of_stones[board_size: Int, Tree: TTree, Game: TGame]() raises:
-    comptime name = reflect[Game]().base_name()
+    comptime name = reflect[Game].base_name()
     comptime stones_per_move = 2 if name == "Connect6" else 1
     var pygame = Python.import_module("pygame")
     pygame.init()

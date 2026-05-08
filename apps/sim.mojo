@@ -1,7 +1,7 @@
 from std.random import seed, shuffle
 from std.time import perf_counter_ns
-from std.reflection import reflect
 
+from config import Debug
 from score import Score
 from traits import TTree
 from board import Place, first
@@ -12,19 +12,19 @@ from mcts import Mcts
 from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
-# comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-# comptime Game2 = Gomoku[size=19, max_places=16, max_plies=100]
+# comptime Game1 = Gomoku[size=19, max_places=18, max_plies=100]
+# comptime Game2 = Gomoku[size=19, max_places=18, max_plies=100]
 
-comptime Game1 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-comptime Game2 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
+comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 
 # comptime Tree1 = AlphaBetaNegamax[Game1]
 comptime Tree1 = PrincipalVariationNegamax[Game1]
-# comptime Tree1 = Mcts[Game1, 0.8]
+# comptime Tree1 = Mcts[Game1, 0.25]
 
 # comptime Tree2 = AlphaBetaNegamax[Game2]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
-comptime Tree2 = Mcts[Game2, 0.25]
+comptime Tree2 = Mcts[Game2, 0.35]
 
 
 comptime seed_value = 8
@@ -34,34 +34,37 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("pvs", 1000, "mcts-0.25", 1000, openings())
+    run[Tree1, Tree2]("pvs-26-20", 1000, "mcts-26-20", 1000, openings())
 
 
 def run[
     T1: TTree, T2: TTree
 ](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
-    print(t"Game: {reflect[T1.Game]().base_name()}: {name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
+    print(t"Game: {reflect[T1.Game].base_name()}: {name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
     var n = 1
     for opening in openings:
-        print()
-        print("------")
-        print()
-        print("opening ", n, ":", sep="", end="")
-        for move in opening:
-            print("", move, end="")
-        print()
-        print()
+        if Debug:
+            print()
+            print("------")
+            print()
+            print("opening ", n, ":", sep="", end="")
+            for move in opening:
+                print("", move, end="")
+            print()
+            print()
         var winner1 = sim_opening[T1, T2](name1, time1, name2, time2, opening)
-        print()
-        print("winner:", winner1)
-        print()
+        if Debug:
+            print()
+            print("winner:", winner1)
+            print()
         var winner2 = sim_opening[T2, T1](name2, time2, name1, time1, opening)
-        print()
-        print("winner:", winner2)
-        print()
+        if Debug:
+            print()
+            print("winner:", winner2)
+            print()
 
         var first = 0
         var second = 0
@@ -85,8 +88,9 @@ def run[
 def sim_opening[
     T1: TTree, T2: TTree
 ](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
-    print(name1, "vs.", name2)
-    print()
+    if Debug:
+        print(name1, "vs.", name2)
+        print()
 
     var g1 = T1.Game()
     var g2 = T2.Game()
@@ -106,42 +110,44 @@ def sim_opening[
         var move: String
         if turn == first:
             var pv = t1.search(g1, time1)
-            assert len(pv) > 0, t"{reflect[T1]().base_name()}.search() returned no results"
+            assert len(pv) > 0, t"{reflect[T1].base_name()}.search() returned no results"
             move = String(pv[0])
-            print(
-                String(plies).ascii_rjust(4),
-                ": ",
-                name1.ascii_ljust(name_size),
-                String(pv[0]).ascii_ljust(8),
-                String(pv[0].score()).ascii_rjust(7),
-                String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
-                " ",
-                sep="",
-                end="",
-            )
-            for move in pv[1:]:
-                print(t" {move}", end="")
-            print()
+            if Debug:
+                print(
+                    String(plies).ascii_rjust(4),
+                    ": ",
+                    name1.ascii_ljust(name_size),
+                    String(pv[0]).ascii_ljust(8),
+                    String(pv[0].score()).ascii_rjust(7),
+                    String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
+                    " ",
+                    sep="",
+                    end="",
+                )
+                for move in pv[1:]:
+                    print(t" {move}", end="")
+                print()
             if len(pv) == 1 and pv[0].score().is_decisive():
                 return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
         else:
             var pv = t2.search(g2, time2)
-            assert len(pv) > 0, t"{reflect[T2]().base_name()}.search() returned no results"
+            assert len(pv) > 0, t"{reflect[T2].base_name()}.search() returned no results"
             move = String(pv[0])
-            print(
-                String(plies).ascii_rjust(4),
-                ": ",
-                name2.ascii_ljust(name_size),
-                String(pv[0]).ascii_ljust(8),
-                String(pv[0].score()).ascii_rjust(7),
-                String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
-                " ",
-                sep="",
-                end="",
-            )
-            for move in pv[1:]:
-                print(t" {move}", end="")
-            print()
+            if Debug:
+                print(
+                    String(plies).ascii_rjust(4),
+                    ": ",
+                    name2.ascii_ljust(name_size),
+                    String(pv[0]).ascii_ljust(8),
+                    String(pv[0].score()).ascii_rjust(7),
+                    String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
+                    " ",
+                    sep="",
+                    end="",
+                )
+                for move in pv[1:]:
+                    print(t" {move}", end="")
+                print()
             if len(pv) == 1 and pv[0].score().is_decisive():
                 return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"
         g1.play_move({move})
@@ -163,7 +169,7 @@ def openings() -> List[List[String]]:
     for _ in range(100):
         shuffle(places)
         moves = [String(Place(Game1.size / 2, Game1.size / 2))]
-        if reflect[Game1]().base_name() == "Connect6":
+        if reflect[Game1].base_name() == "Connect6":
             for i in range(0, 4):
                 moves.append(String(t"{places[i]}-{places[i+4]}"))
         else:
