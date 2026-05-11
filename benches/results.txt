@@ -1,19 +1,17 @@
 --- board ---
-max_score   0.2106666082383874
-max_int16   0.00033175289999999997
-max_int32   0.0003392083
-max_float32 0.0003384784
-copy        0.04651878981713136
-update_row  0.024231052234380896
-place_stone 0.10779538723862515
-places      1.248759958434361
+max_score   0.206 sec/1M
+copy        0.434 sec/10M
+update_row  0.175 sec/10M
+place_stone 0.739 sec/10M
+rollout     0.184 sec/100K
+places      1.268 sec/1M
 --- connect6 ---
 moves    28.11404 msec
 --- gomoku ---
 moves  1.8975692469720906 msec
 expand 3.448402 msec
 --- heap ---
-heap_add 371.869
+heap_add 37.31039583333334
 
 Game: Gomoku
 depth 1: score: -19.0 | time 9.2e-05 | pv [m9, i8]

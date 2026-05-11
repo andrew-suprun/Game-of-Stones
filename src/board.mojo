@@ -130,16 +130,9 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         else:
             self[x, y] = Self.white
 
-    def _update_row(
-        mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]
-    ):
+    def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
-
-        for _ in range(n + Self.win_stones - 1):
-            offset += delta
-
-        offset = start
 
         comptime for i in range(Self.win_stones - 1):
             stones += self._places[offset + i * delta]
@@ -154,11 +147,11 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             offset += delta
 
     def places(self, turn: Int, mut places: List[PlaceValue]):
-            for y in range(Self.size):
-                for x in range(Self.size):
-                    if self[x, y] == self.empty:
-                        var place = Place(x, y)
-                        heap_add[less](PlaceValue(place, self.value(place, turn)), places)
+        for y in range(Self.size):
+            for x in range(Self.size):
+                if self[x, y] == self.empty:
+                    var place = Place(x, y)
+                    heap_add[less](PlaceValue(place, self.value(place, turn)), places)
 
     def __getitem__(self, x: Int, y: Int) -> Int:
         return Int(self._places[y * Self.size + x])
@@ -330,9 +323,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         return max_value
 
 
-def _calc_value_table[
-    win_stones: Int, values: List[Value]
-]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
+def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[values]()
@@ -351,6 +342,12 @@ def _calc_value_table[
 
 
 def main():
+    var board = Board[19, [0, 1, 5, 25, 125, 625], 6]()
+    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625]]()
+    board._update_row(0, 1, 6, table[0])
+
+
+def mainX():
     var board = Board[19, [0, 1, 5, 25, 125, 625], 6]()
     print(board)
     print(board.str_values())
