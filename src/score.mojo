@@ -1,5 +1,5 @@
 from std.sys.defines import get_defined_string
-from std.utils.numerics import FPUtils, isinf, isnan, inf, nan
+from std.utils.numerics import FPUtils, isinf, isnan, isfinite, inf, nan
 
 comptime AssertMode = get_defined_string["ASSERT", "none"]()
 comptime Assert = AssertMode == "all"
@@ -7,14 +7,14 @@ comptime Assert = AssertMode == "all"
 comptime Value = Float32
 comptime Win = Score(Value.MAX)
 comptime Loss = Score(Value.MIN)
-comptime Draw = Score(-0.0)
+comptime Draw = nan[Value.dtype]()
 
 
 struct Score(Comparable, Defaultable, Floatable, TrivialRegisterPassable, Writable):
     var value: Value
 
     def __init__(out self):
-        self = nan[Value.dtype]()
+        self = Loss
 
     @implicit
     def __init__(out self, value: IntLiteral):
@@ -34,59 +34,49 @@ struct Score(Comparable, Defaultable, Floatable, TrivialRegisterPassable, Writab
         return isinf(self.value) and self.value < 0
 
     def is_draw(self) -> Bool:
-        return self.value == 0 and FPUtils.get_sign(self.value)
+        return isnan(self.value)
 
     def is_decisive(self) -> Bool:
-        return isinf(self.value) or self.is_draw()
-
-    def is_set(self) -> Bool:
-        return not isnan(self.value)
+        return not isfinite(self.value)
 
     def __add__(self, other: Self) -> Score:
-        comptime if Assert:
-            assert (
-                other == 0.0
-                or self.is_set()
-                and not self.is_decisive()
-                and other.is_set()
-                and not other.is_loss()
-                and not other.is_draw()
-            )
         return Score(self.value + other.value)
 
     def __eq__(self, other: Self) -> Bool:
-        return self.value == other.value
+        return self.value == other.value or self.is_draw() and other.is_draw()
 
     def __lt__(self, other: Self) -> Bool:
-        return self.value < other.value
+        var self_value = self.value if not self.is_draw() else 0
+        var other_value = other.value if not other.is_draw() else 0
+        return self_value < other_value
 
     def __neg__(self) -> Self:
-        return Score(-self.value) if self.value != 0.0 else self
+        return -self.value if not self.is_draw() else Draw
 
     @staticmethod
     def max(a: Score, b: Score) -> Score:
-        if a.is_loss():
-            return b
-        if b.is_loss():
-            return a
         if a.is_draw() and b.is_draw():
             return Draw
-        return (a if a > b else b) + 0.0  # '+ 0.0' to avoid accidental draws
+        var a_value = a.value if not a.is_draw() else 0
+        var b_value = b.value if not b.is_draw() else 0
+        if a_value < b_value:
+            return b
+        else:
+            return a
 
     @staticmethod
     def min(a: Score, b: Score) -> Score:
-        if a.is_win():
-            return b
-        if b.is_win():
-            return a
         if a.is_draw() and b.is_draw():
             return Draw
-        return (a if a < b else b) + 0.0  # '+ 0.0' to avoid accidental draws
+        var a_value = a.value if not a.is_draw() else 0
+        var b_value = b.value if not b.is_draw() else 0
+        if a_value >= b_value:
+            return b
+        else:
+            return a
 
     def write_to[W: Writer](self, mut writer: W):
-        if isnan(self.value):
-            writer.write("NO-SCORE")
-        elif isinf(self.value):
+        if isinf(self.value):
             if self.value > 0:
                 writer.write("win")
             else:
