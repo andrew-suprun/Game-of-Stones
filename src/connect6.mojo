@@ -18,7 +18,7 @@ struct Move(TMove):
         self._p2 = Place()
         self._score = 0
 
-    def __init__(out self, p1: Place, p2: Place, score: Score, terminal: Bool = False):
+    def __init__(out self, p1: Place, p2: Place, score: Score):
         if p1 < p2:
             self._p1 = p1
             self._p2 = p2
@@ -125,10 +125,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                         if debug_board_value != board_value + score1 + score2:
                             print(board2)
                             print(place1, place2)
-                            print(
-                                t"debug_board_value={debug_board_value}, board_value={board_value},"
-                                t" score1={score1}, score2={score2}"
-                            )
+                            print(t"debug_board_value={debug_board_value}, board_value={board_value}, score1={score1}, score2={score2}")
                             assert False
 
                 var max_opp_value = board2.max_value(1 - self.turn)

@@ -40,6 +40,9 @@ struct PlaceValue(TrivialRegisterPassable, Writable):
     var place: Place
     var value: Value
 
+    def write_to[W: Writer](self, mut writer: W):
+        writer.write(t"{self.place} {self.value}")
+
 
 def less(a: PlaceValue, b: PlaceValue) -> Bool:
     return a.value < b.value
