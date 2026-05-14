@@ -2,11 +2,26 @@ from std.testing import assert_true
 from std.random import seed, random_si64
 
 from score import Score, Win
-from board import Board, Value, Place, first, second
+from board import Board, Place, Value, PlaceValue, first, second
 
 comptime size = 19
 comptime win_stones = 6
 comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
+
+
+def test_places() raises:
+    var board = Board[size, values, win_stones]()
+    board.place_stone("j10", 0)
+    board.place_stone("i10", 1)
+    board.place_stone("i9", 1)
+    print(board)
+    print(board.str_values())
+
+    var heap = List[PlaceValue](capacity=20)
+    board.places(1, heap)
+    print(len(heap))
+    for move in heap:
+        print(move)
 
 
 def test_place_stone() raises:
@@ -49,4 +64,5 @@ def test_place_stone() raises:
 
 
 def main() raises:
+    test_places()
     test_place_stone()

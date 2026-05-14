@@ -88,9 +88,9 @@ def bench_places():
 
 def main() raises:
     print("--- board ---")
-    # print(t"max_score   {benchmark.run[func2=bench_max_score](0, 1, 3, 6).mean(Unit.s)} sec/1M")
-    # print(t"copy        {benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.s)} sec/10M")
+    print(t"max_score   {benchmark.run[func2=bench_max_score](0, 1, 3, 6).mean(Unit.s)} sec/1M")
+    print(t"copy        {benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.s)} sec/10M")
     print(t"update_row  {benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.ms)} sec/1M")
-    # print(t"place_stone {benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.s)} sec/10M")
-    # print(t"rollout     {benchmark.run[func2=bench_rollout](0, 1, 3, 6).mean(Unit.s)} sec/100K")
-    # print(t"places      {benchmark.run[func2=bench_places](0, 1, 3, 6).mean(Unit.s)} sec/1M")
+    print(t"place_stone {benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.s)} sec/10M")
+    print(t"rollout     {benchmark.run[func2=bench_rollout](0, 1, 3, 6).mean(Unit.s)} sec/100K")
+    print(t"places      {benchmark.run[func2=bench_places](0, 1, 3, 6).mean(Unit.s)} sec/1M")
