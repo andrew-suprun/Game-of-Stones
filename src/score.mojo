@@ -53,27 +53,19 @@ struct Score(Comparable, Defaultable, Floatable, TrivialRegisterPassable, Writab
     def __neg__(self) -> Self:
         return -self.value if not self.is_draw() else Draw
 
-    @staticmethod
-    def max(a: Score, b: Score) -> Score:
-        if a.is_draw() and b.is_draw():
+    def max(self, other: Score) -> Score:
+        if self.is_draw() and other.is_draw():
             return Draw
-        var a_value = a.value if not a.is_draw() else 0
-        var b_value = b.value if not b.is_draw() else 0
-        if a_value < b_value:
-            return b
-        else:
-            return a
+        var self_value = self.value if not self.is_draw() else 0
+        var other_value = other.value if not other.is_draw() else 0
+        return Score(max(self_value, other_value))
 
-    @staticmethod
-    def min(a: Score, b: Score) -> Score:
-        if a.is_draw() and b.is_draw():
+    def min(self, other: Score) -> Score:
+        if self.is_draw() and other.is_draw():
             return Draw
-        var a_value = a.value if not a.is_draw() else 0
-        var b_value = b.value if not b.is_draw() else 0
-        if a_value >= b_value:
-            return b
-        else:
-            return a
+        var self_value = self.value if not self.is_draw() else 0
+        var other_value = other.value if not other.is_draw() else 0
+        return Score(min(self_value, other_value))
 
     def write_to[W: Writer](self, mut writer: W):
         if isinf(self.value):

@@ -79,7 +79,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         if depth == max_depth:
             for child in self.children:
-                self.move.set_score(Score.min(self.move.score(), -child.move.score()))
+                self.move.set_score(self.move.score().min(-child.move.score()))
             return
 
         sort[Self.greater](self.children)
@@ -92,18 +92,15 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
                 var start = perf_counter_ns()
                 comptime if Trace:
                     if depth < 2:
-                        print(t"[{depth}] {"    "*depth}  >> child={child.move} [{alpha} : {beta}]")
+                        print(t"[{depth}] {'    '*depth}  >> child={child.move} [{alpha} : {beta}]")
 
                 child.search(g, -beta, -alpha, depth + 1, max_depth, deadline)
 
                 comptime if Trace:
                     if depth < 2:
-                        print(
-                            t"[{depth}] {"    "*depth}  << child={repr(child.move)} time:"
-                            t" {(perf_counter_ns() - start) / 10_000}"
-                        )
+                        print(t"[{depth}] {'    '*depth}  << child={repr(child.move)} time: {(perf_counter_ns() - start) / 10_000}")
 
-            self.move.set_score(Score.min(self.move.score(), -child.move.score()))
+            self.move.set_score(self.move.score().min(-child.move.score()))
 
             alpha = max(alpha, child.move.score())
             if alpha > beta or alpha.is_win():

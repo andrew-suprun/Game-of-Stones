@@ -85,7 +85,7 @@ struct Mcts[G: TGame, c: Float64](TTree):
             var best_score = Loss
             for idx in range(parent.first_child, parent.first_child + parent.n_children):
                 ref child = self.tree[idx]
-                best_score = Score.max(best_score, child.move.score())
+                best_score = best_score.max(child.move.score())
 
             parent.move.set_score(-best_score)
 

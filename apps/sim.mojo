@@ -15,7 +15,7 @@ from principal_variation_negamax import PrincipalVariationNegamax
 # comptime Game1 = Gomoku[size=19, max_places=18, max_plies=100]
 # comptime Game2 = Gomoku[size=19, max_places=18, max_plies=100]
 
-comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
+comptime Game1 = Connect6[size=19, max_moves=30, max_places=24, max_plies=100]
 comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 
 # comptime Tree1 = AlphaBetaNegamax[Game1]
@@ -34,12 +34,10 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("pvs-26-20", 1000, "mcts-26-20", 1000, openings())
+    run[Tree1, Tree2]("pvs-30-24", 1000, "mcts-26-20", 1000, openings())
 
 
-def run[
-    T1: TTree, T2: TTree
-](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
+def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
     print(t"Game: {reflect[T1.Game].base_name()}: {name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
 
     var first_wins = 0
@@ -85,9 +83,7 @@ def run[
         n += 1
 
 
-def sim_opening[
-    T1: TTree, T2: TTree
-](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     if Debug:
         print(name1, "vs.", name2)
         print()

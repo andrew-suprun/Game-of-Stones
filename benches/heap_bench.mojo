@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit
+from std.benchmark import benchmark, Unit, keep
 
 from heap import heap_add
 
@@ -10,14 +10,15 @@ def less(a: Int, b: Int) -> Bool:
 def bench():
     var heap = List[Int](capacity=20)
 
-    for _ in range(100_000):
+    var s = 0
+    for _ in range(10_000_000):
         heap.clear()
         for i in range(100):
             heap_add[less](i * 17 % 100, heap)
+            s += heap[0]
+            keep(s)
 
 
 def main() raises:
     print("--- heap ---")
-    print("heap_add", benchmark.run[func2=bench](0, 1, 3, 6).min(Unit.s))
-    var report = benchmark.run[func2=bench](0, 1, 3, 6)
-    report.print()
+    print("heap_add", benchmark.run[func2=bench](0, 1, 3, 6).min(Unit.ms))

@@ -78,7 +78,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
         if depth == max_depth:
             for child in self.children:
-                self.move.set_score(Score.min(self.move.score(), -child.move.score()))
+                self.move.set_score(self.move.score().min(-child.move.score()))
             return
 
         sort[Self.greater](self.children)
@@ -98,35 +98,29 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 var window = "zero" if zero_window else "full"
                 comptime if Trace:
                     if depth < 2:
-                        print(
-                            t"[{depth}] {"    "*depth}  >> child={child.move} [{alpha} : {new_beta}]"
-                            t" {window} window"
-                        )
+                        print(t"[{depth}] {'    '*depth}  >> child={child.move} [{alpha} : {new_beta}] {window} window")
 
                 child.search(g, -new_beta, -alpha, depth + 1, max_depth, deadline)
 
                 comptime if Trace:
                     if depth < 2:
-                        print(
-                            t"[{depth}] {"    "*depth}  << child={repr(child.move)} time:"
-                            t" {(perf_counter_ns() - start) / 10_000} {window} window"
-                        )
+                        print(t"[{depth}] {'    '*depth}  << child={repr(child.move)} time: {(perf_counter_ns() - start) / 10_000} {window} window")
 
-            self.move.set_score(Score.min(self.move.score(), -child.move.score()))
+            self.move.set_score(self.move.score().min(-child.move.score()))
 
             comptime if Trace:
-                print(t"[{depth}] {"    "*depth}  -- self={repr(self.move)}")
+                print(t"[{depth}] {'    '*depth}  -- self={repr(self.move)}")
 
             if child.move.score() >= new_beta:
                 if zero_window:
                     zero_window = False
                     alpha = child.move.score()
                     comptime if Trace:
-                        print(t"[{depth}] {"    "*depth}  -- retest with full window")
+                        print(t"[{depth}] {'    '*depth}  -- retest with full window")
                     continue
                 else:
                     comptime if Trace:
-                        print(t"[{depth}] {"    "*depth}  -- beta cut")
+                        print(t"[{depth}] {'    '*depth}  -- beta cut")
                     return
 
             idx += 1
@@ -134,11 +128,11 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 alpha = child.move.score()
                 zero_window = True
                 comptime if Trace:
-                    print(t"[{depth}] {"    "*depth}  -- new alpha={alpha} use zero window next")
+                    print(t"[{depth}] {'    '*depth}  -- new alpha={alpha} use zero window next")
             else:
                 comptime if Trace:
                     var window = "zero" if zero_window else "full"
-                    print(t"[{depth}] {"    "*depth}  --  keep using {window} window next")
+                    print(t"[{depth}] {'    '*depth}  --  keep using {window} window next")
 
     def _pv(self, mut pv: List[Self.G.Move]):
         if not self.children:
