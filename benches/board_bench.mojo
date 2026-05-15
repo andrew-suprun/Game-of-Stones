@@ -6,7 +6,7 @@ comptime win_stones = 6
 comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
 
 
-def bench_max_score():
+def bench_max_value():
     var board = Board[19, values, win_stones]()
     for _ in range(1_000_000):
         keep(board.max_value(0))
@@ -14,7 +14,7 @@ def bench_max_score():
 
 def bench_copy():
     var board = Board[19, values, win_stones]()
-    for _ in range(5_000_000):
+    for _ in range(500_000):
         var b = board.copy()
         keep(b)
         board = b.copy()
@@ -51,7 +51,7 @@ def bench_place_stone():
         copy.place_stone(heap[0].place, 1)
         places.append(heap[0].place)
 
-    for _ in range(100_000):
+    for _ in range(10_000):
         var copy = board.copy()
         for i in range(50):
             copy.place_stone(places[2 * i], 0)
@@ -65,7 +65,7 @@ def bench_rollout():
     board.place_stone(Place(8, 8), 1)
     board.place_stone(Place(8, 9), 0)
     var places = List[PlaceValue](capacity=20)
-    for _ in range(1000):
+    for _ in range(10_000):
         var copy = board.copy()
         for _ in range(50):
             places.clear()
@@ -88,9 +88,9 @@ def bench_places():
 
 def main() raises:
     print("--- board ---")
-    print(t"max_score   {benchmark.run[func2=bench_max_score](0, 1, 3, 6).mean(Unit.s)} sec/1M")
-    print(t"copy        {benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.s)} sec/10M")
-    print(t"update_row  {benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.ms)} sec/1M")
-    print(t"place_stone {benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.s)} sec/10M")
-    print(t"rollout     {benchmark.run[func2=bench_rollout](0, 1, 3, 6).mean(Unit.s)} sec/100K")
+    print(t"max_score   {benchmark.run[func2=bench_max_value](0, 1, 3, 6).mean(Unit.s)} sec/1M")
+    print(t"copy        {benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.s)} sec/1M")
+    print(t"update_row  {benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.s)} sec/1M")
+    print(t"place_stone {benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.s)} sec/1M")
+    print(t"rollout     {benchmark.run[func2=bench_rollout](0, 1, 3, 6).mean(Unit.s)} sec/1M")
     print(t"places      {benchmark.run[func2=bench_places](0, 1, 3, 6).mean(Unit.s)} sec/1M")

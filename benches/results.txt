@@ -1,11 +1,11 @@
 --- board ---
-max_score   0.206 sec/1M
-copy        0.434 sec/10M
-update_row  0.175 sec/10M
-place_stone 0.739 sec/10M
-rollout     0.184 sec/100K
+max_score   0.207 sec/1M
+copy        0.043 sec/1M
+update_row  0.017 sec/1M
+place_stone 0.074 sec/1M
+rollout     1.880 sec/1M
 places      1.268 sec/1M
---- connect6 ---
+➜--- connect6 ---
 moves    28.11404 msec
 --- gomoku ---
 moves  1.8975692469720906 msec

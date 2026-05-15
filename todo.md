@@ -1,0 +1,1 @@
+* remove run.sh and use pixi.toml instead
