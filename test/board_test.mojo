@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.random import seed, random_si64
 
-from score import Score, Win
+from value import Win
 from board import Board, Place, Value, PlaceValue, first, second
 
 comptime size = 19
@@ -37,7 +37,7 @@ def test_place_stone() raises:
             for y in range(size):
                 for x in range(size):
                     if board[x, y] == board.empty:
-                        var actual = board.value(Place(x, y), first)
+                        var actual = board.get_value(Place(x, y), first)
                         var b = board.copy()
                         b.place_stone(Place(x, y), first)
                         var expected = b.debug_board_value(materialize[values]()) - value
@@ -46,7 +46,7 @@ def test_place_stone() raises:
                             print(board)
                             print(board.str_values())
                             assert_true(False)
-                        actual = board.value(Place(x, y), second)
+                        actual = board.get_value(Place(x, y), second)
                         b = board.copy()
                         b.place_stone(Place(x, y), second)
                         expected = value - b.debug_board_value(materialize[values]())
@@ -56,9 +56,9 @@ def test_place_stone() raises:
                             print(board.str_values())
                             assert_true(False)
             if turn == first:
-                value += board.value(Place(xx, yy), turn)
+                value += board.get_value(Place(xx, yy), turn)
             else:
-                value -= board.value(Place(xx, yy), turn)
+                value -= board.get_value(Place(xx, yy), turn)
             board.place_stone(Place(xx, yy), turn)
             n += 1
 

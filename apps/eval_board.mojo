@@ -1,4 +1,4 @@
-from score import Score, Win
+from value import Score, Win
 from board import Board, Value, Place, first, second
 
 comptime win_stones = 6

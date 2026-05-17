@@ -1,4 +1,4 @@
-from score import Score
+from value import Value
 
 
 trait TTree(ImplicitlyDestructible, Writable):
@@ -14,13 +14,10 @@ trait TTree(ImplicitlyDestructible, Writable):
 trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
     comptime Move: TMove
 
-    def moves(self) -> List[Self.Move]:
+    def moves(self) -> List[MoveValue[Self.Move]]:
         ...
 
     def play_move(mut self, move: Self.Move):
-        ...
-
-    def score(mut self) -> Score:
         ...
 
 
@@ -28,8 +25,11 @@ trait TMove(Defaultable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
     def __init__(out self, text: String) raises:
         ...
 
-    def score(self) -> Score:
-        ...
 
-    def set_score(mut self, score: Score):
-        ...
+@fieldwise_init
+struct MoveValue[Move: TMove](ImplicitlyCopyable, ImplicitlyDestructible, Writable):
+    var move: Self.Move
+    var value: Value
+
+    def write_to[W: Writer](self, mut writer: W):
+        writer.write(t"{self.move} {self.value}")

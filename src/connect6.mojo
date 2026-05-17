@@ -1,6 +1,6 @@
 from config import Assert, Trace
-from score import Score, Win, Draw, Loss
-from traits import TGame, TMove
+from value import Win, Draw, Loss
+from traits import TGame, TMove, MoveValue
 from board import Board, Value, Place, PlaceValue, first
 from heap import heap_add
 
@@ -11,21 +11,18 @@ comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
 struct Move(TMove):
     var _p1: Place
     var _p2: Place
-    var _score: Score
 
     def __init__(out self):
         self._p1 = Place()
         self._p2 = Place()
-        self._score = 0
 
-    def __init__(out self, p1: Place, p2: Place, score: Score):
+    def __init__(out self, p1: Place, p2: Place):
         if p1 < p2:
             self._p1 = p1
             self._p2 = p2
         else:
             self._p1 = p2
             self._p2 = p1
-        self._score = score
 
     @implicit
     def __init__(out self, move: String) raises:
@@ -42,13 +39,6 @@ struct Move(TMove):
         else:
             self._p1 = p2
             self._p2 = p1
-        self._score = 0
-
-    def score(self) -> Score:
-        return self._score
-
-    def set_score(mut self, score: Score):
-        self._score = score
 
     def write_to[W: Writer](self, mut writer: W):
         if self._p1 != self._p2:
@@ -56,13 +46,9 @@ struct Move(TMove):
         else:
             writer.write(self._p1)
 
-    def write_repr_to[W: Writer](self, mut writer: W):
-        self.write_to(writer)
-        writer.write(" ", self._score)
 
-
-def less(a: Move, b: Move) -> Bool:
-    return a.score() < b.score()
+def lt(a: MoveValue[Move], b: MoveValue[Move]) -> Bool:
+    return a.value < b.value
 
 
 struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
@@ -77,29 +63,29 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.turn = 0
         self.plies = 0
 
-    def moves(self) -> List[Move]:
-        var moves = List[Move](capacity=Self.max_moves)
+    def moves(self) -> List[MoveValue[Move]]:
+        var moves = List[MoveValue[Move]](capacity=Self.max_moves)
         self._moves(moves)
         if self.plies == Self.max_plies:
             var last_move = moves[len(moves) - 1]
-            last_move._score = Draw
+            last_move.value = Draw
             return [last_move]
         return moves^
 
-    def _moves(self, mut moves: List[Move]):
+    def _moves(self, mut moves: List[MoveValue[Move]]):
         var places = List[PlaceValue](capacity=Self.max_places)
         self.board.places(self.turn, places)
         if len(places) <= 1:
             print(self)
         assert len(places) > 1
 
-        var board_value = self.board._value if self.turn == first else -self.board._value
+        var board_value = self.board.value if self.turn == first else -self.board.value
         for i in range(len(places) - 1):
             var place1 = places[i].place
             var score1 = places[i].value
             if score1 == Value.MAX:
                 moves.clear()
-                moves.append({place1, place1, Win})
+                moves.append({{place1, place1}, Win})
                 return
 
             var board = self.board.copy()
@@ -107,11 +93,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j].place
-                var score2 = board.value(place2, self.turn)
+                var score2 = board.get_value(place2, self.turn)
 
                 if score2 == Value.MAX:
                     moves.clear()
-                    moves.append({place1, place2, Win})
+                    moves.append({{place1, place2}, Win})
                     return
 
                 var board2 = board.copy()
@@ -130,11 +116,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
                 var max_opp_value = board2.max_value(1 - self.turn)
                 if max_opp_value != Value.MAX:
-                    var move_score = board_value + score1 + score2 - max_opp_value
-                    heap_add[less]({place1, place2, Score(move_score)}, moves)
+                    var move_value = board_value + score1 + score2 - max_opp_value
+                    heap_add[lt]({{place1, place2}, Value(move_value)}, moves)
 
         if not moves:
-            moves.append({places[0].place, places[1].place, Loss})
+            moves.append({{places[0].place, places[1].place}, Loss})
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._p1, self.turn)
@@ -143,8 +129,8 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.turn = 1 - self.turn
         self.plies += 1
 
-    def score(mut self) -> Score:
-        return Score(self.board.value())
+    def board_value(mut self) -> Value:
+        return self.board.value
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

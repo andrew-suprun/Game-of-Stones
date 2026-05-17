@@ -2,7 +2,7 @@ from std.random import seed, shuffle
 from std.time import perf_counter_ns
 
 from config import Debug
-from score import Score
+from value import Score
 from traits import TTree
 from board import Place, first
 from gomoku import Gomoku

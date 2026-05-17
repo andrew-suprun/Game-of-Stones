@@ -3,7 +3,7 @@ from std.benchmark import benchmark, Unit, keep
 from heap import heap_add
 
 
-def less(a: Int, b: Int) -> Bool:
+def lt(a: Int, b: Int) -> Bool:
     return a < b
 
 
@@ -14,7 +14,7 @@ def bench():
     for _ in range(10_000_000):
         heap.clear()
         for i in range(100):
-            heap_add[less](i * 17 % 100, heap)
+            heap_add[lt](i * 17 % 100, heap)
             s += heap[0]
             keep(s)
 

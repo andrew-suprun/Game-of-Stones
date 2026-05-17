@@ -1,7 +1,7 @@
 from std.benchmark import benchmark, Unit, keep, black_box
 from std.random import random_float64
 
-from score_float import Score
+from value_float import Score
 
 
 def bench_score():

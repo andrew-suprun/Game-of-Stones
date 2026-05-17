@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 
 from config import Debug, Trace
-from score import Score, Win, Loss, Draw
+from value import Score, Win, Loss, Draw
 from traits import TTree, TGame
 
 

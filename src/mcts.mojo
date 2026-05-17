@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
 
-from score import Score, Loss
+from value import Value, Draw, Loss, is_win, is_loss, is_draw, is_decisive
 from traits import TTree, TGame, TMove
 
 
@@ -9,27 +9,29 @@ comptime Idx = UInt32
 
 struct MctsNode[M: TMove](TrivialRegisterPassable, Writable):
     var move: Self.M
+    var value: Value
     var n_sims: UInt32
     var first_child: Idx
     var n_children: UInt32
 
     def __init__(out self):
-        self = {{}}
+        self = {{}, Loss}
 
-    def __init__(out self, move: Self.M):
+    def __init__(out self, move: Self.M, value: Value):
         self.move = move
+        self.value = value
         self.n_sims = 1
         self.first_child = 0
         self.n_children = 0
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(self.move)
+        writer.write(self.move, " ", self.value)
 
     def write_repr_to[W: Writer](self, mut writer: W):
-        writer.write(repr(self.move), " sims: ", self.n_sims)
+        writer.write(self.move, " ", self.value, " sims: ", self.n_sims)
 
 
-struct Mcts[G: TGame, c: Float64](TTree):
+struct Mcts[G: TGame, c: Value](TTree):
     comptime Game = Self.G
     comptime Node = MctsNode[Self.G.Move]
 
@@ -46,12 +48,12 @@ struct Mcts[G: TGame, c: Float64](TTree):
             self.expand(game)
             var n_undecisive = 0
             ref root = self.tree[0]
-            if root.move.score().is_loss():
+            if is_loss(root.value):
                 return self._pv()
             for idx in range(root.first_child, root.first_child + root.n_children):
                 ref child = self.tree[idx]
 
-                if not child.move.score().is_decisive():
+                if not is_decisive(child.value):
                     n_undecisive += 1
 
             if n_undecisive <= 1:
@@ -76,28 +78,40 @@ struct Mcts[G: TGame, c: Float64](TTree):
         ref leaf = self.tree[idx]
         leaf.first_child = Idx(len(self.tree))
         leaf.n_children = UInt32(len(moves))
-        for move in moves:
-            self.tree.append(Self.Node(move))
+        for mv in moves:
+            self.tree.append(Self.Node(mv.move, mv.value))
 
         for parent_idx in reversed(parent_indices):
             ref parent = self.tree[parent_idx]
             parent.n_sims += 1
-            var best_score = Loss
+            var best_value = Loss
+            var has_draw = False
+            var all_decisive = True
             for idx in range(parent.first_child, parent.first_child + parent.n_children):
                 ref child = self.tree[idx]
-                best_score = best_score.max(child.move.score())
-
-            parent.move.set_score(-best_score)
+                if is_win(child.value):
+                    parent.value = Loss
+                    break
+                elif is_loss(child.value):
+                    continue
+                elif is_draw(child.value):
+                    has_draw = True
+                else:
+                    best_value = max(best_value, child.value)
+            if has_draw and all_decisive:
+                parent.value = Draw
+            else:
+                parent.value = -best_value
 
     def _select_child_idx(self, parent_idx: Idx) -> Idx:
         ref parent = self.tree[parent_idx]
         var selected_child_idx: Idx = Idx.MAX
-        var max_v = Float64.MIN
+        var max_v = Value.MIN
         for child_idx in range(parent.first_child, parent.first_child + parent.n_children):
             ref child = self.tree[child_idx]
-            if child.move.score().is_decisive():
+            if is_decisive(child.value):
                 continue
-            var v = Float64(child.move.score()) + Self.c * Float64(parent.n_sims) / Float64(child.n_sims)
+            var v = child.value + Self.c * Value(parent.n_sims) / Value(child.n_sims)
             if max_v < v:
                 max_v = v
                 selected_child_idx = child_idx
@@ -119,7 +133,7 @@ struct Mcts[G: TGame, c: Float64](TTree):
         for idx in range(parent.first_child, parent.first_child + parent.n_children):
             ref child = self.tree[idx]
             ref best_child = self.tree[best_child_idx]
-            if child.move.score() > best_child.move.score():
+            if child.value > best_child.value:
                 best_child_idx = idx
 
         return best_child_idx
@@ -146,11 +160,3 @@ struct Mcts[G: TGame, c: Float64](TTree):
         if node.n_children > 0:
             for child_idx in range(node.first_child, node.first_child + node.n_children):
                 self.write_repr_to(writer, depth + 1, child_idx)
-
-    def debug_roots(self) -> String:
-        ref root = self.tree[0]
-        var result = "roots:\n"
-        for idx in range(root.first_child, root.first_child + root.n_children):
-            ref node = self.tree[idx]
-            result.write("  ", node.move, " sims ", node.n_sims, "\n")
-        return result

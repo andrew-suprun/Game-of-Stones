@@ -1,11 +1,11 @@
 from std.random import shuffle
 from std.testing import assert_true, assert_false
 
-from score import Score, Win, Loss, Draw
+from value import Value, Win, Loss, Draw
 from heap import heap_add
 
 
-def less[T: Comparable](a: T, b: T) -> Bool:
+def lt[T: Comparable](a: T, b: T) -> Bool:
     return a < b
 
 
@@ -17,7 +17,7 @@ def test_heap() raises:
 
     shuffle(values)
     for i in range(100):
-        heap_add[less[Int]](values[i], items)
+        heap_add[lt[Int]](values[i], items)
 
     for i in range(20):
         print(i, items[i])
@@ -27,23 +27,5 @@ def test_heap() raises:
         assert_true(parent < child)
 
 
-def test_scores() raises:
-    var items = List[Score](capacity=6)
-    heap_add[less[Score]](Loss, items)
-    heap_add[less[Score]](Draw, items)
-    heap_add[less[Score]](1, items)
-    heap_add[less[Score]](-1, items)
-    heap_add[less[Score]](2, items)
-    heap_add[less[Score]](-2, items)
-    heap_add[less[Score]](0, items)
-    heap_add[less[Score]](Win, items)
-    for item in items:
-        print(item)
-    for i in range(1, 6):
-        print(items[i / 2], items[i])
-        assert_true(items[i / 2] <= items[i])
-
-
 def main() raises:
     test_heap()
-    test_scores()

@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 
 from traits import TGame
-from score import Score, Win, Loss
+from value import Score, Win, Loss
 from alpha_beta_negamax import AlphaBetaNode
 from gomoku import Gomoku
 from connect6 import Connect6

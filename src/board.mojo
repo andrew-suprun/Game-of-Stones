@@ -44,7 +44,7 @@ struct PlaceValue(TrivialRegisterPassable, Writable):
         writer.write(t"{self.place} {self.value}")
 
 
-def less(a: PlaceValue, b: PlaceValue) -> Bool:
+def lt(a: PlaceValue, b: PlaceValue) -> Bool:
     return a.value < b.value
 
 
@@ -56,12 +56,12 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
 
     var _places: InlineArray[Int8, Self.size * Self.size]
     var _values: InlineArray[Values, Self.size * Self.size]
-    var _value: Value
+    var value: Value
 
     def __init__(out self):
         self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
         self._values = InlineArray[Values, Self.size * Self.size](uninitialized=True)
-        self._value = 0
+        self.value = 0
 
         for y in range(Self.size):
             var v = 1 + min(Self.win_stones - 1, y, Self.size - 1 - y, Self.size - Self.win_stones)
@@ -97,9 +97,9 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         var y = Int(place.y)
 
         if turn == first:
-            self._value += self.value(place, first)
+            self.value += self.get_value(place, first)
         else:
-            self._value -= self.value(place, second)
+            self.value -= self.get_value(place, second)
 
         var x_start = max(0, x - Self.win_stones + 1)
         var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
@@ -154,7 +154,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             for x in range(Self.size):
                 if self[x, y] == self.empty:
                     var place = Place(x, y)
-                    heap_add[less](PlaceValue(place, self.value(place, turn)), places)
+                    heap_add[lt](PlaceValue(place, self.get_value(place, turn)), places)
 
     def __getitem__(self, x: Int, y: Int) -> Int:
         return Int(self._places[y * Self.size + x])
@@ -162,10 +162,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
     def __setitem__(mut self, x: Int, y: Int, value: Int):
         self._places[y * Self.size + x] = Int8(value)
 
-    def value(mut self) -> Value:
-        return self._value
-
-    def value(self, place: Place, turn: Int) -> Value:
+    def get_value(self, place: Place, turn: Int) -> Value:
         return Value(self._values[Int(place.y) * Self.size + Int(place.x)][turn])
 
     def write_to[W: Writer](self, mut writer: W):
@@ -241,7 +238,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                 elif stone == Self.white:
                     str += "   O "
                 else:
-                    var value = self.value(Place(x, y), table_idx)
+                    var value = self.get_value(Place(x, y), table_idx)
                     str += String(Int(value)).ascii_rjust(4, " ") + " "
             str += "│ " + String(y + 1).ascii_rjust(2) + "\n"
         str += "───┼" + "─────" * Self.size + "┼───"

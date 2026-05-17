@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 
 from traits import TGame
-from score import Score, Win, Loss
+from value import Win, Loss
 from mcts import Mcts
 from gomoku import Gomoku
 from connect6 import Connect6
@@ -30,7 +30,7 @@ def bench_build_tree[Game: TGame]() raises:
         count += 1
 
     var pv = tree._pv()
-    print(t"score: {pv[0].score()} | expands/sec {count/10} | pv {pv}")
+    print(t"move: {pv[0]} | expands/sec {count/10} | pv {pv}")
 
 
 def main() raises:

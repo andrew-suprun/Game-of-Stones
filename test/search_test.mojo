@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 
-from score import Score
+from value import Score
 from traits import TGame, TTree
 
 from mcts import Mcts

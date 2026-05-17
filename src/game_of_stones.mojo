@@ -2,7 +2,7 @@ from std.time import perf_counter_ns
 from std.python import Python, PythonObject
 from std.random import seed, shuffle
 
-from score import Score
+from value import Score
 from board import Place
 from traits import TTree, TGame
 
