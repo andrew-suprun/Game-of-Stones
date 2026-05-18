@@ -114,7 +114,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 print(t"[{depth}] {'    '*depth}  -- self={self.move} {child.value}")
 
             var child_value = child.value if not is_draw(child.value) else 0
-            if child_value >= new_beta:
+            if child_value > new_beta or is_win(child_value):
                 alpha = child_value
                 if zero_window:
                     zero_window = False

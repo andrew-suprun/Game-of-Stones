@@ -18,13 +18,13 @@ from principal_variation_negamax import PrincipalVariationNegamax
 comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 
-# comptime Tree1 = AlphaBetaNegamax[Game1]
-comptime Tree1 = PrincipalVariationNegamax[Game1]
+comptime Tree1 = AlphaBetaNegamax[Game1]
+# comptime Tree1 = PrincipalVariationNegamax[Game1]
 # comptime Tree1 = Mcts[Game1, 0.25]
 
 # comptime Tree2 = AlphaBetaNegamax[Game2]
-# comptime Tree2 = PrincipalVariationNegamax[Game2]
-comptime Tree2 = Mcts[Game2, 0.35]
+comptime Tree2 = PrincipalVariationNegamax[Game2]
+# comptime Tree2 = Mcts[Game2, 0.35]
 
 
 comptime seed_value = 8
@@ -34,7 +34,7 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("pvs", 1000, "mcts", 1000, openings())
+    run[Tree1, Tree2]("abs", 100, "pvs", 100, openings())
 
 
 def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:

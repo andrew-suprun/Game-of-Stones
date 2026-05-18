@@ -46,3 +46,14 @@ pvs-26-20 : mcts-26-20 - 12 : 12 (0)
 
 Game: Connect6: PrincipalVariationNegamax-100 vs. Mcts-100 seed: 8
 pvs : mcts - 5 : 37 (-32)
+
+
+Game: Connect6: PrincipalVariationNegamax-1000 vs. Mcts-1000 seed: 8
+pvs : mcts - 14 : 17 (-3)
+
+Game: Connect6: AlphaBetaNegamax-1000 vs. Mcts-1000 seed: 8
+abs : mcts - 7 : 24 (-17)
+
+
+Game: Connect6: AlphaBetaNegamax-100 vs. PrincipalVariationNegamax-100 seed: 8
+abs : pvs - 10 : 6 (4)
