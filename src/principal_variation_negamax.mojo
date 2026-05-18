@@ -114,8 +114,8 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 print(t"[{depth}] {'    '*depth}  -- self={self.move} {child.value}")
 
             var child_value = child.value if not is_draw(child.value) else 0
-            if child_value > new_beta or is_win(child_value):
-                alpha = child_value
+            alpha = max(alpha, child_value)
+            if alpha > new_beta or is_win(alpha):
                 if zero_window:
                     zero_window = False
                     comptime if Trace:
@@ -178,11 +178,20 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
         return self.children[best_child_idx]
 
+    def sort(mut self):
+        if self.children:  # TODO silence the compiler warning
+            for ref child in self.children:
+                child.sort()
+        sort[Self.gt](self.children)
+
+    def write_to[W: Writer](self, mut writer: W):
+        writer.write(t"{self.move} {self.value}")
+
     def write_repr_to[W: Writer](self, mut writer: W):
         self.write_repr_to(writer, depth=0)
 
     def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, self.move, " ", value_str(self.value), "\n")
+        writer.write("|   " * depth, "[", depth, "] ", self.move, " ", value_str(self.value), "\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_repr_to(writer, depth + 1)

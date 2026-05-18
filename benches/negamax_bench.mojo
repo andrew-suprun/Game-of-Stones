@@ -20,7 +20,7 @@ def bench_abs_tree[Game: TGame](max_depth: Int) raises:
     game.play_move(Game.Move("i10"))
     game.play_move(Game.Move("l8"))
     game.play_move(Game.Move("k9"))
-    # print(game)
+    print(game)
 
     print(t"\nGame: {reflect[Game].base_name()}; Tree ABS")
 
@@ -36,6 +36,7 @@ def bench_abs_tree[Game: TGame](max_depth: Int) raises:
         # print(repr(root))
         if perf_counter_ns() > deadline:
             return
+    # root.sort()
     # print(repr(root))
 
 
@@ -48,7 +49,7 @@ def bench_pvs_tree[Game: TGame](max_depth: Int) raises:
     game.play_move(Game.Move("i10"))
     game.play_move(Game.Move("l8"))
     game.play_move(Game.Move("k9"))
-    # print(game)
+    print(game)
 
     print(t"\nGame: {reflect[Game].base_name()}; Tree PVS")
 
@@ -64,6 +65,7 @@ def bench_pvs_tree[Game: TGame](max_depth: Int) raises:
         # print(repr(root))
         if perf_counter_ns() > deadline:
             return
+    # root.sort()
     # print(repr(root))
 
 

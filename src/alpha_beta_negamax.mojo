@@ -149,6 +149,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
 
         return self.children[best_child_idx]
 
+    def sort(mut self):
+        if self.children:  # TODO silence the compiler warning
+            for ref child in self.children:
+                child.sort()
+        sort[Self.gt](self.children)
+
     def write_to[W: Writer](self, mut writer: W):
         writer.write(t"{self.move} {self.value}")
 
@@ -156,7 +162,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         self.write_repr_to(writer, depth=0)
 
     def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
-        writer.write("|   " * depth, repr(self.move), " [", self.max_depth, "]\n")
+        writer.write("|   " * depth, "[", depth, "] ", self.move, " ", value_str(self.value), "\n")
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_repr_to(writer, depth + 1)
