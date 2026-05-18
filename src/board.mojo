@@ -1,6 +1,7 @@
 from std.memory import memcpy
 
 from heap import heap_add
+from value import Loss
 
 comptime first = 0
 comptime second = 1
@@ -132,6 +133,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
+        self._values[y * Self.size + x] = [Loss, Loss]
 
     def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
         var offset = start
@@ -317,8 +319,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         var max_value = self._values[0][player]
 
         for i in range(Self.size * Self.size):
-            if self._places[i] == Self.empty:
-                max_value = max(max_value, self._values[i][player])
+            max_value = max(max_value, self._values[i][player])
 
         return max_value
 
