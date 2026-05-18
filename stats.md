@@ -43,3 +43,6 @@ pvs-22-16 : mcts-26-20 - 14 : 18 (-4)
 
 pvs-22-16 : mcts-26-20 - 13 : 25 (-12)
 pvs-26-20 : mcts-26-20 - 12 : 12 (0)
+
+Game: Connect6: PrincipalVariationNegamax-100 vs. Mcts-100 seed: 8
+pvs : mcts - 5 : 37 (-32)

@@ -26,7 +26,7 @@ def is_decisive(v: Value) -> Bool:
     return not isfinite(v)
 
 
-def value_str(v: Value) -> String:
+def str(v: Value) -> String:
     if isinf(v):
         if v > 0:
             return "win"

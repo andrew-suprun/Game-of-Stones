@@ -40,7 +40,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
     def moves(self) -> List[MoveValue[Move]]:
         var moves = List[MoveValue[Move]](capacity=Self.max_places)
         self._moves(moves)
-        if self.plies == Self.max_plies:
+        if self.plies >= Self.max_plies:
             var last_move = moves[len(moves) - 1]
             last_move.value = Draw
             return [last_move]
@@ -63,7 +63,7 @@ struct Gomoku[size: Int, max_places: Int, max_plies: Int](TGame):
         self.turn = 1 - self.turn
         self.plies += 1
 
-    def board_value(mut self) -> Value:
+    def value(self) -> Value:
         return self.board.value
 
     def write_to[W: Writer](self, mut writer: W):

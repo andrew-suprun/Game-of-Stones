@@ -2,7 +2,7 @@ from std.random import seed, shuffle
 from std.time import perf_counter_ns
 
 from config import Debug
-from value import Score
+from value import Value, is_decisive, value_str
 from traits import TTree
 from board import Place, first
 from gomoku import Gomoku
@@ -15,7 +15,7 @@ from principal_variation_negamax import PrincipalVariationNegamax
 # comptime Game1 = Gomoku[size=19, max_places=18, max_plies=100]
 # comptime Game2 = Gomoku[size=19, max_places=18, max_plies=100]
 
-comptime Game1 = Connect6[size=19, max_moves=30, max_places=24, max_plies=100]
+comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 
 # comptime Tree1 = AlphaBetaNegamax[Game1]
@@ -34,35 +34,32 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("pvs-30-24", 1000, "mcts-26-20", 1000, openings())
+    run[Tree1, Tree2]("pvs", 1000, "mcts", 1000, openings())
 
 
 def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
-    print(t"Game: {reflect[T1.Game].base_name()}: {name1}-{time1} vs. {name2}-{time2} seed: {seed_value}")
+    print(t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs. {reflect[T2].base_name()}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
     var n = 1
     for opening in openings:
-        if Debug:
-            print()
-            print("------")
-            print()
-            print("opening ", n, ":", sep="", end="")
-            for move in opening:
-                print("", move, end="")
-            print()
-            print()
+        print()
+        print("------")
+        print()
+        print("opening ", n, ":", sep="", end="")
+        for move in opening:
+            print("", move, end="")
+        print()
+        print()
         var winner1 = sim_opening[T1, T2](name1, time1, name2, time2, opening)
-        if Debug:
-            print()
-            print("winner:", winner1)
-            print()
+        print()
+        print("winner:", winner1)
+        print()
         var winner2 = sim_opening[T2, T1](name2, time2, name1, time1, opening)
-        if Debug:
-            print()
-            print("winner:", winner2)
-            print()
+        print()
+        print("winner:", winner2)
+        print()
 
         var first = 0
         var second = 0
@@ -108,44 +105,42 @@ def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String,
             var pv = t1.search(g1, time1)
             assert len(pv) > 0, t"{reflect[T1].base_name()}.search() returned no results"
             move = String(pv[0])
-            if Debug:
-                print(
-                    String(plies).ascii_rjust(4),
-                    ": ",
-                    name1.ascii_ljust(name_size),
-                    String(pv[0]).ascii_ljust(8),
-                    String(pv[0].score()).ascii_rjust(7),
-                    String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
-                    " ",
-                    sep="",
-                    end="",
-                )
-                for move in pv[1:]:
-                    print(t" {move}", end="")
-                print()
-            if len(pv) == 1 and pv[0].score().is_decisive():
-                return name1 if pv[0].score() > 0 else name2 if pv[0].score() < 0 else "draw"
+            print(
+                String(plies).ascii_rjust(4),
+                ": ",
+                name1.ascii_ljust(name_size),
+                String(pv[0]).ascii_ljust(8),
+                String(value_str(-t1.value())).ascii_rjust(7),
+                String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
+                " ",
+                sep="",
+                end="",
+            )
+            for move in pv[1:]:
+                print(t" {move}", end="")
+            print()
+            if len(pv) == 1 and is_decisive(t1.value()):
+                return name1 if t1.value() < 0 else name2 if t1.value() > 0 else "draw"
         else:
             var pv = t2.search(g2, time2)
             assert len(pv) > 0, t"{reflect[T2].base_name()}.search() returned no results"
             move = String(pv[0])
-            if Debug:
-                print(
-                    String(plies).ascii_rjust(4),
-                    ": ",
-                    name2.ascii_ljust(name_size),
-                    String(pv[0]).ascii_ljust(8),
-                    String(pv[0].score()).ascii_rjust(7),
-                    String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
-                    " ",
-                    sep="",
-                    end="",
-                )
-                for move in pv[1:]:
-                    print(t" {move}", end="")
-                print()
-            if len(pv) == 1 and pv[0].score().is_decisive():
-                return name2 if pv[0].score() > 0 else name1 if pv[0].score() < 0 else "draw"
+            print(
+                String(plies).ascii_rjust(4),
+                ": ",
+                name2.ascii_ljust(name_size),
+                String(pv[0]).ascii_ljust(8),
+                String(value_str(-t2.value())).ascii_rjust(7),
+                String((perf_counter_ns() - start) / 1_000_000).ascii_rjust(6),
+                " ",
+                sep="",
+                end="",
+            )
+            for move in pv[1:]:
+                print(t" {move}", end="")
+            print()
+            if len(pv) == 1 and is_decisive(t2.value()):
+                return name2 if t2.value() < 0 else name1 if t2.value() > 0 else "draw"
         g1.play_move({move})
         g2.play_move({move})
         plies += 1

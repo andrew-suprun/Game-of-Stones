@@ -2,7 +2,7 @@ from std.time import perf_counter_ns
 
 from traits import TGame
 from value import Value, Win, Loss
-from alpha_beta_negamax import AlphaBetaNode
+from principal_variation_negamax import PrincipalVariationNode
 from gomoku import Gomoku
 from connect6 import Connect6
 
@@ -23,7 +23,7 @@ def bench_build_tree[Game: TGame](max_depth: Int) raises:
 
     print(t"\nGame: {reflect[Game].base_name()}")
 
-    var root = AlphaBetaNode[Game]({}, Loss, 0)
+    var root = PrincipalVariationNode[Game]({}, Loss, 0)
     var start = perf_counter_ns()
     var deadline = start + UInt(60_000_000_000)
     for max_depth in range(1, max_depth + 1):
@@ -39,5 +39,6 @@ def bench_build_tree[Game: TGame](max_depth: Int) raises:
 
 
 def main() raises:
+    print("bench")
     bench_build_tree[G](13)
     bench_build_tree[C6](10)

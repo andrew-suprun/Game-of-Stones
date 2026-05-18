@@ -1,4 +1,4 @@
-from value import Value
+from value import Value, value_str
 
 
 trait TTree(ImplicitlyDestructible, Writable):
@@ -8,6 +8,9 @@ trait TTree(ImplicitlyDestructible, Writable):
         ...
 
     def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[Self.Game.Move]):
+        ...
+
+    def value(self) -> Value:
         ...
 
 
@@ -32,4 +35,7 @@ struct MoveValue[Move: TMove](ImplicitlyCopyable, ImplicitlyDestructible, Writab
     var value: Value
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(t"{self.move} {self.value}")
+        writer.write(t"{self.move} {value_str(self.value)}")
+
+    # def write_repr_to[W: Writer](self, mut writer: W):
+    #     writer.write(t"{self.move} {value_str(self.value)}")

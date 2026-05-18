@@ -97,11 +97,16 @@ struct Mcts[G: TGame, c: Value](TTree):
                 elif is_draw(child.value):
                     has_draw = True
                 else:
+                    all_decisive = False
                     best_value = max(best_value, child.value)
-            if has_draw and all_decisive:
-                parent.value = Draw
             else:
-                parent.value = -best_value
+                if has_draw and all_decisive:
+                    parent.value = Draw
+                else:
+                    parent.value = -best_value
+
+    def value(self) -> Value:
+        return self.tree[0].value
 
     def _select_child_idx(self, parent_idx: Idx) -> Idx:
         ref parent = self.tree[parent_idx]

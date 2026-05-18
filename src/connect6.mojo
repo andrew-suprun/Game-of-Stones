@@ -66,7 +66,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
     def moves(self) -> List[MoveValue[Move]]:
         var moves = List[MoveValue[Move]](capacity=Self.max_moves)
         self._moves(moves)
-        if self.plies == Self.max_plies:
+        if self.plies >= Self.max_plies:
             var last_move = moves[len(moves) - 1]
             last_move.value = Draw
             return [last_move]
@@ -128,9 +128,6 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
             self.board.place_stone(move._p2, self.turn)
         self.turn = 1 - self.turn
         self.plies += 1
-
-    def board_value(mut self) -> Value:
-        return self.board.value
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
