@@ -1,12 +1,11 @@
 from std.memory import memcpy
 
 from heap import heap_add
-from value import Loss
+from value import Value, Loss
 
 comptime first = 0
 comptime second = 1
-comptime Value = Float32
-comptime Values = SIMD[DType.float32, 2]
+comptime Values = SIMD[Value.dtype, 2]
 
 
 struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
@@ -135,9 +134,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             self[x, y] = Self.white
         self._values[y * Self.size + x] = [Loss, Loss]
 
-    def _update_row(
-        mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]
-    ):
+    def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
@@ -158,7 +155,8 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             for x in range(Self.size):
                 if self[x, y] == self.empty:
                     var place = Place(x, y)
-                    heap_add[lt](PlaceValue(place, self.get_value(place, turn)), places)
+                    var value = self.get_value(place, turn)
+                    heap_add[lt]({place, value}, places)
 
     def __getitem__(self, x: Int, y: Int) -> Int:
         return Int(self._places[y * Self.size + x])
@@ -326,9 +324,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         return max_value
 
 
-def _calc_value_table[
-    win_stones: Int, values: List[Value]
-]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
+def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[values]()
