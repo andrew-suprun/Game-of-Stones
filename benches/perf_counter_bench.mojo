@@ -12,6 +12,5 @@ def bench():
 
 
 def main() raises:
-    print("perf_counter:")
-    var report = benchmark.run[func2=bench](0, 1, 3, 6)
-    report.print()
+    print("--- perf_counter ---")
+    print(t"perf_counter: {round(benchmark.run[func2=bench](0, 1, 3, 6).mean(Unit.ms), 3)} msec/1M")

@@ -25,10 +25,10 @@ def bench_update_row():
     var board = Board[19, values, win_stones]()
     ref value_table = materialize[board.value_table]()
     ref values = value_table[0]
-    for _ in range(10_000):
+    for _ in range(40_000):
         var copy = board.copy()
-        for y in range(10):
-            for x in range(10):
+        for y in range(5):
+            for x in range(5):
                 copy._update_row(y * 19 + x, 20, 6, values)
                 keep(copy._values[0])
 
@@ -86,11 +86,16 @@ def bench_places():
         keep(places)
 
 
+def bench[f: def() thin](name: String, unit: String) raises:
+    var report = benchmark.run[func2=f](0, 1, 3, 6)
+    print(t"{name} {round(report.mean(Unit.s), 3)} {unit}")
+
+
 def main() raises:
     print("--- board ---")
-    print(t"max_score   {benchmark.run[func2=bench_max_value](0, 1, 3, 6).mean(Unit.s)} sec/1M")
-    print(t"copy        {benchmark.run[func2=bench_copy](0, 1, 3, 6).mean(Unit.s)} sec/1M")
-    print(t"update_row  {benchmark.run[func2=bench_update_row](0, 1, 3, 6).mean(Unit.s)} sec/1M")
-    print(t"place_stone {benchmark.run[func2=bench_place_stone](0, 1, 3, 6).mean(Unit.s)} sec/1M")
-    print(t"rollout     {benchmark.run[func2=bench_rollout](0, 1, 3, 6).mean(Unit.s)} sec/1M")
-    print(t"places      {benchmark.run[func2=bench_places](0, 1, 3, 6).mean(Unit.s)} sec/1M")
+    bench[bench_max_value]("max_score  ", "sec/1M")
+    bench[bench_copy]("copy       ", "sec/1M")
+    bench[bench_update_row]("update_row ", "sec/1M")
+    bench[bench_place_stone]("place_stone", "sec/1M")
+    bench[bench_rollout]("rollout    ", "sec/1M")
+    bench[bench_places]("places     ", "sec/1M")

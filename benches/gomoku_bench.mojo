@@ -14,7 +14,7 @@ def bench_moves():
         game.play_move({"i9"})
     except:
         pass
-    for _ in range(1000):
+    for _ in range(1_000_000):
         var moves = game.moves()
         keep(moves[0])
 
@@ -27,11 +27,17 @@ def bench_expand():
         game.play_move({"i9"})
     except:
         pass
-    for _ in range(1000):
+    for _ in range(1_000_000):
         tree.expand(game)
+
+
+def bench[f: def() thin](name: String, unit: String) raises:
+    var report = benchmark.run[func2=f](0, 1, 3, 6)
+    print(t"{name} {round(report.mean(Unit.s), 3)} {unit}")
 
 
 def main() raises:
     print("--- gomoku ---")
-    print("moves ", benchmark.run[func2=bench_moves](0, 1, 3, 6).mean(Unit.ms), "msec")
-    print("expand", benchmark.run[func2=bench_expand](0, 1, 3, 6).mean(Unit.ms), "msec")
+
+    bench[bench_moves]("moves  ", "msec/1M")
+    bench[bench_expand]("expand ", "msec/1M")

@@ -1,18 +1,19 @@
+--- perf_counter ---
+perf_counter: 16.125 msec/1M
 --- board ---
-max_score   0.207 sec/1M
-copy        0.043 sec/1M
-update_row  0.017 sec/1M
-place_stone 0.074 sec/1M
-rollout     1.880 sec/1M
-places      1.268 sec/1M
-➜--- connect6 ---
-moves    28.11404 msec
+max_score   0.182 sec/1M
+copy        0.044 sec/1M
+update_row  0.019 sec/1M
+place_stone 0.071 sec/1M
+rollout     1.864 sec/1M
+places      1.275 sec/1M
+--- connect6 ---
+moves 28.389 msec/1K
 --- gomoku ---
-moves  1.8975692469720906 msec
-expand 3.448402 msec
+moves   1.885 msec/1M
+expand  3.932 msec/1M
 --- heap ---
-heap_add 37.31039583333334
-
+heap_add 3.796 s/1B 
 
    a b c d e f g h i j k l m n o p q r s
  1 ┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐  1
@@ -38,19 +39,19 @@ heap_add 37.31039583333334
 
 
 Game: Gomoku; Tree ABS
-depth 1: value: -19.0 | time 8.2e-05 | pv [m9, i8]
-depth 2: value: -5.5 | time 0.000237 | pv [l12, j9, n14]
-depth 3: value: -49.0 | time 0.001067 | pv [l12, j9, l9, h9]
-depth 4: value: -38.0 | time 0.003638 | pv [m9, i8, i7, i12, i11]
-depth 5: value: -30.5 | time 0.023511 | pv [l9, i11, i12, h9, l10, g9]
-depth 6: value: -3.5 | time 0.054004 | pv [l10, j9, l9, l7, l12, l11, n14]
-depth 7: value: -44.5 | time 0.132378 | pv [l9, l10, j8, j9, k8, i8, m8, i11]
-depth 8: value: -30.5 | time 0.305766 | pv [l9, l10, j8, i8, i11, j11, j6, i6, i7]
-depth 9: value: -47.5 | time 0.581526 | pv [l9, l10, i7, i12, i11, j11, k12, h9, g9, f7]
-depth 10: value: -29.0 | time 1.119114 | pv [l9, l10, i7, j11, k12, h9, g9, n12, m11, g8, f7]
-depth 11: value: -43.5 | time 1.922277 | pv [l9, l10, i7, i12, i11, h11, j9, j13, k14, j8, m11, f9]
-depth 12: value: -27.5 | time 3.932714 | pv [l9, l10, i7, i12, i8, k7, l6, j8, i6, g11, h10, i13, i11]
-depth 13: value: -58.0 | time 14.897789 | pv [j9, i8, i7, j11, k12, j7, k14, k13, i12, k6, h9, k7, k8, l5]
+depth 1: value: -19.0 | time 8.9e-05 | pv [m9, i8]
+depth 2: value: -5.5 | time 0.000242 | pv [l12, j9, n14]
+depth 3: value: -49.0 | time 0.001077 | pv [l12, j9, l9, h9]
+depth 4: value: -38.0 | time 0.003631 | pv [m9, i8, i7, i12, i11]
+depth 5: value: -30.5 | time 0.022979 | pv [l9, i11, i12, h9, l10, g9]
+depth 6: value: -3.5 | time 0.05425 | pv [l10, j9, l9, l7, l12, l11, n14]
+depth 7: value: -44.5 | time 0.134261 | pv [l9, l10, j8, j9, k8, i8, m8, i11]
+depth 8: value: -30.5 | time 0.331166 | pv [l9, l10, j8, i8, i11, j11, j6, i6, i7]
+depth 9: value: -47.5 | time 0.624508 | pv [l9, l10, i7, i12, i11, j11, k12, h9, g9, f7]
+depth 10: value: -29.0 | time 1.215893 | pv [l9, l10, i7, j11, k12, h9, g9, n12, m11, g8, f7]
+depth 11: value: -43.5 | time 2.02938 | pv [l9, l10, i7, i12, i11, h11, j9, j13, k14, j8, m11, f9]
+depth 12: value: -27.5 | time 4.061934 | pv [l9, l10, i7, i12, i8, k7, l6, j8, i6, g11, h10, i13, i11]
+depth 13: value: -58.0 | time 15.1652 | pv [j9, i8, i7, j11, k12, j7, k14, k13, i12, k6, h9, k7, k8, l5]
 
    a b c d e f g h i j k l m n o p q r s
  1 ┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐  1
@@ -76,19 +77,19 @@ depth 13: value: -58.0 | time 14.897789 | pv [j9, i8, i7, j11, k12, j7, k14, k13
 
 
 Game: Gomoku; Tree PVS
-depth 1: value: -19.0 | time 5.2e-05 | pv [m9, i8]
-depth 2: value: -5.5 | time 0.00021 | pv [l12, j9, n14]
-depth 3: value: -49.0 | time 0.001005 | pv [l12, j9, l9, h9]
-depth 4: value: -38.0 | time 0.003508 | pv [m9, i8, i7, i12, i11]
-depth 5: value: -30.5 | time 0.022973 | pv [l9, i11, i12, h9, l10, g9]
-depth 6: value: -3.5 | time 0.054029 | pv [l10, j9, l9, l7, l12, l11, n14]
-depth 7: value: -44.5 | time 0.131244 | pv [l9, l10, j8, j9, k8, i8, m8, i11]
-depth 8: value: -30.5 | time 0.303631 | pv [l9, l10, j8, i8, i11, j11, j6, i6, i7]
-depth 9: value: -47.5 | time 0.578632 | pv [l9, l10, i7, i12, i11, j11, k12, h9, g9, f7]
-depth 10: value: -29.0 | time 1.111651 | pv [l9, l10, i7, j11, k12, h9, g9, n12, m11, g8, f7]
-depth 11: value: -43.5 | time 1.905728 | pv [l9, l10, i7, i12, i11, h11, j9, j13, k14, j8, m11, f9]
-depth 12: value: -27.5 | time 3.894604 | pv [l9, l10, i7, i12, i8, k7, l6, j8, i6, g11, h10, i13, i11]
-depth 13: value: -58.0 | time 14.706919 | pv [j9, i8, i7, j11, k12, j7, k14, k13, i12, k6, h9, k7, k8, l5]
+depth 1: value: -19.0 | time 6.8e-05 | pv [m9, i8]
+depth 2: value: -5.5 | time 0.000229 | pv [l12, j9, n14]
+depth 3: value: -49.0 | time 0.001076 | pv [l12, j9, l9, h9]
+depth 4: value: -38.0 | time 0.003593 | pv [m9, i8, i7, i12, i11]
+depth 5: value: -30.5 | time 0.023409 | pv [l9, i11, i12, h9, l10, g9]
+depth 6: value: -3.5 | time 0.053784 | pv [l10, j9, l9, l7, l12, l11, n14]
+depth 7: value: -44.5 | time 0.131187 | pv [l9, l10, j8, j9, k8, i8, m8, i11]
+depth 8: value: -30.5 | time 0.30327 | pv [l9, l10, j8, i8, i11, j11, j6, i6, i7]
+depth 9: value: -47.5 | time 0.576702 | pv [l9, l10, i7, i12, i11, j11, k12, h9, g9, f7]
+depth 10: value: -29.0 | time 1.110743 | pv [l9, l10, i7, j11, k12, h9, g9, n12, m11, g8, f7]
+depth 11: value: -43.5 | time 1.906735 | pv [l9, l10, i7, i12, i11, h11, j9, j13, k14, j8, m11, f9]
+depth 12: value: -27.5 | time 3.898752 | pv [l9, l10, i7, i12, i8, k7, l6, j8, i6, g11, h10, i13, i11]
+depth 13: value: -58.0 | time 14.713996 | pv [j9, i8, i7, j11, k12, j7, k14, k13, i12, k6, h9, k7, k8, l5]
 
    a b c d e f g h i j k l m n o p q r s
  1 ┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐  1
@@ -114,16 +115,16 @@ depth 13: value: -58.0 | time 14.706919 | pv [j9, i8, i7, j11, k12, j7, k14, k13
 
 
 Game: Connect6; Tree ABS
-depth 1: value: 54.0 | time 0.000524 | pv [l10-m9, i7-i8]
-depth 2: value: 51.0 | time 0.001957 | pv [l9-l10, i13-l11, i12-m9]
-depth 3: value: 87.0 | time 0.012658 | pv [l10-m9, i8-i11, i6-i12, g9-j12]
-depth 4: value: 65.0 | time 0.039159 | pv [l9-l10, i8-l11, i13-j12, h14-n8, j9-j11]
-depth 5: value: 79.0 | time 0.161258 | pv [i8-j9, j8-k7, l6-l10, g11-l7, f12-j12, j7-m7]
-depth 6: value: 126.0 | time 0.519939 | pv [l10-m9, i8-i11, i7-i12, g9-j12, l7-l9, l6-l11, j7-k7]
-depth 7: value: 85.0 | time 1.524549 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, h10-o7, g9-l6, l7-m7]
-depth 8: value: 262.0 | time 3.097425 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, j8-o7, m7-m10, m5-m11, l6-l9]
-depth 9: value: 246.0 | time 10.157147 | pv [l10-m9, i8-i11, i6-i12, j12-k7, l9-l11, l6-l12, j7-k8, h5-n11, j8-n8, o7-o8]
-depth 10: value: 736.0 | time 21.264416 | pv [l10-m9, i8-i11, i7-i12, j12-l9, k7-n10, j6-p12, m10-n8, o7-o10, m8-o8, k8-p8, m6-m7]
+depth 1: value: 54.0 | time 0.000532 | pv [l10-m9, i7-i8]
+depth 2: value: 51.0 | time 0.001972 | pv [l9-l10, i13-l11, i12-m9]
+depth 3: value: 87.0 | time 0.012706 | pv [l10-m9, i8-i11, i6-i12, g9-j12]
+depth 4: value: 65.0 | time 0.038996 | pv [l9-l10, i8-l11, i13-j12, h14-n8, j9-j11]
+depth 5: value: 79.0 | time 0.160736 | pv [i8-j9, j8-k7, l6-l10, g11-l7, f12-j12, j7-m7]
+depth 6: value: 126.0 | time 0.518139 | pv [l10-m9, i8-i11, i7-i12, g9-j12, l7-l9, l6-l11, j7-k7]
+depth 7: value: 85.0 | time 1.519715 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, h10-o7, g9-l6, l7-m7]
+depth 8: value: 262.0 | time 3.086954 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, j8-o7, m7-m10, m5-m11, l6-l9]
+depth 9: value: 246.0 | time 10.111945 | pv [l10-m9, i8-i11, i6-i12, j12-k7, l9-l11, l6-l12, j7-k8, h5-n11, j8-n8, o7-o8]
+depth 10: value: 736.0 | time 21.19077 | pv [l10-m9, i8-i11, i7-i12, j12-l9, k7-n10, j6-p12, m10-n8, o7-o10, m8-o8, k8-p8, m6-m7]
 
    a b c d e f g h i j k l m n o p q r s
  1 ┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐  1
@@ -149,19 +150,19 @@ depth 10: value: 736.0 | time 21.264416 | pv [l10-m9, i8-i11, i7-i12, j12-l9, k7
 
 
 Game: Connect6; Tree PVS
-depth 1: value: 54.0 | time 0.000508 | pv [l10-m9, i7-i8]
-depth 2: value: 51.0 | time 0.001965 | pv [l9-l10, i13-l11, i12-m9]
-depth 3: value: 87.0 | time 0.012481 | pv [l10-m9, i8-i11, i6-i12, g9-j12]
-depth 4: value: 65.0 | time 0.038784 | pv [l9-l10, i8-l11, i13-j12, h14-n8, j9-j11]
-depth 5: value: 79.0 | time 0.160885 | pv [i8-j9, j8-k7, l6-l10, g11-l7, f12-j12, j7-m7]
-depth 6: value: 126.0 | time 0.520582 | pv [l10-m9, i8-i11, i7-i12, g9-j12, l7-l9, l6-l11, j7-k7]
-depth 7: value: 85.0 | time 1.523755 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, h10-o7, g9-l6, l7-m7]
-depth 8: value: 262.0 | time 3.096961 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, j8-o7, m7-m10, m5-m11, l6-l9]
-depth 9: value: 246.0 | time 10.136605 | pv [l10-m9, i8-i11, i6-i12, j12-k7, l9-l11, l6-l12, j7-k8, h5-n11, j8-n8, o7-o8]
-depth 10: value: 736.0 | time 21.261926 | pv [l10-m9, i8-i11, i7-i12, j12-l9, k7-n10, j6-p12, m10-n8, o7-o10, m8-o8, k8-p8, m6-m7]
+depth 1: value: 54.0 | time 0.000524 | pv [l10-m9, i7-i8]
+depth 2: value: 51.0 | time 0.001966 | pv [l9-l10, i13-l11, i12-m9]
+depth 3: value: 87.0 | time 0.012562 | pv [l10-m9, i8-i11, i6-i12, g9-j12]
+depth 4: value: 65.0 | time 0.038951 | pv [l9-l10, i8-l11, i13-j12, h14-n8, j9-j11]
+depth 5: value: 79.0 | time 0.160221 | pv [i8-j9, j8-k7, l6-l10, g11-l7, f12-j12, j7-m7]
+depth 6: value: 126.0 | time 0.518189 | pv [l10-m9, i8-i11, i7-i12, g9-j12, l7-l9, l6-l11, j7-k7]
+depth 7: value: 85.0 | time 1.52201 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, h10-o7, g9-l6, l7-m7]
+depth 8: value: 262.0 | time 3.089936 | pv [l10-m9, i8-i11, i6-i12, j12-k7, m8-n8, j8-o7, m7-m10, m5-m11, l6-l9]
+depth 9: value: 246.0 | time 10.114366 | pv [l10-m9, i8-i11, i6-i12, j12-k7, l9-l11, l6-l12, j7-k8, h5-n11, j8-n8, o7-o8]
+depth 10: value: 736.0 | time 21.294148 | pv [l10-m9, i8-i11, i7-i12, j12-l9, k7-n10, j6-p12, m10-n8, o7-o10, m8-o8, k8-p8, m6-m7]
 
 Game: Gomoku
-score: 56.0 | expands/sec 224490 | pv [h9, j9, j11, k12, k9, i8, h7, f7, j8, h10, i7, l10, g9, h6, h8, j6, k7, l7, l6, m5]
+move: h9 | expands/sec 258647 | pv [h9, j9, j11, g8, h10, n6, m7, j6, k12, l13]
 
 Game: Connect6
-score: 83.0 | expands/sec 32428 | pv [i8-k9, i11-j12, i7-j9, i5-m9, j8-l10]
+move: i8-k9 | expands/sec 32695 | pv [i8-k9, i6-i13, i12-j9, i11-m9, g12-h11]
