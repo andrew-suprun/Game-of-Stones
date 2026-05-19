@@ -2,7 +2,7 @@ from std.time import perf_counter_ns
 from std.python import Python, PythonObject
 from std.random import seed, shuffle
 
-from value import Score
+from value import Score, is_decisive
 from board import Place
 from traits import TTree, TGame
 
@@ -82,8 +82,6 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
         self.selected.clear()
         self.tree = Self.Tree()
         print(t"move {move}", end="")
-        if move.score() != 0:
-            print(t" score {move.score()}", end="")
 
         if time_ms > 0:
             print(t"  ms {time_ms}", end="")
@@ -95,10 +93,7 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
 
         print()
         # print(self.game)
-        if self.game.score().is_decisive():
-            self.game_complete = True
-        else:
-            self.game.play_move(move)
+        self.game.play_move(move)
 
         self.turn = 1 - self.turn
         self.search_complete = False
@@ -181,7 +176,10 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
         var start = perf_counter_ns()
         var pv = self.tree.search(self.game, duration)
         self.play_move(pv, (perf_counter_ns() - start) / 1_000_000)
+        if len(pv) == 1:
+            self.game_complete = True
         self.draw()
+
 
     def draw(self) raises:
         self.window.fill(color_background)
