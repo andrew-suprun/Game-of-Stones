@@ -13,18 +13,18 @@ from alpha_beta_negamax import AlphaBetaNegamax
 from principal_variation_negamax import PrincipalVariationNegamax
 
 comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-comptime Game2 = Gomoku[size=19, max_places=20, max_plies=100]
+comptime Game2 = Gomoku[size=19, max_places=18, max_plies=100]
 
 # comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 # comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
 
-# comptime Tree1 = AlphaBetaNegamax[Game1]
+comptime Tree1 = AlphaBetaNegamax[Game1]
 # comptime Tree1 = PrincipalVariationNegamax[Game1]
-comptime Tree1 = Mcts[Game1, 0.25]
+# comptime Tree1 = Mcts[Game1, 0.25]
 
-# comptime Tree2 = AlphaBetaNegamax[Game2]
+comptime Tree2 = AlphaBetaNegamax[Game2]
 # comptime Tree2 = PrincipalVariationNegamax[Game2]
-comptime Tree2 = Mcts[Game2, 0.25]
+# comptime Tree2 = Mcts[Game2, 0.25]
 
 
 comptime seed_value = 8
@@ -34,16 +34,11 @@ comptime white = False
 
 
 def main() raises:
-    run[Tree1, Tree2]("g16", 200, "g20", 200, openings())
+    run[Tree1, Tree2]("g16", 200, "g18", 200, openings())
 
 
-def run[
-    T1: TTree, T2: TTree
-](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
-    print(
-        t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs."
-        t" {reflect[T2].base_name()}-{time2} seed: {seed_value}"
-    )
+def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
+    print(t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs. {reflect[T2].base_name()}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
@@ -85,9 +80,7 @@ def run[
         n += 1
 
 
-def sim_opening[
-    T1: TTree, T2: TTree
-](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     if Debug:
         print(name1, "vs.", name2)
         print()

@@ -32,3 +32,11 @@ abs : pvs - 4 : 3 (1)
 
 Game: Gomoku: AlphaBetaNegamax-1000 vs. PrincipalVariationNegamax-1000 seed: 8
 abs : pvs - 5 : 2 (3)
+
+
+Game: Gomoku: Mcts-200 vs. Mcts-200 seed: 8
+g16 : g20 - 14 : 7 (7)
+g16 : g18 - 10 : 8 (2)
+
+Game: Gomoku: AlphaBetaNegamax-200 vs. AlphaBetaNegamax-200 seed: 8
+g16 : g18 - 9 : 7 (2)
