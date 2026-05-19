@@ -102,13 +102,19 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
                 var window = "zero" if zero_window else "full"
                 comptime if Trace:
                     if depth < 2:
-                        print(t"[{depth}] {'    '*depth}  >> child={child.move} [{alpha} : {new_beta}] {window} window")
+                        print(
+                            t"[{depth}] {'    '*depth}  >> child={child.move} [{alpha} : {new_beta}]"
+                            t" {window} window"
+                        )
 
                 child.search(g, -new_beta, -alpha, depth + 1, max_depth, deadline)
 
                 comptime if Trace:
                     if depth < 2:
-                        print(t"[{depth}] {'    '*depth}  << child={child.move} {child.value} time: {(perf_counter_ns() - start) / 10_000} {window} window")
+                        print(
+                            t"[{depth}] {'    '*depth}  << child={child.move} {child.value} time:"
+                            t" {(perf_counter_ns() - start) / 10_000} {window} window"
+                        )
 
             comptime if Trace:
                 print(t"[{depth}] {'    '*depth}  -- self={self.move} {child.value}")

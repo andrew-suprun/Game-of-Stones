@@ -8,10 +8,10 @@ from principal_variation_negamax import PrincipalVariationNegamax
 
 comptime board_size = 19
 
-comptime Game = Gomoku[board_size, 18, board_size*board_size-board_size]
-# comptime Game = Connect6[board_size, 26, 20, (board_size * board_size - board_size) / 2]
+# comptime Game = Gomoku[board_size, 20, board_size*board_size-board_size]
+comptime Game = Connect6[board_size, 26, 20, (board_size * board_size - board_size) / 2]
 
-comptime Tree = Mcts[Game, 0.25] # Gomoku
+comptime Tree = Mcts[Game, 0.25]  # Gomoku
 # comptime Tree = Mcts[Game, 0.35]  # Connect6
 # comptime Tree = AlphaBetaNegamax[Game]
 # comptime Tree = PrincipalVariationNegamax[Game]

@@ -135,7 +135,9 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             self[x, y] = Self.white
         self._values[y * Self.size + x] = [Loss, Loss]
 
-    def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
+    def _update_row(
+        mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]
+    ):
         var offset = start
         var stones = Int8(0)
 
@@ -324,7 +326,9 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         return max_value
 
 
-def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
+def _calc_value_table[
+    win_stones: Int, values: List[Value]
+]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[values]()

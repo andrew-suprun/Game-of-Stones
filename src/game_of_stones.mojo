@@ -180,7 +180,6 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
             self.game_complete = True
         self.draw()
 
-
     def draw(self) raises:
         self.window.fill(color_background)
 
