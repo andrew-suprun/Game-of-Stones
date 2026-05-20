@@ -1,15 +1,7 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 
-from value import Score
-from traits import TGame, TTree
-
-from mcts import Mcts
-from alpha_beta_negamax import AlphaBetaNegamax
-from principal_variation_negamax import PrincipalVariationNegamax
-
-from gomoku import Gomoku
-from connect6 import Connect6
+from game_of_stones import TTree, Mcts, AlphaBetaNegamax, PrincipalVariationNegamax, Gomoku, Connect6
 
 
 def test_search[Tree: TTree, moves: List[String], expected: String]() raises:

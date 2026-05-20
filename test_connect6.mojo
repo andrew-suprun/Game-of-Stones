@@ -1,5 +1,4 @@
-from connect6 import Connect6
-from mcts import Mcts
+from game_of_stones import Connect6, Mcts
 
 
 def main() raises:

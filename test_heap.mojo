@@ -1,8 +1,7 @@
 from std.random import shuffle
 from std.testing import assert_true, assert_false
 
-from value import Value, Win, Loss, Draw
-from heap import heap_add
+from game_of_stones import Value, Win, Loss, Draw, heap_add
 
 
 def lt[T: Comparable](a: T, b: T) -> Bool:
