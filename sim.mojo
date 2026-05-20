@@ -33,7 +33,10 @@ def main() raises:
     var time1: UInt = 200
     var time2: UInt = 200
 
-    print(t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs. {reflect[T2].base_name()}-{time2} seed: {seed_value}")
+    print(
+        t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs."
+        t" {reflect[T2].base_name()}-{time2} seed: {seed_value}"
+    )
 
     var first_wins = 0
     var second_wins = 0
@@ -75,7 +78,9 @@ def main() raises:
         n += 1
 
 
-def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+def sim_opening[
+    T1: TTree, T2: TTree
+](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     if Debug:
         print(name1, "vs.", name2)
         print()
