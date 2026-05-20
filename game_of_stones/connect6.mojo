@@ -1,8 +1,8 @@
-from config import Assert, Trace
-from value import Win, Draw, Loss
-from traits import TGame, TMove, MoveValue
-from board import Board, Value, Place, PlaceValue, first
-from heap import heap_add
+from .config import Assert, Trace
+from .value import Win, Draw, Loss
+from .traits import TGame, TMove, MoveValue
+from .board import Board, Value, Place, PlaceValue, first
+from .heap import heap_add
 
 comptime win_stones = 6
 comptime values: List[Value] = [0, 1, 5, 25, 125, 625]

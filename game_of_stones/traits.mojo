@@ -1,4 +1,4 @@
-from value import Value, value_str
+from .value import Value, value_str
 
 
 trait TTree(ImplicitlyDestructible, Writable):

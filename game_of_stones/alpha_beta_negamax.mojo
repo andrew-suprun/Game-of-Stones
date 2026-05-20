@@ -1,8 +1,8 @@
 from std.time import perf_counter_ns
 
-from config import Debug, Trace
-from value import Value, Win, Loss, Draw, is_win, is_loss, is_draw, is_decisive, value_str
-from traits import TTree, TGame
+from .config import Debug, Trace
+from .value import Value, Win, Loss, Draw, is_win, is_loss, is_draw, is_decisive, value_str
+from .traits import TTree, TGame
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):

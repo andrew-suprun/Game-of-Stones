@@ -1,5 +1,3 @@
---- perf_counter ---
-perf_counter: 16.125 msec/1M
 --- board ---
 max_score   0.182 sec/1M
 copy        0.044 sec/1M

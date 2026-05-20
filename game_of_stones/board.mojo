@@ -1,7 +1,7 @@
 from std.memory import memcpy
 
-from heap import heap_add
-from value import Value, Loss
+from .heap import heap_add
+from .value import Value, Loss
 
 comptime first = 0
 comptime second = 1

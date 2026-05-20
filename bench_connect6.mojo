@@ -1,8 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from traits import TMove
-from board import Board, first
-from connect6 import Connect6, Move
+from game_of_stones import Connect6
 
 comptime C6 = Connect6[size=19, max_moves=20, max_places=12, max_plies=100]
 

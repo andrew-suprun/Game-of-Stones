@@ -1,5 +1,4 @@
-from value import Score, Win
-from board import Board, Value, Place, first, second
+from game_of_stones import Board, Value, Place, first, second
 
 comptime win_stones = 6
 comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
@@ -19,7 +18,7 @@ def main() raises:
             print("----")
             var place = Place(String(place_str))
             if turn == first:
-                board_score = board.value(place, first)
+                board_score = board.get_value(place, first)
                 score += board_score
                 value += board_score
                 print(place, board_score)
@@ -27,7 +26,7 @@ def main() raises:
                     break
                 board.place_stone(place, first)
             else:
-                board_score = board.value(place, second)
+                board_score = board.get_value(place, second)
                 score -= board_score
                 value -= board_score
                 print(place, board_score)

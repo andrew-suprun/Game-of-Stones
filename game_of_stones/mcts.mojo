@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 
-from value import Value, Draw, Loss, is_win, is_loss, is_draw, is_decisive
-from traits import TTree, TGame, TMove
+from .value import Value, Draw, Loss, is_win, is_loss, is_draw, is_decisive
+from .traits import TTree, TGame, TMove
 
 
 comptime Idx = UInt32

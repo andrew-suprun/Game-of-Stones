@@ -2,9 +2,9 @@ from std.time import perf_counter_ns
 from std.python import Python, PythonObject
 from std.random import seed, shuffle
 
-from value import Score, is_decisive
-from board import Place
-from traits import TTree, TGame
+from game_of_stones import Connect6, Gomoku
+from game_of_stones import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
+from game_of_stones import Place
 
 comptime window_height = 800
 comptime window_width = 800
@@ -20,10 +20,22 @@ comptime color_line = "gray20"
 
 comptime duration = 1000
 
+comptime board_size = 19
 
-def game_of_stones[board_size: Int, Tree: TTree, Game: TGame]() raises:
+# comptime Game = Gomoku[board_size, 16, board_size*board_size-board_size]
+# comptime stones_per_move = 1
+
+comptime Game = Connect6[board_size, 26, 20, (board_size * board_size - board_size) / 2]
+comptime stones_per_move = 2
+
+comptime Tree = Mcts[Game, 0.25]  # Gomoku
+# comptime Tree = Mcts[Game, 0.35]  # Connect6
+# comptime Tree = AlphaBetaNegamax[Game]
+# comptime Tree = PrincipalVariationNegamax[Game]
+
+
+def main() raises:
     comptime name = reflect[Game].base_name()
-    comptime stones_per_move = 2 if name == "Connect6" else 1
     var pygame = Python.import_module("pygame")
     pygame.init()
     var window = pygame.display.set_mode(Python.tuple(window_height, window_width))
@@ -31,22 +43,21 @@ def game_of_stones[board_size: Int, Tree: TTree, Game: TGame]() raises:
 
     var done = False
     while not done:
-        var game = GameOfStones[board_size, Tree, stones_per_move](pygame, window)
+        var game = GameOfStones(pygame, window)
         done = game.run()
 
 
-struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
-    comptime Game = Self.Tree.Game
-    comptime Move = Self.Game.Move
-    comptime d = window_height / (Self.board_size + 1)
+struct GameOfStones:
+    comptime Move = Game.Move
+    comptime d = window_height / (board_size + 1)
     comptime r = Self.d / 2
 
     var pygame: PythonObject
     var window: PythonObject
     var moves: List[Self.Move]
     var selected: List[Place]
-    var game: Self.Game
-    var tree: Self.Tree
+    var game: Game
+    var tree: Tree
     var turn: Int
     var search_complete: Bool
     var game_complete: Bool
@@ -59,8 +70,8 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
         self.window = window
         self.moves = List[Self.Move]()
         self.selected = List[Place]()
-        self.game = Self.Game()
-        self.tree = Self.Tree()
+        self.game = Game()
+        self.tree = Tree()
         self.turn = black
         self.search_complete = False
         self.game_complete = False
@@ -80,7 +91,7 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
         var move = pv[0]
         self.moves.append(move)
         self.selected.clear()
-        self.tree = Self.Tree()
+        self.tree = Tree()
         print(t"move {move}", end="")
 
         if time_ms > 0:
@@ -114,8 +125,8 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
                     _ = moves.pop()
                     self.selected.clear()
                     self.game_complete = False
-                    self.tree = Self.Tree()
-                    self.game = Self.Game()
+                    self.tree = Tree()
+                    self.game = Game()
                     for move in moves:
                         self.play_move([move], 0)
 
@@ -125,10 +136,10 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
                         return
                     if not self.selected:
                         return
-                    if len(self.selected) == self.stones_per_move:
+                    if len(self.selected) == stones_per_move:
                         var move: Self.Move
                         var place1 = self.selected[0]
-                        if self.stones_per_move == 1:
+                        comptime if stones_per_move == 1:
                             move = {String(place1)}
                         else:
                             var place2 = self.selected[1]
@@ -143,14 +154,14 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
                     return
                 var x = (Int(py=event.pos[0]) - Self.r) / Self.d
                 var y = (Int(py=event.pos[1]) - Self.r) / Self.d
-                if x >= 0 and x < Self.board_size and y >= 0 and y < Self.board_size:
+                if x >= 0 and x < board_size and y >= 0 and y < board_size:
                     var place = Place(x, y)
                     if place in self.selected:
                         if place == self.selected[0]:
                             _ = self.selected.pop(0)
                         elif len(self.selected) == 2:
                             _ = self.selected.pop(1)
-                    elif len(self.selected) < self.stones_per_move and self.is_empty(place):
+                    elif len(self.selected) < stones_per_move and self.is_empty(place):
                         self.selected.append(place)
             self.draw()
 
@@ -183,18 +194,18 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
     def draw(self) raises:
         self.window.fill(color_background)
 
-        for i in range(1, Self.board_size + 1):
+        for i in range(1, board_size + 1):
             self.pygame.draw.line(
                 self.window,
                 color_line,
                 Python.tuple(Self.d, i * Self.d),
-                Python.tuple(Self.board_size * Self.d, i * Self.d),
+                Python.tuple(board_size * Self.d, i * Self.d),
             )
             self.pygame.draw.line(
                 self.window,
                 color_line,
                 Python.tuple(i * Self.d, Self.d),
-                Python.tuple(i * Self.d, Self.board_size * Self.d),
+                Python.tuple(i * Self.d, board_size * Self.d),
             )
 
         var turn = black
@@ -231,16 +242,16 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
 
     @staticmethod
     def first_black_move() raises -> Self.Move:
-        var x = Self.board_size / 2
+        var x = board_size / 2
         var place = Place(x, x)
-        if Self.stones_per_move == 1:
+        comptime if stones_per_move == 1:
             return {String(place)}
         else:
             return {String(t"{place}-{place}")}
 
     @staticmethod
     def first_white_move() raises -> Self.Move:
-        var x = Self.board_size / 2
+        var x = board_size / 2
         var places = List[Place]()
         for j in range(x - 1, x + 2):
             for i in range(x - 1, x + 2):
@@ -249,7 +260,7 @@ struct GameOfStones[board_size: Int, Tree: TTree, stones_per_move: Int]:
         seed()
         shuffle(places)
 
-        if Self.stones_per_move == 1:
+        comptime if stones_per_move == 1:
             return {String(places[0])}
         else:
             return {String(t"{places[0]}-{places[1]}")}

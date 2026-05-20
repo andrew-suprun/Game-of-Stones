@@ -1,31 +1,10 @@
 from std.random import seed, shuffle
 from std.time import perf_counter_ns
 
-from config import Debug
-from value import Value, is_decisive, value_str
-from traits import TTree
-from board import Place, first
-from gomoku import Gomoku
-from connect6 import Connect6
-from mcts import Mcts
-
-from alpha_beta_negamax import AlphaBetaNegamax
-from principal_variation_negamax import PrincipalVariationNegamax
-
-comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-comptime Game2 = Gomoku[size=19, max_places=18, max_plies=100]
-
-# comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
-# comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
-
-comptime Tree1 = AlphaBetaNegamax[Game1]
-# comptime Tree1 = PrincipalVariationNegamax[Game1]
-# comptime Tree1 = Mcts[Game1, 0.25]
-
-comptime Tree2 = AlphaBetaNegamax[Game2]
-# comptime Tree2 = PrincipalVariationNegamax[Game2]
-# comptime Tree2 = Mcts[Game2, 0.25]
-
+from game_of_stones import Debug
+from game_of_stones import TTree, Place, first, is_decisive, value_str
+from game_of_stones import Gomoku, Connect6
+from game_of_stones import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 
 comptime seed_value = 8
 
@@ -33,17 +12,33 @@ comptime black = True
 comptime white = False
 
 
+comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
+comptime Game2 = Gomoku[size=19, max_places=18, max_plies=100]
+
+# comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
+# comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
+
+comptime T1 = AlphaBetaNegamax[Game1]
+# comptime T1 = PrincipalVariationNegamax[Game1]
+# comptime T1 = Mcts[Game1, 0.25]
+
+comptime T2 = AlphaBetaNegamax[Game2]
+# comptime T2 = PrincipalVariationNegamax[Game2]
+# comptime T2 = Mcts[Game2, 0.25]
+
+
 def main() raises:
-    run[Tree1, Tree2]("g16", 200, "g18", 200, openings())
+    var name1 = "g16"
+    var name2 = "g18"
+    var time1: UInt = 200
+    var time2: UInt = 200
 
-
-def run[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, openings: List[List[String]]) raises:
     print(t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs. {reflect[T2].base_name()}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
     var n = 1
-    for opening in openings:
+    for opening in openings():
         print()
         print("------")
         print()

@@ -1,8 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from traits import TMove
-from mcts import Mcts
-from gomoku import Gomoku
+from game_of_stones import Mcts, Gomoku
 
 comptime G = Gomoku[size=19, max_places=32, max_plies=100]
 

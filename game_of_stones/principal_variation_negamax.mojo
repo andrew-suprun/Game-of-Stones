@@ -1,8 +1,8 @@
 from std.time import perf_counter_ns
 
-from config import Assert, Debug, Trace
-from value import Value, Win, Loss, Draw, is_win, is_loss, is_draw, is_decisive, value_str
-from traits import TTree, TGame
+from .config import Assert, Debug, Trace
+from .value import Value, Win, Loss, Draw, is_win, is_loss, is_draw, is_decisive, value_str
+from .traits import TTree, TGame
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):

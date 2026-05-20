@@ -1,8 +1,8 @@
 from std.utils.numerics import FPUtils, isinf
 
-from value import Value, Win, Draw
-from traits import TGame, TMove, MoveValue
-from board import Board, Place, PlaceValue, first
+from .value import Value, Win, Draw
+from .traits import TGame, TMove, MoveValue
+from .board import Board, Place, PlaceValue, first
 
 comptime win_stones = 5
 comptime values: List[Value] = [0, 1, 5, 25, 125]

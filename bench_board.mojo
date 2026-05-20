@@ -1,6 +1,6 @@
 from std.benchmark import benchmark, Unit, keep, black_box
 
-from board import Board, Value, Place, PlaceValue, first
+from game_of_stones import Board, Value, Place, PlaceValue, first
 
 comptime win_stones = 6
 comptime values: List[Value] = [0, 1, 5, 25, 125, 625]

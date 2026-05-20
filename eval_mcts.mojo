@@ -1,6 +1,4 @@
-from gomoku import Gomoku
-from connect6 import Connect6
-from mcts2 import Mcts
+from game_of_stones import Gomoku, Connect6, Mcts
 
 # comptime Game = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
 comptime Game = Gomoku[size=19, max_places=16, max_plies=100]
