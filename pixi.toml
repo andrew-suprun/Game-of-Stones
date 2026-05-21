@@ -10,4 +10,4 @@ format = "pixi run mojo format . -l 116"
 
 [dependencies]
 pygame = ">=2.6.1,<3"
-mojo = ">=1.0.0b2.dev2026052006,<2"
+mojo = ">=1.0.0b2.dev2026052115,<2"
