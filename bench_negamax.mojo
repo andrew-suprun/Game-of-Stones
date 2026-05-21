@@ -1,11 +1,11 @@
 from std.time import perf_counter_ns
 
-from game_of_stones import TGame, Win, Loss, value_str
+from game_of_stones import TGame, MoveValue, Win, Loss, value_str
 from game_of_stones import AlphaBetaNode, PrincipalVariationNode
 from game_of_stones import Gomoku, Connect6
 
-comptime C6 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-comptime G = Gomoku[size=19, max_places=16, max_plies=100]
+comptime C6 = Connect6[size=19, max_plies=100]
+comptime G = Gomoku[size=19, max_plies=100]
 
 
 def bench_abs_tree[Game: TGame](max_depth: Int) raises:
@@ -22,10 +22,12 @@ def bench_abs_tree[Game: TGame](max_depth: Int) raises:
     print(t"\nGame: {reflect[Game].base_name()}; Tree ABS")
 
     var root = AlphaBetaNode[Game]({}, Loss, 0)
+    var max_moves = 16
+    var moves = List[MoveValue[Game.Move]](capacity=max_moves)
     var start = perf_counter_ns()
     var deadline = start + UInt(60_000_000_000)
     for max_depth in range(1, max_depth + 1):
-        root.search(game, Loss, Win, 0, max_depth, deadline)
+        root.search(game, Loss, Win, 0, max_depth, max_moves, moves, deadline)
         var time = Float64(perf_counter_ns() - start) / 1_000_000_000
         var pv = List[Game.Move]()
         root._pv(pv)
@@ -51,10 +53,12 @@ def bench_pvs_tree[Game: TGame](max_depth: Int) raises:
     print(t"\nGame: {reflect[Game].base_name()}; Tree PVS")
 
     var root = PrincipalVariationNode[Game]({}, Loss, 0)
+    var max_moves = 16
+    var moves = List[MoveValue[Game.Move]](capacity=max_moves)
     var start = perf_counter_ns()
     var deadline = start + UInt(60_000_000_000)
     for max_depth in range(1, max_depth + 1):
-        root.search(game, Loss, Win, 0, max_depth, deadline)
+        root.search(game, Loss, Win, 0, max_depth, max_moves, moves, deadline)
         var time = Float64(perf_counter_ns() - start) / 1_000_000_000
         var pv = List[Game.Move]()
         root._pv(pv)

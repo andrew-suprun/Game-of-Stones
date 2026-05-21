@@ -1,8 +1,8 @@
 from std.benchmark import benchmark, Unit, keep
 
-from game_of_stones import Mcts, Gomoku
+from game_of_stones import Mcts, Gomoku, MoveValue
 
-comptime G = Gomoku[size=19, max_places=32, max_plies=100]
+comptime G = Gomoku[size=19, max_plies=100]
 
 
 def bench_moves():
@@ -12,8 +12,9 @@ def bench_moves():
         game.play_move({"i9"})
     except:
         pass
+    var moves = List[MoveValue[G.Move]](capacity=20)
     for _ in range(1_000_000):
-        var moves = game.moves()
+        game.top_moves(32, moves)
         keep(moves[0])
 
 
@@ -25,8 +26,9 @@ def bench_expand():
         game.play_move({"i9"})
     except:
         pass
+    var moves = List[MoveValue[G.Move]](capacity=20)
     for _ in range(1_000_000):
-        tree.expand(game)
+        tree.expand(game, 32, moves)
 
 
 def bench[f: def() thin](name: String, unit: String) raises:

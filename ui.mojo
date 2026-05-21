@@ -4,7 +4,7 @@ from std.random import seed, shuffle
 
 from game_of_stones import Connect6, Gomoku
 from game_of_stones import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
-from game_of_stones import Place
+from game_of_stones import MoveValue, Place
 
 comptime window_height = 800
 comptime window_width = 800
@@ -21,11 +21,12 @@ comptime color_line = "gray20"
 comptime duration = 1000
 
 comptime board_size = 19
+comptime max_moves = 16
 
 # comptime Game = Gomoku[board_size, 16, board_size*board_size-board_size]
 # comptime stones_per_move = 1
 
-comptime Game = Connect6[board_size, 26, 20, (board_size * board_size - board_size) / 2]
+comptime Game = Connect6[board_size, (board_size * board_size - board_size) / 2]
 comptime stones_per_move = 2
 
 comptime Tree = Mcts[Game, 0.25]  # Gomoku
@@ -185,7 +186,7 @@ struct GameOfStones:
             return
 
         var start = perf_counter_ns()
-        var pv = self.tree.search(self.game, duration)
+        var pv = self.tree.search(self.game, max_moves, duration)
         self.play_move(pv, (perf_counter_ns() - start) / 1_000_000)
         if len(pv) == 1:
             self.game_complete = True

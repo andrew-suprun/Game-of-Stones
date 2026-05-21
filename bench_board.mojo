@@ -43,11 +43,11 @@ def bench_place_stone():
     var copy = board.copy()
     for _ in range(50):
         heap.clear()
-        copy.places(0, heap)
+        copy.places(0, 20, heap)
         copy.place_stone(heap[0].place, 0)
         places.append(heap[0].place)
         heap.clear()
-        copy.places(1, heap)
+        copy.places(1, 20, heap)
         copy.place_stone(heap[0].place, 1)
         places.append(heap[0].place)
 
@@ -69,10 +69,10 @@ def bench_rollout():
         var copy = board.copy()
         for _ in range(50):
             places.clear()
-            copy.places(0, places)
+            copy.places(0, 20, places)
             copy.place_stone(places[0].place, 0)
             places.clear()
-            copy.places(1, places)
+            copy.places(1, 20, places)
             copy.place_stone(places[0].place, 1)
         keep(copy)
 
@@ -82,7 +82,7 @@ def bench_places():
     var places = List[PlaceValue](capacity=20)
     for _ in range(1_000_000):
         places.clear()
-        board.places(first, places)
+        board.places(first, 20, places)
         keep(places)
 
 

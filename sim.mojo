@@ -2,7 +2,7 @@ from std.random import seed, shuffle
 from std.time import perf_counter_ns
 
 from game_of_stones import Debug
-from game_of_stones import TTree, Place, first, is_decisive, value_str
+from game_of_stones import TTree, MoveValue, Place, first, is_decisive, value_str
 from game_of_stones import Gomoku, Connect6
 from game_of_stones import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 
@@ -12,19 +12,18 @@ comptime black = True
 comptime white = False
 
 
-comptime Game1 = Gomoku[size=19, max_places=16, max_plies=100]
-comptime Game2 = Gomoku[size=19, max_places=18, max_plies=100]
+comptime Game = Gomoku[size=19, max_plies=100]
+# comptime Game = Connect6[size=19, max_plies=100]
 
-# comptime Game1 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
-# comptime Game2 = Connect6[size=19, max_moves=26, max_places=20, max_plies=100]
+comptime T1 = AlphaBetaNegamax[Game]
+# comptime T1 = PrincipalVariationNegamax[Game]
+# comptime T1 = Mcts[Game, 0.25]
+comptime max_moves1 = 20
 
-comptime T1 = AlphaBetaNegamax[Game1]
-# comptime T1 = PrincipalVariationNegamax[Game1]
-# comptime T1 = Mcts[Game1, 0.25]
-
-comptime T2 = AlphaBetaNegamax[Game2]
+comptime T2 = AlphaBetaNegamax[Game]
 # comptime T2 = PrincipalVariationNegamax[Game2]
 # comptime T2 = Mcts[Game2, 0.25]
+comptime max_moves2 = 20
 
 
 def main() raises:
@@ -33,10 +32,7 @@ def main() raises:
     var time1: UInt = 200
     var time2: UInt = 200
 
-    print(
-        t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs."
-        t" {reflect[T2].base_name()}-{time2} seed: {seed_value}"
-    )
+    print(t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs. {reflect[T2].base_name()}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
@@ -78,9 +74,7 @@ def main() raises:
         n += 1
 
 
-def sim_opening[
-    T1: TTree, T2: TTree
-](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
+def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
     if Debug:
         print(name1, "vs.", name2)
         print()
@@ -102,7 +96,7 @@ def sim_opening[
         var name_size = max(name1.byte_length(), name2.byte_length()) + 1
         var move: String
         if turn == first:
-            var pv = t1.search(g1, time1)
+            var pv = t1.search(g1, max_moves1, time1)
             assert len(pv) > 0, t"{reflect[T1].base_name()}.search() returned no results"
             move = String(pv[0])
             print(
@@ -122,7 +116,7 @@ def sim_opening[
             if len(pv) == 1 and is_decisive(t1.value()):
                 return name1 if t1.value() < 0 else name2 if t1.value() > 0 else "draw"
         else:
-            var pv = t2.search(g2, time2)
+            var pv = t2.search(g2, max_moves2, time2)
             assert len(pv) > 0, t"{reflect[T2].base_name()}.search() returned no results"
             move = String(pv[0])
             print(
@@ -153,14 +147,14 @@ def openings() -> List[List[String]]:
     seed(seed_value)
     var result = List[List[String]]()
     var places = List[String]()
-    for j in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
-        for i in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
-            if i != Game1.size / 2 or j != Game1.size / 2:
+    for j in range(Game.size / 2 - 2, Game.size / 2 + 3):
+        for i in range(Game.size / 2 - 2, Game.size / 2 + 3):
+            if i != Game.size / 2 or j != Game.size / 2:
                 places.append(String(Place(i, j)))
     for _ in range(100):
         shuffle(places)
-        moves = [String(Place(Game1.size / 2, Game1.size / 2))]
-        if reflect[Game1].base_name() == "Connect6":
+        moves = [String(Place(Game.size / 2, Game.size / 2))]
+        if reflect[Game].base_name() == "Connect6":
             for i in range(0, 4):
                 moves.append(String(t"{places[i]}-{places[i+4]}"))
         else:

@@ -134,9 +134,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             self[x, y] = Self.white
         self._values[y * Self.size + x] = [Loss, Loss]
 
-    def _update_row(
-        mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]
-    ):
+    def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
@@ -152,7 +150,8 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             stones -= self._places[offset]
             offset += delta
 
-    def places(self, turn: Int, mut places: List[PlaceValue]):
+    def places(self, turn: Int, max_places: Int, mut places: List[PlaceValue]):
+        places.clear()
         for y in range(Self.size):
             for x in range(Self.size):
                 if self[x, y] == self.empty:
@@ -326,9 +325,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         return max_value
 
 
-def _calc_value_table[
-    win_stones: Int, values: List[Value]
-]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
+def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[values]()

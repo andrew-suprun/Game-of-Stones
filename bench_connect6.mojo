@@ -1,8 +1,8 @@
 from std.benchmark import benchmark, Unit, keep
 
-from game_of_stones import Connect6
+from game_of_stones import Connect6, MoveValue
 
-comptime C6 = Connect6[size=19, max_moves=20, max_places=12, max_plies=100]
+comptime C6 = Connect6[size=19, max_plies=100]
 
 
 def bench_moves():
@@ -12,8 +12,9 @@ def bench_moves():
         game.play_move("i9-i10")
     except:
         pass
+    var moves = List[MoveValue[C6.Move]](capacity=20)
     for _ in range(1000):
-        var moves = game.moves()
+        game.top_moves(20, moves)
         keep(moves[0].value)
 
 

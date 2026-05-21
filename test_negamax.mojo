@@ -1,12 +1,13 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 
-from game_of_stones import TGame, Gomoku, Connect6, Value, Win, Loss, is_win, is_loss, is_draw
+from game_of_stones import TGame, Gomoku, Connect6, Value, MoveValue, Win, Loss, is_win, is_loss, is_draw
 
 
 def search[Game: TGame](game: Game, depth: Int) -> Value:
     var best_score = Loss
-    var moves = game.moves()
+    var moves = List[MoveValue[Game.Move]](capacity=20)
+    game.top_moves(20, moves)
     if depth == 0:
         for move in moves:
             best_score = max(best_score, move.value)
@@ -41,8 +42,8 @@ def test_search[Game: TGame](moves: List[String], max_depth: Int) raises:
 
 
 def main() raises:
-    comptime G = Gomoku[size=19, max_places=16, max_plies=100]
-    comptime C = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
+    comptime G = Gomoku[size=19, max_plies=100]
+    comptime C = Connect6[size=19, max_plies=100]
 
     test_search[G](["j10", "i9", "i10"], 7)
     test_search[C](["j10", "i9-i10"], 6)
