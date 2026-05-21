@@ -24,13 +24,13 @@ trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
         ...
 
 
-trait TMove(Defaultable, ImplicitlyCopyable, TrivialRegisterPassable, Writable):
+trait TMove(Copyable, Defaultable, TrivialRegisterPassable, Writable):
     def __init__(out self, text: String) raises:
         ...
 
 
 @fieldwise_init
-struct MoveValue[Move: TMove](ImplicitlyCopyable, ImplicitlyDestructible, Writable):
+struct MoveValue[Move: TMove](Copyable, ImplicitlyDestructible, Writable):
     var move: Self.Move
     var value: Value
 

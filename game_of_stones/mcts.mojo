@@ -78,7 +78,7 @@ struct Mcts[G: TGame, c: Value](TTree):
             g.play_move(child.move)
             depth += 1
 
-        var leaf_max_moves = max(max_moves - depth / 2, 6)
+        var leaf_max_moves = max(max_moves - depth, 6)
         g.top_moves(leaf_max_moves, moves)
         ref leaf = self.tree[idx]
         leaf.first_child = Idx(len(self.tree))

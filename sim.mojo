@@ -19,7 +19,7 @@ comptime Game = Connect6[size=19, max_plies=100]
 # comptime T1 = AlphaBetaNegamax[Game]
 # comptime T1 = PrincipalVariationNegamax[Game]
 comptime T1 = Mcts[Game, 0.25]
-comptime max_moves1 = 16
+comptime max_moves1 = 21
 comptime time1: UInt = 200
 comptime name1 = String(t"{reflect[T1].base_name()}-{max_moves1}-{time1}")
 

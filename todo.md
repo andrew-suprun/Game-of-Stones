@@ -1,2 +1,2 @@
-* experiment with max_places and max_moves dependent on depth
+* main branch: change ImplicitlyCopyable to Copyable
 * remove run.sh and use pixi.toml instead
