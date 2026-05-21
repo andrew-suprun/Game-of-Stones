@@ -1,2 +1,5 @@
-* experiment with max_places and max_moves dependent on depth
+* join value.mojo and traits.mojo into base.mojo
+* maybe move base.mojo into __init__.mojo
+* benchmark asserts
+* try to move benches into ./benchmarks and tests into ./test
 * remove run.sh and use pixi.toml instead
