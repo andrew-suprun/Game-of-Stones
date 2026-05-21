@@ -1,4 +1,4 @@
-from .config import Assert, Trace
+from .config import Assert
 from .value import Win, Draw, Loss
 from .traits import TGame, TMove, MoveValue
 from .board import Board, Value, Place, PlaceValue, first
@@ -51,7 +51,7 @@ def lt(a: MoveValue[Move], b: MoveValue[Move]) -> Bool:
     return a.value < b.value
 
 
-struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGame):
+struct Connect6[size: Int, max_plies: Int](TGame):
     comptime Move = Move
 
     var board: Board[Self.size, values, win_stones]
@@ -63,18 +63,11 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
         self.turn = 0
         self.plies = 0
 
-    def moves(self) -> List[MoveValue[Move]]:
-        var moves = List[MoveValue[Move]](capacity=Self.max_moves)
-        self._moves(moves)
-        if self.plies >= Self.max_plies:
-            var last_move = moves[len(moves) - 1]
-            last_move.value = Draw
-            return [last_move]
-        return moves^
-
-    def _moves(self, mut moves: List[MoveValue[Move]]):
-        var places = List[PlaceValue](capacity=Self.max_places)
-        self.board.places(self.turn, places)
+    def top_moves(self, max_moves: Int, mut moves: List[MoveValue[Move]]):
+        moves.clear()
+        var max_places = max(max_moves - 6, 6)
+        var places = List[PlaceValue](capacity=max_places)
+        self.board.places(self.turn, max_places, places)
         if len(places) <= 1:
             print(self)
         assert len(places) > 1
@@ -111,10 +104,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
                         if debug_board_value != board_value + score1 + score2:
                             print(board2)
                             print(place1, place2)
-                            print(
-                                t"debug_board_value={debug_board_value}, board_value={board_value},"
-                                t" score1={score1}, score2={score2}"
-                            )
+                            print(t"debug_board_value={debug_board_value}, board_value={board_value}, score1={score1}, score2={score2}")
                             assert False
 
                 var max_opp_value = board2.max_value(1 - self.turn)
@@ -124,6 +114,10 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int, max_plies: Int](TGam
 
         if not moves:
             moves.append({{places[0].place, places[1].place}, Loss})
+
+        if self.plies >= Self.max_plies:
+            moves[0].value = Draw
+            moves.shrink(1)
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._p1, self.turn)

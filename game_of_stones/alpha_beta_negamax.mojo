@@ -13,19 +13,20 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     def __init__(out self):
         self.root = {{}, Loss, {}}
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
-        var depth = 1
+    def search(mut self, game: Self.G, max_moves: Int, max_time_ms: UInt) -> List[Self.G.Move]:
+        var moves = List[MoveValue[Self.G.Move]](capacity=max_moves)
+        var max_depth = 1
         var start = perf_counter_ns()
         var deadline = start + UInt(1_000_000) * max_time_ms
         while True:
-            self.root.search(game, Loss, Win, 0, depth, deadline)
+            self.root.search(game, Loss, Win, 0, max_depth, max_moves, moves, deadline)
             var pv = self._pv()
             if perf_counter_ns() > deadline:
                 return pv^
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
             comptime if Debug:
-                print(t"    abs: depth: {depth}, value: {value_str(-self.root.value)}, time: {time},  pv: {pv}")
+                print(t"    abs: depth: {max_depth}, value: {value_str(-self.root.value)}, time: {time},  pv: {pv}")
 
             if is_decisive(self.root.value):
                 return pv^
@@ -38,7 +39,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
             if n_non_loosing_moves == 1:
                 return pv^
 
-            depth += 1
+            max_depth += 1
 
     def value(self) -> Value:
         return self.root.value
@@ -71,13 +72,16 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         beta: Value,
         depth: Int,
         max_depth: Int,
+        max_moves: Int,
+        mut moves: List[MoveValue[Self.G.Move]],
         deadline: UInt,
     ):
         if perf_counter_ns() > deadline:
             return
 
         if not self.children:
-            self.children = [Self(mv.move, mv.value, max_depth) for mv in game.moves()]
+            game.top_moves(max_moves, moves)
+            self.children = [Self(mv.move, mv.value, max_depth) for mv in moves]
 
         self.max_depth = max_depth
         self.value = Win
@@ -98,14 +102,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
                     if depth < 2:
                         print(t"[{depth}] {'    '*depth}  >> child={child.move} [{alpha} : {beta}]")
 
-                child.search(g, -beta, -alpha, depth + 1, max_depth, deadline)
+                var leaf_max_moves = max(max_moves - 1, 8)
+                child.search(g, -beta, -alpha, depth + 1, max_depth, leaf_max_moves, moves, deadline)
 
                 comptime if Trace:
                     if depth < 2:
-                        print(
-                            t"[{depth}] {'    '*depth}  << child={child.move} {value_str(child.value)}; time:"
-                            t" {(perf_counter_ns() - start) / 10_000}"
-                        )
+                        print(t"[{depth}] {'    '*depth}  << child={child.move} {value_str(child.value)}; time: {(perf_counter_ns() - start) / 10_000}")
 
             var child_value = child.value if not is_draw(child.value) else 0
             alpha = max(alpha, child_value)

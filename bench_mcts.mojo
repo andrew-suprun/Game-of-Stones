@@ -1,9 +1,9 @@
 from std.time import perf_counter_ns
 
-from game_of_stones import TGame, Mcts, Gomoku, Connect6
+from game_of_stones import TGame, Mcts, Gomoku, Connect6, MoveValue
 
-comptime C6 = Connect6[size=19, max_moves=16, max_places=12, max_plies=100]
-comptime G = Gomoku[size=19, max_places=16, max_plies=100]
+comptime C6 = Connect6[size=19, max_plies=100]
+comptime G = Gomoku[size=19, max_plies=100]
 
 
 def bench_build_tree[Game: TGame]() raises:
@@ -18,11 +18,13 @@ def bench_build_tree[Game: TGame]() raises:
     print(t"\nGame: {reflect[Game].base_name()}")
 
     var tree = Mcts[Game, 0.7]()
+    var max_moves = 16
+    var moves = List[MoveValue[Game.Move]](capacity=max_moves)
     var start = perf_counter_ns()
     var deadline = start + UInt(10_000_000_000)
     var count = 0
     while perf_counter_ns() < deadline:
-        tree.expand(game)
+        tree.expand(game, max_moves, moves)
         count += 1
 
     var pv = tree._pv()

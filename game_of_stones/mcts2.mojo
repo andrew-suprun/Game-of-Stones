@@ -31,7 +31,7 @@ struct MctsNode[M: TMove](TrivialRegisterPassable, Writable):
         writer.write(self.move, " ", self.value, " sims: ", self.n_sims)
 
 
-struct Mcts[G: TGame, c: Value](TTree):
+struct Mcts2[G: TGame, c: Value](TTree):
     comptime Game = Self.G
     comptime Node = MctsNode[Self.G.Move]
 
@@ -78,7 +78,7 @@ struct Mcts[G: TGame, c: Value](TTree):
             g.play_move(child.move)
             depth += 1
 
-        var leaf_max_moves = max(max_moves - depth, 6)
+        var leaf_max_moves = max(max_moves, 8)
         g.top_moves(leaf_max_moves, moves)
         ref leaf = self.tree[idx]
         leaf.first_child = Idx(len(self.tree))

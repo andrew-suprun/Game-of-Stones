@@ -17,7 +17,7 @@ def test_places() raises:
     print(board.str_values())
 
     var heap = List[PlaceValue](capacity=20)
-    board.places(1, heap)
+    board.places(1, 20, heap)
     print(len(heap))
     for move in heap:
         print(move)
