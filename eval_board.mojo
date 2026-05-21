@@ -1,4 +1,4 @@
-from game_of_stones import Board, Value, Place, first, second
+from engine import Board, Value, Place, first, second
 
 comptime win_stones = 6
 comptime values: List[Value] = [0, 1, 5, 25, 125, 625]

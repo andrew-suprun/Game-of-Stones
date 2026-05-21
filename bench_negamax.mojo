@@ -1,8 +1,8 @@
 from std.time import perf_counter_ns
 
-from game_of_stones import TGame, MoveValue, Win, Loss, value_str
-from game_of_stones import AlphaBetaNode, PrincipalVariationNode
-from game_of_stones import Gomoku, Connect6
+from engine import TGame, MoveValue, Win, Loss, value_str
+from engine import AlphaBetaNode, PrincipalVariationNode
+from engine import Gomoku, Connect6
 
 comptime C6 = Connect6[size=19, max_plies=100]
 comptime G = Gomoku[size=19, max_plies=100]

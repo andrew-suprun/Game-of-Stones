@@ -1,11 +1,11 @@
 from std.random import seed, shuffle
 from std.time import perf_counter_ns
 
-from game_of_stones import Debug
-from game_of_stones import TTree, MoveValue, Place, first, is_decisive, value_str
-from game_of_stones import Gomoku, Connect6
-from game_of_stones import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
-from game_of_stones.mcts2 import Mcts2
+from engine import Debug
+from engine import TTree, MoveValue, Place, first, is_decisive, value_str
+from engine import Gomoku, Connect6
+from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
+from engine.mcts2 import Mcts2
 
 comptime seed_value = 8
 

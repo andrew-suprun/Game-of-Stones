@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 
-from game_of_stones import TTree, Mcts, AlphaBetaNegamax, PrincipalVariationNegamax, Gomoku, Connect6
+from engine import TTree, Mcts, AlphaBetaNegamax, PrincipalVariationNegamax, Gomoku, Connect6
 
 
 def test_search[Tree: TTree, moves: List[String], expected: String]() raises:

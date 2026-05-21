@@ -2,9 +2,9 @@ from std.time import perf_counter_ns
 from std.python import Python, PythonObject
 from std.random import seed, shuffle
 
-from game_of_stones import Connect6, Gomoku
-from game_of_stones import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
-from game_of_stones import MoveValue, Place
+from engine import Connect6, Gomoku
+from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
+from engine import MoveValue, Place
 
 comptime window_height = 800
 comptime window_width = 800

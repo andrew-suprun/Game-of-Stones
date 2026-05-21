@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.random import seed, random_si64
 
-from game_of_stones import Board, Place, Value, PlaceValue, Win, first, second
+from engine import Board, Place, Value, PlaceValue, Win, first, second
 
 comptime size = 19
 comptime win_stones = 6

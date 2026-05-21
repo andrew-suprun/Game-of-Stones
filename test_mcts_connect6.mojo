@@ -1,4 +1,4 @@
-from game_of_stones import Connect6, Mcts, MoveValue
+from engine import Connect6, Mcts, MoveValue
 
 
 def main() raises:

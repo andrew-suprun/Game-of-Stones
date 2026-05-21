@@ -1,4 +1,4 @@
-from game_of_stones import Gomoku, Mcts, MoveValue
+from engine import Gomoku, Mcts, MoveValue
 
 
 def main() raises:

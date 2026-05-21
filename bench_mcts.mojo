@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
 
-from game_of_stones import TGame, Mcts, Gomoku, Connect6, MoveValue
+from engine import TGame, Mcts, Gomoku, Connect6, MoveValue
 
 comptime C6 = Connect6[size=19, max_plies=100]
 comptime G = Gomoku[size=19, max_plies=100]

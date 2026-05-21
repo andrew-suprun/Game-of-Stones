@@ -1,6 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from game_of_stones import heap_add
+from engine import heap_add
 
 
 def lt(a: Int, b: Int) -> Bool:

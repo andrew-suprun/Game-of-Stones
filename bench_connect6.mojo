@@ -1,6 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from game_of_stones import Connect6, MoveValue
+from engine import Connect6, MoveValue
 
 comptime C6 = Connect6[size=19, max_plies=100]
 

@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 
-from game_of_stones import TGame, Gomoku, Connect6, Value, MoveValue, Win, Loss, is_win, is_loss, is_draw
+from engine import TGame, Gomoku, Connect6, Value, MoveValue, Win, Loss, is_win, is_loss, is_draw
 
 
 def search[Game: TGame](game: Game, depth: Int) -> Value:
