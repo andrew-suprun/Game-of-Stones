@@ -1,42 +1,38 @@
-Game: Connect6: PrincipalVariationNegamax-100 vs. Mcts-100 seed: 8
-pvs : mcts - 5 : 37 (-32)
+Gomoku:
+Mcts-16-200 : Mcts-20-200 -  8 : 12 (-4)
+Mcts-20-200 : Mcts-24-200 - 15 :  7  (8)
+Mcts-18-200 : Mcts-20-200 -  6 :  3  (3)
 
-Game: Connect6: PrincipalVariationNegamax-1000 vs. Mcts-1000 seed: 8
-pvs : mcts - 14 : 17 (-3)
-
-Game: Connect6: AlphaBetaNegamax-100 vs. Mcts-100 seed: 8
-abs : mcts - 10 : 36 (-26)
-
-Game: Connect6: AlphaBetaNegamax-1000 vs. Mcts-1000 seed: 8
-abs : mcts - 8 : 18 (-10)
+Mcts-18-1000 : Mcts-20-1000 - 4 : 3 (1)
 
 
 
-Game: Connect6: AlphaBetaNegamax-100 vs. PrincipalVariationNegamax-100 seed: 8
-abs : pvs - 10 : 6 (4)
-
-Game: Connect6: AlphaBetaNegamax-1000 vs. PrincipalVariationNegamax-1000 seed: 8
-abs : pvs - 5 : 2 (3)
-
-
-
-Game: Gomoku: AlphaBetaNegamax-100 vs. Mcts-100 seed: 8
-abs : mcts - 3 : 37 (-34)
-
-Game: Gomoku: AlphaBetaNegamax-1000 vs. Mcts-1000 seed: 8
-abs : mcts - 1 : 30 (-29)
+Connect6: Mcts-18-200 : Mcts-20-200 -  4 : 12 (-8)
+Connect6: Mcts-20-200 : Mcts-24-200 -  6 :  7 (-1)
+Connect6: Mcts-24-200 : Mcts-28-200 -  8 :  4  (4)
+Connect6: Mcts-24-200 : Mcts-26-200 - 10 :  6  (4)
+Connect6: Mcts-22-200 : Mcts-24-200 -  7 :  7  (0)
 
 
-Game: Gomoku: AlphaBetaNegamax-100 vs. PrincipalVariationNegamax-100 seed: 8
-abs : pvs - 4 : 3 (1)
+Connect6: Mcts-24-200 : Mcts2-24-200 - 22 : 10 (12)
 
-Game: Gomoku: AlphaBetaNegamax-1000 vs. PrincipalVariationNegamax-1000 seed: 8
-abs : pvs - 5 : 2 (3)
+Gomoku: Mcts-18-200 : Mcts2-18-200 - 10 : 8 (2)
 
 
-Game: Gomoku: Mcts-200 vs. Mcts-200 seed: 8
-g16 : g20 - 14 : 7 (7)
-g16 : g18 - 10 : 8 (2)
+Connect6: Mcts-26-200 : Mcts2-26-200 - 24 : 10 (14)
+Connect6: Mcts-26-200 : Mcts2-24-200 - 16 : 14  (2)
+Connect6: Mcts-24-200 : Mcts2-24-200 - 19 :  5 (14)
+Connect6: Mcts-24-200 : Mcts2-22-200 - 17 : 12  (5)
+Connect6: Mcts-24-200 : Mcts2-20-200 - 17 : 13  (4)
+Connect6: Mcts-24-200 : Mcts2-18-200 - 6 :  14 (-8)
+Connect6: Mcts-22-200 : Mcts2-18-200 - 10 : 16 (-6)
+Connect6: Mcts-20-200 : Mcts2-18-200 - 15 : 15  (0)
+Connect6: Mcts-20-200 : Mcts2-17-200 - 12 : 13 (-1)
+Connect6: Mcts-19-200 : Mcts2-17-200 - 10 : 16 (-6)
+Connect6: Mcts-18-200 : Mcts2-17-200 - 10 : 21 (-11)
+Connect6: Mcts-17-200 : Mcts2-17-200 - 7 : 26 (-19)
 
-Game: Gomoku: AlphaBetaNegamax-200 vs. AlphaBetaNegamax-200 seed: 8
-g16 : g18 - 9 : 7 (2)
+Connect6: Mcts-18-200 : Mcts2-17-200 -  6 : 15 (-9)
+Connect6: Mcts-17-200 : Mcts2-17-200 - 15 : 11  (4)
+Connect6: Mcts-17-200 : Mcts2-16-200 - 12 : 15 (-3)
+Connect6: Mcts-16-200 : Mcts2-16-200 - 12 : 19 (-7)

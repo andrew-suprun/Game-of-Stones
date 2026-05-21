@@ -5,6 +5,7 @@ from game_of_stones import Debug
 from game_of_stones import TTree, MoveValue, Place, first, is_decisive, value_str
 from game_of_stones import Gomoku, Connect6
 from game_of_stones import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
+from game_of_stones.mcts2 import Mcts2
 
 comptime seed_value = 8
 
@@ -12,27 +13,26 @@ comptime black = True
 comptime white = False
 
 
-comptime Game = Gomoku[size=19, max_plies=100]
-# comptime Game = Connect6[size=19, max_plies=100]
+# comptime Game = Gomoku[size=19, max_plies=100]
+comptime Game = Connect6[size=19, max_plies=100]
 
-comptime T1 = AlphaBetaNegamax[Game]
+# comptime T1 = AlphaBetaNegamax[Game]
 # comptime T1 = PrincipalVariationNegamax[Game]
-# comptime T1 = Mcts[Game, 0.25]
-comptime max_moves1 = 20
+comptime T1 = Mcts[Game, 0.25]
+comptime max_moves1 = 16
+comptime time1: UInt = 200
+comptime name1 = String(t"{reflect[T1].base_name()}-{max_moves1}-{time1}")
 
-comptime T2 = AlphaBetaNegamax[Game]
-# comptime T2 = PrincipalVariationNegamax[Game2]
-# comptime T2 = Mcts[Game2, 0.25]
-comptime max_moves2 = 20
+# comptime T2 = AlphaBetaNegamax[Game]
+# comptime T2 = PrincipalVariationNegamax[Game]
+comptime T2 = Mcts2[Game, 0.25]
+comptime max_moves2 = 16
+comptime time2: UInt = 200
+comptime name2 = String(t"{reflect[T2].base_name()}-{max_moves2}-{time2}")
 
 
 def main() raises:
-    var name1 = "g16"
-    var name2 = "g18"
-    var time1: UInt = 200
-    var time2: UInt = 200
-
-    print(t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{time1} vs. {reflect[T2].base_name()}-{time2} seed: {seed_value}")
+    print(t"Game: {reflect[T1.Game].base_name()}: {reflect[T1].base_name()}-{max_moves1}-{time1} vs. {reflect[T2].base_name()}-{max_moves2}-{time2} seed: {seed_value}")
 
     var first_wins = 0
     var second_wins = 0
@@ -72,6 +72,7 @@ def main() raises:
 
         print(t"result {n}: {name1} : {name2} - {first_wins} : {second_wins} ({first_wins - second_wins})")
         n += 1
+    print(t"{reflect[T1.Game].base_name()}: {name1} : {name2} - {first_wins} : {second_wins} ({first_wins - second_wins})")
 
 
 def sim_opening[T1: TTree, T2: TTree](name1: String, time1: UInt, name2: String, time2: UInt, opening: List[String]) raises -> String:
