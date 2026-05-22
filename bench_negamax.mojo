@@ -4,8 +4,8 @@ from engine import TGame, MoveValue, Win, Loss, value_str
 from engine import AlphaBetaNode, PrincipalVariationNode
 from engine import Gomoku, Connect6
 
-comptime C6 = Connect6[size=19, max_plies=100]
-comptime G = Gomoku[size=19, max_plies=100]
+comptime C6 = Connect6[size=19]
+comptime G = Gomoku[size=19]
 
 
 def bench_abs_tree[Game: TGame](max_depth: Int) raises:

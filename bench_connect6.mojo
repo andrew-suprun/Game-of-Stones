@@ -2,7 +2,7 @@ from std.benchmark import benchmark, Unit, keep
 
 from engine import Connect6, MoveValue
 
-comptime C6 = Connect6[size=19, max_plies=100]
+comptime C6 = Connect6[size=19]
 
 
 def bench_moves():

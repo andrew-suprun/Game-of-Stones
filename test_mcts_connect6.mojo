@@ -2,7 +2,7 @@ from engine import Connect6, Mcts, MoveValue
 
 
 def main() raises:
-    comptime C6 = Connect6[size=19, max_plies=100]
+    comptime C6 = Connect6[size=19]
     comptime Tree = Mcts[C6, 0.35]
 
     var game = C6()

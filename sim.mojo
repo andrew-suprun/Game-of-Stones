@@ -8,33 +8,33 @@ from engine import Gomoku, Connect6
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick
 
-comptime seed_value = 4
+comptime seed_value = 6
 
 comptime black = True
 comptime white = False
 
 
 comptime board_size = 19
-comptime time: UInt = 250
+comptime time: UInt = 500
 
-# comptime Game = Gomoku[size=board_size, max_plies=100]
-comptime Game = Connect6[size=board_size, max_plies=100]
+# comptime Game = Gomoku[size=board_size]
+comptime Game = Connect6[size=board_size]
 
-comptime max_moves1 = 16
-comptime max_places1 = 12
+comptime max_moves1 = 24
+comptime max_places1 = 20
 comptime C1 = 0.25
 
-comptime T1 = AlphaBetaNegamax[Game]
+# comptime T1 = AlphaBetaNegamax[Game]
 # comptime T1 = PrincipalVariationNegamax[Game]
-# comptime T1 = Mcts[Game, C1]
+comptime T1 = Mcts[Game, C1]
 
 comptime tree_type1 = reflect[T1].base_name()
 comptime name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if tree_type1 == "Connect6" else String(t"{tree_type1}-{max_moves1}-{C1}")
 
 
-comptime max_moves2 = 16
+comptime max_moves2 = 24
 comptime max_places2 = 12
-comptime C2 = 0.25
+comptime C2 = 0.2
 
 # comptime T2 = AlphaBetaNegamax[Game]
 # comptime T2 = PrincipalVariationNegamax[Game]
@@ -63,21 +63,22 @@ struct Sim:
         var n = 1
         for opening in openings():
             var sim1 = SimOpening[T1, T2](self.ui)
-            var winner1 = sim1.sim_opening(name1, name2, opening)
+            var winner1 = sim1.sim_opening(name1, max_moves1, name2, max_moves2, opening)
             if winner1 == name1:
                 self.first_wins += 1
             elif winner1 == name2:
                 self.second_wins += 1
             else:
                 self.draws += 1
-            print(t"{n}: {name1} : {name2} - {self.first_wins} : {self.second_wins} ({self.draws})")
+            print(t"\n{n}: {name1} : {name2} - {self.first_wins} : {self.second_wins} ({self.draws})")
             n += 1
-            var event = self.ui.wait_event(2000)
+            var event = self.ui.wait_event(1000)
             if event.isa[Quit]():
                 exit(0)
+            print()
 
             var sim2 = SimOpening[T2, T1](self.ui)
-            var winner2 = sim2.sim_opening(name2, name1, opening)
+            var winner2 = sim2.sim_opening(name2, max_moves2, name1, max_moves1, opening)
 
             if winner2 == name1:
                 self.first_wins += 1
@@ -86,11 +87,12 @@ struct Sim:
             else:
                 self.draws += 1
 
-            print(t"{n}: {name1} : {name2} - {self.first_wins} : {self.second_wins} ({self.draws})")
+            print(t"\n{n}: {name1} : {name2} - {self.first_wins} : {self.second_wins} ({self.draws})")
             n += 1
-            event = self.ui.wait_event(2000)
+            event = self.ui.wait_event(1000)
             if event.isa[Quit]():
                 exit(0)
+            print()
         print(t"Game: {game_name}: seed: {seed_value}; time {time} msec/move -- {name1} : {name2} - {self.first_wins} : {self.second_wins} ({self.draws})")
 
 
@@ -114,11 +116,11 @@ struct SimOpening[T1: TTree, T2: TTree]:
         self.first_turn = True
         self.plies = 1
 
-    def sim_opening(mut self, name1: String, name2: String, opening: List[String]) raises -> String:
+    def sim_opening(mut self, name1: String, max_moves1: Int, name2: String, max_moves2: Int, opening: List[String]) raises -> String:
         for move in opening:
             self.play_move(move)
 
-        while True:
+        while self.plies < 100:
             if self.first_turn:
                 var pv = self.t1.search(self.g1, max_moves1, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
@@ -135,9 +137,10 @@ struct SimOpening[T1: TTree, T2: TTree]:
                     return name2
                 elif self.g2.decision() == second_win:
                     return name2
+        return "draw"
 
     def play_move(mut self, move: String) raises:
-        print(move)
+        print(t"{move} ", end="")
         self.g1.play_move({move})
         self.g2.play_move({move})
         var places = String(move).split("-")

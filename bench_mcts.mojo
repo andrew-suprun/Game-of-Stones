@@ -2,8 +2,8 @@ from std.time import perf_counter_ns
 
 from engine import TGame, Mcts, Gomoku, Connect6, MoveValue
 
-comptime C6 = Connect6[size=19, max_plies=100]
-comptime G = Gomoku[size=19, max_plies=100]
+comptime C6 = Connect6[size=19]
+comptime G = Gomoku[size=19]
 
 
 def bench_build_tree[Game: TGame]() raises:

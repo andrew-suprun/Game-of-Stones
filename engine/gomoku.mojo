@@ -25,7 +25,7 @@ struct Move(TMove):
         writer.write(self._place)
 
 
-struct Gomoku[size: Int, max_plies: Int](TGame):
+struct Gomoku[size: Int](TGame):
     comptime Move = Move
 
     var board: Board[Self.size, values, win_stones]
@@ -52,10 +52,6 @@ struct Gomoku[size: Int, max_plies: Int](TGame):
 
         if not moves:
             moves.append({{places[0].place}, Loss})
-
-        if self.plies >= Self.max_plies:
-            moves[0].value = Draw
-            moves.shrink(1)
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._place, self.turn)

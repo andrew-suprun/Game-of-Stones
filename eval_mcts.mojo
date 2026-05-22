@@ -1,7 +1,7 @@
 from engine import Gomoku, Connect6, Mcts, MoveValue
 
-# comptime Game = Connect6[size=19, max_plies=100]
-comptime Game = Gomoku[size=19, max_plies=100]
+# comptime Game = Connect6[size=19]
+comptime Game = Gomoku[size=19]
 
 comptime Tree = Mcts[Game, 0.7]
 

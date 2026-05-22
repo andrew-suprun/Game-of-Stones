@@ -51,7 +51,7 @@ def lt(a: MoveValue[Move], b: MoveValue[Move]) -> Bool:
     return a.value < b.value
 
 
-struct Connect6[size: Int, max_plies: Int](TGame):
+struct Connect6[size: Int](TGame):
     comptime Move = Move
 
     var board: Board[Self.size, values, win_stones]
@@ -115,10 +115,6 @@ struct Connect6[size: Int, max_plies: Int](TGame):
 
         if not moves:
             moves.append({{places[0].place, places[1].place}, Loss})
-
-        if self.plies >= Self.max_plies:
-            moves[0].value = Draw
-            moves.shrink(1)
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._p1, self.turn)

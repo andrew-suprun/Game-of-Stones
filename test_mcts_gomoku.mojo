@@ -2,7 +2,7 @@ from engine import Gomoku, Mcts, MoveValue
 
 
 def main() raises:
-    comptime G = Gomoku[size=19, max_plies=100]
+    comptime G = Gomoku[size=19]
     comptime Tree = Mcts[G, 0.35]
 
     var game = G()

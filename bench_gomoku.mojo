@@ -2,7 +2,7 @@ from std.benchmark import benchmark, Unit, keep
 
 from engine import Mcts, Gomoku, MoveValue
 
-comptime G = Gomoku[size=19, max_plies=100]
+comptime G = Gomoku[size=19]
 
 
 def bench_moves():

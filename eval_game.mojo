@@ -3,8 +3,8 @@ from std.time import perf_counter_ns
 from engine import Gomoku, Connect6, Mcts
 from engine import AlphaBetaNegamax, PrincipalVariationNegamax
 
-comptime Game = Connect6[size=19, max_plies=100]
-# comptime Game = Gomoku[size=19, max_plies=100]
+comptime Game = Connect6[size=19]
+# comptime Game = Gomoku[size=19]
 
 # comptime Tree = Mcts[Game, 0.35]
 comptime Tree = AlphaBetaNegamax[Game]

@@ -21,7 +21,7 @@ comptime color_line = "gray20"
 comptime duration = 1000
 
 comptime board_size = 19
-comptime max_moves = 18  # 24
+comptime max_moves = 24
 
 # comptime Game = Gomoku[board_size, 16, board_size*board_size-board_size]
 # comptime stones_per_move = 1
@@ -29,8 +29,7 @@ comptime max_moves = 18  # 24
 comptime Game = Connect6[board_size, (board_size * board_size - board_size) / 2]
 comptime stones_per_move = 2
 
-comptime Tree = Mcts[Game, 0.25]  # Gomoku
-# comptime Tree = Mcts[Game, 0.35]  # Connect6
+comptime Tree = Mcts[Game, 0.25]
 # comptime Tree = AlphaBetaNegamax[Game]
 # comptime Tree = PrincipalVariationNegamax[Game]
 
