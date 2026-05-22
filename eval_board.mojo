@@ -1,11 +1,13 @@
-from engine import Board, Value, Place, first, second
+from engine import Board, Value, Place, Win, first, second
 
-comptime win_stones = 6
-comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
+# comptime win_stones = 6
+# comptime values: List[Value] = [0, 1, 5, 25, 125, 625, Win]
+comptime win_stones = 5
+comptime values: List[Value] = [0, 1, 5, 25, 125, Win]
 
 
 def main() raises:
-    var moves_str = "j10 j9-j12 i12-k12 h12-h9 i9-k11 h8-i8 h10-k10 j8-k8 g10-i10 l8-m8"
+    var moves_str = "j10 j9 l8 i10 i8 h11 l10 k8 h9 g12"
     var moves = moves_str.split(" ")
     var board = Board[19, values, win_stones]()
     var value = Value(0)
@@ -35,9 +37,10 @@ def main() raises:
                 board.place_stone(place, second)
             assert value == board.debug_board_value(materialize[values]())
             print(board)
-            # print(board.str_scores())
+            print(board.str_values())
             print("score", score)
             print("board", value)
+            print("board value", board.value)
 
         var opp_value = board.max_value(first) if turn == second else -board.max_value(second)
 

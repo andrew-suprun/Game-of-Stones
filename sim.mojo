@@ -17,28 +17,28 @@ comptime white = False
 comptime board_size = 19
 comptime time: UInt = 500
 
-# comptime Game = Gomoku[size=board_size]
-comptime Game = Connect6[size=board_size]
+comptime Game = Gomoku[size=board_size]
+# comptime Game = Connect6[size=board_size]
 
-comptime max_moves1 = 24
+comptime max_moves1 = 10
 comptime max_places1 = 20
 comptime C1 = 0.25
 
-# comptime T1 = AlphaBetaNegamax[Game]
+comptime T1 = AlphaBetaNegamax[Game]
 # comptime T1 = PrincipalVariationNegamax[Game]
-comptime T1 = Mcts[Game, C1]
+# comptime T1 = Mcts[Game, C1]
 
 comptime tree_type1 = reflect[T1].base_name()
 comptime name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if tree_type1 == "Connect6" else String(t"{tree_type1}-{max_moves1}-{C1}")
 
 
-comptime max_moves2 = 24
-comptime max_places2 = 12
-comptime C2 = 0.2
+comptime max_moves2 = 15
+comptime max_places2 = 20
+comptime C2 = 0.25
 
-# comptime T2 = AlphaBetaNegamax[Game]
+comptime T2 = AlphaBetaNegamax[Game]
 # comptime T2 = PrincipalVariationNegamax[Game]
-comptime T2 = Mcts[Game, C2]
+# comptime T2 = Mcts[Game, C2]
 
 comptime tree_type2 = reflect[T2].base_name()
 comptime name2 = String(t"{tree_type2}-{max_moves2}-{max_places2}") if tree_type2 == "Connect6" else String(t"{tree_type2}-{max_moves2}-{C2}")
@@ -66,13 +66,15 @@ struct Sim:
             var winner1 = sim1.sim_opening(name1, max_moves1, name2, max_moves2, opening)
             if winner1 == name1:
                 self.first_wins += 1
+                print(t"\n{n}: winner {name1} (black) {self.first_wins}")
             elif winner1 == name2:
                 self.second_wins += 1
+                print(t"\n{n}: winner {name2} (white) {self.second_wins}")
             else:
                 self.draws += 1
-            print(t"\n{n}: {name1} : {name2} - {self.first_wins} : {self.second_wins} ({self.draws})")
+                print(t"\n{n}: draw {self.draws}")
             n += 1
-            var event = self.ui.wait_event(1000)
+            var event = self.ui.wait_event(1500)
             if event.isa[Quit]():
                 exit(0)
             print()
@@ -82,14 +84,16 @@ struct Sim:
 
             if winner2 == name1:
                 self.first_wins += 1
+                print(t"\n{n}: winner {name1} (white) {self.first_wins}")
             elif winner2 == name2:
                 self.second_wins += 1
+                print(t"\n{n}: winner {name2} (black) {self.second_wins}")
             else:
                 self.draws += 1
+                print(t"\n{n}: draw {self.draws}")
 
-            print(t"\n{n}: {name1} : {name2} - {self.first_wins} : {self.second_wins} ({self.draws})")
             n += 1
-            event = self.ui.wait_event(1000)
+            event = self.ui.wait_event(1500)
             if event.isa[Quit]():
                 exit(0)
             print()
@@ -116,27 +120,29 @@ struct SimOpening[T1: TTree, T2: TTree]:
         self.first_turn = True
         self.plies = 1
 
-    def sim_opening(mut self, name1: String, max_moves1: Int, name2: String, max_moves2: Int, opening: List[String]) raises -> String:
+    def sim_opening(mut self, name_black: String, max_moves_black: Int, name_white: String, max_moves_white: Int, opening: List[String]) raises -> String:
+        print("open: ", end="")
         for move in opening:
             self.play_move(move)
 
+        print("\nplay: ", end="")
         while self.plies < 100:
             if self.first_turn:
-                var pv = self.t1.search(self.g1, max_moves1, time)
+                var pv = self.t1.search(self.g1, max_moves_black, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
                 self.play_move(String(pv[0]))
                 if is_win(self.g1.value()):
-                    return name1
+                    return name_black
                 elif is_loss(self.g1.value()):
-                    return name2
+                    assert False
             else:
-                var pv = self.t2.search(self.g2, max_moves2, time)
+                var pv = self.t2.search(self.g2, max_moves_white, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
                 self.play_move(String(pv[0]))
                 if is_win(self.g2.value()):
-                    return name2
-                elif is_loss(self.g1.value()):
-                    return name2
+                    assert False
+                elif is_loss(self.g2.value()):
+                    return name_white
         return "draw"
 
     def play_move(mut self, move: String) raises:
@@ -151,8 +157,8 @@ struct SimOpening[T1: TTree, T2: TTree]:
         self.first_turn = not self.first_turn
         for ref stone in self.stones:
             stone.selected = False
-        if len(self.stones) >= 2:
-            self.stones[len(self.stones) - 1].selected = True
+        self.stones[len(self.stones) - 1].selected = True
+        if game_name == "Connect6" and len(self.stones) >= 2:
             self.stones[len(self.stones) - 2].selected = True
         self.ui.draw(self.stones)
         var event = self.ui.poll_event()
