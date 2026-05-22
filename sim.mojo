@@ -3,7 +3,7 @@ from std.time import sleep
 from std.sys import exit
 
 from engine import Debug
-from engine import TTree, MoveValue, Place, first, is_decisive, value_str, first_win, second_win
+from engine import TTree, MoveValue, Place, first, is_decisive, value_str, is_win, is_loss
 from engine import Gomoku, Connect6
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick
@@ -125,17 +125,17 @@ struct SimOpening[T1: TTree, T2: TTree]:
                 var pv = self.t1.search(self.g1, max_moves1, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
                 self.play_move(String(pv[0]))
-                if self.g1.decision() == first_win:
+                if is_win(self.g1.value()):
                     return name1
-                elif self.g1.decision() == second_win:
+                elif is_loss(self.g1.value()):
                     return name2
             else:
                 var pv = self.t2.search(self.g2, max_moves2, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
                 self.play_move(String(pv[0]))
-                if self.g2.decision() == first_win:
+                if is_win(self.g2.value()):
                     return name2
-                elif self.g2.decision() == second_win:
+                elif is_loss(self.g1.value()):
                     return name2
         return "draw"
 

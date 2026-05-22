@@ -14,13 +14,6 @@ trait TTree(ImplicitlyDestructible, Writable):
         ...
 
 
-comptime Decision = Int
-comptime no_decision: Int = 0
-comptime first_win: Int = 1
-comptime second_win: Int = 2
-comptime draw: Int = 3
-
-
 trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
     comptime Move: TMove
 
@@ -30,7 +23,7 @@ trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
     def play_move(mut self, move: Self.Move):
         ...
 
-    def decision(self) -> Decision:
+    def value(self) -> Value:
         ...
 
 

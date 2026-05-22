@@ -123,8 +123,8 @@ struct Connect6[size: Int](TGame):
         self.turn = 1 - self.turn
         self.plies += 1
 
-    def decision(self) -> Decision:
-        return self.board.decision()
+    def value(self) -> Value:
+        return self.board.value
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

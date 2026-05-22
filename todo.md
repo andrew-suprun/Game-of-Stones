@@ -1,5 +1,4 @@
 * ? wrap Value inside Score
-* use Board._value instead of Board.decision()
 * benchmark 'Place.x: Int, .y: Int'
 * join value.mojo and traits.mojo into base.mojo
 * maybe move base.mojo into __init__.mojo

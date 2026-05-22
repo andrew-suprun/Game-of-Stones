@@ -61,8 +61,5 @@ struct Gomoku[size: Int](TGame):
     def value(self) -> Value:
         return self.board.value
 
-    def decision(self) -> Decision:
-        return self.board.decision()
-
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
