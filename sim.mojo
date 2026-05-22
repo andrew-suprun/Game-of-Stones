@@ -15,25 +15,25 @@ comptime white = False
 
 
 comptime board_size = 19
-comptime time: UInt = 200
+comptime time: UInt = 250
 
 # comptime Game = Gomoku[size=board_size, max_plies=100]
 comptime Game = Connect6[size=board_size, max_plies=100]
 
 comptime max_moves1 = 16
-comptime max_places1 = 20
+comptime max_places1 = 12
 comptime C1 = 0.25
 
-# comptime T1 = AlphaBetaNegamax[Game]
+comptime T1 = AlphaBetaNegamax[Game]
 # comptime T1 = PrincipalVariationNegamax[Game]
-comptime T1 = Mcts[Game, C1]
+# comptime T1 = Mcts[Game, C1]
 
 comptime tree_type1 = reflect[T1].base_name()
 comptime name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if tree_type1 == "Connect6" else String(t"{tree_type1}-{max_moves1}-{C1}")
 
 
-comptime max_moves2 = 1
-comptime max_places2 = 16
+comptime max_moves2 = 16
+comptime max_places2 = 12
 comptime C2 = 0.25
 
 # comptime T2 = AlphaBetaNegamax[Game]
@@ -137,6 +137,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
                     return name2
 
     def play_move(mut self, move: String) raises:
+        print(move)
         self.g1.play_move({move})
         self.g2.play_move({move})
         var places = String(move).split("-")

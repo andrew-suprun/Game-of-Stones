@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.random import seed, random_si64
 
-from engine import Board, Place, Value, PlaceValue, Win, first, second
+from engine import Board, Place, Value, PlaceValue, Win, first, second, is_win
 
 comptime size = 19
 comptime win_stones = 6
@@ -19,8 +19,9 @@ def test_places() raises:
     var heap = List[PlaceValue](capacity=20)
     board.places(1, 20, heap)
     print(len(heap))
-    for move in heap:
-        print(move)
+    for place in heap:
+        print(place)
+        assert_true(place.value >= 36)
 
 
 def test_place_stone() raises:
@@ -28,14 +29,19 @@ def test_place_stone() raises:
     var board = Board[size, values, win_stones]()
     var value = Value(0)
     var n = 0
-    for i in range(200):
+    for i in range(300):
         var turn = i % 2
         var xx = Int(random_si64(0, size - 1))
         var yy = Int(random_si64(0, size - 1))
-        if board[xx, yy] == board.empty:
+        if board[xx, yy] == board.empty and not is_win(board._values[yy * board.size + xx][turn]):
             for y in range(size):
                 for x in range(size):
-                    if board[x, y] == board.empty:
+                    if (
+                        (x != xx or y != yy)
+                        and board[x, y] == board.empty
+                        and not is_win(board._values[y * board.size + x][0])
+                        and not is_win(board._values[y * board.size + x][1])
+                    ):
                         var actual = board.get_value(Place(x, y), first)
                         var b = board.copy()
                         b.place_stone(Place(x, y), first)
@@ -60,6 +66,8 @@ def test_place_stone() raises:
                 value -= board.get_value(Place(xx, yy), turn)
             board.place_stone(Place(xx, yy), turn)
             n += 1
+    print(board)
+    print(board.str_values())
 
 
 def main() raises:

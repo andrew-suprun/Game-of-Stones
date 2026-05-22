@@ -189,7 +189,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                     writer.write(" X") if x == 0 else writer.write("─X")
                 elif stone == Self.white:
                     writer.write(" O") if x == 0 else writer.write("─O")
-                else:
+                elif stone == Self.empty:
                     if y == 0:
                         if x == 0:
                             writer.write(" ┌")
@@ -211,6 +211,9 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                             writer.write("─┤")
                         else:
                             writer.write("─┼")
+                else:
+                    writer.write("@@")
+                    assert False
             writer.write(String(y + 1).ascii_rjust(3), "\n")
 
         writer.write("  ")
@@ -242,7 +245,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                     str += "   O "
                 else:
                     var value = self.get_value(Place(x, y), table_idx)
-                    str += String(Int(value)).ascii_rjust(4, " ") + " "
+                    str += String(value).removesuffix(".0").ascii_rjust(4, " ") + " "
             str += "│ " + String(y + 1).ascii_rjust(2) + "\n"
         str += "───┼" + "─────" * Self.size + "┼───"
         str += "\n   │"

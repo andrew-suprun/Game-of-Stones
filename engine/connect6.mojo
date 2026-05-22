@@ -102,8 +102,9 @@ struct Connect6[size: Int, max_plies: Int](TGame):
                         debug_board_value = -debug_board_value
                     comptime if Assert:
                         if debug_board_value != board_value + score1 + score2:
-                            print(board2)
-                            print(place1, place2)
+                            print(self.board)
+                            print(self.board.str_values())
+                            print("move", Move(place1, place2))
                             print(t"debug_board_value={debug_board_value}, board_value={board_value}, score1={score1}, score2={score2}")
                             assert False
 
