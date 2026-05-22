@@ -1,3 +1,4 @@
+from .traits import *
 from .connect6 import *
 from .gomoku import *
 from .mcts import *

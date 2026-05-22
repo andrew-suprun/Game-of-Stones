@@ -1,3 +1,4 @@
+* benchmark 'Place.x: Int, .y: Int'
 * join value.mojo and traits.mojo into base.mojo
 * maybe move base.mojo into __init__.mojo
 * benchmark asserts

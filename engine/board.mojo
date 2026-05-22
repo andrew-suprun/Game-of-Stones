@@ -324,6 +324,72 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
 
         return max_value
 
+    def decision(self, out decision: Int):
+        var wstones = Int64(self.win_stones)
+        for a in range(Self.size):
+            var h_stones = SIMD[DType.int64, 2](0, 0)
+            var v_stones = SIMD[DType.int64, 2](0, 0)
+            for b in range(Self.win_stones - 1):
+                h_stones += self.counts(self[b, a])
+                v_stones += self.counts(self[a, b])
+            for b in range(Self.size - Self.win_stones + 1):
+                h_stones += self.counts(self[b + Self.win_stones - 1, a])
+                v_stones += self.counts(self[a, b + Self.win_stones - 1])
+                if h_stones[0] == wstones or v_stones[0] == wstones:
+                    return first_win
+                elif h_stones[1] == wstones or v_stones[1] == wstones:
+                    return second_win
+
+                h_stones -= self.counts(self[b, a])
+                v_stones -= self.counts(self[a, b])
+
+        for y in range(Self.size - Self.win_stones + 1):
+            var stones1 = SIMD[DType.int64, 2](0, 0)
+            var stones2 = SIMD[DType.int64, 2](0, 0)
+            for x in range(Self.win_stones - 1):
+                stones1 += self.counts(self[x, y + x])
+                stones2 += self.counts(self[Self.size - 1 - x, x + y])
+            for x in range(Self.size - Self.win_stones + 1 - y):
+                stones1 += self.counts(self[x + Self.win_stones - 1, x + y + Self.win_stones - 1])
+                stones2 += self.counts(self[Self.size - x - Self.win_stones, x + y + Self.win_stones - 1])
+                if stones1[0] == wstones or stones2[0] == wstones:
+                    return first_win
+                elif stones1[1] == wstones or stones2[1] == wstones:
+                    return second_win
+                stones1 -= self.counts(self[x, x + y])
+                stones2 -= self.counts(self[Self.size - 1 - x, x + y])
+
+        for x in range(1, Self.size - Self.win_stones + 1):
+            var stones1 = SIMD[DType.int64, 2](0, 0)
+            var stones2 = SIMD[DType.int64, 2](0, 0)
+            for y in range(Self.win_stones - 1):
+                stones1 += self.counts(self[x + y, y])
+                stones2 += self.counts(self[Self.size - 1 - x - y, y])
+            for y in range(Self.size - Self.win_stones + 1 - x):
+                stones1 += self.counts(self[x + y + Self.win_stones - 1, y + Self.win_stones - 1])
+                stones2 += self.counts(self[Self.size - Self.win_stones - x - y, y + Self.win_stones - 1])
+                if stones1[0] == wstones or stones2[0] == wstones:
+                    return first_win
+                elif stones1[1] == wstones or stones2[1] == wstones:
+                    return second_win
+                stones1 -= self.counts(self[x + y, y])
+                stones2 -= self.counts(self[Self.size - 1 - x - y, y])
+
+        for offset in range(Self.size * Self.size):
+            if self._places[offset] == self.empty and self._values[offset][0] > 0:
+                return no_decision
+
+        return draw
+
+    @always_inline
+    def counts(self, stones: Int, out result: SIMD[DType.int64, 2]):
+        if stones == 1:
+            return SIMD[DType.int64, 2](1, 0)
+        elif stones == Self.win_stones:
+            return SIMD[DType.int64, 2](0, 1)
+        else:
+            return SIMD[DType.int64, 2](0, 0)
+
 
 def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1

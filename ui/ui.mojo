@@ -28,6 +28,11 @@ struct Stone(ImplicitlyCopyable, Writable):
 
 
 @fieldwise_init
+struct NoEvent(Movable, Writable):
+    pass
+
+
+@fieldwise_init
 struct EnterKey(Movable, Writable):
     pass
 
@@ -47,10 +52,10 @@ struct MouseClick(Movable, Writable):
     var place: Place
 
 
-comptime Event = Variant[EnterKey, EsqKey, Quit, MouseClick]
+comptime Event = Variant[NoEvent, EnterKey, EsqKey, Quit, MouseClick]
 
 
-struct Ui[board_size: Int]:
+struct Ui[board_size: Int](Copyable):
     comptime d = window_height / (Self.board_size + 1)
     comptime r = Self.d / 2
 
@@ -64,9 +69,21 @@ struct Ui[board_size: Int]:
         self.pygame.display.set_caption("Game of Stones - " + name)
 
     def poll_event(self) raises -> Event:
+        return self._get_event(0)
+
+    def wait_event(self) raises -> Event:
+        return self._get_event(-1)
+
+    def wait_event(self, timeout: Int) raises -> Event:
+        return self._get_event(timeout)
+
+    def _get_event(self, timeout: Int) raises -> Event:
         while True:
-            var event = self.pygame.event.wait()
-            if event.type == self.pygame.QUIT:
+            var event = self.pygame.event.wait() if timeout < 0 else self.pygame.event.poll() if timeout == 0 else self.pygame.event.wait(timeout)
+            if event.type == self.pygame.NOEVENT:
+                return Event(NoEvent())
+
+            elif event.type == self.pygame.QUIT:
                 return Event(Quit())
 
             elif event.type == self.pygame.KEYDOWN:

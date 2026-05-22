@@ -1,7 +1,7 @@
 from std.utils.numerics import FPUtils, isinf
 
 from .value import Value, Win, Draw
-from .traits import TGame, TMove, MoveValue
+from .traits import TGame, TMove, MoveValue, Decision
 from .board import Board, Place, PlaceValue, first
 
 comptime win_stones = 5
@@ -64,6 +64,9 @@ struct Gomoku[size: Int, max_plies: Int](TGame):
 
     def value(self) -> Value:
         return self.board.value
+
+    def decision(self) -> Decision:
+        return self.board.decision()
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)

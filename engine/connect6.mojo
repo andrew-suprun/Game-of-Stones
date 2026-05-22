@@ -1,6 +1,6 @@
 from .config import Assert
 from .value import Win, Draw, Loss
-from .traits import TGame, TMove, MoveValue
+from .traits import TGame, TMove, MoveValue, Decision
 from .board import Board, Value, Place, PlaceValue, first
 from .heap import heap_add
 
@@ -125,6 +125,9 @@ struct Connect6[size: Int, max_plies: Int](TGame):
             self.board.place_stone(move._p2, self.turn)
         self.turn = 1 - self.turn
         self.plies += 1
+
+    def decision(self) -> Decision:
+        return self.board.decision()
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
