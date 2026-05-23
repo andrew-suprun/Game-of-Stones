@@ -19,3 +19,12 @@ Game: Gomoku: seed: 6; time 500 msec/move -- AlphaBetaNegamax-15 : AlphaBetaNega
 Game: Gomoku: seed: 6; time 500 msec/move -- AlphaBetaNegamax-18 : AlphaBetaNegamax-20 - 49 : 50 (1)
 Game: Gomoku: seed: 6; time 500 msec/move -- AlphaBetaNegamax-20 : AlphaBetaNegamax-22 - 52 : 48 (0)
 Game: Gomoku: seed: 6; time 500 msec/move -- AlphaBetaNegamax-20 : AlphaBetaNegamax-25 - 55 : 45 (0)
+
+
+Game: Gomoku: seed: 6; time 500 msec/move -- AlphaBetaNegamax-20 : Mcts-20-0.25 - 44 : 56 (0)
+Game: Gomoku: seed: 9; time 500 msec/move -- AlphaBetaNegamax-20 : Mcts-22-0.25 - 41 : 55 (4)
+
+Game: Gomoku: seed: 6; time 500 msec/move -- AlphaBetaNegamax-20 : PrincipalVariationNegamax-20 - 48 : 52 (0)
+Game: Gomoku: seed: 7; time 500 msec/move -- AlphaBetaNegamax-20 : PrincipalVariationNegamax-20 - 49 : 51 (0)
+Game: Gomoku: seed: 8; time 500 msec/move -- AlphaBetaNegamax-20 : PrincipalVariationNegamax-20 - 51 : 48 (1)
+Game: Gomoku: seed: 9; time 500 msec/move -- AlphaBetaNegamax-20 : PrincipalVariationNegamax-20 - 50 : 49 (1)

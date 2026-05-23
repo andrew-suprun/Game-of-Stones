@@ -1,6 +1,6 @@
 from .config import Assert
 from .value import Win, Draw, Loss
-from .traits import TGame, TMove, MoveValue, Decision
+from .traits import TGame, TMove, MoveValue
 from .board import Board, Value, Place, PlaceValue, first
 from .heap import heap_add
 
@@ -65,7 +65,8 @@ struct Connect6[size: Int](TGame):
 
     def top_moves(self, max_moves: Int, mut moves: List[MoveValue[Move]]):
         moves.clear()
-        var max_places = max(max_moves - 6, 6)
+        # var max_places = max(max_moves - 6, 6)
+        var max_places = 20  # TODO
         var places = List[PlaceValue](capacity=max_places)
         self.board.places(self.turn, max_places, places)
         if len(places) <= 1:

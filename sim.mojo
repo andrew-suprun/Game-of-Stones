@@ -8,7 +8,7 @@ from engine import Gomoku, Connect6
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick
 
-comptime seed_value = 6
+comptime seed_value = 9
 
 comptime black = True
 comptime white = False
@@ -17,11 +17,10 @@ comptime white = False
 comptime board_size = 19
 comptime time: UInt = 500
 
-comptime Game = Gomoku[size=board_size]
-# comptime Game = Connect6[size=board_size]
+# comptime Game = Gomoku[size=board_size]
+comptime Game = Connect6[size=board_size]
 
-comptime max_moves1 = 20
-comptime max_places1 = 10
+comptime max_moves1 = 26
 comptime C1 = 0.25
 
 comptime T1 = AlphaBetaNegamax[Game]
@@ -30,12 +29,11 @@ comptime T1 = AlphaBetaNegamax[Game]
 
 comptime game_type = reflect[Game].base_name()
 comptime tree_type1 = reflect[T1].base_name()
-comptime game_name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if game_type == "Connect6" else String(t"{tree_type1}-{max_moves1}")
+comptime game_name1 = String(t"{tree_type1}-{max_moves1}")
 comptime name1 = game_name1 if tree_type1 != "Mcts" else String(t"{game_name1}-{C1}")
 
 
 comptime max_moves2 = 22
-comptime max_places2 = 12
 comptime C2 = 0.25
 
 comptime T2 = AlphaBetaNegamax[Game]
@@ -43,7 +41,7 @@ comptime T2 = AlphaBetaNegamax[Game]
 # comptime T2 = Mcts[Game, C2]
 
 comptime tree_type2 = reflect[T2].base_name()
-comptime game_name2 = String(t"{tree_type2}-{max_moves2}-{max_places2}") if game_type == "Connect6" else String(t"{tree_type2}-{max_moves2}")
+comptime game_name2 = String(t"{tree_type2}-{max_moves2}")
 comptime name2 = game_name2 if tree_type2 != "Mcts" else String(t"{game_name2}-{C2}")
 
 comptime game_name = reflect[T1.Game].base_name()
