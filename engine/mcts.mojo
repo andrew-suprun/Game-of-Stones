@@ -40,14 +40,12 @@ struct Mcts[G: TGame, c: Value](TTree):
     def __init__(out self):
         self.tree = [{}]
 
-    def search(mut self, game: Self.G, max_moves: Int, max_time_ms: UInt) -> List[Self.G.Move]:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
         self.tree.clear()
         self.tree.append({})
-        var moves = List[MoveValue[Self.G.Move]](capacity=max_moves)
-
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
         while perf_counter_ns() < deadline:
-            self.expand(game, max_moves, moves)
+            self.expand(game)
             var n_undecisive = 0
             ref root = self.tree[0]
             if is_loss(root.value):
@@ -63,11 +61,10 @@ struct Mcts[G: TGame, c: Value](TTree):
 
         return self._pv()
 
-    def expand(mut self, game: Self.G, max_moves: Int, mut moves: List[MoveValue[Self.G.Move]]):
+    def expand(mut self, game: Self.G):
         var g = game.copy()
         var idx: Idx = 0
         var parent_indices: List[Idx] = [idx]
-        var depth = 0
         while True:
             ref node = self.tree[idx]
             if node.n_children == 0:
@@ -76,9 +73,8 @@ struct Mcts[G: TGame, c: Value](TTree):
             parent_indices.append(idx)
             ref child = self.tree[idx]
             g.play_move(child.move)
-            depth += 1
 
-        g.top_moves(max_moves, moves)
+        var moves = g.top_moves()
         ref leaf = self.tree[idx]
         leaf.first_child = Idx(len(self.tree))
         leaf.n_children = UInt32(len(moves))

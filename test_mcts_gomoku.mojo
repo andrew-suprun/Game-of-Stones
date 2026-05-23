@@ -2,7 +2,7 @@ from engine import Gomoku, Mcts, MoveValue
 
 
 def main() raises:
-    comptime G = Gomoku[size=19]
+    comptime G = Gomoku[size=19, max_moves=26]
     comptime Tree = Mcts[G, 0.35]
 
     var game = G()
@@ -11,11 +11,10 @@ def main() raises:
     game.play_move(G.Move("j10"))
     game.play_move(G.Move("i9"))
     game.play_move(G.Move("i10"))
-    var moves = List[MoveValue[G.Move]](capacity=26)
 
     for i in range(1, 21):
         print(t"==== expand {i}")
-        tree.expand(game, 26, moves)
+        tree.expand(game)
         var pv = tree._pv()
         print(t"pv:", end="")
         for move in pv:

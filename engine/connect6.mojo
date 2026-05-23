@@ -1,4 +1,4 @@
-from .config import Assert
+from .config import Assert, Trace
 from .value import Win, Draw, Loss
 from .traits import TGame, TMove, MoveValue
 from .board import Board, Value, Place, PlaceValue, first
@@ -51,7 +51,7 @@ def lt(a: MoveValue[Move], b: MoveValue[Move]) -> Bool:
     return a.value < b.value
 
 
-struct Connect6[size: Int](TGame):
+struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     comptime Move = Move
 
     var board: Board[Self.size, values, win_stones]
@@ -63,12 +63,14 @@ struct Connect6[size: Int](TGame):
         self.turn = 0
         self.plies = 0
 
-    def top_moves(self, max_moves: Int, mut moves: List[MoveValue[Move]]):
-        moves.clear()
-        # var max_places = max(max_moves - 6, 6)
-        var max_places = 20  # TODO
-        var places = List[PlaceValue](capacity=max_places)
-        self.board.places(self.turn, max_places, places)
+    def top_moves(self) -> List[MoveValue[Move]]:
+        var moves = List[MoveValue[Move]](capacity=Self.max_moves)
+        self._moves(moves)
+        return moves^
+
+    def _moves(self, mut moves: List[MoveValue[Move]]):
+        var places = List[PlaceValue](capacity=Self.max_places)
+        self.board.places(self.turn, places)
         if len(places) <= 1:
             print(self)
         assert len(places) > 1

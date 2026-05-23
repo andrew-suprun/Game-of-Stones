@@ -6,8 +6,7 @@ from engine import TGame, Gomoku, Connect6, Value, MoveValue, Win, Loss, is_win,
 
 def search[Game: TGame](game: Game, depth: Int) -> Value:
     var best_score = Loss
-    var moves = List[MoveValue[Game.Move]](capacity=20)
-    game.top_moves(20, moves)
+    var moves = game.top_moves()
     if depth == 0:
         for move in moves:
             best_score = max(best_score, move.value)
@@ -42,8 +41,8 @@ def test_search[Game: TGame](moves: List[String], max_depth: Int) raises:
 
 
 def main() raises:
-    comptime G = Gomoku[size=19]
-    comptime C = Connect6[size=19]
+    comptime G = Gomoku[size=19, max_moves=22]
+    comptime C = Connect6[size=19, max_moves=26, max_places=20]
 
     test_search[G](["j10", "i9", "i10"], 7)
     test_search[C](["j10", "i9-i10"], 6)

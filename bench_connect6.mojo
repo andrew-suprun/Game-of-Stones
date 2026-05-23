@@ -2,7 +2,7 @@ from std.benchmark import benchmark, Unit, keep
 
 from engine import Connect6, MoveValue
 
-comptime C6 = Connect6[size=19]
+comptime C6 = Connect6[size=19, max_moves=20, max_places=14]
 
 
 def bench_moves():
@@ -12,9 +12,8 @@ def bench_moves():
         game.play_move("i9-i10")
     except:
         pass
-    var moves = List[MoveValue[C6.Move]](capacity=20)
     for _ in range(1000):
-        game.top_moves(20, moves)
+        var moves = game.top_moves()
         keep(moves[0].value)
 
 

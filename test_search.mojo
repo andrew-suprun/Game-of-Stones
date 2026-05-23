@@ -11,7 +11,7 @@ def test_search[Tree: TTree, moves: List[String], expected: String]() raises:
     comptime for move in moves:
         game.play_move(Tree.Game.Move(move))
     print(game)
-    var result = tree.search(game, 16, 1000)
+    var result = tree.search(game, 1000)
     print(
         t"result: {result[0]}  expected: {expected}  pv: {len(result)} {result}",
     )
@@ -19,11 +19,11 @@ def test_search[Tree: TTree, moves: List[String], expected: String]() raises:
 
 
 def main() raises:
-    comptime GomokeGame = Gomoku[size=19]
-    comptime Connect6Game = Connect6[size=19]
-    test_search[Mcts[GomokeGame, 16], ["j10", "i9", "i10"], "h10"]()
-    test_search[Mcts[Connect6Game, 16], ["j10", "i9-i10"], "i11-k9"]()
-    test_search[AlphaBetaNegamax[GomokeGame], ["j10", "i9", "i10"], "h10"]()
+    comptime GomokeGame = Gomoku[size=19, max_moves=20]
+    comptime Connect6Game = Connect6[size=19, max_moves=26, max_places=20]
+    test_search[Mcts[GomokeGame, 0.25], ["j10", "i9", "i10"], "k10"]()
+    test_search[Mcts[Connect6Game, 0.25], ["j10", "i9-i10"], "i11-k9"]()
+    test_search[AlphaBetaNegamax[GomokeGame], ["j10", "i9", "i10"], "k10"]()
     test_search[AlphaBetaNegamax[Connect6Game], ["j10", "i9-i10"], "i11-k9"]()
-    test_search[PrincipalVariationNegamax[GomokeGame], ["j10", "i9", "i10"], "h10"]()
+    test_search[PrincipalVariationNegamax[GomokeGame], ["j10", "i9", "i10"], "k10"]()
     test_search[PrincipalVariationNegamax[Connect6Game], ["j10", "i9-i10"], "i11-k9"]()

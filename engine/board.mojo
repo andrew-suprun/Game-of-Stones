@@ -150,8 +150,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             stones -= self._places[offset]
             offset += delta
 
-    def places(self, turn: Int, max_places: Int, mut places: List[PlaceValue]):
-        places.clear()
+    def places(self, turn: Int, mut places: List[PlaceValue]):
         for y in range(Self.size):
             for x in range(Self.size):
                 if self[x, y] == self.empty:
@@ -212,7 +211,6 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                         else:
                             writer.write("─┼")
                 else:
-                    writer.write("@@")
                     assert False
             writer.write(String(y + 1).ascii_rjust(3), "\n")
 
@@ -344,24 +342,3 @@ def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[Inl
         result[1][i] = Values(-v2[i][0], v2[i][1])
         result[1][i * win_stones] = Values(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
     return result^
-
-
-def main():
-    var board = Board[19, [0, 1, 5, 25, 125, 625], 6]()
-    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625]]()
-    board._update_row(0, 1, 6, table[0])
-
-
-def mainX():
-    var board = Board[19, [0, 1, 5, 25, 125, 625], 6]()
-    print(board)
-    print(board.str_values())
-    var table = _calc_value_table[6, [0, 1, 5, 25, 125, 625]]()
-    for side in range(2):
-        for color in range(2):
-            for y in range(6):
-                for x in range(6):
-                    print(table[side][y * 6 + x][color], "", end="")
-                print()
-            print()
-    print()

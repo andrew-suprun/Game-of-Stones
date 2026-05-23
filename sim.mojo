@@ -17,34 +17,38 @@ comptime white = False
 comptime board_size = 19
 comptime time: UInt = 500
 
-# comptime Game = Gomoku[size=board_size]
-comptime Game = Connect6[size=board_size]
 
 comptime max_moves1 = 26
+comptime max_places1 = 20
 comptime C1 = 0.25
 
-comptime T1 = AlphaBetaNegamax[Game]
-# comptime T1 = PrincipalVariationNegamax[Game]
-# comptime T1 = Mcts[Game, C1]
+# comptime Game1 = Gomoku[size=board_size, max_moves=max_moves1]
+# comptime Game2 = Gomoku[size=board_size, max_moves=max_moves2]
+comptime Game1 = Connect6[size=board_size, max_moves=max_moves1, max_places=max_places1]
+comptime Game2 = Connect6[size=board_size, max_moves=max_moves2, max_places=max_places2]
 
-comptime game_type = reflect[Game].base_name()
+
+comptime T1 = AlphaBetaNegamax[Game1]
+# comptime T1 = PrincipalVariationNegamax[Game1]
+# comptime T1 = Mcts[Game1, C1]
+
+comptime game_name = reflect[Game1].base_name()
 comptime tree_type1 = reflect[T1].base_name()
-comptime game_name1 = String(t"{tree_type1}-{max_moves1}")
+comptime game_name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if game_name == "Connect6" else String(t"{tree_type1}-{max_moves1}")
 comptime name1 = game_name1 if tree_type1 != "Mcts" else String(t"{game_name1}-{C1}")
 
 
-comptime max_moves2 = 22
-comptime C2 = 0.25
+comptime max_moves2 = 26
+comptime max_places2 = 20
+comptime C2 = 0.4
 
-comptime T2 = AlphaBetaNegamax[Game]
-# comptime T2 = PrincipalVariationNegamax[Game]
-# comptime T2 = Mcts[Game, C2]
+# comptime T2 = AlphaBetaNegamax[Game2]
+# comptime T2 = PrincipalVariationNegamax[Game2]
+comptime T2 = Mcts[Game2, C2]
 
 comptime tree_type2 = reflect[T2].base_name()
-comptime game_name2 = String(t"{tree_type2}-{max_moves2}")
+comptime game_name2 = String(t"{tree_type2}-{max_moves2}-{max_places2}") if game_name == "Connect6" else String(t"{tree_type2}-{max_moves2}")
 comptime name2 = game_name2 if tree_type2 != "Mcts" else String(t"{game_name2}-{C2}")
-
-comptime game_name = reflect[T1.Game].base_name()
 
 
 struct Sim:
@@ -64,7 +68,7 @@ struct Sim:
         var n = 1
         for opening in openings():
             var sim1 = SimOpening[T1, T2](self.ui)
-            var winner1 = sim1.sim_opening(name1, max_moves1, name2, max_moves2, opening)
+            var winner1 = sim1.sim_opening(name1, name2, opening)
             if winner1 == name1:
                 self.first_wins += 1
                 print(t"\n{n}: winner {name1} (black) {self.first_wins}* : {self.second_wins} ({self.draws})")
@@ -81,7 +85,7 @@ struct Sim:
             print()
 
             var sim2 = SimOpening[T2, T1](self.ui)
-            var winner2 = sim2.sim_opening(name2, max_moves2, name1, max_moves1, opening)
+            var winner2 = sim2.sim_opening(name2, name1, opening)
 
             if winner2 == name1:
                 self.first_wins += 1
@@ -121,7 +125,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
         self.first_turn = True
         self.plies = 1
 
-    def sim_opening(mut self, name_black: String, max_moves_black: Int, name_white: String, max_moves_white: Int, opening: List[String]) raises -> String:
+    def sim_opening(mut self, name_black: String, name_white: String, opening: List[String]) raises -> String:
         print("open: ", end="")
         for move in opening:
             self.play_move(move)
@@ -129,7 +133,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
         print("\nplay: ", end="")
         while self.plies < 100:
             if self.first_turn:
-                var pv = self.t1.search(self.g1, max_moves_black, time)
+                var pv = self.t1.search(self.g1, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
                 self.play_move(String(pv[0]))
                 if is_win(self.g1.value()):
@@ -137,7 +141,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
                 elif is_loss(self.g1.value()):
                     assert False
             else:
-                var pv = self.t2.search(self.g2, max_moves_white, time)
+                var pv = self.t2.search(self.g2, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
                 self.play_move(String(pv[0]))
                 if is_win(self.g2.value()):
@@ -171,13 +175,13 @@ def openings() -> List[List[String]]:
     seed(seed_value)
     var result = List[List[String]]()
     var places = List[String]()
-    for j in range(Game.size / 2 - 2, Game.size / 2 + 3):
-        for i in range(Game.size / 2 - 2, Game.size / 2 + 3):
-            if i != Game.size / 2 or j != Game.size / 2:
+    for j in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
+        for i in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
+            if i != Game1.size / 2 or j != Game1.size / 2:
                 places.append(String(Place(i, j)))
     for _ in range(50):
         shuffle(places)
-        moves = [String(Place(Game.size / 2, Game.size / 2))]
+        moves = [String(Place(Game1.size / 2, Game1.size / 2))]
         if game_name == "Connect6":
             for i in range(0, 4):
                 moves.append(String(t"{places[i]}-{places[i+4]}"))

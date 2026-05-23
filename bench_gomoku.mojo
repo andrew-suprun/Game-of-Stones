@@ -2,7 +2,7 @@ from std.benchmark import benchmark, Unit, keep
 
 from engine import Mcts, Gomoku, MoveValue
 
-comptime G = Gomoku[size=19]
+comptime G = Gomoku[size=19, max_moves=20]
 
 
 def bench_moves():
@@ -12,9 +12,8 @@ def bench_moves():
         game.play_move({"i9"})
     except:
         pass
-    var moves = List[MoveValue[G.Move]](capacity=20)
     for _ in range(1_000_000):
-        game.top_moves(32, moves)
+        var moves = game.top_moves()
         keep(moves[0])
 
 
@@ -26,9 +25,8 @@ def bench_expand():
         game.play_move({"i9"})
     except:
         pass
-    var moves = List[MoveValue[G.Move]](capacity=20)
     for _ in range(1_000_000):
-        tree.expand(game, 32, moves)
+        var moves = tree.expand(game)
 
 
 def bench[f: def() thin](name: String, unit: String) raises:

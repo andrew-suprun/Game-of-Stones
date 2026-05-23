@@ -7,7 +7,7 @@ trait TTree(ImplicitlyDestructible, Writable):
     def __init__(out self):
         ...
 
-    def search(mut self, game: Self.Game, max_moves: Int, max_time_ms: UInt, out pv: List[Self.Game.Move]):
+    def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[Self.Game.Move]):
         ...
 
     def value(self) -> Value:
@@ -17,7 +17,7 @@ trait TTree(ImplicitlyDestructible, Writable):
 trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
     comptime Move: TMove
 
-    def top_moves(self, max_moves: Int, mut moves: List[MoveValue[Self.Move]]):
+    def top_moves(self) -> List[MoveValue[Self.Move]]:
         ...
 
     def play_move(mut self, move: Self.Move):
