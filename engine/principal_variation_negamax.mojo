@@ -14,6 +14,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.root = {{}, Loss, {}}
 
     def search(mut self, game: Self.G, max_moves: Int, max_time_ms: UInt) -> List[Self.G.Move]:
+        self.root = {{}, Loss, {}}
         var moves = List[MoveValue[Self.G.Move]](capacity=max_moves)
         var max_depth = 1
         var start = perf_counter_ns()
@@ -24,8 +25,8 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
             if perf_counter_ns() > deadline:
                 return pv^
 
-            var time = Float64(perf_counter_ns() - start) / 1_000_000_000
             comptime if Debug:
+                var time = Float64(perf_counter_ns() - start) / 1_000_000_000
                 print(t"    pvs: depth: {max_depth}, value: {value_str(-self.value())}, time: {time},  pv: {pv}")
             if is_decisive(self.root.value):
                 return pv^

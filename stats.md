@@ -27,3 +27,6 @@ Game: Gomoku: seed: 6; time 500 msec/move -- Mcts-24-0.25 : Mcts-22-0.25 - 50 : 
 Game: Gomoku: seed: 6; time 500 msec/move -- Mcts-10-0.25 : Mcts-15-0.25 - 47 : 52 (1)
 Game: Gomoku: seed: 6; time 500 msec/move -- Mcts-15-0.25 : Mcts-20-0.25 - 49 : 50 (1)
 Game: Gomoku: seed: 6; time 500 msec/move -- Mcts-20-0.25 : Mcts-25-0.25 - 52 : 45 (3)
+
+
+Game: Gomoku: seed: 6; time 500 msec/move -- AlphaBetaNegamax-10 : AlphaBetaNegamax-15 - 37 : 63 (0)

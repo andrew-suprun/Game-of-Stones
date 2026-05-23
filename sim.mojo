@@ -20,20 +20,22 @@ comptime time: UInt = 500
 comptime Game = Gomoku[size=board_size]
 # comptime Game = Connect6[size=board_size]
 
-comptime max_moves1 = 10
-comptime max_places1 = 20
+comptime max_moves1 = 15
+comptime max_places1 = 10
 comptime C1 = 0.25
 
 comptime T1 = AlphaBetaNegamax[Game]
 # comptime T1 = PrincipalVariationNegamax[Game]
 # comptime T1 = Mcts[Game, C1]
 
+comptime game_type = reflect[Game].base_name()
 comptime tree_type1 = reflect[T1].base_name()
-comptime name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if tree_type1 == "Connect6" else String(t"{tree_type1}-{max_moves1}-{C1}")
+comptime game_name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if game_type == "Connect6" else String(t"{tree_type1}-{max_moves1}")
+comptime name1 = game_name1 if tree_type1 != "Mcts" else String(t"{game_name1}-{C1}")
 
 
-comptime max_moves2 = 15
-comptime max_places2 = 20
+comptime max_moves2 = 20
+comptime max_places2 = 12
 comptime C2 = 0.25
 
 comptime T2 = AlphaBetaNegamax[Game]
@@ -41,7 +43,8 @@ comptime T2 = AlphaBetaNegamax[Game]
 # comptime T2 = Mcts[Game, C2]
 
 comptime tree_type2 = reflect[T2].base_name()
-comptime name2 = String(t"{tree_type2}-{max_moves2}-{max_places2}") if tree_type2 == "Connect6" else String(t"{tree_type2}-{max_moves2}-{C2}")
+comptime game_name2 = String(t"{tree_type2}-{max_moves2}-{max_places2}") if game_type == "Connect6" else String(t"{tree_type2}-{max_moves2}")
+comptime name2 = game_name2 if tree_type2 != "Mcts" else String(t"{game_name2}-{C2}")
 
 comptime game_name = reflect[T1.Game].base_name()
 
@@ -66,13 +69,13 @@ struct Sim:
             var winner1 = sim1.sim_opening(name1, max_moves1, name2, max_moves2, opening)
             if winner1 == name1:
                 self.first_wins += 1
-                print(t"\n{n}: winner {name1} (black) {self.first_wins}")
+                print(t"\n{n}: winner {name1} (black) {self.first_wins}* : {self.second_wins} ({self.draws})")
             elif winner1 == name2:
                 self.second_wins += 1
-                print(t"\n{n}: winner {name2} (white) {self.second_wins}")
+                print(t"\n{n}: winner {name2} (white) {self.first_wins} : {self.second_wins}* ({self.draws})")
             else:
                 self.draws += 1
-                print(t"\n{n}: draw {self.draws}")
+                print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws*})")
             n += 1
             var event = self.ui.wait_event(1500)
             if event.isa[Quit]():
@@ -84,13 +87,13 @@ struct Sim:
 
             if winner2 == name1:
                 self.first_wins += 1
-                print(t"\n{n}: winner {name1} (white) {self.first_wins}")
+                print(t"\n{n}: winner {name1} (white) {self.first_wins}* : {self.second_wins} ({self.draws})")
             elif winner2 == name2:
                 self.second_wins += 1
-                print(t"\n{n}: winner {name2} (black) {self.second_wins}")
+                print(t"\n{n}: winner {name2} (black) {self.first_wins} : {self.second_wins}* ({self.draws})")
             else:
                 self.draws += 1
-                print(t"\n{n}: draw {self.draws}")
+                print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws*})")
 
             n += 1
             event = self.ui.wait_event(1500)

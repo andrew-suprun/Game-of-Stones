@@ -1,7 +1,8 @@
 from std.utils.numerics import FPUtils, isinf
 
+from .config import Assert
 from .value import Value, Win, Draw
-from .traits import TGame, TMove, MoveValue, Decision
+from .traits import TGame, TMove, MoveValue
 from .board import Board, Place, PlaceValue, first
 
 comptime win_stones = 5
@@ -41,6 +42,10 @@ struct Gomoku[size: Int](TGame):
         moves.clear()
         var places = List[PlaceValue](capacity=max_moves)
         self.board.places(self.turn, max_moves, places)
+        if Assert:
+            for place in places:
+                assert self.board[Int(place.place.x), Int(place.place.y)] == Board.empty
+
         var board_value = self.board.value if self.turn == first else -self.board.value
         for place in places:
             if place.value == Value.MAX:
