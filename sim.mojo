@@ -20,7 +20,7 @@ comptime time: UInt = 500
 comptime Game = Gomoku[size=board_size]
 # comptime Game = Connect6[size=board_size]
 
-comptime max_moves1 = 15
+comptime max_moves1 = 20
 comptime max_places1 = 10
 comptime C1 = 0.25
 
@@ -34,7 +34,7 @@ comptime game_name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if game
 comptime name1 = game_name1 if tree_type1 != "Mcts" else String(t"{game_name1}-{C1}")
 
 
-comptime max_moves2 = 20
+comptime max_moves2 = 22
 comptime max_places2 = 12
 comptime C2 = 0.25
 
@@ -75,7 +75,7 @@ struct Sim:
                 print(t"\n{n}: winner {name2} (white) {self.first_wins} : {self.second_wins}* ({self.draws})")
             else:
                 self.draws += 1
-                print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws*})")
+                print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws}*)")
             n += 1
             var event = self.ui.wait_event(1500)
             if event.isa[Quit]():
@@ -93,7 +93,7 @@ struct Sim:
                 print(t"\n{n}: winner {name2} (black) {self.first_wins} : {self.second_wins}* ({self.draws})")
             else:
                 self.draws += 1
-                print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws*})")
+                print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws}*)")
 
             n += 1
             event = self.ui.wait_event(1500)

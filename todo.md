@@ -1,3 +1,4 @@
+* experiment with Gomoku move evaluation
 * display text in Ui
 * ? wrap Value inside Score
 * benchmark 'Place.x: Int, .y: Int'

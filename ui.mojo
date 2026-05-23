@@ -24,7 +24,7 @@ comptime board_size = 19
 
 # comptime Game = Gomoku[board_size]
 # comptime stones_per_move = 1
-# comptime max_moves = 22
+# comptime max_moves = 20
 
 comptime Game = Connect6[board_size]
 comptime stones_per_move = 2
