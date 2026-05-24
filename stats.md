@@ -35,3 +35,4 @@ Game: Connect6: seed: 9; time 500 msec/move -- Mcts-26-16-0.25 : Mcts-26-20-0.25
 Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-20-0.25 - 50 : 50 (0)
 Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-20-0.3 - 47 : 52 (1)
 Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-20-0.35 - 45 : 54 (1)
+Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-20-0.4 - 48 : 52 (0)

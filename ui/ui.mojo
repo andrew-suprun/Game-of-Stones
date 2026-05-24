@@ -19,11 +19,14 @@ struct Place(ImplicitlyCopyable, Writable):
     var x: Int
     var y: Int
 
+    def __eq__(self, other: Self) -> Bool:
+        return self.x == other.x and self.y == other.y
+
 
 @fieldwise_init
 struct Stone(ImplicitlyCopyable, Writable):
     var place: Place
-    var black: Bool
+    var color: Int
     var selected: Bool
 
 
@@ -38,7 +41,12 @@ struct EnterKey(Movable, Writable):
 
 
 @fieldwise_init
-struct EsqKey(Movable, Writable):
+struct LeftKey(Movable, Writable):
+    pass
+
+
+@fieldwise_init
+struct RightKey(Movable, Writable):
     pass
 
 
@@ -52,7 +60,7 @@ struct MouseClick(Movable, Writable):
     var place: Place
 
 
-comptime Event = Variant[NoEvent, EnterKey, EsqKey, Quit, MouseClick]
+comptime Event = Variant[NoEvent, EnterKey, LeftKey, RightKey, Quit, MouseClick]
 
 
 struct Ui[board_size: Int](Copyable):
@@ -87,8 +95,11 @@ struct Ui[board_size: Int](Copyable):
                 return Event(Quit())
 
             elif event.type == self.pygame.KEYDOWN:
-                if event.key == self.pygame.K_ESCAPE:
-                    return Event(EsqKey())
+                if event.key == self.pygame.K_LEFT:
+                    return Event(LeftKey())
+
+                if event.key == self.pygame.K_RIGHT:
+                    return Event(RightKey())
 
                 elif event.key == self.pygame.K_RETURN:
                     return Event(EnterKey())
@@ -107,7 +118,7 @@ struct Ui[board_size: Int](Copyable):
             self.pygame.draw.line(self.window, color_line, Python.tuple(i * Self.d, Self.d), Python.tuple(i * Self.d, Self.board_size * Self.d))
 
         for stone in stones:
-            color = color_black if stone.black else color_white
+            color = color_black if stone.color == black else color_white
             self.pygame.draw.circle(self.window, color, Self.board_to_window(stone.place.x, stone.place.y), Self.r - 2)
             if stone.selected:
                 self.pygame.draw.circle(self.window, color_selected, Self.board_to_window(stone.place.x, stone.place.y), Self.r / 5)
