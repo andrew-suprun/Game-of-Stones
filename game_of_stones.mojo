@@ -62,7 +62,7 @@ struct GameOfStones:
         self.play_move(self.first_black_move())
 
         while not self.app_complete and not self.game_complete_confirmed:
-            print(t"next move: turn: {self.turn}, human: {self.human_stones}")
+            print(t">> next move: turn: {self.turn}, human: {self.human_stones}")
             if self.turn == self.human_stones:
                 self.human_move()
             else:
@@ -152,6 +152,7 @@ struct GameOfStones:
             self.select_last_move()
 
     def redo(mut self) raises:
+        print(t"---- redo turn: {self.turn}; human: {self.human_stones}; undo stones: {len(self.undo_stones)}")
         if not self.undo_stones:
             return
 
@@ -163,12 +164,12 @@ struct GameOfStones:
             var stone2 = self.undo_stones.pop()
             var place2 = Place(stone2.place.x, stone2.place.y)
             self.stones.append(stone2)
-            self.play_move(String(t"{place1}-{place2}"))
+            self.game.play_move(String(t"{place1}-{place2}"))
 
         elif self.name == "Gomoku" and self.undo_stones:
             var stone = self.undo_stones.pop()
             self.stones.append(stone)
-            self.play_move(String(t"{stone.place}"))
+            self.game.play_move(String(t"{stone.place}"))
 
         self.human_stones = 1 - self.human_stones
         self.turn = 1 - self.turn
