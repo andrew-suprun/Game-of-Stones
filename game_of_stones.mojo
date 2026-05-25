@@ -15,6 +15,7 @@ comptime Connect6Game = Connect6[board_size, 26, 20]
 
 # comptime Game = GomokuGame
 comptime Game = Connect6Game
+comptime name = reflect[Game].base_name()
 
 # comptime Tree = Mcts[Game, 0.25] # Gomoku
 comptime Tree = Mcts[Game, 0.35]  # Connect6
@@ -31,56 +32,56 @@ def main() raises:
 
 struct GameOfStones:
     comptime Move = Game.Move
-    var name: String
     var ui: Ui[board_size]
     var stones: List[Stone]
     var undo_stones: List[Stone]
-    var game: Game
-    var tree: Tree
-    var turn: Int
-    var human_stones: Int
-    var search_complete: Bool
+    var n_selected: Int
+    var human_turn: Bool
     var game_complete: Bool
     var game_complete_confirmed: Bool
     var app_complete: Bool
 
     def __init__(out self) raises:
-        self.name = reflect[Game].base_name()
-        self.ui = Ui[board_size](self.name)
+        self.ui = Ui[board_size](name)
         self.stones = List[Stone]()
         self.undo_stones = List[Stone]()
-        self.game = Game()
-        self.tree = Tree()
-        self.turn = black
-        self.human_stones = white
-        self.search_complete = False
+        self.human_turn = True
+        self.n_selected = 0
         self.game_complete = False
         self.game_complete_confirmed = False
         self.app_complete = False
 
     def run(mut self) raises -> Bool:
-        self.play_move(self.first_black_move())
+        var first_move = self.first_black_move()
+        self.stones.append(Stone(first_move, black, True))
+        self.ui.draw(self.stones)
 
         while not self.app_complete and not self.game_complete_confirmed:
-            print(t">> next move: turn: {self.turn}, human: {self.human_stones}")
-            if self.turn == self.human_stones:
+            if self.human_turn:
                 self.human_move()
             else:
                 self.engine_move()
+            self.ui.draw(self.stones)
         return self.app_complete
 
-    def play_move(mut self, move: String) raises:
+    def last_stone(self) -> ref[self.stones] Stone:
+        return self.stones[len(self.stones) - 1]
+
+    def add_move(mut self, move: String) raises:
+        var turn = 1 - self.last_stone().color
         var places = move.split("-")
         for place_str in places:
             place = Place(String(place_str))
-            self.stones.append(Stone(UiPlace(Int(place.x), Int(place.y)), self.turn, True))
-        self.game.play_move(Game.Move(move))
-        print(self.game.board)
-        self.turn = 1 - self.turn
-        self.search_complete = is_decisive(self.game.value())
+            self.stones.append(Stone(place, turn, True))
         self.select_last_move()
 
-    def select_last_move(mut self) raises:
+    def remove_move(mut self):
+        var popped_stone = self.stones.pop()
+        if self.last_stone().color == popped_stone.color:
+            _ = self.stones.pop()
+        self.select_last_move()
+
+    def select_last_move(mut self):
         for ref stone in self.stones:
             stone.selected = False
 
@@ -88,160 +89,129 @@ struct GameOfStones:
         if len(self.stones) > 2 and self.stones[len(self.stones) - 1].color == self.stones[len(self.stones) - 2].color:
             self.stones[len(self.stones) - 2].selected = True
 
-        for i in range(len(self.stones) - 1, -1, -1):
-            ref stone = self.stones[i]
-            if stone.color == self.turn:
-                break
-            stone.selected = True
-        self.ui.draw(self.stones)
-
     def human_move(mut self) raises:
-        print(t"human move: {self.human_stones} turn: {self.turn}")
         while True:
             var event = self.ui.wait_event()
             if event.isa[Quit]():
                 self.app_complete = True
-                return
-
-            elif event.isa[LeftKey]():
-                self.undo()
-                self.ui.draw(self.stones)
-                return
-
-            elif event.isa[RightKey]():
-                self.redo()
-                self.ui.draw(self.stones)
-                return
+                break
 
             elif event.isa[EnterKey]():
                 self.commit_move()
-                self.ui.draw(self.stones)
-                return
+                break
+
+            elif event.isa[LeftKey]():
+                self.undo()
+                break
+
+            elif event.isa[RightKey]():
+                self.redo()
+                break
 
             elif event.isa[MouseClick]():
                 self.handle_mouse(event)
-                self.ui.draw(self.stones)
-                return
+                break
+
+    def commit_move(mut self) raises:
+        if self.game_complete:
+            self.game_complete_confirmed = True
+            return
+
+        if self.n_selected == 0 or name == "Connect6" and self.n_selected == 2 or name == "Gomoku" and self.n_selected == 1:
+            self.human_turn = False
+            self.n_selected = 0
+        if name == "Connect6" and self.n_selected == 2:
+            var place1 = self.stones[len(self.stones) - 1].place
+            var place2 = self.stones[len(self.stones) - 2].place
+            print(t"{place1}-{place2} ", end="")
+
+        if name == "Gomoku" and self.n_selected == 1:
+            var place = self.stones[len(self.stones) - 1].place
+            print(t"{place} ", end="")
 
     def undo(mut self) raises:
         if len(self.stones) == 1:
             return
 
+        print("undo ", end="")
         var color = self.stones[len(self.stones) - 1].color
         while color == self.stones[len(self.stones) - 1].color:
             self.undo_stones.append(self.stones.pop())
-
-        if color != self.human_stones:
-            print("undo ", end="")
-
-            self.game_complete = False
-            self.game = Game()
-            var place = Place(self.stones[0].place.x, self.stones[0].place.y)
-            self.game.play_move(String(place))
-            if self.name == "Connect6":
-                for i in range(1, len(self.stones) - 1, 2):
-                    var place1 = Place(self.stones[i].place.x, self.stones[i].place.y)
-                    var place2 = Place(self.stones[i + 1].place.x, self.stones[i + 1].place.y)
-                    self.game.play_move(String(t"{place1}-{place2}"))
-            else:
-                for i in range(1, len(self.stones)):
-                    var place = Place(self.stones[i].place.x, self.stones[i].place.y)
-                    self.game.play_move(String(t"{place}"))
-            self.human_stones = 1 - self.human_stones
-            self.turn = 1 - self.turn
-            self.select_last_move()
+        self.select_last_move()
 
     def redo(mut self) raises:
-        print(t"---- redo turn: {self.turn}; human: {self.human_stones}; undo stones: {len(self.undo_stones)}")
         if not self.undo_stones:
             return
 
-        print("redo ", end="")
-        if self.name == "Connect6" and len(self.undo_stones) >= 2:
-            var stone1 = self.undo_stones.pop()
-            var place1 = Place(stone1.place.x, stone1.place.y)
-            self.stones.append(stone1)
+        var stone1 = self.undo_stones.pop()
+        self.stones.append(stone1)
+        if name == "Connect6" and self.undo_stones:
             var stone2 = self.undo_stones.pop()
-            var place2 = Place(stone2.place.x, stone2.place.y)
             self.stones.append(stone2)
-            self.game.play_move(String(t"{place1}-{place2}"))
+            print(t"{stone1.place}-{stone2.place} ", end="")
+        else:
+            print(t"{stone1.place} ", end="")
 
-        elif self.name == "Gomoku" and self.undo_stones:
-            var stone = self.undo_stones.pop()
-            self.stones.append(stone)
-            self.game.play_move(String(t"{stone.place}"))
-
-        self.human_stones = 1 - self.human_stones
-        self.turn = 1 - self.turn
         self.select_last_move()
-
-    def commit_move(mut self) raises:
-        print(t"commit_move: stones: {len(self.stones)}")
-        if self.game_complete:
-            self.game_complete_confirmed = True
-            print("r0")
-            return
-
-        var idx = len(self.stones) - 1
-        var n_selected = 0
-        while idx >= 0 and self.stones[idx].color == self.human_stones:
-            idx -= 1
-            n_selected += 1
-
-        if n_selected == 0:
-            self.human_stones = 1 - self.human_stones
-            print("r1")
-            return
-
-        if self.name == "Connect6" and n_selected == 2:
-            var place1 = Place(self.stones[idx + 1].place.x, self.stones[idx + 1].place.y)
-            var place2 = Place(self.stones[idx + 2].place.x, self.stones[idx + 2].place.y)
-            var move = String(t"{place1}-{place2}")
-            print(t"{move} ")
-            self.play_move(move)
-            print("r2")
-            return
-
-        if self.name == "Gomoku" and n_selected == 1:
-            var place = Place(self.stones[idx + 1].place.x, self.stones[idx + 1].place.y)
-            var move = String(t"{place}")
-            print(t"{move} ")
-            self.play_move(move)
-            print("r3")
-            return
 
     def handle_mouse(mut self, event: Event) raises:
         if self.game_complete:
             return
+
+        self.undo_stones.clear()
         ref click_event = event[MouseClick]
+        ref last_stone = self.last_stone()
         for i, stone in enumerate(self.stones):
             if click_event.place == stone.place:
-                if click_event.place == stone.place and stone.selected and stone.color == self.human_stones:
+                if stone.color == last_stone.color:
                     _ = self.stones.pop(i)
+                    self.n_selected -= 1
                 break
         else:
-            var stone = Stone(click_event.place, self.human_stones, True)
-            if self.name == "Connect6" and len(self.stones) > 2 and self.stones[len(self.stones) - 2].color == self.human_stones:
+            var color = last_stone.color if self.n_selected > 0 else 1 - last_stone.color
+            var stone = Stone(click_event.place, color, True)
+            if name == "Connect6" and len(self.stones) > 2 and self.stones[len(self.stones) - 2].color == color:
                 _ = self.stones.pop(len(self.stones) - 2)
-            elif self.name == "Gomoku" and len(self.stones) > 1 and self.stones[len(self.stones) - 1].color == self.human_stones:
+                self.n_selected -= 1
+            elif name == "Gomoku" and len(self.stones) > 1 and self.stones[len(self.stones) - 1].color == color:
                 _ = self.stones.pop()
+                self.n_selected -= 1
 
             self.stones.append(stone)
+            self.n_selected += 1
 
     def engine_move(mut self) raises:
-        print(t"engine move: {1-self.human_stones} turn {self.turn}")
-        if self.app_complete or self.game_complete:
+        if self.game_complete:
             return
 
         if len(self.stones) == 1:
             var move = self.first_white_move()
-            self.play_move(move)
+            self.add_move(move)
+            self.human_turn = True
             return
 
-        var pv = self.tree.search(self.game, duration)
-        self.play_move(String(pv[0]))
-        if is_decisive(self.game.value()):
+        var tree = Tree()
+        var game = Game()
+        game.play_move(String(self.stones[0].place))
+        if name == "Connect6":
+            for i in range(1, len(self.stones) - 1, 2):
+                var place1 = self.stones[i].place
+                var place2 = self.stones[i + 1].place
+                game.play_move(String(t"{place1}-{place2}"))
+        else:
+            for i in range(1, len(self.stones)):
+                var place = self.stones[i].place
+                game.play_move(String(place))
+
+        var pv = tree.search(game, duration)
+        var move = pv[0]
+        print(t"{move} ", end="")
+        game.play_move(move)
+        if is_decisive(game.value()):
             self.game_complete = True
+        self.add_move(String(move))
+        self.select_last_move()
+        self.human_turn = True
 
     def first_black_move(self) raises -> String:
         var x = board_size / 2
@@ -258,7 +228,7 @@ struct GameOfStones:
         seed()
         shuffle(places)
 
-        if self.name == "Gomoku":
+        if name == "Gomoku":
             return String(places[0])
         else:
             return String(t"{places[0]}-{places[1]}")

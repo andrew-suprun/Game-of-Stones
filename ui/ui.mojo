@@ -1,6 +1,8 @@
 from std.python import Python, PythonObject
 from std.utils import Variant
 
+from engine import Place
+
 comptime window_height = 800
 comptime window_width = 800
 
@@ -12,15 +14,6 @@ comptime color_black = "black"
 comptime color_white = "white"
 comptime color_selected = "deepskyblue3"
 comptime color_line = "gray20"
-
-
-@fieldwise_init
-struct Place(ImplicitlyCopyable, Writable):
-    var x: Int
-    var y: Int
-
-    def __eq__(self, other: Self) -> Bool:
-        return self.x == other.x and self.y == other.y
 
 
 @fieldwise_init
@@ -119,12 +112,13 @@ struct Ui[board_size: Int](Copyable):
 
         for stone in stones:
             color = color_black if stone.color == black else color_white
-            self.pygame.draw.circle(self.window, color, Self.board_to_window(stone.place.x, stone.place.y), Self.r - 2)
+            var center = Self.board_to_window(stone.place.x, stone.place.y)
+            self.pygame.draw.circle(self.window, color, center, Self.r - 2)
             if stone.selected:
-                self.pygame.draw.circle(self.window, color_selected, Self.board_to_window(stone.place.x, stone.place.y), Self.r / 5)
+                self.pygame.draw.circle(self.window, color_selected, center, Self.r / 5)
 
         self.pygame.display.flip()
 
     @staticmethod
-    def board_to_window(x: Int, y: Int, out result: PythonObject) raises:
-        result = Python.tuple((x + 1) * Self.d, (y + 1) * Self.d)
+    def board_to_window(x: Int8, y: Int8, out result: PythonObject) raises:
+        result = Python.tuple(Int(x + 1) * Self.d, Int(y + 1) * Self.d)
