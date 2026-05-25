@@ -53,6 +53,7 @@ struct GameOfStones:
 
     def run(mut self) raises -> Bool:
         var first_move = self.first_black_move()
+        print(t"{first_move} ", end="")
         self.stones.append(Stone(first_move, black, True))
         self.ui.draw(self.stones)
 
@@ -133,6 +134,12 @@ struct GameOfStones:
         if len(self.stones) == 1:
             return
 
+        if self.n_selected:
+            while self.n_selected:
+                _ = self.stones.pop()
+                self.n_selected -= 1
+            return
+
         print("undo ", end="")
         var color = self.stones[len(self.stones) - 1].color
         while color == self.stones[len(self.stones) - 1].color:
@@ -186,6 +193,7 @@ struct GameOfStones:
 
         if len(self.stones) == 1:
             var move = self.first_white_move()
+            print(t"{move} ", end="")
             self.add_move(move)
             self.human_turn = True
             return
