@@ -1,4 +1,4 @@
-* display text in Ui
+* Zero search
 * experiment with Gomoku move evaluation
 * ? wrap Value inside Score
 * benchmark 'Place.x: Int, .y: Int'
@@ -7,3 +7,4 @@
 * benchmark asserts
 * try to move benches into ./benchmarks and tests into ./test
 * remove run.sh and use pixi.toml instead
+* display text in Ui
