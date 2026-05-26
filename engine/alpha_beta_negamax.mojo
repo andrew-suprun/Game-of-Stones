@@ -41,9 +41,6 @@ struct AlphaBetaNegamax[G: TGame](TTree):
 
             depth += 1
 
-    def value(self) -> Value:
-        return self.root.value
-
     def _pv(self) -> List[Self.G.Move]:
         var pv = List[Self.G.Move]()
         self.root._pv(pv)

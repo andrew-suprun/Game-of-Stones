@@ -26,7 +26,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
             var time = Float64(perf_counter_ns() - start) / 1_000_000_000
             comptime if Debug:
-                print(t"    pvs: depth: {depth}, value: {value_str(-self.value())}, time: {time},  pv: {pv}")
+                print(t"    pvs: depth: {depth}, value: {value_str(-game.value())}, time: {time},  pv: {pv}")
             if is_decisive(self.root.value):
                 return pv^
 
@@ -39,9 +39,6 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
                 return pv^
 
             depth += 1
-
-    def value(self) -> Value:
-        return self.root.value
 
     def _pv(self) -> List[Self.G.Move]:
         var pv = List[Self.G.Move]()

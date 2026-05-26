@@ -105,9 +105,6 @@ struct Mcts[G: TGame, c: Value](TTree):
                 else:
                     parent.value = -best_value
 
-    def value(self) -> Value:
-        return self.tree[0].value
-
     def _select_child_idx(self, parent_idx: Idx) -> Idx:
         ref parent = self.tree[parent_idx]
         var selected_child_idx: Idx = Idx.MAX

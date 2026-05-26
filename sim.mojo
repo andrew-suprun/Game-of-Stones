@@ -5,22 +5,22 @@ from std.sys import exit
 from engine import Debug
 from engine import TTree, MoveValue, Place, first, is_decisive, value_str, is_win, is_loss
 from engine import Gomoku, Connect6
-from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
-from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick
+from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax, ZeroSearch
+from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick, black
 
 comptime seed_value = 9
-
-comptime black = True
-comptime white = False
-
 
 comptime board_size = 19
 comptime time: UInt = 500
 
 
-comptime max_moves1 = 26
-comptime max_places1 = 20
+comptime max_moves1 = 1
+comptime max_places1 = 2
 comptime C1 = 0.25
+
+comptime max_moves2 = 26
+comptime max_places2 = 20
+comptime C2 = 0.4
 
 # comptime Game1 = Gomoku[size=board_size, max_moves=max_moves1]
 # comptime Game2 = Gomoku[size=board_size, max_moves=max_moves2]
@@ -28,7 +28,8 @@ comptime Game1 = Connect6[size=board_size, max_moves=max_moves1, max_places=max_
 comptime Game2 = Connect6[size=board_size, max_moves=max_moves2, max_places=max_places2]
 
 
-comptime T1 = AlphaBetaNegamax[Game1]
+comptime T1 = ZeroSearch[Game1]
+# comptime T1 = AlphaBetaNegamax[Game1]
 # comptime T1 = PrincipalVariationNegamax[Game1]
 # comptime T1 = Mcts[Game1, C1]
 
@@ -38,10 +39,7 @@ comptime game_name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if game
 comptime name1 = game_name1 if tree_type1 != "Mcts" else String(t"{game_name1}-{C1}")
 
 
-comptime max_moves2 = 26
-comptime max_places2 = 20
-comptime C2 = 0.4
-
+# comptime T2 = ZeroSearch[Game1]
 # comptime T2 = AlphaBetaNegamax[Game2]
 # comptime T2 = PrincipalVariationNegamax[Game2]
 comptime T2 = Mcts[Game2, C2]
@@ -112,7 +110,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
     var g2: Self.T2.Game
     var t1: Self.T1
     var t2: Self.T2
-    var first_turn: Bool
+    var color: Int
     var plies: Int
 
     def __init__(out self, ui: Ui[board_size]):
@@ -122,7 +120,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
         self.g2 = Self.T2.Game()
         self.t1 = Self.T1()
         self.t2 = Self.T2()
-        self.first_turn = True
+        self.color = black
         self.plies = 1
 
     def sim_opening(mut self, name_black: String, name_white: String, opening: List[String]) raises -> String:
@@ -132,7 +130,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
 
         print("\nplay: ", end="")
         while self.plies < 100:
-            if self.first_turn:
+            if self.color == black:
                 var pv = self.t1.search(self.g1, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
                 self.play_move(String(pv[0]))
@@ -157,9 +155,9 @@ struct SimOpening[T1: TTree, T2: TTree]:
         var places = String(move).split("-")
         for place_str in places:
             var place = Place(String(place_str))
-            self.stones.append(Stone(UiPlace(Int(place.x), Int(place.y)), self.first_turn, False))
+            self.stones.append(Stone(place, self.color, False))
         self.plies += 1
-        self.first_turn = not self.first_turn
+        self.color = 1 - self.color
         for ref stone in self.stones:
             stone.selected = False
         self.stones[len(self.stones) - 1].selected = True

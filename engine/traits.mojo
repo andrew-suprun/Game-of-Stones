@@ -10,9 +10,6 @@ trait TTree(ImplicitlyDestructible, Writable):
     def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[Self.Game.Move]):
         ...
 
-    def value(self) -> Value:
-        ...
-
 
 trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
     comptime Move: TMove
