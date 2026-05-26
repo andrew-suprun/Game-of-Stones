@@ -7,8 +7,8 @@ from engine import MoveValue, Place, is_decisive
 from ui import Ui, Event, Stone, Place as UiPlace, EnterKey, LeftKey, RightKey, Quit, MouseClick, black, white
 
 comptime duration = 1000
-
 comptime board_size = 19
+comptime BoardUi = Ui[board_size]
 
 comptime GomokuGame = Gomoku[board_size, 22]
 comptime Connect6Game = Connect6[board_size, 26, 20]
@@ -25,14 +25,13 @@ comptime Tree = Mcts[Game, 0.35]  # Connect6
 
 def main() raises:
     var done = False
-    var game = GameOfStones()
+    var ui = BoardUi(name)
     while not done:
-        done = game.run()
+        var game = GameOfStones()
+        done = game.run(ui)
 
 
 struct GameOfStones:
-    comptime Move = Game.Move
-    var ui: Ui[board_size]
     var stones: List[Stone]
     var undo_stones: List[Stone]
     var n_selected: Int
@@ -42,7 +41,6 @@ struct GameOfStones:
     var app_complete: Bool
 
     def __init__(out self) raises:
-        self.ui = Ui[board_size](name)
         self.stones = List[Stone]()
         self.undo_stones = List[Stone]()
         self.human_turn = True
@@ -51,26 +49,18 @@ struct GameOfStones:
         self.game_complete_confirmed = False
         self.app_complete = False
 
-    def run(mut self) raises -> Bool:
-        self.stones = List[Stone]()
-        self.undo_stones = List[Stone]()
-        self.human_turn = True
-        self.n_selected = 0
-        self.game_complete = False
-        self.game_complete_confirmed = False
-        self.app_complete = False
-
+    def run(mut self, ui: BoardUi) raises -> Bool:
         var first_move = self.first_black_move()
         print(t"\n{first_move} ", end="")
         self.stones.append(Stone(first_move, black, True))
-        self.ui.draw(self.stones)
+        ui.draw(self.stones)
 
         while not self.app_complete and not self.game_complete_confirmed:
             if self.human_turn:
-                self.human_move()
+                self.human_move(ui)
             else:
                 self.engine_move()
-            self.ui.draw(self.stones)
+            ui.draw(self.stones)
         print()
         return self.app_complete
 
@@ -99,9 +89,9 @@ struct GameOfStones:
         if len(self.stones) > 2 and self.stones[len(self.stones) - 1].color == self.stones[len(self.stones) - 2].color:
             self.stones[len(self.stones) - 2].selected = True
 
-    def human_move(mut self) raises:
+    def human_move(mut self, ui: BoardUi) raises:
         while True:
-            var event = self.ui.wait_event()
+            var event = ui.wait_event()
             if event.isa[Quit]():
                 self.app_complete = True
                 break
@@ -188,7 +178,7 @@ struct GameOfStones:
         ref last_stone = self.last_stone()
         for i, stone in enumerate(self.stones):
             if click_event.place == stone.place:
-                if stone.color == last_stone.color:
+                if stone.color == last_stone.color and stone.selected and self.n_selected:
                     _ = self.stones.pop(i)
                     self.n_selected -= 1
                 break
