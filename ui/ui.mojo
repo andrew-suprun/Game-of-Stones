@@ -68,6 +68,7 @@ struct Ui[board_size: Int](Copyable):
         self.pygame.init()
         self.window = self.pygame.display.set_mode(Python.tuple(window_height, window_width))
         self.pygame.display.set_caption("Game of Stones - " + name)
+        self.draw([])
 
     def poll_event(self) raises -> Event:
         return self._get_event(0)

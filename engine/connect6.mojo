@@ -104,7 +104,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                     if self.turn:
                         debug_board_value = -debug_board_value
                     comptime if Assert:
-                        if debug_board_value != board_value + score1 + score2:
+                        if not is_decisive(board_value) and debug_board_value != board_value + score1 + score2:
                             print(self.board)
                             print(self.board.str_values())
                             print("move", Move(place1, place2))

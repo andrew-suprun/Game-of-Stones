@@ -25,8 +25,8 @@ comptime Tree = Mcts[Game, 0.35]  # Connect6
 
 def main() raises:
     var done = False
+    var game = GameOfStones()
     while not done:
-        var game = GameOfStones()
         done = game.run()
 
 
@@ -52,8 +52,16 @@ struct GameOfStones:
         self.app_complete = False
 
     def run(mut self) raises -> Bool:
+        self.stones = List[Stone]()
+        self.undo_stones = List[Stone]()
+        self.human_turn = True
+        self.n_selected = 0
+        self.game_complete = False
+        self.game_complete_confirmed = False
+        self.app_complete = False
+
         var first_move = self.first_black_move()
-        print(t"{first_move} ", end="")
+        print(t"\n{first_move} ", end="")
         self.stones.append(Stone(first_move, black, True))
         self.ui.draw(self.stones)
 
@@ -63,6 +71,7 @@ struct GameOfStones:
             else:
                 self.engine_move()
             self.ui.draw(self.stones)
+        print()
         return self.app_complete
 
     def last_stone(self) -> ref[self.stones] Stone:
@@ -118,9 +127,6 @@ struct GameOfStones:
             self.game_complete_confirmed = True
             return
 
-        if self.n_selected == 0 or name == "Connect6" and self.n_selected == 2 or name == "Gomoku" and self.n_selected == 1:
-            self.human_turn = False
-            self.n_selected = 0
         if name == "Connect6" and self.n_selected == 2:
             var place1 = self.stones[len(self.stones) - 1].place
             var place2 = self.stones[len(self.stones) - 2].place
@@ -129,6 +135,16 @@ struct GameOfStones:
         if name == "Gomoku" and self.n_selected == 1:
             var place = self.stones[len(self.stones) - 1].place
             print(t"{place} ", end="")
+
+        if self.n_selected == 0 or name == "Connect6" and self.n_selected == 2 or name == "Gomoku" and self.n_selected == 1:
+            self.human_turn = False
+            self.n_selected = 0
+            self.select_last_move()
+
+        var game = self.replay_moves()
+        if is_decisive(game.value()):
+            self.game_complete = True
+            self.human_turn = True
 
     def undo(mut self) raises:
         if len(self.stones) == 1:
@@ -145,6 +161,8 @@ struct GameOfStones:
         while color == self.stones[len(self.stones) - 1].color:
             self.undo_stones.append(self.stones.pop())
         self.select_last_move()
+        self.game_complete = False
+        self.game_complete_confirmed = False
 
     def redo(mut self) raises:
         if not self.undo_stones:
@@ -199,7 +217,19 @@ struct GameOfStones:
             return
 
         var tree = Tree()
-        var game = Game()
+        var game = self.replay_moves()
+        var pv = tree.search(game, duration)
+        var move = pv[0]
+        print(t"{move} ", end="")
+        game.play_move(move)
+        if is_decisive(game.value()):
+            self.game_complete = True
+        self.add_move(String(move))
+        self.select_last_move()
+        self.human_turn = True
+
+    def replay_moves(self, out game: Game) raises:
+        game = Game()
         game.play_move(String(self.stones[0].place))
         if name == "Connect6":
             for i in range(1, len(self.stones) - 1, 2):
@@ -210,16 +240,6 @@ struct GameOfStones:
             for i in range(1, len(self.stones)):
                 var place = self.stones[i].place
                 game.play_move(String(place))
-
-        var pv = tree.search(game, duration)
-        var move = pv[0]
-        print(t"{move} ", end="")
-        game.play_move(move)
-        if is_decisive(game.value()):
-            self.game_complete = True
-        self.add_move(String(move))
-        self.select_last_move()
-        self.human_turn = True
 
     def first_black_move(self) raises -> String:
         var x = board_size / 2
