@@ -108,8 +108,18 @@ struct Ui[board_size: Int](Copyable):
         self.window.fill(color_background)
 
         for i in range(1, Self.board_size + 1):
-            self.pygame.draw.line(self.window, color_line, Python.tuple(Self.d, i * Self.d), Python.tuple(Self.board_size * Self.d, i * Self.d))
-            self.pygame.draw.line(self.window, color_line, Python.tuple(i * Self.d, Self.d), Python.tuple(i * Self.d, Self.board_size * Self.d))
+            self.pygame.draw.line(
+                self.window,
+                color_line,
+                Python.tuple(Self.d, i * Self.d),
+                Python.tuple(Self.board_size * Self.d, i * Self.d),
+            )
+            self.pygame.draw.line(
+                self.window,
+                color_line,
+                Python.tuple(i * Self.d, Self.d),
+                Python.tuple(i * Self.d, Self.board_size * Self.d),
+            )
 
         for stone in stones:
             color = color_black if stone.color == black else color_white
