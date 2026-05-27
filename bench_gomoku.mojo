@@ -26,7 +26,7 @@ def bench_expand():
     except:
         pass
     for _ in range(1_000_000):
-        var moves = tree.expand(game)
+        keep(tree.expand(game))
 
 
 def bench[f: def() thin](name: String, unit: String) raises:

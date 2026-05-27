@@ -2,7 +2,7 @@ from std.time import perf_counter_ns
 
 from engine import TGame, Mcts, Gomoku, Connect6, MoveValue
 
-comptime C6 = Connect6[size=19, max_moves=16, max_places=10]
+comptime C6 = Connect6[size=19, max_moves=16, max_places=12]
 comptime G = Gomoku[size=19, max_moves=16]
 
 
@@ -18,7 +18,6 @@ def bench_build_tree[Game: TGame]() raises:
     print(t"\nGame: {reflect[Game].base_name()}")
 
     var tree = Mcts[Game, 0.7]()
-    var max_moves = 16
     var start = perf_counter_ns()
     var deadline = start + UInt(10_000_000_000)
     var count = 0

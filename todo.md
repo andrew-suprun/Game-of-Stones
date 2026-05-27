@@ -1,5 +1,3 @@
-* Zero search
-* experiment with Gomoku move evaluation
 * ? wrap Value inside Score
 * benchmark 'Place.x: Int, .y: Int'
 * join value.mojo and traits.mojo into base.mojo
