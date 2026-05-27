@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
 
-from .config import Assert, Debug, Trace
+from .config import Debug, Trace
 from .traits import TTree, TGame, Score
 
 

@@ -3,7 +3,7 @@ from std.random import seed, shuffle
 
 from engine import Connect6, Gomoku
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
-from engine import MoveScore, Place, is_decisive
+from engine import Score, MoveScore, Place
 from ui import Ui, Event, Stone, Place as UiPlace, EnterKey, LeftKey, RightKey, Quit, MouseClick, black, white
 
 comptime duration = 1000
@@ -17,8 +17,8 @@ comptime Connect6Game = Connect6[board_size, 26, 20]
 comptime Game = Connect6Game
 comptime name = reflect[Game].base_name()
 
-# comptime Tree = Mcts[Game, 0.25] # Gomoku
-comptime Tree = Mcts[Game, 0.35]  # Connect6
+# comptime Tree = Mcts[Game, Score(0.25)] # Gomoku
+comptime Tree = Mcts[Game, Score(0.35)]  # Connect6
 # comptime Tree = AlphaBetaNegamax[Game]
 # comptime Tree = PrincipalVariationNegamax[Game]
 
@@ -132,7 +132,7 @@ struct GameOfStones:
             self.select_last_move()
 
         var game = self.replay_moves()
-        if is_decisive(game.value()):
+        if game.score().is_decisive():
             self.game_complete = True
             self.human_turn = True
 
@@ -212,7 +212,7 @@ struct GameOfStones:
         var move = pv[0]
         print(t"{move} ", end="")
         game.play_move(move)
-        if is_decisive(game.value()):
+        if game.score().is_decisive():
             self.game_complete = True
         self.add_move(String(move))
         self.select_last_move()
