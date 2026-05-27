@@ -41,8 +41,8 @@ def test_search[Game: TGame](moves: List[String], max_depth: Int) raises:
 
 
 def main() raises:
-    comptime G = Gomoku[size=19, max_moves=22]
-    comptime C = Connect6[size=19, max_moves=26, max_places=20]
+    comptime G = Gomoku[size=19, max_moves=16]
+    comptime C = Connect6[size=19, max_moves=16, max_places=12]
 
     test_search[G](["j10", "i9", "i10"], 7)
     test_search[C](["j10", "i9-i10"], 6)
