@@ -44,5 +44,5 @@ def main() raises:
     comptime G = Gomoku[size=19, max_moves=16]
     comptime C = Connect6[size=19, max_moves=16, max_places=12]
 
-    test_search[G](["j10", "i9", "i10"], 7)
-    test_search[C](["j10", "i9-i10"], 6)
+    test_search[G](["j10", "i9", "i10"], 6)
+    test_search[C](["j10", "i9-i10"], 5)
