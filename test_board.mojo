@@ -1,7 +1,7 @@
 from std.testing import assert_true
 from std.random import seed, random_si64
 
-from engine import Board, Place, Value, PlaceValue, Win, first, second, is_win
+from engine import Board, Place, Score, Value, PlaceValue, first, second
 
 comptime size = 19
 comptime win_stones = 6
@@ -33,14 +33,14 @@ def test_place_stone() raises:
         var turn = i % 2
         var xx = Int(random_si64(0, size - 1))
         var yy = Int(random_si64(0, size - 1))
-        if board[xx, yy] == board.empty and not is_win(board._values[yy * board.size + xx][turn]):
+        if board[xx, yy] == board.empty and not Score(board._values[yy * board.size + xx][turn]).is_win():
             for y in range(size):
                 for x in range(size):
                     if (
                         (x != xx or y != yy)
                         and board[x, y] == board.empty
-                        and not is_win(board._values[y * board.size + x][0])
-                        and not is_win(board._values[y * board.size + x][1])
+                        and not Score(board._values[y * board.size + x][0]).is_win()
+                        and not Score(board._values[y * board.size + x][1]).is_win()
                     ):
                         var actual = board.get_value(Place(x, y), first)
                         var b = board.copy()

@@ -23,7 +23,7 @@ test-mcts-connect6 = "pixi run mojo -D ASSERT=all test_mcts_connect6.mojo"
 test-mcts-gomoku = "pixi run mojo -D ASSERT=all test_mcts_gomoku.mojo"
 test-negamax = "pixi run mojo -D ASSERT=all test_negamax.mojo"
 test-search = "pixi run mojo -D ASSERT=all test_search.mojo"
-tests = { depends-on = ["test-heap", "test-board", "test-mcts-connect6", "test-mcts-gomoku", "test-negamax", "bench-mcts", "test-search"] }
+tests = { depends-on = ["test-heap", "test-board", "test-mcts-connect6", "test-mcts-gomoku", "test-negamax", "test-search"] }
 
 [dependencies]
 pygame = ">=2.6.1,<3"

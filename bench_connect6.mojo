@@ -1,6 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from engine import Connect6, MoveValue
+from engine import Connect6, MoveScore
 
 comptime C6 = Connect6[size=19, max_moves=20, max_places=14]
 
@@ -14,7 +14,7 @@ def bench_moves():
         pass
     for _ in range(1000):
         var moves = game.top_moves()
-        keep(moves[0].value)
+        keep(moves[0].score)
 
 
 def main() raises:

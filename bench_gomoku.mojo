@@ -1,6 +1,6 @@
 from std.benchmark import benchmark, Unit, keep
 
-from engine import Mcts, Gomoku, MoveValue
+from engine import Mcts, Gomoku, Score, MoveScore
 
 comptime G = Gomoku[size=19, max_moves=20]
 
@@ -19,7 +19,7 @@ def bench_moves():
 
 def bench_expand():
     var game = G()
-    var tree = Mcts[G, 0.7]()
+    var tree = Mcts[G, Score(0.25)]()
     try:
         game.play_move({"j10"})
         game.play_move({"i9"})

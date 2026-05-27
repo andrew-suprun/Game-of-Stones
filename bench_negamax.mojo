@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
 
-from engine import TGame, MoveValue, Win, Loss, value_str
+from engine import TGame, Score, MoveScore
 from engine import AlphaBetaNode, PrincipalVariationNode
 from engine import Gomoku, Connect6
 
@@ -21,15 +21,15 @@ def bench_abs_tree[Game: TGame](max_depth: Int) raises:
 
     print(t"\nGame: {reflect[Game].base_name()}; Tree ABS")
 
-    var root = AlphaBetaNode[Game]({}, Loss, 0)
+    var root = AlphaBetaNode[Game]({}, Score.loss(), 0)
     var start = perf_counter_ns()
     var deadline = start + UInt(60_000_000_000)
     for max_depth in range(1, max_depth + 1):
-        _ = root.search(game, Loss, Win, 0, max_depth, deadline)
+        _ = root.search(game, Score.loss(), Score.win(), 0, max_depth, deadline)
         var time = Float64(perf_counter_ns() - start) / 1_000_000_000
         var pv = List[Game.Move]()
         root._pv(pv)
-        print(t"depth {max_depth}: value: {value_str(-root.value)} | time {time} | pv {pv}")
+        print(t"depth {max_depth}: value: {-root.score} | time {time} | pv {pv}")
         # print(repr(root))
         if perf_counter_ns() > deadline:
             return
@@ -50,15 +50,15 @@ def bench_pvs_tree[Game: TGame](max_depth: Int) raises:
 
     print(t"\nGame: {reflect[Game].base_name()}; Tree PVS")
 
-    var root = PrincipalVariationNode[Game]({}, Loss, 0)
+    var root = PrincipalVariationNode[Game]({}, Score.loss(), 0)
     var start = perf_counter_ns()
     var deadline = start + UInt(60_000_000_000)
     for max_depth in range(1, max_depth + 1):
-        _ = root.search(game, Loss, Win, 0, max_depth, deadline)
+        _ = root.search(game, Score.loss(), Score.win(), 0, max_depth, deadline)
         var time = Float64(perf_counter_ns() - start) / 1_000_000_000
         var pv = List[Game.Move]()
         root._pv(pv)
-        print(t"depth {max_depth}: value: {value_str(-root.value)} | time {time} | pv {pv}")
+        print(t"depth {max_depth}: value: {-root.score} | time {time} | pv {pv}")
         # print(repr(root))
         if perf_counter_ns() > deadline:
             return

@@ -1,9 +1,9 @@
-from engine import Gomoku, Mcts, MoveValue
+from engine import Gomoku, Mcts, Score
 
 
 def main() raises:
     comptime G = Gomoku[size=19, max_moves=26]
-    comptime Tree = Mcts[G, 0.35]
+    comptime Tree = Mcts[G, Score(0.35)]
 
     var game = G()
     var tree = Tree()

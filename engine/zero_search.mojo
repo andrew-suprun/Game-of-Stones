@@ -14,5 +14,5 @@ struct ZeroSearch[G: TGame](TTree):
 
     @staticmethod
     @parameter
-    def gt(a: MoveValue[Self.G.Move], b: MoveValue[Self.G.Move]) -> Bool:
+    def gt(a: MoveScore[Self.G.Move], b: MoveScore[Self.G.Move]) -> Bool:
         return a.value > b.value

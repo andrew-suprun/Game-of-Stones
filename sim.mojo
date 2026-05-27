@@ -3,7 +3,7 @@ from std.time import sleep
 from std.sys import exit
 
 from engine import Debug
-from engine import TTree, MoveValue, Place, first, is_decisive, value_str, is_win, is_loss
+from engine import TTree, MoveScore, Place, first, is_decisive, value_str, is_win, is_loss
 from engine import Gomoku, Connect6
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax, ZeroSearch
 from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick, black

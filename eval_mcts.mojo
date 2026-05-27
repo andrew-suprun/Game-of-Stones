@@ -1,4 +1,4 @@
-from engine import Gomoku, Connect6, Mcts, MoveValue
+from engine import Gomoku, Connect6, Mcts, MoveScore
 
 # comptime Game = Connect6[size=19, max_moves=16, max_places=10]
 comptime Game = Gomoku[size=19, max_moves=16]

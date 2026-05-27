@@ -1,9 +1,9 @@
-from engine import Connect6, Mcts, MoveValue
+from engine import Connect6, Mcts, Score, MoveScore
 
 
 def main() raises:
     comptime C6 = Connect6[size=19, max_moves=26, max_places=20]
-    comptime Tree = Mcts[C6, 0.35]
+    comptime Tree = Mcts[C6, Score(0.35)]
 
     var game = C6()
     var tree = Tree()

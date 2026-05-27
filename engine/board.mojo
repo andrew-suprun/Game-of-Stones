@@ -1,7 +1,11 @@
 from std.memory import memcpy
+from std.utils.numerics import isinf, isnan, isfinite, nan
 
 from .heap import heap_add
-from .value import Value, Loss
+
+comptime Value = Float32
+comptime Loss = Value.MIN
+
 
 comptime first = 0
 comptime second = 1

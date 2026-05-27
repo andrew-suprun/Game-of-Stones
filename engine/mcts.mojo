@@ -1,37 +1,36 @@
 from std.time import perf_counter_ns
 
-from .value import Value, Draw, Loss, is_win, is_loss, is_draw, is_decisive
-from .traits import TTree, TGame, TMove
+from .traits import TTree, TGame, TMove, Score
 
 
-comptime Idx = UInt32
+comptime Idx = Int32
 
 
 struct MctsNode[M: TMove](TrivialRegisterPassable, Writable):
     var move: Self.M
-    var value: Value
-    var n_sims: UInt32
+    var score: Score
+    var n_sims: Int32
     var first_child: Idx
-    var n_children: UInt32
+    var n_children: Int32
 
     def __init__(out self):
-        self = {{}, Loss}
+        self = {Self.M(), Score()}
 
-    def __init__(out self, move: Self.M, value: Value):
+    def __init__(out self, move: Self.M, score: Score):
         self.move = move
-        self.value = value
+        self.score = score
         self.n_sims = 1
         self.first_child = 0
         self.n_children = 0
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(self.move, " ", self.value)
+        writer.write(self.move, " ", self.score)
 
     def write_repr_to[W: Writer](self, mut writer: W):
-        writer.write(self.move, " ", self.value, " sims: ", self.n_sims)
+        writer.write(self.move, " ", self.score, " sims: ", self.n_sims)
 
 
-struct Mcts[G: TGame, c: Value](TTree):
+struct Mcts[G: TGame, c: Score](TTree):
     comptime Game = Self.G
     comptime Node = MctsNode[Self.G.Move]
 
@@ -48,12 +47,12 @@ struct Mcts[G: TGame, c: Value](TTree):
             self.expand(game)
             var n_undecisive = 0
             ref root = self.tree[0]
-            if is_loss(root.value):
+            if root.score.is_loss():
                 return self._pv()
             for idx in range(root.first_child, root.first_child + root.n_children):
                 ref child = self.tree[idx]
 
-                if not is_decisive(child.value):
+                if not child.score.is_decisive():
                     n_undecisive += 1
 
             if n_undecisive <= 1:
@@ -77,43 +76,43 @@ struct Mcts[G: TGame, c: Value](TTree):
         var moves = g.top_moves()
         ref leaf = self.tree[idx]
         leaf.first_child = Idx(len(self.tree))
-        leaf.n_children = UInt32(len(moves))
+        leaf.n_children = Int32(len(moves))
         for mv in moves:
-            self.tree.append(Self.Node(mv.move, mv.value))
+            self.tree.append(Self.Node(mv.move, mv.score))
 
         for parent_idx in reversed(parent_indices):
             ref parent = self.tree[parent_idx]
             parent.n_sims += 1
-            var best_value = Loss
+            var best_score = Score.loss()
             var has_draw = False
             var all_decisive = True
             for idx in range(parent.first_child, parent.first_child + parent.n_children):
                 ref child = self.tree[idx]
-                if is_win(child.value):
-                    parent.value = Loss
+                if child.score.is_win():
+                    parent.score = Score.loss()
                     break
-                elif is_loss(child.value):
+                elif child.score.is_loss():
                     continue
-                elif is_draw(child.value):
+                elif child.score.is_draw():
                     has_draw = True
                 else:
                     all_decisive = False
-                    best_value = max(best_value, child.value)
+                    best_score = best_score.max(child.score)
             else:
                 if has_draw and all_decisive:
-                    parent.value = Draw
+                    parent.score = Score.draw()
                 else:
-                    parent.value = -best_value
+                    parent.score = -best_score
 
     def _select_child_idx(self, parent_idx: Idx) -> Idx:
         ref parent = self.tree[parent_idx]
         var selected_child_idx: Idx = Idx.MAX
-        var max_v = Value.MIN
+        var max_v = Score.loss()
         for child_idx in range(parent.first_child, parent.first_child + parent.n_children):
             ref child = self.tree[child_idx]
-            if is_decisive(child.value):
+            if child.score.is_decisive():
                 continue
-            var v = child.value + Self.c * Value(parent.n_sims) / Value(child.n_sims)
+            var v = child.score + Self.c * Score(Float32(parent.n_sims)) / Score(Float32(child.n_sims))
             if max_v < v:
                 max_v = v
                 selected_child_idx = child_idx
@@ -135,7 +134,7 @@ struct Mcts[G: TGame, c: Value](TTree):
         for idx in range(parent.first_child, parent.first_child + parent.n_children):
             ref child = self.tree[idx]
             ref best_child = self.tree[best_child_idx]
-            if child.value > best_child.value:
+            if child.score > best_child.score:
                 best_child_idx = idx
 
         return best_child_idx

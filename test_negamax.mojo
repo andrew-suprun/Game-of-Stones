@@ -1,24 +1,24 @@
 from std.testing import assert_true
 from std.time import perf_counter_ns
 
-from engine import TGame, Gomoku, Connect6, Value, MoveValue, Win, Loss, is_win, is_loss, is_draw
+from engine import TGame, Gomoku, Connect6, Score, MoveScore
 
 
-def search[Game: TGame](game: Game, depth: Int) -> Value:
-    var best_score = Loss
+def search[Game: TGame](game: Game, depth: Int) -> Score:
+    var best_score = Score.loss()
     var moves = game.top_moves()
     if depth == 0:
         for move in moves:
-            best_score = max(best_score, move.value)
+            best_score = max(best_score, move.score)
         return best_score
 
     for mv in moves:
-        if is_win(mv.value):
-            return Win
-        elif is_loss(mv.value):
+        if mv.score.is_win():
+            return Score.win()
+        elif mv.score.is_loss():
             continue
-        elif is_draw(mv.value):
-            best_score = max(best_score, 0)
+        elif mv.score.is_draw():
+            best_score = best_score.max(Score(0))
         else:
             var g = game.copy()
             g.play_move(mv.move)

@@ -3,7 +3,7 @@ from std.random import seed, shuffle
 
 from engine import Connect6, Gomoku
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
-from engine import MoveValue, Place, is_decisive
+from engine import MoveScore, Place, is_decisive
 from ui import Ui, Event, Stone, Place as UiPlace, EnterKey, LeftKey, RightKey, Quit, MouseClick, black, white
 
 comptime duration = 1000

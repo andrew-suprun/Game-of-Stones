@@ -1,7 +1,6 @@
 from std.utils.numerics import FPUtils, isinf
 
-from .value import Value, Win, Draw
-from .traits import TGame, TMove, MoveValue
+from .traits import TGame, TMove, Score, MoveScore
 from .board import Board, Place, PlaceValue, first
 
 comptime win_stones = 5
@@ -27,6 +26,7 @@ struct Move(TMove):
 
 struct Gomoku[size: Int, max_moves: Int](TGame):
     comptime Move = Move
+    comptime Score = Score
 
     var board: Board[Self.size, values, win_stones]
     var turn: Int
@@ -37,33 +37,33 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
         self.turn = 0
         self.plies = 0
 
-    def top_moves(self) -> List[MoveValue[Move]]:
-        var moves = List[MoveValue[Move]](capacity=Self.max_moves)
+    def top_moves(self) -> List[MoveScore[Move]]:
+        var moves = List[MoveScore[Move]](capacity=Self.max_moves)
         self._moves(moves)
         return moves^
 
-    def _moves(self, mut moves: List[MoveValue[Move]]):
+    def _moves(self, mut moves: List[MoveScore[Move]]):
         var places = List[PlaceValue](capacity=Self.max_moves)
         self.board.places(self.turn, places)
         var board_value = self.board.value if self.turn == first else -self.board.value
         for place in places:
             if place.value == Value.MAX:
                 moves.clear()
-                moves.append({{place.place}, Win})
+                moves.append({{place.place}, Score.win()})
                 return
             var value = board_value + place.value / 2
-            moves.append({{place.place}, Value(value)})
+            moves.append({{place.place}, Score(value)})
 
         if not moves:
-            moves.append({{places[0].place}, Loss})
+            moves.append({{places[0].place}, Score(Loss)})
 
     def play_move(mut self, move: Move):
         self.board.place_stone(move._place, self.turn)
         self.turn = 1 - self.turn
         self.plies += 1
 
-    def value(self) -> Value:
-        return self.board.value
+    def score(self) -> Score:
+        return Score(self.board.value)
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
