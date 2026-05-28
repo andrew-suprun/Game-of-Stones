@@ -4,7 +4,7 @@ from std.random import seed, shuffle
 from engine import Connect6, Gomoku
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 from engine import Score, MoveScore, Place
-from ui import Ui, Event, Stone, Place as UiPlace, EnterKey, LeftKey, RightKey, Quit, MouseClick, black, white
+from ui import Ui, Event, Stone, Place as UiPlace, EnterKey, LeftKey, RightKey, WindowResize, Quit, MouseClick, black, white
 
 comptime duration = 1000
 comptime board_size = 19
@@ -49,7 +49,7 @@ struct GameOfStones:
         self.game_complete_confirmed = False
         self.app_complete = False
 
-    def run(mut self, ui: BoardUi) raises -> Bool:
+    def run(mut self, mut ui: BoardUi) raises -> Bool:
         var first_move = self.first_black_move()
         print(t"\n{first_move} ", end="")
         self.stones.append(Stone(first_move, black, True))
@@ -89,11 +89,15 @@ struct GameOfStones:
         if len(self.stones) > 2 and self.stones[len(self.stones) - 1].color == self.stones[len(self.stones) - 2].color:
             self.stones[len(self.stones) - 2].selected = True
 
-    def human_move(mut self, ui: BoardUi) raises:
+    def human_move(mut self, mut ui: BoardUi) raises:
         while True:
             var event = ui.wait_event()
             if event.isa[Quit]():
                 self.app_complete = True
+                break
+
+            elif event.isa[WindowResize]():
+                ui.set_window_size(event[WindowResize].window_size)
                 break
 
             elif event.isa[EnterKey]():
@@ -210,11 +214,11 @@ struct GameOfStones:
         var game = self.replay_moves()
         var pv = tree.search(game, duration)
         var move = pv[0]
-        game.play_move(move)
-        print(t"{move} s:{game.score()} ", end="")
+        game.play_move(move.move)
+        print(t"{move} ", end="")
         if game.score().is_decisive():
             self.game_complete = True
-        self.add_move(String(move))
+        self.add_move(String(move.move))
         self.select_last_move()
         self.human_turn = True
 

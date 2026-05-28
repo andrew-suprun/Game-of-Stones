@@ -108,4 +108,4 @@ struct MoveScore[Move: TMove](Copyable, TrivialRegisterPassable, Writable):
     var score: Score
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(self.move, " ", self.score)
+        writer.write(self.move, " s:", self.score)
