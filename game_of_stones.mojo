@@ -4,7 +4,7 @@ from std.random import seed, shuffle
 from engine import Connect6, Gomoku
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 from engine import Score, MoveScore, Place
-from ui import Ui, Event, Stone, Place as UiPlace, EnterKey, LeftKey, RightKey, WindowResize, Quit, MouseClick, black, white
+from ui import Ui, Event, Stone, Place as UiPlace, LeftKey, RightKey, WindowResize, Quit, MouseClick, black, white
 
 comptime duration = 1000
 comptime board_size = 19
@@ -100,10 +100,6 @@ struct GameOfStones:
                 ui.set_window_size(event[WindowResize].window_size)
                 break
 
-            elif event.isa[EnterKey]():
-                self.commit_move()
-                break
-
             elif event.isa[LeftKey]():
                 self.undo()
                 break
@@ -180,24 +176,29 @@ struct GameOfStones:
         self.undo_stones.clear()
         ref click_event = event[MouseClick]
         ref last_stone = self.last_stone()
+
         for i, stone in enumerate(self.stones):
             if click_event.place == stone.place:
                 if stone.color == last_stone.color and stone.selected and self.n_selected:
                     _ = self.stones.pop(i)
                     self.n_selected -= 1
-                break
+                return
         else:
             var color = last_stone.color if self.n_selected > 0 else 1 - last_stone.color
             var stone = Stone(click_event.place, color, True)
-            if name == "Connect6" and len(self.stones) > 2 and self.stones[len(self.stones) - 2].color == color:
-                _ = self.stones.pop(len(self.stones) - 2)
-                self.n_selected -= 1
-            elif name == "Gomoku" and len(self.stones) > 1 and self.stones[len(self.stones) - 1].color == color:
-                _ = self.stones.pop()
-                self.n_selected -= 1
-
             self.stones.append(stone)
             self.n_selected += 1
+            if name == "Connect6" and self.n_selected < 2:
+                return
+
+            self.human_turn = False
+            self.n_selected = 0
+            self.select_last_move()
+
+            var game = self.replay_moves()
+            if game.score().is_decisive():
+                self.game_complete = True
+                self.human_turn = True
 
     def engine_move(mut self) raises:
         if self.game_complete:
