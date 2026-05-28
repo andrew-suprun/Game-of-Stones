@@ -4,7 +4,7 @@ from std.sys import exit
 
 from engine import TTree, Score, MoveScore, Place, first
 from engine import Gomoku, Connect6
-from engine import Mcts, AlphaBetaNegamax
+from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick, black
 
 comptime seed_value = 9
@@ -13,22 +13,22 @@ comptime board_size = 19
 comptime time: UInt = 500
 
 
-comptime max_moves1 = 26
-comptime max_places1 = 20
+comptime max_moves1 = 30
+comptime max_places1 = 26
 comptime C1 = Score(0.25)
 
-comptime max_moves2 = 22
-comptime max_places2 = 20
+comptime max_moves2 = 26
+comptime max_places2 = 26
 comptime C2 = Score(0.4)
 
-# comptime Game1 = Gomoku[size=board_size, max_moves=max_moves1]
-# comptime Game2 = Gomoku[size=board_size, max_moves=max_moves2]
-comptime Game1 = Connect6[size=board_size, max_moves=max_moves1, max_places=max_places1]
-comptime Game2 = Connect6[size=board_size, max_moves=max_moves2, max_places=max_places2]
+comptime Game1 = Gomoku[size=board_size, max_moves=max_moves1]
+comptime Game2 = Gomoku[size=board_size, max_moves=max_moves2]
+# comptime Game1 = Connect6[size=board_size, max_moves=max_moves1, max_places=max_places1]
+# comptime Game2 = Connect6[size=board_size, max_moves=max_moves2, max_places=max_places2]
 
 
-comptime T1 = AlphaBetaNegamax[Game1]
-# comptime T1 = PrincipalVariationNegamax[Game1]
+# comptime T1 = AlphaBetaNegamax[Game1]
+comptime T1 = PrincipalVariationNegamax[Game1]
 # comptime T1 = Mcts[Game1, C1]
 
 comptime game_name = reflect[Game1].base_name()
@@ -131,7 +131,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
             if self.color == black:
                 var pv = self.t1.search(self.g1, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
-                self.play_move(String(pv[0]))
+                self.play_move(String(pv[0].move))
                 if self.g1.score().is_win():
                     return name_black
                 elif self.g1.score().is_loss():
@@ -139,7 +139,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
             else:
                 var pv = self.t2.search(self.g2, time)
                 assert len(pv) > 0, t"{game_name}.search() returned no results"
-                self.play_move(String(pv[0]))
+                self.play_move(String(pv[0].move))
                 if self.g2.score().is_win():
                     assert False
                 elif self.g2.score().is_loss():

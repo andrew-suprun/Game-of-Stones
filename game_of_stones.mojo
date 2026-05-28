@@ -18,9 +18,9 @@ comptime Game = Connect6Game
 comptime name = reflect[Game].base_name()
 
 # comptime Tree = Mcts[Game, Score(0.25)] # Gomoku
-comptime Tree = Mcts[Game, Score(0.35)]  # Connect6
+# comptime Tree = Mcts[Game, Score(0.35)]  # Connect6
 # comptime Tree = AlphaBetaNegamax[Game]
-# comptime Tree = PrincipalVariationNegamax[Game]
+comptime Tree = PrincipalVariationNegamax[Game]
 
 
 def main() raises:
@@ -210,8 +210,8 @@ struct GameOfStones:
         var game = self.replay_moves()
         var pv = tree.search(game, duration)
         var move = pv[0]
-        print(t"{move} ", end="")
         game.play_move(move)
+        print(t"{move} s:{game.score()} ", end="")
         if game.score().is_decisive():
             self.game_complete = True
         self.add_move(String(move))

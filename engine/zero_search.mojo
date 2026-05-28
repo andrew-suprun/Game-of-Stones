@@ -7,12 +7,12 @@ struct ZeroSearch[G: TGame](TTree):
     def __init__(out self):
         pass
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[MoveScore[Self.G.Move]]:
         var mv = game.top_moves()
         sort[Self.gt](mv)
-        return [mv[0].move]
+        return [mv[0]]
 
     @staticmethod
     @parameter
     def gt(a: MoveScore[Self.G.Move], b: MoveScore[Self.G.Move]) -> Bool:
-        return a.value > b.value
+        return a.score > b.score

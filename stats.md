@@ -36,3 +36,16 @@ Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-
 Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-20-0.3 - 47 : 52 (1)
 Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-20-0.35 - 45 : 54 (1)
 Game: Connect6: seed: 9; time 500 msec/move -- AlphaBetaNegamax-26-20 : Mcts-26-20-0.4 - 48 : 52 (0)
+
+Game: Connect6: seed: 9; time 500 msec/move -- PrincipalVariationNegamax-26-26 : Mcts-26-26-0.4 - 47 : 53 (0)
+
+
+Game: Connect6: seed: 9; time 500 msec/move -- PrincipalVariationNegamax-26-26 : PrincipalVariationNegamax-32-26 - 51 : 49 (0)
+Game: Connect6: seed: 9; time 500 msec/move -- PrincipalVariationNegamax-26-26 : PrincipalVariationNegamax-30-26 - 47 : 53 (0)
+Game: Connect6: seed: 9; time 500 msec/move -- Mcts-30-26-0.25 : Mcts-26-26-0.4 - 45 : 54 (1)
+
+Game: Gomoku: seed: 9; time 500 msec/move -- PrincipalVariationNegamax-26 : Mcts-26-0.4 - 30 : 70 (0)
+
+Game: Gomoku: seed: 9; time 500 msec/move -- Mcts-30-0.25 : Mcts-26-0.4 - 50 : 49 (1)
+
+

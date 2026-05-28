@@ -1,7 +1,7 @@
 trait TTree(Defaultable, ImplicitlyDestructible, Writable):
     comptime Game: TGame
 
-    def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[Self.Game.Move]):
+    def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[MoveScore[Self.Game.Move]]):
         ...
 
 
@@ -106,3 +106,6 @@ struct Score(Comparable, Copyable, Floatable, TrivialRegisterPassable, Writable)
 struct MoveScore[Move: TMove](Copyable, TrivialRegisterPassable, Writable):
     var move: Self.Move
     var score: Score
+
+    def write_to[W: Writer](self, mut writer: W):
+        writer.write(self.move, " ", self.score)

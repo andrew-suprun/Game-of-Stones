@@ -12,7 +12,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
     def __init__(out self):
         self.root = {{}, Score.loss(), {}}
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[MoveScore[Self.G.Move]]:
         self.root = {{}, Score.loss(), {}}
         var depth = 1
         var start = perf_counter_ns()
@@ -39,12 +39,12 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
 
             depth += 1
 
-    def _pv(self) -> List[Self.G.Move]:
-        var pv = List[Self.G.Move]()
+    def _pv(self) -> List[MoveScore[Self.G.Move]]:
+        var pv = List[MoveScore[Self.G.Move]]()
         self.root._pv(pv)
         return pv^
 
-    def write_repr_to[W: Writer](self, mut writer: W):
+    def write_to[W: Writer](self, mut writer: W):
         self.root.write_repr_to(writer)
 
 
@@ -157,12 +157,12 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         else:
             self.score = -best_score
 
-    def _pv(self, mut pv: List[Self.G.Move]):
+    def _pv(self, mut pv: List[MoveScore[Self.G.Move]]):
         if not self.children:
             return
 
         ref best_child = self._best_node()
-        pv.append(best_child.move)
+        pv.append({best_child.move, best_child.score})
         best_child._pv(pv)
 
     def _best_node(self) -> ref[self.children] Self:
@@ -189,6 +189,9 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
 
     def write_repr_to[W: Writer](self, mut writer: W, depth: Int):
         writer.write("|   " * depth, "[", depth, "] ", self.move, " ", self.score, "\n")
+        if depth >= 1:
+            return
+
         if self.children:  # TODO silence the compiler warning
             for child in self.children:
                 child.write_repr_to(writer, depth + 1)

@@ -39,7 +39,7 @@ struct Mcts[G: TGame, c: Score](TTree):
     def __init__(out self):
         self.tree = [{}]
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[MoveScore[Self.G.Move]]:
         self.tree.clear()
         self.tree.append({})
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000
@@ -119,14 +119,14 @@ struct Mcts[G: TGame, c: Score](TTree):
         assert selected_child_idx != Idx.MAX
         return selected_child_idx
 
-    def _pv(self) -> List[Self.G.Move]:
-        var pv = List[Self.G.Move]()
+    def _pv(self) -> List[MoveScore[Self.G.Move]]:
+        var pv = List[MoveScore[Self.G.Move]]()
         var idx: Idx = 0
         while True:
             if self.tree[idx].n_children == 0:
                 return pv^
             idx = self._best_child_idx(idx)
-            pv.append(self.tree[idx].move)
+            pv.append({self.tree[idx].move, self.tree[idx].score})
 
     def _best_child_idx(self, parent_idx: Idx) -> Idx:
         ref parent = self.tree[parent_idx]

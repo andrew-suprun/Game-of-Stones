@@ -12,7 +12,7 @@ struct AlphaBetaNegamax[G: TGame](TTree):
     def __init__(out self):
         self.root = {{}, Score.loss(), {}}
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[Self.G.Move]:
+    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[MoveScore[Self.G.Move]]:
         self.root = {{}, Score.loss(), {}}
         var depth = 1
         var start = perf_counter_ns()
@@ -40,8 +40,8 @@ struct AlphaBetaNegamax[G: TGame](TTree):
 
             depth += 1
 
-    def _pv(self) -> List[Self.G.Move]:
-        var pv = List[Self.G.Move]()
+    def _pv(self) -> List[MoveScore[Self.G.Move]]:
+        var pv = List[MoveScore[Self.G.Move]]()
         self.root._pv(pv)
         return pv^
 
@@ -128,12 +128,12 @@ struct AlphaBetaNode[G: TGame](Copyable, Writable):
         else:
             self.score = -best_score
 
-    def _pv(self, mut pv: List[Self.G.Move]):
+    def _pv(self, mut pv: List[MoveScore[Self.G.Move]]):
         if not self.children:
             return
 
         ref best_child = self._best_node()
-        pv.append(best_child.move)
+        pv.append({best_child.move, best_child.score})
         best_child._pv(pv)
 
     def _best_node(self) -> ref[self.children] Self:
