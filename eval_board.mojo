@@ -1,13 +1,13 @@
-from engine import Board, Value, Place, Win, first, second
+from engine import Board, Value, Place, first, second
 
-# comptime win_stones = 6
-# comptime values: List[Value] = [0, 1, 5, 25, 125, 625, Win]
-comptime win_stones = 5
-comptime values: List[Value] = [0, 1, 5, 25, 125, Win]
+comptime win_stones = 6
+comptime values: List[Value] = [0, 1, 100, 1000, 10_000, 100_000]
+# comptime win_stones = 5
+# comptime values: List[Value] = [0, 1, 5, 25, 125]
 
 
 def main() raises:
-    var moves_str = "j10 j9 l8 i10 i8 h11 l10 k8 h9 g12"
+    var moves_str = "j10-j9"
     var moves = moves_str.split(" ")
     var board = Board[19, values, win_stones]()
     var value = Value(0)
@@ -36,8 +36,7 @@ def main() raises:
                     break
                 board.place_stone(place, second)
             assert value == board.debug_board_value(materialize[values]())
-            print(board)
-            print(board.str_values())
+            print(repr(board))
             print("score", score)
             print("board", value)
             print("board value", board.value)

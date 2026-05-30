@@ -14,7 +14,8 @@ bench-gomoku = "pixi run mojo -D ASSERT=none bench_gomoku.mojo"
 bench-heap = "pixi run mojo -D ASSERT=none bench_heap.mojo"
 bench-negamax = "pixi run mojo -D ASSERT=none bench_negamax.mojo"
 bench-mcts = "pixi run mojo -D ASSERT=none bench_mcts.mojo"
-benches = { depends-on = ["bench-heap", "bench-board", "bench-connect6", "bench-gomoku", "bench-negamax", "bench-mcts"] }
+bench-reduce = "pixi run mojo -D ASSERT=none bench_reduce.mojo"
+benches = { depends-on = ["bench-heap", "bench-board", "bench-connect6", "bench-gomoku", "bench-negamax", "bench-mcts", "bench-reduce"] }
 
 
 test-heap = "pixi run mojo -D ASSERT=all test_heap.mojo"

@@ -4,9 +4,9 @@ from std.random import seed, shuffle
 from engine import Connect6, Gomoku
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
 from engine import Score, MoveScore, Place
-from ui import Ui, Event, Stone, Place as UiPlace, LeftKey, RightKey, WindowResize, Quit, MouseClick, black, white
+from ui import Ui, Event, Stone, Place as UiPlace, EnterKey, LeftKey, RightKey, WindowResize, Quit, MouseClick, black, white
 
-comptime duration = 1000
+comptime duration = 100
 comptime board_size = 19
 comptime BoardUi = Ui[board_size]
 
@@ -100,6 +100,13 @@ struct GameOfStones:
                 ui.set_window_size(event[WindowResize].window_size)
                 break
 
+            elif event.isa[EnterKey]():
+                if self.game_complete:
+                    self.game_complete_confirmed = True
+                    return
+                self.human_turn = False
+                break
+
             elif event.isa[LeftKey]():
                 self.undo()
                 break
@@ -111,30 +118,6 @@ struct GameOfStones:
             elif event.isa[MouseClick]():
                 self.handle_mouse(event)
                 break
-
-    def commit_move(mut self) raises:
-        if self.game_complete:
-            self.game_complete_confirmed = True
-            return
-
-        if name == "Connect6" and self.n_selected == 2:
-            var place1 = self.stones[len(self.stones) - 1].place
-            var place2 = self.stones[len(self.stones) - 2].place
-            print(t"{place1}-{place2} ", end="")
-
-        if name == "Gomoku" and self.n_selected == 1:
-            var place = self.stones[len(self.stones) - 1].place
-            print(t"{place} ", end="")
-
-        if self.n_selected == 0 or name == "Connect6" and self.n_selected == 2 or name == "Gomoku" and self.n_selected == 1:
-            self.human_turn = False
-            self.n_selected = 0
-            self.select_last_move()
-
-        var game = self.replay_moves()
-        if game.score().is_decisive():
-            self.game_complete = True
-            self.human_turn = True
 
     def undo(mut self) raises:
         if len(self.stones) == 1:
@@ -217,6 +200,7 @@ struct GameOfStones:
         var move = pv[0]
         game.play_move(move.move)
         print(t"{move} ", end="")
+        print(t"\ngame score: {game.score()}")
         if game.score().is_decisive():
             self.game_complete = True
         self.add_move(String(move.move))

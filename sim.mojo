@@ -3,47 +3,52 @@ from std.time import sleep
 from std.sys import exit
 
 from engine import TTree, Score, MoveScore, Place, first
-from engine import Gomoku, Connect6
-from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax
+from engine import Gomoku, Connect6, Gomoku2, Connect6b
+from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax, ZeroSearch
 from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick, black
 
-comptime seed_value = 9
+comptime seed_value = 11
 
 comptime board_size = 19
 comptime time: UInt = 500
 
 
-comptime max_moves1 = 30
+comptime max_moves1 = 26
 comptime max_places1 = 26
 comptime C1 = Score(0.25)
 
 comptime max_moves2 = 26
 comptime max_places2 = 26
-comptime C2 = Score(0.4)
+comptime C2 = Score(0.25)
 
-comptime Game1 = Gomoku[size=board_size, max_moves=max_moves1]
-comptime Game2 = Gomoku[size=board_size, max_moves=max_moves2]
-# comptime Game1 = Connect6[size=board_size, max_moves=max_moves1, max_places=max_places1]
-# comptime Game2 = Connect6[size=board_size, max_moves=max_moves2, max_places=max_places2]
+# comptime Game1 = Gomoku[size=board_size, max_moves=max_moves1]
+# comptime Game2 = Gomoku2[size=board_size, max_moves=max_moves2]
+comptime Game1 = Connect6[size=board_size, max_moves=max_moves1, max_places=max_places1]
+comptime Game2 = Connect6b[size=board_size, max_moves=max_moves2, max_places=max_places2]
 
 
+comptime T1 = ZeroSearch[Game1]
 # comptime T1 = AlphaBetaNegamax[Game1]
-comptime T1 = PrincipalVariationNegamax[Game1]
+# comptime T1 = PrincipalVariationNegamax[Game1]
 # comptime T1 = Mcts[Game1, C1]
 
 comptime game_name = reflect[Game1].base_name()
 comptime tree_type1 = reflect[T1].base_name()
-comptime game_name1 = String(t"{tree_type1}-{max_moves1}-{max_places1}") if game_name == "Connect6" else String(t"{tree_type1}-{max_moves1}")
+comptime game_name1 = String(t"{reflect[Game1].base_name()}-{tree_type1}-{max_moves1}-{max_places1}") if game_name == "Connect6" else String(
+    t"{reflect[Game1].base_name()}-{tree_type1}-{max_moves1}"
+)
 comptime name1 = game_name1 if tree_type1 != "Mcts" else String(t"{game_name1}-{C1}")
 
 
-# comptime T2 = ZeroSearch[Game1]
+comptime T2 = ZeroSearch[Game2]
 # comptime T2 = AlphaBetaNegamax[Game2]
 # comptime T2 = PrincipalVariationNegamax[Game2]
-comptime T2 = Mcts[Game2, C2]
+# comptime T2 = Mcts[Game2, C2]
 
 comptime tree_type2 = reflect[T2].base_name()
-comptime game_name2 = String(t"{tree_type2}-{max_moves2}-{max_places2}") if game_name == "Connect6" else String(t"{tree_type2}-{max_moves2}")
+comptime game_name2 = String(t"{reflect[Game2].base_name()}-{tree_type2}-{max_moves2}-{max_places2}") if game_name == "Connect6" else String(
+    t"{reflect[Game2].base_name()}-{tree_type2}-{max_moves2}"
+)
 comptime name2 = game_name2 if tree_type2 != "Mcts" else String(t"{game_name2}-{C2}")
 
 
@@ -75,7 +80,7 @@ struct Sim:
                 self.draws += 1
                 print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws}*)")
             n += 1
-            var event = self.ui.wait_event(1500)
+            var event = self.ui.wait_event(0)
             if event.isa[Quit]():
                 exit(0)
             print()
@@ -94,7 +99,7 @@ struct Sim:
                 print(t"\n{n}: draw {self.first_wins} : {self.second_wins} ({self.draws}*)")
 
             n += 1
-            event = self.ui.wait_event(1500)
+            event = self.ui.wait_event(0)
             if event.isa[Quit]():
                 exit(0)
             print()

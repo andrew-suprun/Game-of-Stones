@@ -224,36 +224,34 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             writer.write(t" {chr(i + ord('a'))}")
         writer.write("\n")
 
-    def str_values(self, out str: String):
-        try:
-            str = self.str_values_raises(0)
-            str += self.str_values_raises(1)
-        except:
-            str = ""
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.write_to(writer)
+        self.write_repr_to(writer, 0)
+        self.write_repr_to(writer, 1)
 
-    def str_values_raises(self, table_idx: Int, out str: String) raises:
-        str = "\n   │"
+    def write_repr_to[W: Writer](self, mut writer: W, table_idx: Int):
+        writer.write("\n   │")
         for i in range(Self.size):
-            str += String(t"   {chr(i + ord('a'))} ")
-        str += "│\n"
-        str += "───┼" + "─────" * Self.size + "┼───\n"
+            writer.write(String(t"    {chr(i + ord('a'))} "))
+        writer.write("│\n")
+        writer.write("───┼" + "──────" * Self.size + "┼───\n")
         for y in range(Self.size):
-            str += String(y + 1).ascii_rjust(2) + " │"
+            writer.write(String(y + 1).ascii_rjust(2) + " │")
             for x in range(Self.size):
                 var stone = self[x, y]
                 if stone == Self.black:
-                    str += "   X "
+                    writer.write("    X ")
                 elif stone == Self.white:
-                    str += "   O "
+                    writer.write("    O ")
                 else:
                     var value = self.get_value(Place(x, y), table_idx)
-                    str += String(value).removesuffix(".0").ascii_rjust(4, " ") + " "
-            str += "│ " + String(y + 1).ascii_rjust(2) + "\n"
-        str += "───┼" + "─────" * Self.size + "┼───"
-        str += "\n   │"
+                    writer.write(String(value).removesuffix(".0").ascii_rjust(5, " ") + " ")
+            writer.write("│ " + String(y + 1).ascii_rjust(2) + "\n")
+        writer.write("───┼" + "──────" * Self.size + "┼───")
+        writer.write("\n   │")
         for i in range(Self.size):
-            str += String(t"   {chr(i + ord('a'))} ")
-        str += "│\n"
+            writer.write(String(t"    {chr(i + ord('a'))} "))
+        writer.write("│\n")
 
     def debug_board_value(self, values: List[Value]) -> Value:
         var value = Value(0)

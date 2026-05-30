@@ -13,8 +13,7 @@ def test_places() raises:
     board.place_stone("j10", 0)
     board.place_stone("i10", 1)
     board.place_stone("i9", 1)
-    print(board)
-    print(board.str_values())
+    print(repr(board))
 
     var heap = List[PlaceValue](capacity=20)
     board.places(1, heap)
@@ -48,8 +47,7 @@ def test_place_stone() raises:
                         var expected = b.debug_board_value(materialize[values]()) - value
                         if actual != expected and actual != Value.MAX:
                             print(Place(x, y), "actual:", actual, "expected:", expected, "n", n)
-                            print(board)
-                            print(board.str_values())
+                            print(repr(board))
                             assert_true(False)
                         actual = board.get_value(Place(x, y), second)
                         b = board.copy()
@@ -57,8 +55,7 @@ def test_place_stone() raises:
                         expected = value - b.debug_board_value(materialize[values]())
                         if actual != expected and actual != Value.MAX:
                             print(Place(x, y), "actual:", actual, "expected:", expected, "n", n)
-                            print(board)
-                            print(board.str_values())
+                            print(repr(board))
                             assert_true(False)
             if turn == first:
                 value += board.get_value(Place(xx, yy), turn)
@@ -66,8 +63,7 @@ def test_place_stone() raises:
                 value -= board.get_value(Place(xx, yy), turn)
             board.place_stone(Place(xx, yy), turn)
             n += 1
-    print(board)
-    print(board.str_values())
+    print(repr(board))
 
 
 def main() raises:

@@ -3,7 +3,7 @@ from .board import Board, Value, Place, PlaceValue, first
 from .heap import heap_add
 
 comptime win_stones = 6
-comptime values: List[Value] = [0, 1, 5, 25, 125, 625]
+comptime values: List[Value] = [0, 1, 100, 1000, 10_000, 100_000]
 
 
 struct Move(TMove):
@@ -49,7 +49,7 @@ def lt(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
     return a.score < b.score
 
 
-struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
+struct Connect6b[size: Int, max_moves: Int, max_places: Int](TGame):
     comptime Move = Move
 
     var board: Board[Self.size, values, win_stones]
@@ -102,7 +102,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                     if self.turn:
                         debug_board_value = -debug_board_value
                     if not Score(board_value).is_decisive() and debug_board_value != board_value + score1 + score2:
-                        print(repr(self.board))
+                        print(repr(board))
                         print("move", Move(place1, place2))
                         print(t"debug_board_value={debug_board_value}, board_value={board_value}, score1={score1}, score2={score2}")
                         return False
@@ -129,4 +129,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
         return Score(self.board.value)
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(self.board)
+        self.board.write_to(writer)
+
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.board.write_repr_to(writer)

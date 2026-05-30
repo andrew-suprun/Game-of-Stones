@@ -26,6 +26,11 @@ struct NoEvent(Movable, Writable):
 
 
 @fieldwise_init
+struct EnterKey(Movable, Writable):
+    pass
+
+
+@fieldwise_init
 struct LeftKey(Movable, Writable):
     pass
 
@@ -50,7 +55,7 @@ struct MouseClick(Movable, Writable):
     var place: Place
 
 
-comptime Event = Variant[NoEvent, LeftKey, RightKey, WindowResize, Quit, MouseClick]
+comptime Event = Variant[NoEvent, EnterKey, LeftKey, RightKey, WindowResize, Quit, MouseClick]
 
 
 struct Ui[board_size: Int](Copyable):
@@ -106,6 +111,9 @@ struct Ui[board_size: Int](Copyable):
 
                 if event.key == self.pygame.K_RIGHT:
                     return Event(RightKey())
+
+                elif event.key == self.pygame.K_RETURN:
+                    return Event(EnterKey())
 
             elif event.type == self.pygame.MOUSEBUTTONDOWN:
                 var x = (Int(py=event.pos[0]) - self.r()) / self.d()

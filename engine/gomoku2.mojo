@@ -4,7 +4,7 @@ from .traits import TGame, TMove, Score, MoveScore
 from .board import Board, Place, PlaceValue, first
 
 comptime win_stones = 5
-comptime values: List[Value] = [0, 1, 10, 100, 1000]
+comptime values: List[Value] = [0, 1, 16, 256, 4096]
 
 
 struct Move(TMove):
@@ -24,7 +24,7 @@ struct Move(TMove):
         writer.write(self._place)
 
 
-struct Gomoku[size: Int, max_moves: Int](TGame):
+struct Gomoku2[size: Int, max_moves: Int](TGame):
     comptime Move = Move
     comptime Score = Score
 
