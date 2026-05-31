@@ -36,7 +36,7 @@ comptime win_stones = 6
 def bench_place_stone():
     var board = Board[size, win_stones]()
     for _ in range(1_000_000):
-        board.place_stone(Place(9, 9), Stone.black)
+        board.place_stone(black_box(Place(9, 9)), Stone.black)
 
 
 # def bench_rollout():

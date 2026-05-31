@@ -32,14 +32,14 @@ struct Stone(Equatable, ImplicitlyCopyable, Writable):
 
 
 @fieldwise_init
-struct SegmentIndices(ImplicitlyCopyable):
-    var len: Int
-    var first_index: Int
+struct IndexRange(ImplicitlyCopyable):
+    var start: Int
+    var end: Int
 
 
 struct Board[size: Int, win_stones: Int](Defaultable, Writable):
     comptime Stones = SIMD[DType.int8, 2]
-    comptime SegmentIndicesAggregate = InlineArray[SegmentIndices, 4]
+    comptime SegmentIndicesAggregate = InlineArray[IndexRange, 4]
     comptime Indices = InlineArray[Self.SegmentIndicesAggregate, Self.size * Self.size]
     comptime Segments = InlineArray[Self.Stones, Self._calc_n_segments()]
     comptime Places = InlineArray[Stone, Self.size * Self.size]
@@ -68,7 +68,7 @@ struct Board[size: Int, win_stones: Int](Defaultable, Writable):
         ref place_indices = self.indices[offset]
         comptime for i in range(4):
             ref segment = place_indices[i]
-            for i in range(segment.first_index, segment.first_index + segment.len):
+            for i in range(segment.start, segment.end):
                 self._segments[i][turn] += 1
 
     @staticmethod
@@ -81,26 +81,26 @@ struct Board[size: Int, win_stones: Int](Defaultable, Writable):
 
     @staticmethod
     def _calc_indices() -> Self.Indices:
-        var result = Self.Indices(fill=Self.SegmentIndicesAggregate(fill={0, -1}))
+        var result = Self.Indices(fill=Self.SegmentIndicesAggregate(fill={0, 0}))
         var offset = 0
         for y in range(Self.size):
             for x in range(Self.size - Self.win_stones + 1):
                 for n in range(Self.win_stones):
                     var idx = y * Self.size + x + n
-                    var len = result[idx][0].len
-                    if result[idx][0].first_index == -1:
-                        result[idx][0].first_index = offset
-                    result[idx][0].len = len + 1
+                    if result[idx][0].end == 0:
+                        result[idx][0] = {offset, offset + 1}
+                    else:
+                        result[idx][0].end += 1
                 offset += 1
 
         for x in range(Self.size):
             for y in range(Self.size - Self.win_stones + 1):
                 for n in range(Self.win_stones):
                     var idx = (y + n) * Self.size + x
-                    var len = result[idx][1].len
-                    if result[idx][1].first_index == -1:
-                        result[idx][1].first_index = offset
-                    result[idx][1].len = len + 1
+                    if result[idx][1].end == 0:
+                        result[idx][1] = {offset, offset + 1}
+                    else:
+                        result[idx][1].end += 1
                 offset += 1
 
         for a in range(Self.size - Self.win_stones + 1):
@@ -109,10 +109,10 @@ struct Board[size: Int, win_stones: Int](Defaultable, Writable):
                 var y = b
                 for n in range(Self.win_stones):
                     var idx = (y + n) * Self.size + x + n
-                    var len = result[idx][2].len
-                    if result[idx][2].first_index == -1:
-                        result[idx][2].first_index = offset
-                    result[idx][2].len = len + 1
+                    if result[idx][2].end == 0:
+                        result[idx][2] = {offset, offset + 1}
+                    else:
+                        result[idx][2].end += 1
                 offset += 1
 
         for a in range(1, Self.size - Self.win_stones + 1):
@@ -121,10 +121,10 @@ struct Board[size: Int, win_stones: Int](Defaultable, Writable):
                 var y = b
                 for n in range(Self.win_stones):
                     var idx = (y + n) * Self.size + x + n
-                    var len = result[idx][2].len
-                    if result[idx][2].first_index == -1:
-                        result[idx][2].first_index = offset
-                    result[idx][2].len = len + 1
+                    if result[idx][2].end == 0:
+                        result[idx][2] = {offset, offset + 1}
+                    else:
+                        result[idx][2].end += 1
                 offset += 1
 
         for a in range(Self.size - Self.win_stones + 1):
@@ -133,10 +133,10 @@ struct Board[size: Int, win_stones: Int](Defaultable, Writable):
                 var y = b
                 for n in range(Self.win_stones):
                     var idx = (y + n) * Self.size + x - n
-                    var len = result[idx][3].len
-                    if result[idx][3].first_index == -1:
-                        result[idx][3].first_index = offset
-                    result[idx][3].len = len + 1
+                    if result[idx][3].end == 0:
+                        result[idx][3] = {offset, offset + 1}
+                    else:
+                        result[idx][3].end += 1
                 offset += 1
 
         for a in range(1, Self.size - Self.win_stones + 1):
@@ -145,10 +145,10 @@ struct Board[size: Int, win_stones: Int](Defaultable, Writable):
                 var y = a + b
                 for n in range(Self.win_stones):
                     var idx = (y + n) * Self.size + x - n
-                    var len = result[idx][3].len
-                    if result[idx][3].first_index == -1:
-                        result[idx][3].first_index = offset
-                    result[idx][3].len = len + 1
+                    if result[idx][3].end == 0:
+                        result[idx][3] = {offset, offset + 1}
+                    else:
+                        result[idx][3].end += 1
                 offset += 1
 
         return result
@@ -218,7 +218,7 @@ def main_1():
     print(board)
 
 
-def main_2():
+def main():
     print(t" segments: {B._calc_n_segments()}")
     var indices = B._calc_indices()
     for i in range(B.size * B.size):
@@ -231,5 +231,5 @@ def main_2():
         ref place_indices = indices[i]
         for j in range(4):
             ref segment_indices = place_indices[j]
-            print(t" | {segment_indices.len} {String(segment_indices.first_index).ascii_rjust(4)}", end="")
+            print(t" | {segment_indices.end - segment_indices.start} {String(segment_indices.start).ascii_rjust(4)}", end="")
         print()
