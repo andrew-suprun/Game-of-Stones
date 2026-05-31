@@ -28,4 +28,4 @@ tests = { depends-on = ["test-heap", "test-board", "test-mcts-connect6", "test-m
 
 [dependencies]
 pygame = ">=2.6.1,<3"
-mojo = ">=1.0.0b2.dev2026052706,<2"
+mojo = "==1.0.0b1"

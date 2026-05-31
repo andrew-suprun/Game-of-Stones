@@ -1,346 +1,121 @@
-from std.memory import memcpy
-from std.utils.numerics import isinf, isnan, isfinite, nan
+struct Board[size: Int, win_stones: Int](Defaultable, Writable):
+    comptime Segments = InlineArray[SIMD[DType.int8, 2], Self._calc_n_segments()]
+    comptime Indices = InlineArray[InlineArray[Int, Self.win_stones * 4 + 1], Self.size * Self.size]
 
-from .heap import heap_add
-
-comptime Value = Float32
-comptime Loss = Value.MIN
-
-
-comptime first = 0
-comptime second = 1
-comptime Values = SIMD[Value.dtype, 2]
-
-
-struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
-    var x: Int8
-    var y: Int8
+    var segments: Self.Segments
+    var indices: Self.Indices
 
     def __init__(out self):
-        self.x = -1
-        self.y = -1
+        self.segments = Self.Segments(fill={0, 0})
+        self.indices = Self._calc_indices()
 
-    def __init__(out self, x: Int, y: Int):
-        self.x = Int8(x)
-        self.y = Int8(y)
+    @staticmethod
+    def _calc_n_segments() -> Int:
+        return (
+            Self.size * (Self.size - Self.win_stones + 1) * 2
+            + (Self.size - Self.win_stones + 2) * (Self.size - Self.win_stones + 1)
+            + (Self.size - Self.win_stones + 1) * (Self.size - Self.win_stones)
+        )
 
-    @implicit
-    def __init__(out self, place: String) raises:
-        self.x = Int8(ord(place[byte=0]) - ord("a"))
-        self.y = Int8(Int(place[byte=1:]) - 1)
-
-    def __eq__(self, other: Self) -> Bool:
-        return self.x == other.x and self.y == other.y
-
-    def __lt__(self, other: Self) -> Bool:
-        return self.x < other.x or self.x == other.x and self.y < other.y
-
-    def write_to[W: Writer](self, mut writer: W):
-        writer.write(chr(Int(self.x) + ord("a")), self.y + 1)
-
-
-@fieldwise_init
-struct PlaceValue(TrivialRegisterPassable, Writable):
-    var place: Place
-    var value: Value
-
-    def write_to[W: Writer](self, mut writer: W):
-        writer.write(t"{self.place} {self.value}")
-
-
-def lt(a: PlaceValue, b: PlaceValue) -> Bool:
-    return a.value < b.value
-
-
-struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Writable):
-    comptime empty = 0
-    comptime black = 1
-    comptime white = Self.win_stones
-    comptime value_table = _calc_value_table[Self.win_stones, Self.init_values]()
-
-    var _places: InlineArray[Int8, Self.size * Self.size]
-    var _values: InlineArray[Values, Self.size * Self.size]
-    var value: Value
-
-    def __init__(out self):
-        self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
-        self._values = InlineArray[Values, Self.size * Self.size](uninitialized=True)
-        self.value = 0
-
+    @staticmethod
+    def _calc_indices() -> Self.Indices:
+        var result = Self.Indices(fill=InlineArray[Int, Self.win_stones * 4 + 1](fill=0))
+        var offset = 0
+        # print("---- 1")
         for y in range(Self.size):
-            var v = 1 + min(Self.win_stones - 1, y, Self.size - 1 - y, Self.size - Self.win_stones)
-            for x in range(Self.size):
-                var h = 1 + min(Self.win_stones - 1, x, Self.size - 1 - x, Self.size - Self.win_stones)
-                var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y, Self.size - Self.win_stones)
-                var t1 = max(
-                    0,
-                    min(
-                        Self.win_stones,
-                        m,
-                        Self.size - Self.win_stones + 1 - y + x,
-                        Self.size - Self.win_stones + 1 - x + y,
-                    ),
-                )
-                var t2 = max(
-                    0,
-                    min(
-                        Self.win_stones,
-                        m,
-                        2 * Self.size - 1 - Self.win_stones + 1 - y - x,
-                        x + y - Self.win_stones + 1 + 1,
-                    ),
-                )
-                var total = Value(v + h + t1 + t2)
-                self._values[y * Self.size + x] = [total, total]
-
-    def place_stone(mut self, place: Place, turn: Int):
-        ref value_table = materialize[self.value_table]()
-        ref values = value_table[turn]
-
-        var x = Int(place.x)
-        var y = Int(place.y)
-
-        if turn == first:
-            self.value += self.get_value(place, first)
-        else:
-            self.value -= self.get_value(place, second)
-
-        var x_start = max(0, x - Self.win_stones + 1)
-        var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
-        var n = x_end - x_start
-        self._update_row(y * Self.size + x_start, 1, n, values)
-
-        var y_start = max(0, y - Self.win_stones + 1)
-        var y_end = min(y + Self.win_stones, Self.size) - Self.win_stones + 1
-        n = y_end - y_start
-        self._update_row(y_start * Self.size + x, Self.size, n, values)
-
-        var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y)
-
-        var upper_bound = Self.size - Self.win_stones + 1
-        n = min(Self.win_stones, m, upper_bound - y + x, upper_bound - x + y)
-        if n > 0:
-            var mn = min(x, y, Self.win_stones - 1)
-            var x_start = x - mn
-            var y_start = y - mn
-            self._update_row(y_start * Self.size + x_start, Self.size + 1, n, values)
-
-        n = min(Self.win_stones, m, 2 * Self.size - Self.win_stones - y - x, x + y - Self.win_stones + 2)
-        if n > 0:
-            var mn = min(Self.size - 1 - x, y, Self.win_stones - 1)
-            var x_start = x + mn
-            var y_start = y - mn
-            self._update_row(y_start * Self.size + x_start, Self.size - 1, n, values)
-
-        if turn == first:
-            self[x, y] = Self.black
-        else:
-            self[x, y] = Self.white
-        self._values[y * Self.size + x] = [Loss, Loss]
-
-    def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
-        var offset = start
-        var stones = Int8(0)
-
-        comptime for i in range(Self.win_stones - 1):
-            stones += self._places[offset + i * delta]
-
-        for _ in range(n):
-            stones += self._places[offset + delta * (Self.win_stones - 1)]
-            var values = values[stones]
-            if values[0] != 0 or values[1] != 0:
-                comptime for j in range(Self.win_stones):
-                    self._values[offset + j * delta] += values
-            stones -= self._places[offset]
-            offset += delta
-
-    def places(self, turn: Int, mut places: List[PlaceValue]):
-        for y in range(Self.size):
-            for x in range(Self.size):
-                if self[x, y] == self.empty:
-                    var place = Place(x, y)
-                    var value = self.get_value(place, turn)
-                    heap_add[lt]({place, value}, places)
-
-    def __getitem__(self, x: Int, y: Int) -> Int:
-        return Int(self._places[y * Self.size + x])
-
-    def __setitem__(mut self, x: Int, y: Int, value: Int):
-        self._places[y * Self.size + x] = Int8(value)
-
-    def get_value(self, place: Place, turn: Int) -> Value:
-        return Value(self._values[Int(place.y) * Self.size + Int(place.x)][turn])
-
-    def write_to[W: Writer](self, mut writer: W):
-        try:
-            self.write(writer)
-        except:
-            pass
-
-    def write[W: Writer](self, mut writer: W) raises:
-        writer.write("\n  ")
-
-        for i in range(Self.size):
-            writer.write(t" {chr(i + ord('a'))}")
-        writer.write("\n")
-
-        for y in range(Self.size):
-            writer.write(String(y + 1).ascii_rjust(2))
-            for x in range(Self.size):
-                var stone = self[x, y]
-                if stone == Self.black:
-                    writer.write(" X") if x == 0 else writer.write("─X")
-                elif stone == Self.white:
-                    writer.write(" O") if x == 0 else writer.write("─O")
-                elif stone == Self.empty:
-                    if y == 0:
-                        if x == 0:
-                            writer.write(" ┌")
-                        elif x == Self.size - 1:
-                            writer.write("─┐")
-                        else:
-                            writer.write("─┬")
-                    elif y == Self.size - 1:
-                        if x == 0:
-                            writer.write(" └")
-                        elif x == Self.size - 1:
-                            writer.write("─┘")
-                        else:
-                            writer.write("─┴")
-                    else:
-                        if x == 0:
-                            writer.write(" ├")
-                        elif x == Self.size - 1:
-                            writer.write("─┤")
-                        else:
-                            writer.write("─┼")
-                else:
-                    assert False
-            writer.write(String(y + 1).ascii_rjust(3), "\n")
-
-        writer.write("  ")
-
-        for i in range(Self.size):
-            writer.write(t" {chr(i + ord('a'))}")
-        writer.write("\n")
-
-    def write_repr_to[W: Writer](self, mut writer: W):
-        self.write_to(writer)
-        self.write_repr_to(writer, 0)
-        self.write_repr_to(writer, 1)
-
-    def write_repr_to[W: Writer](self, mut writer: W, table_idx: Int):
-        writer.write("\n   │")
-        for i in range(Self.size):
-            writer.write(String(t"    {chr(i + ord('a'))} "))
-        writer.write("│\n")
-        writer.write("───┼" + "──────" * Self.size + "┼───\n")
-        for y in range(Self.size):
-            writer.write(String(y + 1).ascii_rjust(2) + " │")
-            for x in range(Self.size):
-                var stone = self[x, y]
-                if stone == Self.black:
-                    writer.write("    X ")
-                elif stone == Self.white:
-                    writer.write("    O ")
-                else:
-                    var value = self.get_value(Place(x, y), table_idx)
-                    writer.write(String(value).removesuffix(".0").ascii_rjust(5, " ") + " ")
-            writer.write("│ " + String(y + 1).ascii_rjust(2) + "\n")
-        writer.write("───┼" + "──────" * Self.size + "┼───")
-        writer.write("\n   │")
-        for i in range(Self.size):
-            writer.write(String(t"    {chr(i + ord('a'))} "))
-        writer.write("│\n")
-
-    def debug_board_value(self, values: List[Value]) -> Value:
-        var value = Value(0)
-        for y in range(Self.size):
-            var stones = 0
-            for x in range(Self.win_stones - 1):
-                stones += self[x, y]
             for x in range(Self.size - Self.win_stones + 1):
-                stones += self[x + Self.win_stones - 1, y]
-                value += self._calc_value(stones, values)
-                stones -= self[x, y]
+                # print(t"x={x} y={y} offset={offset}")
+                for n in range(Self.win_stones):
+                    var idx = y * Self.size + x + n
+                    var len = result[idx][0]
+                    result[idx][len + 1] = offset
+                    result[idx][0] = len + 1
+                offset += 1
 
+        # print("---- 2")
         for x in range(Self.size):
-            var stones = 0
-            for y in range(Self.win_stones - 1):
-                stones += self[x, y]
             for y in range(Self.size - Self.win_stones + 1):
-                stones += self[x, y + Self.win_stones - 1]
-                value += self._calc_value(stones, values)
-                stones -= self[x, y]
+                # print(t"x={x} y={y} offset={offset}")
+                for n in range(Self.win_stones):
+                    var idx = (y + n) * Self.size + x
+                    var len = result[idx][0]
+                    result[idx][len + 1] = offset
+                    result[idx][0] = len + 1
+                offset += 1
 
-        for y in range(Self.size - Self.win_stones + 1):
-            var stones = 0
-            for x in range(Self.win_stones - 1):
-                stones += self[x, y + x]
-            for x in range(Self.size - Self.win_stones + 1 - y):
-                stones += self[x + Self.win_stones - 1, x + y + Self.win_stones - 1]
-                value += self._calc_value(stones, values)
-                stones -= self[x, x + y]
+        # print("---- 3")
+        for a in range(Self.size - Self.win_stones + 1):
+            for b in range(Self.size - Self.win_stones + 1 - a):
+                var x = a + b
+                var y = b
+                # print(t"x={x} y={y} offset={offset}")
+                for n in range(Self.win_stones):
+                    var idx = (y + n) * Self.size + x + n
+                    var len = result[idx][0]
+                    result[idx][len + 1] = offset
+                    result[idx][0] = len + 1
+                offset += 1
 
-        for x in range(1, Self.size - Self.win_stones + 1):
-            var stones = 0
-            for y in range(Self.win_stones - 1):
-                stones += self[x + y, y]
-            for y in range(Self.size - Self.win_stones + 1 - x):
-                stones += self[x + y + Self.win_stones - 1, y + Self.win_stones - 1]
-                value += self._calc_value(stones, values)
-                stones -= self[x + y, y]
+        # print("---- 4")
+        for a in range(1, Self.size - Self.win_stones + 1):
+            for b in range(a, Self.size - Self.win_stones + 1):
+                var x = b - a
+                var y = b
+                # print(t"x={x} y={y} offset={offset}")
+                for n in range(Self.win_stones):
+                    var idx = (y + n) * Self.size + x + n
+                    var len = result[idx][0]
+                    result[idx][len + 1] = offset
+                    result[idx][0] = len + 1
+                offset += 1
 
-        for y in range(Self.size - Self.win_stones + 1):
-            var stones = 0
-            for x in range(Self.win_stones - 1):
-                stones += self[Self.size - 1 - x, x + y]
-            for x in range(Self.size - Self.win_stones + 1 - y):
-                stones += self[Self.size - 1 - x - Self.win_stones + 1, x + y + Self.win_stones - 1]
-                value += self._calc_value(stones, values)
-                stones -= self[Self.size - 1 - x, x + y]
+        # print("---- 5")
+        for a in range(Self.size - Self.win_stones + 1):
+            for b in range(Self.size - Self.win_stones + 1 - a):
+                var x = Self.size - a - b - 1
+                var y = b
+                # print(t"x={x} y={y} offset={offset}")
+                for n in range(Self.win_stones):
+                    var idx = (y + n) * Self.size + x - n
+                    var len = result[idx][0]
+                    result[idx][len + 1] = offset
+                    result[idx][0] = len + 1
+                offset += 1
 
-        for x in range(1, Self.size - Self.win_stones + 1):
-            var stones = 0
-            for y in range(Self.win_stones - 1):
-                stones += self[Self.size - 1 - x - y, y]
-            for y in range(Self.size - Self.win_stones + 1 - x):
-                stones += self[Self.size - Self.win_stones - x - y, y + Self.win_stones - 1]
-                value += self._calc_value(stones, values)
-                stones -= self[Self.size - 1 - x - y, y]
-        return value
+        # print("---- 6")
+        for a in range(1, Self.size - Self.win_stones + 1):
+            for b in range(Self.size - Self.win_stones + 1 - a):
+                var x = Self.size - b - 1
+                var y = a + b
+                # print(t"x={x} y={y} offset={offset}")
+                for n in range(Self.win_stones):
+                    var idx = (y + n) * Self.size + x - n
+                    # print(t"  idx={idx}")
+                    var len = result[idx][0]
+                    result[idx][len + 1] = offset
+                    result[idx][0] = len + 1
+                offset += 1
 
-    def _calc_value(self, stones: Int, values: List[Value]) -> Value:
-        var black = Int(stones) % Self.win_stones
-        var white = Int(stones) / Self.win_stones
-        if white == 0:
-            return Value(values[black])
-        elif black == 0:
-            return Value(-values[white])
-        return 0
-
-    def max_value(self, player: Int) -> Value:
-        var max_value = self._values[0][player]
-
-        for i in range(Self.size * Self.size):
-            max_value = max(max_value, self._values[i][player])
-
-        return max_value
+        return result
 
 
-def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
-    comptime result_size = win_stones * win_stones + 1
+comptime size = 19
+comptime win_stones = 6
+comptime B = Board[size, win_stones]
 
-    var s = materialize[values]()
-    s.append(Value.MAX)
-    var v2: List[Values] = [Values(1, -1)]
-    for i in range(win_stones - 1):
-        v2.append(Values(s[i + 2] - s[i + 1], -s[i + 1]))
-    var result = InlineArray[InlineArray[Values, result_size], 2](fill=InlineArray[Values, result_size](fill=0))
 
-    for i in range(win_stones - 1):
-        result[0][i * win_stones] = Values(v2[i][1], -v2[i][0])
-        result[0][i] = Values(v2[i + 1][0] - v2[i][0], v2[i][1] - v2[i + 1][1])
-        result[1][i] = Values(-v2[i][0], v2[i][1])
-        result[1][i * win_stones] = Values(v2[i][1] - v2[i + 1][1], v2[i + 1][0] - v2[i][0])
-    return result^
+def main():
+    print(t" segments: {B._calc_n_segments()}")
+    var indices = B._calc_indices()
+    for i in range(B.size * B.size):
+        if i % size == 0:
+            print()
+        var len = indices[i][0]
+        if len > 0:
+            print(
+                t"idx={String(i).ascii_rjust(3)} [{String(i % size).ascii_rjust(2)}:{String(i / size).ascii_rjust(2)}] |",
+                end="",
+            )
+            for j in range(1, indices[i][0] + 1):
+                print(t" {String(indices[i][j]).ascii_rjust(3)}", end="")
+            print()
