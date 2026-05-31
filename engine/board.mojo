@@ -1,13 +1,25 @@
+@fieldwise_init
+struct Stone(ImplicitlyCopyable, Writable):
+    var value: Int8
+
+    comptime none = Stone(0)
+    comptime black = Stone(1)
+    comptime white = Stone(2)
+
+
 struct Board[size: Int, win_stones: Int](Defaultable, Writable):
     comptime Segments = InlineArray[SIMD[DType.int8, 2], Self._calc_n_segments()]
     comptime Indices = InlineArray[InlineArray[Int, Self.win_stones * 4 + 1], Self.size * Self.size]
+    comptime Places = InlineArray[Stone, Self.size * Self.size]
 
-    var segments: Self.Segments
-    var indices: Self.Indices
+    comptime indices = Self._calc_indices()
+
+    var _places: Self.Places
+    var _segments: Self.Segments
 
     def __init__(out self):
-        self.segments = Self.Segments(fill={0, 0})
-        self.indices = Self._calc_indices()
+        self._places = Self.Places(fill=Stone.none)
+        self._segments = Self.Segments(fill={0, 0})
 
     @staticmethod
     def _calc_n_segments() -> Int:
