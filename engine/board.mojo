@@ -219,13 +219,30 @@ comptime win_stones = 6
 comptime B = Board[size, win_stones]
 
 
-def main_1():
+def main():
     var board = B()
     board.place_stone(Place(9, 9), Stone.black)
+    board.place_stone(Place(9, 8), Stone.white)
+    board.place_stone(Place(10, 8), Stone.white)
     print(board)
+    for y in range(size):
+        for x in range(size):
+            ref indices = board.indices[y * size + x]
+            print(t"{String(y*size+x).ascii_rjust(3)} {String(t'{x}:{y}').ascii_rjust(5)} |", end="")
+            comptime for i in range(4):
+                var max_black: Int8 = 0
+                var max_white: Int8 = 0
+                for j in range(indices[i].start, indices[i].end):
+                    var segment = board._segments[j]
+                    if segment[1] == 0:
+                        max_black = max(max_black, segment[0])
+                    if segment[0] == 0:
+                        max_white = max(max_white, segment[1])
+                print(t"  {max_black}:{max_white}", end="")
+            print()
 
 
-def main():
+def main_2():
     print(t" segments: {B._calc_n_segments()}")
     var indices = B._calc_indices()
     for i in range(B.size * B.size):
