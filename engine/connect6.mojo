@@ -1,5 +1,5 @@
 from .traits import TGame, TMove, MoveScore
-from .board import Board, Value, Place, PlaceValue, first
+from .board import Board, Place
 from .heap import heap_add
 
 comptime win_stones = 6
