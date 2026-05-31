@@ -59,17 +59,24 @@ struct Board[size: Int, win_stones: Int](Defaultable, Writable):
     def place_stone(mut self, place: Place, stone: Stone):
         self[place.x, place.y] = stone
         if stone == Stone.black:
-            self._place_stone[0](place)
+            self._place_stone[0](place, 1)
         else:
-            self._place_stone[1](place)
+            self._place_stone[1](place, 1)
 
-    def _place_stone[turn: Int](mut self, place: Place):
+    def remove_stone(mut self, place: Place, stone: Stone):
+        self[place.x, place.y] = Stone.none
+        if stone == Stone.black:
+            self._place_stone[0](place, -1)
+        else:
+            self._place_stone[1](place, -1)
+
+    def _place_stone[turn: Int](mut self, place: Place, sign: Int8):
         var offset = place.y * Self.size + place.x
-        ref place_indices = self.indices[offset]
+        var index_ranges = self.indices[offset]
         comptime for i in range(4):
-            ref segment = place_indices[i]
-            for i in range(segment.start, segment.end):
-                self._segments[i][turn] += 1
+            var index_range = index_ranges[i]
+            for i in range(index_range.start, index_range.end):
+                self._segments[i][turn] += sign
 
     @staticmethod
     def _calc_n_segments() -> Int:
@@ -228,8 +235,8 @@ def main():
             t"idx={String(i).ascii_rjust(3)} [{String(i % size).ascii_rjust(2)}:{String(i / size).ascii_rjust(2)}]",
             end="",
         )
-        ref place_indices = indices[i]
+        ref index_range = indices[i]
         for j in range(4):
-            ref segment_indices = place_indices[j]
+            ref segment_indices = index_range[j]
             print(t" | {segment_indices.end - segment_indices.start} {String(segment_indices.start).ascii_rjust(4)}", end="")
         print()
