@@ -32,7 +32,7 @@ struct Score(Comparable, Copyable, Floatable, TrivialRegisterPassable, Writable)
     var _value: Float32
 
     def __init__(out self):
-        self._value = Loss
+        self._value = 0
 
     def __float__(self) -> Float64:
         return Float64(self._value)

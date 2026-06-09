@@ -4,12 +4,12 @@ from std.utils.numerics import isinf, isnan, isfinite, nan
 from .heap import heap_add
 
 comptime Value = Float32
-comptime Loss = Value.MIN
+comptime Values = SIMD[DType.float32, 2]
+comptime DValues = InlineArray[Values, 4]
 
 
 comptime first = 0
 comptime second = 1
-comptime Values = SIMD[Value.dtype, 2]
 
 
 struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
@@ -59,20 +59,24 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
     comptime value_table = _calc_value_table[Self.win_stones, Self.init_values]()
 
     var _places: InlineArray[Int8, Self.size * Self.size]
-    var _values: InlineArray[Values, Self.size * Self.size]
+    var _values: InlineArray[DValues, Self.size * Self.size]
     var value: Value
 
     def __init__(out self):
         self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
-        self._values = InlineArray[Values, Self.size * Self.size](uninitialized=True)
+        self._values = InlineArray[DValues, Self.size * Self.size](uninitialized=True)
         self.value = 0
 
         for y in range(Self.size):
-            var v = 1 + min(Self.win_stones - 1, y, Self.size - 1 - y, Self.size - Self.win_stones)
             for x in range(Self.size):
+                var v = 1 + min(Self.win_stones - 1, y, Self.size - 1 - y, Self.size - Self.win_stones)
+                self._values[y * Self.size + x][1] = Value(v)
+
                 var h = 1 + min(Self.win_stones - 1, x, Self.size - 1 - x, Self.size - Self.win_stones)
+                self._values[y * Self.size + x][0] = Value(h)
+
                 var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y, Self.size - Self.win_stones)
-                var t1 = max(
+                var se = max(
                     0,
                     min(
                         Self.win_stones,
@@ -81,7 +85,9 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                         Self.size - Self.win_stones + 1 - x + y,
                     ),
                 )
-                var t2 = max(
+                self._values[y * Self.size + x][2] = Value(se)
+
+                var sw = max(
                     0,
                     min(
                         Self.win_stones,
@@ -90,8 +96,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                         x + y - Self.win_stones + 1 + 1,
                     ),
                 )
-                var total = Value(v + h + t1 + t2)
-                self._values[y * Self.size + x] = [total, total]
+                self._values[y * Self.size + x][3] = Value(sw)
 
     def place_stone(mut self, place: Place, turn: Int):
         ref value_table = materialize[self.value_table]()
@@ -108,12 +113,12 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         var x_start = max(0, x - Self.win_stones + 1)
         var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
         var n = x_end - x_start
-        self._update_row(y * Self.size + x_start, 1, n, values)
+        self._update_row(y * Self.size + x_start, 1, 0, n, values)
 
         var y_start = max(0, y - Self.win_stones + 1)
         var y_end = min(y + Self.win_stones, Self.size) - Self.win_stones + 1
         n = y_end - y_start
-        self._update_row(y_start * Self.size + x, Self.size, n, values)
+        self._update_row(y_start * Self.size + x, Self.size, 1, n, values)
 
         var m = 1 + min(x, y, Self.size - 1 - x, Self.size - 1 - y)
 
@@ -123,22 +128,24 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             var mn = min(x, y, Self.win_stones - 1)
             var x_start = x - mn
             var y_start = y - mn
-            self._update_row(y_start * Self.size + x_start, Self.size + 1, n, values)
+            self._update_row(y_start * Self.size + x_start, Self.size + 1, 2, n, values)
 
         n = min(Self.win_stones, m, 2 * Self.size - Self.win_stones - y - x, x + y - Self.win_stones + 2)
         if n > 0:
             var mn = min(Self.size - 1 - x, y, Self.win_stones - 1)
             var x_start = x + mn
             var y_start = y - mn
-            self._update_row(y_start * Self.size + x_start, Self.size - 1, n, values)
+            self._update_row(y_start * Self.size + x_start, Self.size - 1, 3, n, values)
 
         if turn == first:
             self[x, y] = Self.black
         else:
             self[x, y] = Self.white
-        self._values[y * Self.size + x] = [Loss, Loss]
 
-    def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
+        comptime for i in range(4):
+            self._values[y * Self.size + x][i] = 0
+
+    def _update_row(mut self, start: Int, delta: Int, d: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
@@ -150,7 +157,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             var values = values[stones]
             if values[0] != 0 or values[1] != 0:
                 comptime for j in range(Self.win_stones):
-                    self._values[offset + j * delta] += values
+                    self._values[offset + j * delta][d] += values
             stones -= self._places[offset]
             offset += delta
 
@@ -169,7 +176,8 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         self._places[y * Self.size + x] = Int8(value)
 
     def get_value(self, place: Place, turn: Int) -> Value:
-        return Value(self._values[Int(place.y) * Self.size + Int(place.x)][turn])
+        return Value(0)  # TODO
+        # return Value(self._values[Int(place.y) * Self.size + Int(place.x)][turn])
 
     def write_to[W: Writer](self, mut writer: W):
         try:
@@ -319,13 +327,13 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             return Value(-values[white])
         return 0
 
-    def max_value(self, player: Int) -> Value:
-        var max_value = self._values[0][player]
+    # def max_value(self, player: Int) -> Value:
+    #     var max_value = self._values[0][player]
 
-        for i in range(Self.size * Self.size):
-            max_value = max(max_value, self._values[i][player])
+    #     for i in range(Self.size * Self.size):
+    #         max_value = max(max_value, self._values[i][player])
 
-        return max_value
+    #     return max_value
 
     def debug_print(self, place: Place, turn: Int):
         print(t"place {place} turn={turn}")
