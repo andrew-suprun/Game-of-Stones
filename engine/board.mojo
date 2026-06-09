@@ -327,6 +327,36 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
 
         return max_value
 
+    def debug_print(self, place: Place, turn: Int):
+        print(t"place {place} turn={turn}")
+        var x = Int(place.x)
+        var y = Int(place.y)
+        self.debug_print_line(x, y, 0, y, 1, 0, turn=turn)
+        self.debug_print_line(x, y, x, 0, 0, 1, turn=turn)
+        self.debug_print_line(x, y, x - min(x, y), y - min(x, y), 1, 1, turn=turn)
+        self.debug_print_line(x, y, x + min(Self.size - 1 - x, y), y - min(Self.size - 1 - x, y), -1, 1, turn=turn)
+
+    def debug_print_line(self, x: Int, y: Int, var xx: Int, var yy: Int, delta_x: Int, delta_y: Int, turn: Int):
+        # print(t"x={x} y={y} xx={xx} yy={yy}")
+        print(" |", end="")
+        var place_offset = Self.size * y + x
+        while 0 <= xx and xx < Self.size and yy < Self.size:
+            var offset = Self.size * yy + xx
+            var stone = Int(self._places[offset])
+            if stone == Self.black:
+                print(" x", end="")
+            elif stone == Self.white:
+                print(" o", end="")
+            elif offset == place_offset and turn == first:
+                print(" X", end="")
+            elif offset == place_offset and turn == second:
+                print(" O", end="")
+            else:
+                print(" _", end="")
+            xx += delta_x
+            yy += delta_y
+        print(" |")
+
 
 def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1

@@ -130,3 +130,17 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(self.board)
+
+    def debug_print(self, move: Move):
+        var places = String(move).split("-")
+        try:
+            var place1 = Place(String(places[0]))
+            self.board.debug_print(place1, self.turn)
+            if len(places) == 2:
+                var board = self.board.copy()
+                board.place_stone(place1, self.turn)
+                print(board)
+                var place2 = Place(String(places[1]))
+                board.debug_print(place2, self.turn)
+        except:
+            pass

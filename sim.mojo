@@ -2,35 +2,37 @@ from std.random import seed, shuffle
 from std.time import sleep
 from std.sys import exit
 
+
+# from engine import Gomoku
+from engine import Connect6
 from engine import TTree, Score, MoveScore, Place, first
-from engine import Gomoku, Connect6, Gomoku2, Connect6b
 from engine import Mcts, AlphaBetaNegamax, PrincipalVariationNegamax, ZeroSearch
 from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick, black
 
 comptime seed_value = 11
 
 comptime board_size = 19
-comptime time: UInt = 500
+comptime time: UInt = 1000
 
 
 comptime max_moves1 = 26
-comptime max_places1 = 26
+comptime max_places1 = 20
 comptime C1 = Score(0.25)
 
 comptime max_moves2 = 26
-comptime max_places2 = 26
+comptime max_places2 = 20
 comptime C2 = Score(0.25)
 
 # comptime Game1 = Gomoku[size=board_size, max_moves=max_moves1]
 # comptime Game2 = Gomoku2[size=board_size, max_moves=max_moves2]
 comptime Game1 = Connect6[size=board_size, max_moves=max_moves1, max_places=max_places1]
-comptime Game2 = Connect6b[size=board_size, max_moves=max_moves2, max_places=max_places2]
+comptime Game2 = Connect6[size=board_size, max_moves=max_moves2, max_places=max_places2]
 
 
-comptime T1 = ZeroSearch[Game1]
+# comptime T1 = ZeroSearch[Game1]
 # comptime T1 = AlphaBetaNegamax[Game1]
 # comptime T1 = PrincipalVariationNegamax[Game1]
-# comptime T1 = Mcts[Game1, C1]
+comptime T1 = Mcts[Game1, C1]
 
 comptime game_name = reflect[Game1].base_name()
 comptime tree_type1 = reflect[T1].base_name()
@@ -40,9 +42,9 @@ comptime game_name1 = String(t"{reflect[Game1].base_name()}-{tree_type1}-{max_mo
 comptime name1 = game_name1 if tree_type1 != "Mcts" else String(t"{game_name1}-{C1}")
 
 
-comptime T2 = ZeroSearch[Game2]
+# comptime T2 = ZeroSearch[Game2]
 # comptime T2 = AlphaBetaNegamax[Game2]
-# comptime T2 = PrincipalVariationNegamax[Game2]
+comptime T2 = PrincipalVariationNegamax[Game2]
 # comptime T2 = Mcts[Game2, C2]
 
 comptime tree_type2 = reflect[T2].base_name()
@@ -152,9 +154,11 @@ struct SimOpening[T1: TTree, T2: TTree]:
         return "draw"
 
     def play_move(mut self, move: String) raises:
-        print(t"{move} ", end="")
+        print(t"{move}")
+        self.g1.debug_print({move})
         self.g1.play_move({move})
         self.g2.play_move({move})
+        print(self.g1)
         var places = String(move).split("-")
         for place_str in places:
             var place = Place(String(place_str))

@@ -3,7 +3,7 @@ comptime white = 1
 comptime empty = 2
 
 
-struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
+struct PlaceX(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writable):
     var x: Int
     var y: Int
 
@@ -36,10 +36,13 @@ struct StoneCounts(ImplicitlyCopyable, Writable):
     var n_segments: Int
 
     def write_to[W: Writer](self, mut writer: W):
-        writer.write(t"{self.max_stones}/{self.n_segments}")
+        if self.max_stones == 0:
+            writer.write("-")
+        else:
+            writer.write(t"{self.max_stones} ({self.n_segments})")
 
 
-struct Board[size: Int, win_stones: Int](Writable):
+struct BoardX[size: Int, win_stones: Int](Writable):
     comptime PlaceStoneCounts = InlineArray[StoneCounts, 4]
     comptime PlaceScores = InlineArray[Self.PlaceStoneCounts, 2]
 
@@ -54,10 +57,10 @@ struct Board[size: Int, win_stones: Int](Writable):
     def __setitem__(mut self, x: Int, y: Int, value: Int):
         self._places[y * Self.size + x] = Int8(value)
 
-    def place_stone(mut self, place: Place, color: Int8):
-        self._places[place.y * Self.size + place.x] = color
+    def place_stone(mut self, place: PlaceX, color: Int):
+        self._places[place.y * Self.size + place.x] = Int8(color)
 
-    def score_place(self, place: Place, mut scores: Self.PlaceScores):
+    def score_place(self, place: PlaceX, mut scores: Self.PlaceScores):
         var x = place.x
         var y = place.y
         var x_start = max(0, x - Self.win_stones + 1)

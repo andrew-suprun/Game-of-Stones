@@ -17,6 +17,9 @@ trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
     def score(self) -> Score:
         ...
 
+    def debug_print(self, move: Move):
+        ...
+
 
 trait TMove(Copyable, Defaultable, TrivialRegisterPassable, Writable):
     @implicit
