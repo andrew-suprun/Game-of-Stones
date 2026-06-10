@@ -105,10 +105,11 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
         var x = Int(place.x)
         var y = Int(place.y)
 
-        if turn == first:
-            self.value += self.get_value(place, first)
-        else:
-            self.value -= self.get_value(place, second)
+        # TODO
+        # if turn == first:
+        #     self.value += self.get_value(place, first)
+        # else:
+        #     self.value -= self.get_value(place, second)
 
         var x_start = max(0, x - Self.win_stones + 1)
         var x_end = min(x + Self.win_stones, Self.size) - Self.win_stones + 1
@@ -166,7 +167,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             for x in range(Self.size):
                 if self[x, y] == self.empty:
                     var place = Place(x, y)
-                    var value = self.get_value(place, turn)
+                    var value = self.get_value(place, 0, turn)  # TODO
                     heap_add[lt]({place, value}, places)
 
     def __getitem__(self, x: Int, y: Int) -> Int:
@@ -175,9 +176,8 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
     def __setitem__(mut self, x: Int, y: Int, value: Int):
         self._places[y * Self.size + x] = Int8(value)
 
-    def get_value(self, place: Place, turn: Int) -> Value:
-        return Value(0)  # TODO
-        # return Value(self._values[Int(place.y) * Self.size + Int(place.x)][turn])
+    def get_value(self, place: Place, dir: Int, turn: Int) -> Value:
+        return Value(self._values[Int(place.y) * Self.size + Int(place.x)][dir][turn])
 
     def write_to[W: Writer](self, mut writer: W):
         try:
@@ -234,11 +234,17 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
 
     def write_repr_to[W: Writer](self, mut writer: W):
         self.write_to(writer)
-        self.write_repr_to(writer, 0)
-        self.write_repr_to(writer, 1)
+        self.write_repr_to(writer, "Black (H)", 0, 0)
+        self.write_repr_to(writer, "White (H)", 0, 1)
+        self.write_repr_to(writer, "Black (V)", 1, 0)
+        self.write_repr_to(writer, "White (V)", 1, 1)
+        self.write_repr_to(writer, "Black (SE)", 2, 0)
+        self.write_repr_to(writer, "White (SE)", 2, 1)
+        self.write_repr_to(writer, "Black (SW)", 3, 0)
+        self.write_repr_to(writer, "White (SW)", 3, 1)
 
-    def write_repr_to[W: Writer](self, mut writer: W, table_idx: Int):
-        writer.write("\n   │")
+    def write_repr_to[W: Writer](self, mut writer: W, header: String, dir: Int, player: Int):
+        writer.write(t"\n{header}:\n   │")
         for i in range(Self.size):
             writer.write(String(t"    {chr(i + ord('a'))} "))
         writer.write("│\n")
@@ -252,7 +258,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                 elif stone == Self.white:
                     writer.write("    O ")
                 else:
-                    var value = self.get_value(Place(x, y), table_idx)
+                    var value = self.get_value(Place(x, y), dir, player)
                     writer.write(String(value).removesuffix(".0").ascii_rjust(5, " ") + " ")
             writer.write("│ " + String(y + 1).ascii_rjust(2) + "\n")
         writer.write("───┼" + "──────" * Self.size + "┼───")
