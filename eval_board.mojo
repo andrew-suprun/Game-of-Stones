@@ -1,5 +1,6 @@
 from std.time import perf_counter_ns
 
+from engine import board_size
 from engine import Board, Place
 
 
@@ -30,8 +31,10 @@ def main() raises:
     print(t"place: {places[0]} {0}")
     print(board)
     var turn = 2
-    for place in places[1 : len(places) - 2]:
-        print(t"place: {place} {turn / 2}")
+    for place_str in places[1 : len(places) - 2]:
+        print(t"place: {place_str} {turn / 2}")
+        var place = Place(place_str)
+        print(board._values[Int(place.y) * board_size + Int(place.x)])
         board.place_stone(Place(String(place)), turn / 2)
         turn = (turn + 1) % 4
         print(board)

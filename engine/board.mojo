@@ -352,27 +352,23 @@ struct Board[win_stones: Int](Copyable, Writable):
         self.debug_print_line(x, y, 0, y, 1, 0, turn=turn)
         self.debug_print_line(x, y, x, 0, 0, 1, turn=turn)
         self.debug_print_line(x, y, x - min(x, y), y - min(x, y), 1, 1, turn=turn)
-        self.debug_print_line(x, y, x + min(board_size - 1 - x, y), y - min(board_size - 1 - x, y), -1, 1, turn=turn)
+        self.debug_print_line(x, y, x + min(Self.size - 1 - x, y), y - min(Self.size - 1 - x, y), -1, 1, turn=turn)
 
-    def debug_print_line(self, x: Int, y: Int, var xx: Int, var yy: Int, delta_x: Int, delta_y: Int, turn: Int):
-        # print(t"x={x} y={y} xx={xx} yy={yy}")
+    def debug_print_line(self, var x: Int, var y: Int, delta_x: Int, delta_y: Int, turn: Int):
+        # print(t"x={x} y={y}")
         print(" |", end="")
-        var place_offset = board_size * y + x
-        while 0 <= xx and xx < board_size and yy < board_size:
-            var offset = board_size * yy + xx
+        var place_offset = Self.size * y + x
+        while 0 <= xx and xx < Self.size and yy < Self.size:
+            var offset = Self.size * yy + xx
             var stone = Int(self._places[offset])
             if stone == Self.black:
-                print(" x", end="")
-            elif stone == Self.white:
-                print(" o", end="")
-            elif offset == place_offset and turn == first:
                 print(" X", end="")
-            elif offset == place_offset and turn == second:
+            elif stone == Self.white:
                 print(" O", end="")
             else:
                 print(" _", end="")
-            xx += delta_x
-            yy += delta_y
+            x += delta_x
+            y += delta_y
         print(" |")
 
 
