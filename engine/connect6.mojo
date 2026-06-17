@@ -52,12 +52,12 @@ def lt(a: MoveScore[Move], b: MoveScore[Move]) -> Bool:
 struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
     comptime Move = Move
 
-    var board: Board[Self.size, values, win_stones]
+    var board: Board[win_stones]
     var turn: Int
     var plies: Int
 
     def __init__(out self):
-        self.board = Board[Self.size, values, win_stones]()
+        self.board = Board[win_stones]()
         self.turn = 0
         self.plies = 0
 
@@ -87,7 +87,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
 
             for j in range(i + 1, len(places)):
                 var place2 = places[j].place
-                var score2 = board.get_value(place2, self.turn)
+                var score2 = board.get_value(place2, 0, self.turn)
 
                 if score2 == Value.MAX:
                     moves.clear()
