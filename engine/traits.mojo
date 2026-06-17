@@ -1,11 +1,11 @@
-trait TTree(Defaultable, ImplicitlyDestructible, Writable):
+trait TTree(Defaultable, ImplicitlyDeletable, Writable):
     comptime Game: TGame
 
     def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[MoveScore[Self.Game.Move]]):
         ...
 
 
-trait TGame(Copyable, Defaultable, ImplicitlyDestructible, Writable):
+trait TGame(Copyable, Defaultable, ImplicitlyDeletable, Writable):
     comptime Move: TMove
 
     def top_moves(self) -> List[MoveScore[Self.Move]]:

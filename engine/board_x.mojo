@@ -186,7 +186,7 @@ struct BoardX[size: Int, win_stones: Int](Writable):
 
 
 def main_x() raises:
-    comptime B = Board[19, 6]
+    comptime B = BoardX[19, 6]
     var b = B()
     b.place_stone("j10", 0)
     b.place_stone("i10", 1)

@@ -349,12 +349,12 @@ struct Board[win_stones: Int](Copyable, Writable):
         print(t"place {place} turn={turn}")
         var x = Int(place.x)
         var y = Int(place.y)
-        self.debug_print_line(0, y, 1, 0, turn=turn)
-        self.debug_print_line(x, 0, 0, 1, turn=turn)
-        self.debug_print_line(x - min(x, y), y - min(x, y), 1, 1, turn=turn)
-        self.debug_print_line(x + min(board_size - 1 - x, y), y - min(board_size - 1 - x, y), -1, 1, turn=turn)
+        self._debug_print_line(0, y, 1, 0, turn=turn)
+        self._debug_print_line(x, 0, 0, 1, turn=turn)
+        self._debug_print_line(x - min(x, y), y - min(x, y), 1, 1, turn=turn)
+        self._debug_print_line(x + min(board_size - 1 - x, y), y - min(board_size - 1 - x, y), -1, 1, turn=turn)
 
-    def debug_print_line(self, var x: Int, var y: Int, delta_x: Int, delta_y: Int, turn: Int):
+    def _debug_print_line(self, var x: Int, var y: Int, delta_x: Int, delta_y: Int, turn: Int):
         # print(t"x={x} y={y}")
         print(" |", end="")
         var place_offset = board_size * y + x
@@ -370,6 +370,39 @@ struct Board[win_stones: Int](Copyable, Writable):
             x += delta_x
             y += delta_y
         print(" |")
+
+    def _calc_indices(mut self):
+        for y in range(board_size):
+            for x in range(board_size - Self.win_stones + 1):
+                ...
+
+        for x in range(board_size):
+            for y in range(board_size - Self.win_stones + 1):
+                ...
+
+        for a in range(board_size - Self.win_stones + 1):
+            for b in range(board_size - Self.win_stones + 1 - a):
+                var x = a + b
+                var y = b
+                ...
+
+        for a in range(1, board_size - Self.win_stones + 1):
+            for b in range(a, board_size - Self.win_stones + 1):
+                var x = b - a
+                var y = b
+                ...
+
+        for a in range(board_size - Self.win_stones + 1):
+            for b in range(board_size - Self.win_stones + 1 - a):
+                var x = board_size - a - b - 1
+                var y = b
+                ...
+
+        for a in range(1, board_size - Self.win_stones + 1):
+            for b in range(board_size - Self.win_stones + 1 - a):
+                var x = board_size - b - 1
+                var y = a + b
+                ...
 
 
 def _calc_value_table[win_stones: Int]() -> InlineArray[InlineArray[PlayerValues, win_stones**2 + 1], players]:
