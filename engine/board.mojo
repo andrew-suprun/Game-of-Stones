@@ -407,8 +407,6 @@ struct Board[win_stones: Int](Copyable, Writable):
 
 def _calc_value_table[win_stones: Int]() -> InlineArray[InlineArray[PlayerValues, win_stones**2 + 1], players]:
     var v1: List[Value] = [0, 1, 11, 111, 1111, 11111, 111111]
-    # var v1: List[Value] = [0, 1, 7, 43, 259, 1555, 9331]
-    # var v1: List[Value] = [0, 1, 7, 44, 268, 1616, 9712]
     var v2: List[PlayerValues] = [{1, -1}]
     for i in range(win_stones - 1):
         v2.append({v1[i + 2] - v1[i + 1], -v1[i + 1]})
