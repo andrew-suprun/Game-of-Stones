@@ -21,14 +21,14 @@ trait TGame(Copyable, Defaultable, ImplicitlyDeletable, Writable):
         ...
 
 
-trait TMove(Copyable, Defaultable, TrivialRegisterPassable, Writable):
+trait TMove(Defaultable, ImplicitlyDeletable, Movable, TrivialRegisterPassable, Writable):
     @implicit
     def __init__(out self, text: String) raises:
         ...
 
 
 @fieldwise_init
-struct Score(Comparable, Copyable, Floatable, TrivialRegisterPassable, Writable):
+struct Score(Comparable, Floatable, ImplicitlyDeletable, Movable, TrivialRegisterPassable, Writable):
     var _value: Float32
 
     def __init__(out self):
@@ -106,7 +106,7 @@ struct Score(Comparable, Copyable, Floatable, TrivialRegisterPassable, Writable)
 
 
 @fieldwise_init
-struct MoveScore[Move: TMove](Copyable, TrivialRegisterPassable, Writable):
+struct MoveScore[Move: TMove](ImplicitlyDeletable, Movable, TrivialRegisterPassable, Writable):
     var move: Self.Move
     var score: Score
 
