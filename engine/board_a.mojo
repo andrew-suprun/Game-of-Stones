@@ -41,28 +41,44 @@ struct BoardA(Writable):
         self._places[place.y * board_size + place.x] = stone
 
     def top_moves(self):
-        # for start in range(0, n_places, board_size):
-        #     self.scan_line(start, start + board_size, 1)
-        # print()
-
-        # for start in range(0, board_size, 1):
-        #     self.scan_line(start, start + n_places, board_size)
-        # print()
-
-        for start in range(n_places - board_size * win_stones, -1, -board_size):
-            self.scan_line(start, n_places, board_size + 1)
+        print(t"size={board_size} win_stones={win_stones}")
+        for start in range(0, n_places, board_size):
+            self.scan_line(start, 1, board_size)
         print()
 
-        for start in range(1, board_size - win_stones + 1, 1):
-            self.scan_line(start, (board_size + 1) * (board_size - start), board_size + 1)
+        for start in range(0, board_size):
+            self.scan_line(start, board_size, board_size)
         print()
 
-    def scan_line(self, start: Int, end: Int, delta: Int):
-        var place_start = Place(start % board_size, start // board_size)
-        print(t"start={place_start} delta={delta}")
-        for i in range(start, end, delta):
-            var stone = self._places[i]
+        var n = win_stones
+        for start in range(n_places - board_size * win_stones, 0, -board_size):
+            self.scan_line(start, board_size + 1, n)
+            n += 1
+
+        n = board_size
+        for start in range(0, board_size - win_stones + 1):
+            self.scan_line(start, board_size + 1, n)
+            n -= 1
+        print()
+
+        n = win_stones
+        for start in range(win_stones - 1, board_size - 1):
+            self.scan_line(start, board_size - 1, n)
+            n += 1
+
+        n = board_size
+        for start in range(board_size - 1, board_size * (board_size - win_stones + 1), board_size):
+            self.scan_line(start, board_size - 1, n)
+            n -= 1
+        print()
+
+    def scan_line(self, var offset: Int, delta: Int, n: Int):
+        # var place_offset = Place(offset % board_size, offset // board_size)
+        # print(t"start={place_offset} n={n}")
+        for _ in range(n):
+            var stone = self._places[offset]
             print(" ." if stone == empty else " X" if stone == black else " O", end="")
+            offset += delta
         print()
 
     def write_to[W: Writer](self, mut writer: W):
