@@ -72,13 +72,42 @@ struct BoardA(Writable):
             n -= 1
         print()
 
-    def scan_line(self, var offset: Int, delta: Int, n: Int):
+    def scan_line(self, start: Int, delta: Int, n: Int):
+        var offset = start
         # var place_offset = Place(offset % board_size, offset // board_size)
         # print(t"start={place_offset} n={n}")
+
+        var color = empty
+        var first = 0
+        var last = 0
+        var n_stones = 0
+
         for _ in range(n):
             var stone = self._places[offset]
             print(" ." if stone == empty else " X" if stone == black else " O", end="")
             offset += delta
+
+        offset = start
+        for i in range(n):
+            var stone = self._places[offset]
+            # print(" ." if stone == empty else " X" if stone == black else " O", end="")
+            offset += delta
+
+            if stone == empty:
+                continue
+
+            if stone == color:
+                last = i
+                n_stones += 1
+            else:
+                if color != empty and n_stones > 0:
+                    print(t" | color={color} first={first} last={last} n_stones={n_stones}", end="")
+                first = i
+                last = i
+                color = stone
+                n_stones = 1
+        if n_stones > 0:
+            print(t" | color={color} first={first} last={last} n_stones={n_stones}", end="")
         print()
 
     def write_to[W: Writer](self, mut writer: W):
