@@ -41,7 +41,6 @@ struct BoardA(Writable):
         self._places[place.y * board_size + place.x] = stone
 
     def top_moves(self):
-        print(t"size={board_size} win_stones={win_stones}")
         for start in range(0, n_places, board_size):
             self.scan_line(start, 1, board_size)
         print()
@@ -80,6 +79,7 @@ struct BoardA(Writable):
         var color = empty
         var first = 0
         var last = 0
+        var last_seen = 0
         var n_stones = 0
 
         for _ in range(n):
@@ -101,13 +101,17 @@ struct BoardA(Writable):
                 n_stones += 1
             else:
                 if color != empty and n_stones > 0:
-                    print(t" | color={color} first={first} last={last} n_stones={n_stones}", end="")
+                    if i - last_seen >= win_stones:
+                        var stone_color = "black" if color == black else "white"
+                        print(t" | {stone_color}: ({first-last_seen}) {n_stones}/{last-first+1} ({i-last-1})", end="")
+                    last_seen = last + 1
                 first = i
                 last = i
                 color = stone
                 n_stones = 1
-        if n_stones > 0:
-            print(t" | color={color} first={first} last={last} n_stones={n_stones}", end="")
+        if n_stones > 0 and n - last_seen >= win_stones:
+            var stone_color = "black" if color == black else "white"
+            print(t" | {stone_color}: ({first-last_seen}) {n_stones}/{last-first+1} ({n-last-1})", end="")
         print()
 
     def write_to[W: Writer](self, mut writer: W):
