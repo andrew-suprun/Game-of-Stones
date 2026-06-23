@@ -102,16 +102,16 @@ struct BoardA(Writable):
             else:
                 if color != empty and n_stones > 0:
                     if i - last_seen >= win_stones:
-                        var stone_color = "black" if color == black else "white"
-                        print(t" | {stone_color}: ({first-last_seen}) {n_stones}/{last-first+1} ({i-last-1})", end="")
+                        var stone_color = "X" if color == black else "O"
+                        print(t" | {stone_color}: ({first-last_seen}) {n_stones}/{last-first+1} ({i-last-1}) [{i - last_seen}]", end="")
                     last_seen = last + 1
                 first = i
                 last = i
                 color = stone
                 n_stones = 1
         if n_stones > 0 and n - last_seen >= win_stones:
-            var stone_color = "black" if color == black else "white"
-            print(t" | {stone_color}: ({first-last_seen}) {n_stones}/{last-first+1} ({n-last-1})", end="")
+            var stone_color = "X" if color == black else "O"
+            print(t" | {stone_color}: ({first-last_seen}) {n_stones}/{last-first+1} ({n-last-1}) [{n - last_seen}]", end="")
         print()
 
     def write_to[W: Writer](self, mut writer: W):

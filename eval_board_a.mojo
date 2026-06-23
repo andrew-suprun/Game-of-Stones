@@ -24,8 +24,8 @@ def main() raises:
         var move_places = move_str.split("-")
         for place_str in move_places:
             var place = Place(String(place_str))
-            print(place)
+            print(t"place: {place}")
             board.place_stone(place, turn)
-            turn = black + white - turn
             print(board)
             board.top_moves()
+        turn = black + white - turn
