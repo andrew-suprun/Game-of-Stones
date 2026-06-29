@@ -4,11 +4,14 @@ from engine import board_size, win_stones
 from engine import Board, Place, Value
 
 
-comptime script = (
-    "j10 i10-j11 k12-l12 s:52.0 i12-i9 i11-l9 s:54.0 k8-l8 k11-n14 s:148.0 k13-m13 l13-l14 s:185.0 m14-l11 m12-n12 s:285.0 n11-o12 l15-m9 s:120.0 l16-n8 m7-m8 s:168.0 p13-m10"
-    " n7-r15 s:68.0 p11-o11 m6-q11 s:186.0 m5-n13 o13-q10 s:186.0 p9-p12 p8-p14 s:181.0 k7-l6 j8-q15 s:499.0 l10-r16 o6-q7 s:413.0 p5-q9 n10-o9 s:935.0 r6-m11 o7-q13 s:456.0"
-    " q12-p7 n16-o15 s:452.0 l18-r12 m15-n15 s:1672.0 k15-p15 n18-o17 s:277.0 p18-n17 o14-r14 s:455.0 q14-o16 m19-p16"
-)
+# comptime script = (
+#     "j10 i10-j11 k12-l12 s:52.0 i12-i9 i11-l9 s:54.0 k8-l8 k11-n14 s:148.0 k13-m13 l13-l14 s:185.0 m14-l11 m12-n12 s:285.0 n11-o12 l15-m9 s:120.0 l16-n8 m7-m8 s:168.0 p13-m10"
+#     " n7-r15 s:68.0 p11-o11 m6-q11 s:186.0 m5-n13 o13-q10 s:186.0 p9-p12 p8-p14 s:181.0 k7-l6 j8-q15 s:499.0 l10-r16 o6-q7 s:413.0 p5-q9 n10-o9 s:935.0 r6-m11 o7-q13 s:456.0"
+#     " q12-p7 n16-o15 s:452.0 l18-r12 m15-n15 s:1672.0 k15-p15 n18-o17 s:277.0 p18-n17 o14-r14 s:455.0 q14-o16 m19-p16"
+# )
+
+comptime script = "a1-b1-d1-f1-h1 j1"
+# comptime script = "h1-j1-k1 e1-n1"
 
 
 def main() raises:
@@ -23,8 +26,13 @@ def main() raises:
             continue
         var move_places = move_str.split("-")
         for p in move_places:
-            var total_places = 0
             var place_str = String(p)
+            var place = Place(place_str)
+            print(t"\n----\nplace={place} turn={"X" if turn == 0 else "O"}")
+            board.place_stone(place, turn)
+            print(board)
+
+            var total_places = 0
             var value_offsence = Value(0)
             var place_offsence = Place(0, 0)
             var value_defence = Value(0)
@@ -57,9 +65,5 @@ def main() raises:
                         total_places += 1
             print(t"  total places: {total_places}")
             max_total_places = max(max_total_places, total_places)
-            var place = Place(place_str)
-            print(t"\n----\nplace={place} turn={"X" if turn == 0 else "O"}")
-            board.place_stone(place, turn)
-            print(board)
         turn = 1 - turn
     print(t"max total places: {max_total_places}")
