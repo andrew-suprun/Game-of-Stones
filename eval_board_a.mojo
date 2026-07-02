@@ -1,4 +1,4 @@
-from engine import BoardA, Place, black, white
+from engine import Board, Place, black, white
 
 
 comptime script = (
@@ -13,7 +13,7 @@ comptime win_stones = 6
 
 
 def main() raises:
-    var board = BoardA()
+    var board = Board()
     var open_moves = script.split(" ")
     print("opening", script)
     var turn = black
@@ -21,11 +21,12 @@ def main() raises:
         var move_str = String(move)
         if move_str.startswith("s:"):
             continue
+        print("----\n")
         var move_places = move_str.split("-")
         for place_str in move_places:
             var place = Place(String(place_str))
-            print(t"place: {place}")
+            print(t"stone {'x' if turn == 0 else 'o'}: {place}")
             board.place_stone(place, turn)
-            print(board)
-            board.top_moves()
+        print(board)
+        board.top_moves()
         turn = black + white - turn
