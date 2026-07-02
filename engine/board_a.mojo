@@ -138,39 +138,6 @@ struct Board(Writable):
                 whites -= 1
             offset += delta
 
-        offset = start
-        print("x:", end="")
-        for _ in range(n):
-            var stone = self._places[offset]
-            var value = self._values[offset][0][dir]
-            if stone == empty:
-                if value == 0:
-                    print(" .", end="")
-                else:
-                    print(String(value).ascii_rjust(2), end="")
-            else:
-                print(" x" if stone == black else " o", end="")
-            offset += delta
-
-        print()
-
-        offset = start
-        print("o:", end="")
-        for _ in range(n):
-            var stone = self._places[offset]
-            var value = self._values[offset][1][dir]
-            if stone == empty:
-                if value == 0:
-                    print(" .", end="")
-                else:
-                    print(String(value).ascii_rjust(2), end="")
-            else:
-                print(" x" if stone == black else " o", end="")
-            offset += delta
-
-        print()
-        print()
-
     def write_to[W: Writer](self, mut writer: W):
         try:
             self.write(writer)
@@ -223,3 +190,39 @@ struct Board(Writable):
         for i in range(board_size):
             writer.write(t" {chr(i + ord('a'))}")
         writer.write("\n")
+
+    def write_repr_to[W: Writer](self, mut writer: W):
+        self.write_to(writer)
+        self.write_repr_to(writer, 0)
+        self.write_repr_to(writer, 1)
+
+    def write_repr_to[W: Writer](self, mut writer: W, table_idx: Int):
+        writer.write("\n   │")
+        for i in range(board_size):
+            writer.write(String(t"   {chr(i + ord('a'))}  "))
+        writer.write("│\n")
+        writer.write("───┼" + "──────" * board_size + "┼───\n")
+        for y in range(board_size):
+            writer.write(String(y + 1).ascii_rjust(2) + " │")
+            for x in range(board_size):
+                var stone = self._places[y * board_size + x]
+                if stone == black:
+                    writer.write("   x  ")
+                elif stone == white:
+                    writer.write("   o  ")
+                else:
+                    writer.write(" ")
+                    for i in range(directions):
+                        var value = self._values[y * board_size + x][table_idx][i]
+                        if value == 0:
+                            writer.write(".")
+                        else:
+                            writer.write(String(value))
+                    writer.write(" ")
+
+            writer.write("│ " + String(y + 1).ascii_rjust(2) + "\n")
+        writer.write("───┼" + "──────" * board_size + "┼───")
+        writer.write("\n   │")
+        for i in range(board_size):
+            writer.write(String(t"   {chr(i + ord('a'))}  "))
+        writer.write("│\n")
