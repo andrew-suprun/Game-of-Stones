@@ -48,7 +48,7 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
         self.root.write_repr_to(writer)
 
 
-struct PrincipalVariationNode[G: TGame](Copyable, Writable):
+struct PrincipalVariationNode[G: TGame](Copyable, Deinitable, Writable):
     var move: Self.G.Move
     var score: Score
     var max_depth: Int
@@ -59,6 +59,9 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         self.score = score
         self.max_depth = max_depth
         self.children = List[Self]()
+
+    def __deinit__(deinit self):
+        pass
 
     def search(
         mut self,

@@ -186,7 +186,7 @@ def openings() -> List[List[String]]:
                 places.append(String(Place(i, j)))
     for _ in range(50):
         shuffle(places)
-        moves = [String(Place(Game1.size // 2, Game1.size // 2))]
+        var moves: List = [String(Place(Game1.size // 2, Game1.size // 2))]
         if game_name == "Connect6":
             for i in range(0, 4):
                 moves.append(String(t"{places[i]}-{places[i+4]}"))
