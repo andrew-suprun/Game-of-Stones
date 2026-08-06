@@ -64,14 +64,14 @@ struct GameOfStones:
         print()
         return self.app_complete
 
-    def last_stone(self) -> ref[self.stones] Stone:
+    def last_stone(self) -> Stone:
         return self.stones[len(self.stones) - 1]
 
     def add_move(mut self, move: String) raises:
         var turn = 1 - self.last_stone().color
         var places = move.split("-")
         for place_str in places:
-            place = Place(String(place_str))
+            var place = Place(String(place_str))
             self.stones.append(Stone(place, turn, True))
         self.select_last_move()
 
@@ -221,12 +221,12 @@ struct GameOfStones:
                 game.play_move(String(place))
 
     def first_black_move(self) raises -> String:
-        var x = board_size / 2
+        var x = board_size // 2
         var place = Place(x, x)
         return String(place)
 
     def first_white_move(self) raises -> String:
-        var x = board_size / 2
+        var x = board_size // 2
         var places = List[Place]()
         for j in range(x - 1, x + 2):
             for i in range(x - 1, x + 2):

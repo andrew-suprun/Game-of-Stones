@@ -22,7 +22,7 @@ comptime values: List[Float32] = [0, 1, 100, 1000, 10_000, 100_000]
 
 
 def main() raises:
-    var values = Board[19, values, win_stones].value_table
+    var values = materialize[Board[19, values, win_stones].value_table]()
     print(values)
     for turn in range(2):
         for color in range(2):

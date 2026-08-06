@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, keep, black_box
+from std.benchmark import run, Unit, keep, black_box
 
 
 def bench_reduce_max():
@@ -41,7 +41,7 @@ def bench_reduce_or2():
 
 def main() raises:
     print("--- reduce ---")
-    print(t"reduce_max {round(benchmark.run[func2=bench_reduce_max](0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
-    print(t"reduce_add {round(benchmark.run[func2=bench_reduce_add](0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
-    print(t"reduce_or  {round(benchmark.run[func2=bench_reduce_or](0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
-    print(t"reduce_or2 {round(benchmark.run[func2=bench_reduce_or2](0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
+    print(t"reduce_max {round(run(bench_reduce_max, 0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
+    print(t"reduce_add {round(run(bench_reduce_add, 0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
+    print(t"reduce_or  {round(run(bench_reduce_or, 0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
+    print(t"reduce_or2 {round(run(bench_reduce_or2, 0, 1, 3, 6).min(Unit.s), 3)} s/1B ")

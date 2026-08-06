@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 
 from .config import Debug, Trace
-from .traits import TTree, TGame
+from .traits import TTree, TGame, Score
 
 
 struct AlphaBetaNegamax[G: TGame](TTree):

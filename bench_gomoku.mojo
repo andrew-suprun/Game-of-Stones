@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, keep
+from std.benchmark import run, Unit, keep
 
 from engine import Mcts, Gomoku, Score, MoveScore
 
@@ -29,13 +29,13 @@ def bench_expand():
         keep(tree.expand(game))
 
 
-def bench[f: def() thin](name: String, unit: String) raises:
-    var report = benchmark.run[func2=f](0, 1, 3, 6)
+def bench(f: Some[def() raises], name: String, unit: String) raises:
+    var report = run(f, 0, 1, 3, 6)
     print(t"{name} {round(report.mean(Unit.s), 3)} {unit}")
 
 
 def main() raises:
     print("--- gomoku ---")
 
-    bench[bench_moves]("moves  ", "msec/1M")
-    bench[bench_expand]("expand ", "msec/1M")
+    bench(bench_moves, "moves  ", "msec/1M")
+    bench(bench_expand, "expand ", "msec/1M")

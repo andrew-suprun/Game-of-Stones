@@ -1,7 +1,7 @@
 from std.time import perf_counter_ns
 
 from .config import Debug, Trace
-from .traits import TTree, TGame, Score
+from .traits import TTree, TGame, Score, MoveScore
 
 
 struct PrincipalVariationNegamax[G: TGame](TTree):
@@ -12,11 +12,11 @@ struct PrincipalVariationNegamax[G: TGame](TTree):
     def __init__(out self):
         self.root = {{}, Score.loss(), {}}
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[MoveScore[Self.G.Move]]:
+    def search(mut self, game: Self.G, max_time_ms: Int) -> List[MoveScore[Self.G.Move]]:
         self.root = {{}, Score.loss(), {}}
         var depth = 1
         var start = perf_counter_ns()
-        var deadline = start + UInt(1_000_000) * max_time_ms
+        var deadline = start + Int(1_000_000) * max_time_ms
         while True:
             self.root.search(game, Score.loss(), Score.win(), 0, depth, deadline)
             var pv = self._pv()
@@ -67,7 +67,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         beta: Score,
         depth: Int,
         max_depth: Int,
-        deadline: UInt,
+        deadline: Int,
     ):
         if perf_counter_ns() > deadline:
             return
@@ -165,7 +165,7 @@ struct PrincipalVariationNode[G: TGame](Copyable, Writable):
         pv.append({best_child.move, best_child.score})
         best_child._pv(pv)
 
-    def _best_node(self) -> ref[self.children] Self:
+    def _best_node(self) -> ref[self.children[0]] Self:
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]

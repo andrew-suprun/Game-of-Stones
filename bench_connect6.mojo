@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, keep
+from std.benchmark import run, Unit, keep
 
 from engine import Connect6, MoveScore
 
@@ -19,4 +19,4 @@ def bench_moves():
 
 def main() raises:
     print("--- connect6 ---")
-    print("moves", round(benchmark.run[func2=bench_moves](0, 1, 3, 6).mean(Unit.ms), 3), "msec/1K")
+    print("moves", round(run(bench_moves, 0, 1, 3, 6).mean(Unit.ms), 3), "msec/1K")

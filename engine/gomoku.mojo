@@ -1,7 +1,7 @@
 from std.utils.numerics import FPUtils, isinf
 
 from .traits import TGame, TMove, Score, MoveScore
-from .board import Board, Place, PlaceValue, first
+from .board import Board, Place, Value, PlaceValue, Loss, first
 
 comptime win_stones = 5
 comptime values: List[Value] = [0, 1, 10, 100, 1000]
@@ -51,7 +51,7 @@ struct Gomoku[size: Int, max_moves: Int](TGame):
                 moves.clear()
                 moves.append({{place.place}, Score.win()})
                 return
-            var value = board_value + place.value / 2
+            var value = board_value + place.value // 2
             moves.append({{place.place}, Score(value)})
 
         if not moves:

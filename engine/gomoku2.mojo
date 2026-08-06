@@ -51,7 +51,7 @@ struct Gomoku2[size: Int, max_moves: Int](TGame):
                 moves.clear()
                 moves.append({{place.place}, Score.win()})
                 return
-            var value = board_value + place.value / 2
+            var value = board_value + place.value // 2
             moves.append({{place.place}, Score(value)})
 
         if not moves:

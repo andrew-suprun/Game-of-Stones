@@ -1,4 +1,4 @@
-from .traits import TGame, TMove, MoveScore
+from .traits import TGame, TMove, Score, MoveScore
 from .board import Board, Value, Place, PlaceValue, first
 from .heap import heap_add
 

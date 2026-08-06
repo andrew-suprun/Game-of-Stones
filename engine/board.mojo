@@ -58,13 +58,13 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
     comptime white = Self.win_stones
     comptime value_table = _calc_value_table[Self.win_stones, Self.init_values]()
 
-    var _places: InlineArray[Int8, Self.size * Self.size]
-    var _values: InlineArray[Values, Self.size * Self.size]
+    var _places: Array[Int8, Self.size * Self.size]
+    var _values: Array[Values, Self.size * Self.size]
     var value: Value
 
     def __init__(out self):
-        self._places = InlineArray[Int8, Self.size * Self.size](fill=0)
-        self._values = InlineArray[Values, Self.size * Self.size](uninitialized=True)
+        self._places = Array[Int8, Self.size * Self.size](fill=0)
+        self._values = Array[Values, Self.size * Self.size](uninitialized=True)
         self.value = 0
 
         for y in range(Self.size):
@@ -138,7 +138,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
             self[x, y] = Self.white
         self._values[y * Self.size + x] = [Loss, Loss]
 
-    def _update_row(mut self, start: Int, delta: Int, n: Int, values: InlineArray[Values, Self.win_stones * Self.win_stones + 1]):
+    def _update_row(mut self, start: Int, delta: Int, n: Int, values: Array[Values, Self.win_stones * Self.win_stones + 1]):
         var offset = start
         var stones = Int8(0)
 
@@ -386,7 +386,7 @@ struct Board[size: Int, init_values: List[Value], win_stones: Int](Copyable, Wri
                 ...
 
 
-def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[InlineArray[Values, win_stones * win_stones + 1], 2]:
+def _calc_value_table[win_stones: Int, values: List[Value]]() -> Array[Array[Values, win_stones * win_stones + 1], 2]:
     comptime result_size = win_stones * win_stones + 1
 
     var s = materialize[values]()
@@ -394,7 +394,7 @@ def _calc_value_table[win_stones: Int, values: List[Value]]() -> InlineArray[Inl
     var v2: List[Values] = [Values(1, -1)]
     for i in range(win_stones - 1):
         v2.append(Values(s[i + 2] - s[i + 1], -s[i + 1]))
-    var result = InlineArray[InlineArray[Values, result_size], 2](fill=InlineArray[Values, result_size](fill=0))
+    var result = Array[Array[Values, result_size], 2](fill=Array[Values, result_size](fill=0))
 
     for i in range(win_stones - 1):
         result[0][i * win_stones] = Values(v2[i][1], -v2[i][0])

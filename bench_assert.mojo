@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, keep, black_box
+from std.benchmark import run, Unit, keep, black_box
 
 
 def f(n: Int) -> Int:
@@ -21,5 +21,5 @@ def bench_assert2():
 
 
 def main() raises:
-    print(t"assert1 {round(benchmark.run[func2=bench_assert1](0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
-    print(t"assert2 {round(benchmark.run[func2=bench_assert2](0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
+    print(t"assert1 {round(run(bench_assert1, 0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
+    print(t"assert2 {round(run(bench_assert2, 0, 1, 3, 6).min(Unit.s), 3)} s/1B ")

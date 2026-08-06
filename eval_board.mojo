@@ -20,7 +20,7 @@ def main() raises:
             print("----")
             var place = Place(String(place_str))
             if turn == first:
-                board_score = board.get_value(place, first)
+                var board_score = board.get_value(place, first)
                 score += board_score
                 value += board_score
                 print(place, board_score)
@@ -28,7 +28,7 @@ def main() raises:
                     break
                 board.place_stone(place, first)
             else:
-                board_score = board.get_value(place, second)
+                var board_score = board.get_value(place, second)
                 score -= board_score
                 value -= board_score
                 print(place, board_score)

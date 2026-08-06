@@ -19,7 +19,7 @@ def bench_build_tree[Game: TGame]() raises:
 
     var tree = Mcts[Game, Score(0.35)]()
     var start = perf_counter_ns()
-    var deadline = start + UInt(10_000_000_000)
+    var deadline = start + Int(10_000_000_000)
     var count = 0
     while perf_counter_ns() < deadline:
         tree.expand(game)

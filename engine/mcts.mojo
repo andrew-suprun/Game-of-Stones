@@ -1,6 +1,6 @@
 from std.time import perf_counter_ns
 
-from .traits import TTree, TGame, TMove, Score
+from .traits import TTree, TGame, TMove, Score, MoveScore
 
 
 comptime Idx = Int32
@@ -39,7 +39,7 @@ struct Mcts[G: TGame, c: Score](TTree):
     def __init__(out self):
         self.tree = [{}]
 
-    def search(mut self, game: Self.G, max_time_ms: UInt) -> List[MoveScore[Self.G.Move]]:
+    def search(mut self, game: Self.G, max_time_ms: Int) -> List[MoveScore[Self.G.Move]]:
         self.tree.clear()
         self.tree.append({})
         var deadline = perf_counter_ns() + max_time_ms * 1_000_000

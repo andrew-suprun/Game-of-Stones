@@ -43,13 +43,13 @@ struct StoneCounts(ImplicitlyCopyable, Writable):
 
 
 struct BoardX[size: Int, win_stones: Int](Writable):
-    comptime PlaceStoneCounts = InlineArray[StoneCounts, 4]
-    comptime PlaceScores = InlineArray[Self.PlaceStoneCounts, 2]
+    comptime PlaceStoneCounts = Array[StoneCounts, 4]
+    comptime PlaceScores = Array[Self.PlaceStoneCounts, 2]
 
-    var _places: InlineArray[Int8, Self.size**2]
+    var _places: Array[Int8, Self.size**2]
 
     def __init__(out self):
-        self._places = InlineArray[Int8, Self.size**2](fill=empty)
+        self._places = Array[Int8, Self.size**2](fill=empty)
 
     def __getitem__(self, x: Int, y: Int) -> Int:
         return Int(self._places[y * Self.size + x])
@@ -94,7 +94,7 @@ struct BoardX[size: Int, win_stones: Int](Writable):
         # print(t"---- start {start} delta {delta} n {n} d {d}")
         var offset = start
 
-        var stone_counts = InlineArray[Int, 3](fill=0)
+        var stone_counts = Array[Int, 3](fill=0)
         var black_max_stones = 0
         var black_n_segments = 0
         var white_max_stones = 0

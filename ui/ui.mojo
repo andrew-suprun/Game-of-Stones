@@ -75,7 +75,7 @@ struct Ui[board_size: Int](Copyable):
         return self.window_size / (Self.board_size + 1)
 
     def r(self) -> Int:
-        return self.d() / 2
+        return self.d() // 2
 
     def set_window_size(mut self, window_size: Int) raises:
         self.window_size = window_size
@@ -101,7 +101,7 @@ struct Ui[board_size: Int](Copyable):
 
             elif event.type == self.pygame.VIDEORESIZE:
                 var window_size = min(Int(py=event.w), Int(py=event.h))
-                var r = (window_size / (Self.board_size + 1)) / 2
+                var r = (window_size / (Self.board_size + 1)) // 2
                 window_size = r * 2 * (Self.board_size + 1)
                 return Event(WindowResize(window_size))
 
@@ -139,7 +139,7 @@ struct Ui[board_size: Int](Copyable):
             )
 
         for stone in stones:
-            color = color_black if stone.color == black else color_white
+            var color = color_black if stone.color == black else color_white
             var center = self.board_to_window(stone.place.x, stone.place.y)
             self.pygame.draw.circle(self.window, color, center, self.r() - 2)
             if stone.selected:

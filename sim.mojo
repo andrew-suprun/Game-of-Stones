@@ -180,13 +180,13 @@ def openings() -> List[List[String]]:
     seed(seed_value)
     var result = List[List[String]]()
     var places = List[String]()
-    for j in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
-        for i in range(Game1.size / 2 - 2, Game1.size / 2 + 3):
-            if i != Game1.size / 2 or j != Game1.size / 2:
+    for j in range(Game1.size // 2 - 2, Game1.size // 2 + 3):
+        for i in range(Game1.size // 2 - 2, Game1.size // 2 + 3):
+            if i != Game1.size // 2 or j != Game1.size // 2:
                 places.append(String(Place(i, j)))
     for _ in range(50):
         shuffle(places)
-        moves = [String(Place(Game1.size / 2, Game1.size / 2))]
+        moves = [String(Place(Game1.size // 2, Game1.size // 2))]
         if game_name == "Connect6":
             for i in range(0, 4):
                 moves.append(String(t"{places[i]}-{places[i+4]}"))

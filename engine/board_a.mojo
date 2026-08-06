@@ -22,10 +22,10 @@ comptime n_places = board_size**2
 
 comptime Value = Int8
 comptime DirectionValues = SIMD[Value.dtype, directions]
-comptime PlayerValues = InlineArray[DirectionValues, players]
-comptime PlaceValues = InlineArray[PlayerValues, n_places]
+comptime PlayerValues = Array[DirectionValues, players]
+comptime PlaceValues = Array[PlayerValues, n_places]
 
-comptime Places = InlineArray[Stone, n_places]
+comptime Places = Array[Stone, n_places]
 
 
 @fieldwise_init
@@ -138,13 +138,13 @@ struct Board(Writable):
                 whites -= 1
             offset += delta
 
-    def write_to[W: Writer](self, mut writer: W):
+    def write_to(self, mut writer: Some[Writer]):
         try:
             self.write(writer)
         except:
             pass
 
-    def write[W: Writer](self, mut writer: W) raises:
+    def write(self, mut writer: Some[Writer]) raises:
         writer.write("\n  ")
 
         for i in range(board_size):
@@ -191,12 +191,12 @@ struct Board(Writable):
             writer.write(t" {chr(i + ord('a'))}")
         writer.write("\n")
 
-    def write_repr_to[W: Writer](self, mut writer: W):
+    def write_repr_to(self, mut writer: Some[Writer]):
         self.write_to(writer)
         self.write_repr_to(writer, 0)
         self.write_repr_to(writer, 1)
 
-    def write_repr_to[W: Writer](self, mut writer: W, table_idx: Int):
+    def write_repr_to(self, mut writer: Some[Writer], table_idx: Int):
         writer.write("\n   │")
         for i in range(board_size):
             writer.write(String(t"   {chr(i + ord('a'))}  "))

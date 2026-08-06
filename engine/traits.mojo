@@ -1,11 +1,14 @@
-trait TTree(Defaultable, ImplicitlyDeletable, Writable):
+from std.math import isinf, isnan, nan
+
+
+trait TTree(Defaultable, Deinitable, Writable):
     comptime Game: TGame
 
-    def search(mut self, game: Self.Game, max_time_ms: UInt, out pv: List[MoveScore[Self.Game.Move]]):
+    def search(mut self, game: Self.Game, max_time_ms: Int, out pv: List[MoveScore[Self.Game.Move]]):
         ...
 
 
-trait TGame(Copyable, Defaultable, ImplicitlyDeletable, Writable):
+trait TGame(Copyable, Defaultable, Deinitable, Writable):
     comptime Move: TMove
 
     def top_moves(self) -> List[MoveScore[Self.Move]]:
@@ -15,9 +18,6 @@ trait TGame(Copyable, Defaultable, ImplicitlyDeletable, Writable):
         ...
 
     def score(self) -> Score:
-        ...
-
-    def debug_print(self, move: Move):
         ...
 
 
@@ -32,7 +32,7 @@ struct Score(Comparable, Copyable, Floatable, TrivialRegisterPassable, Writable)
     var _value: Float32
 
     def __init__(out self):
-        self._value = Loss
+        self._value = 0
 
     def __float__(self) -> Float64:
         return Float64(self._value)

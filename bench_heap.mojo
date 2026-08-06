@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, keep
+from std.benchmark import run, Unit, keep
 
 from engine import heap_add
 
@@ -21,4 +21,4 @@ def bench():
 
 def main() raises:
     print("--- heap ---")
-    print(t"heap_add {round(benchmark.run[func2=bench](0, 1, 3, 6).min(Unit.s), 3)} s/1B ")
+    print(t"heap_add {round(run(bench, 0, 1, 3, 6).min(Unit.s), 3)} s/1B ")

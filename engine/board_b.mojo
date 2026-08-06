@@ -32,10 +32,10 @@ struct Place(Comparable, Copyable, Defaultable, TrivialRegisterPassable, Writabl
 
 
 struct Board(Writable):
-    var _places: InlineArray[Int8, n_places]
+    var _places: Array[Int8, n_places]
 
     def __init__(out self):
-        self._places = InlineArray[Int8, n_places](fill=empty)
+        self._places = Array[Int8, n_places](fill=empty)
 
     def place_stone(mut self, place: Place, stone: Stone):
         self._places[place.y * board_size + place.x] = stone

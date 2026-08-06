@@ -1,5 +1,5 @@
-def heap_add[T: Copyable & ImplicitlyDeletable, //, lt: def(T, T) thin -> Bool](item: T, mut items: List[T]):
-    if len(items) == items.capacity:
+def heap_add[T: Copyable & Deinitable, //, lt: def(T, T) thin -> Bool](item: T, mut items: List[T]):
+    if len(items) == items.capacity():
         if not lt(items[0], item):
             return
 
@@ -23,8 +23,8 @@ def heap_add[T: Copyable & ImplicitlyDeletable, //, lt: def(T, T) thin -> Bool](
     items.append(item.copy())
     var child_idx = len(items) - 1
     var child = items[child_idx].copy()
-    while child_idx > 0 and lt(child, items[(child_idx - 1) / 2]):
-        var parent_idx = (child_idx - 1) / 2
+    while child_idx > 0 and lt(child, items[(child_idx - 1) // 2]):
+        var parent_idx = (child_idx - 1) // 2
         items[child_idx] = items[parent_idx].copy()
         child_idx = parent_idx
     items[child_idx] = child.copy()

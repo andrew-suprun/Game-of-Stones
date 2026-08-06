@@ -28,5 +28,6 @@ def main() raises:
             print(t"stone {'x' if turn == black else 'o'}: {place}")
             board.place_stone(place, turn)
         board.top_moves()
-        print(repr(board))
+        # print(repr(board))
+        print(board)
         turn = black + white - turn

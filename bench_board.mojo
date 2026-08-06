@@ -1,4 +1,4 @@
-from std.benchmark import benchmark, Unit, keep, black_box
+from std.benchmark import run, Unit, keep, black_box
 
 from engine import Board, Value, Place, PlaceValue, first
 
@@ -86,16 +86,16 @@ def bench_places():
         keep(places)
 
 
-def bench[f: def() thin](name: String, unit: String) raises:
-    var report = benchmark.run[func2=f](0, 1, 3, 6)
+def bench(f: Some[def() raises], name: String, unit: String) raises:
+    var report = run(f, 0, 1, 3, 6)
     print(t"{name} {round(report.mean(Unit.s), 3)} {unit}")
 
 
 def main() raises:
     print("--- board ---")
-    bench[bench_max_value]("max_score  ", "sec/1M")
-    bench[bench_copy]("copy       ", "sec/1M")
-    bench[bench_update_row]("update_row ", "sec/1M")
-    bench[bench_place_stone]("place_stone", "sec/1M")
-    bench[bench_rollout]("rollout    ", "sec/1M")
-    bench[bench_places]("places     ", "sec/1M")
+    bench(bench_max_value, "max_score  ", "sec/1M")
+    bench(bench_copy, "copy       ", "sec/1M")
+    bench(bench_update_row, "update_row ", "sec/1M")
+    bench(bench_place_stone, "place_stone", "sec/1M")
+    bench(bench_rollout, "rollout    ", "sec/1M")
+    bench(bench_places, "places     ", "sec/1M")
