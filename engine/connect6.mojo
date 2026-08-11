@@ -97,7 +97,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                 var board2 = board.copy()
                 board2.place_stone(place2, self.turn)
 
-                def check_board_value() capturing -> Bool:
+                def check_board_value() {self, board2, board_value, score1, score2, place1, place2} -> Bool:
                     var debug_board_value = board2.debug_board_value(materialize[values]())
                     if self.turn:
                         debug_board_value = -debug_board_value
@@ -108,7 +108,7 @@ struct Connect6[size: Int, max_moves: Int, max_places: Int](TGame):
                         return False
                     return True
 
-                debug_assert[check_board_value]()
+                debug_assert(check_board_value)
 
                 var max_opp_value = board2.max_value(1 - self.turn)
                 if max_opp_value != Value.MAX:

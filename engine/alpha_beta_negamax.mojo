@@ -86,7 +86,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Deinitable, Writable):
             self._update_score()
             return
 
-        sort[Self.gt](self.children)
+        sort(self.children, Self.gt)
 
         for ref child in self.children:
             if not child.score.is_decisive():
@@ -168,7 +168,6 @@ struct AlphaBetaNode[G: TGame](Copyable, Deinitable, Writable):
                 child.write_repr_to(writer, depth + 1)
 
     @staticmethod
-    @parameter
     def gt(a: Self, b: Self) -> Bool:
         if a.max_depth > b.max_depth:
             return True
