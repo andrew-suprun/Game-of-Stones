@@ -12,7 +12,7 @@ from ui import Ui, Stone, Place as UiPlace, Quit, MouseClick, black
 comptime seed_value = 11
 
 comptime board_size = 19
-comptime time: UInt = 1000
+comptime time: Int = 1000
 
 
 comptime max_moves1 = 26
@@ -155,7 +155,7 @@ struct SimOpening[T1: TTree, T2: TTree]:
 
     def play_move(mut self, move: String) raises:
         print(t"{move}")
-        self.g1.debug_print({move})
+        # self.g1.debug_print({move})
         self.g1.play_move({move})
         self.g2.play_move({move})
         print(self.g1)

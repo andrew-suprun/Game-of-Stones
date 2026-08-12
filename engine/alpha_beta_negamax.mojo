@@ -153,7 +153,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Deinitable, Writable):
         if self.children:  # TODO silence the compiler warning
             for ref child in self.children:
                 child.sort()
-        sort[Self.gt](self.children)
+        sort(self.children, Self.gt)
 
     def write_to[W: Writer](self, mut writer: W):
         writer.write(t"{self.move} {self.score}")

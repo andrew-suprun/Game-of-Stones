@@ -1,7 +1,7 @@
 from std.utils.numerics import FPUtils, isinf
 
 from .traits import TGame, TMove, Score, MoveScore
-from .board import Board, Place, PlaceValue, first
+from .board import Board, Place, Value, PlaceValue, Loss, first
 
 comptime win_stones = 5
 comptime values: List[Value] = [0, 1, 16, 256, 4096]

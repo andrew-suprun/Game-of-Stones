@@ -21,37 +21,37 @@ struct Stone(ImplicitlyCopyable, Writable):
 
 
 @fieldwise_init
-struct NoEvent(Movable, Writable):
+struct NoEvent(Writable):
     pass
 
 
 @fieldwise_init
-struct EnterKey(Movable, Writable):
+struct EnterKey(Writable):
     pass
 
 
 @fieldwise_init
-struct LeftKey(Movable, Writable):
+struct LeftKey(Writable):
     pass
 
 
 @fieldwise_init
-struct RightKey(Movable, Writable):
+struct RightKey(Writable):
     pass
 
 
 @fieldwise_init
-struct WindowResize(Movable, Writable):
+struct WindowResize(Writable):
     var window_size: Int
 
 
 @fieldwise_init
-struct Quit(Movable, Writable):
+struct Quit(Writable):
     pass
 
 
 @fieldwise_init
-struct MouseClick(Movable, Writable):
+struct MouseClick(Writable):
     var place: Place
 
 

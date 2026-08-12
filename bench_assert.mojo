@@ -13,11 +13,11 @@ def bench_assert1():
 
 
 def bench_assert2():
-    def a() capturing -> Bool:
+    def a() -> Bool:
         return black_box(f(44) > 1000)
 
     for _ in range(1_000_000_000):
-        debug_assert[a]()
+        debug_assert(a)
 
 
 def main() raises:
