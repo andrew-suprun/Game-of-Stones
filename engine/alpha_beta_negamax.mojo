@@ -135,11 +135,11 @@ struct AlphaBetaNode[G: TGame](Copyable, Deinitable, Writable):
         if not self.children:
             return
 
-        ref best_child = self.children[self._best_node_idx()]
+        ref best_child = self._best_node()
         pv.append({best_child.move, best_child.score})
         best_child._pv(pv)
 
-    def _best_node_idx(self) -> Int:
+    def _best_node(self) -> ref[self.children[0]] Self:
         var best_child_idx = 0
         for idx in range(len(self.children)):
             ref child = self.children[idx]
@@ -147,7 +147,7 @@ struct AlphaBetaNode[G: TGame](Copyable, Deinitable, Writable):
             if Self.gt(child, best_child):
                 best_child_idx = idx
 
-        return best_child_idx
+        return self.children[best_child_idx]
 
     def sort(mut self):
         if self.children:  # TODO silence the compiler warning
